@@ -28,7 +28,8 @@ import axios from "../utils/axios";
 export default function EditUserProfile() {
   const toast = useToast();
   const router = useRouter();
-  const { user, firebaseUser, loading, logout, loadUser } = useContext(userContext);
+  const { user, firebaseUser, loading, logout, loadUser } =
+    useContext(userContext);
 
   const [fullname, setFullname] = useState("");
   const [username, setUsername] = useState("");
@@ -46,7 +47,7 @@ export default function EditUserProfile() {
 
     if (firebaseUser) {
       setFullname(firebaseUser.displayName);
-      console.log('firebaseUser', firebaseUser)
+      console.log(firebaseUser);
     }
     // if (!loading && Object.keys(user) == 0) router.push("/login");
     // checking for googleUID in the user object to make sure used is in db
@@ -68,7 +69,6 @@ export default function EditUserProfile() {
         email: firebaseUser.email,
       };
       const res = await axios.post("/users", payload);
-      console.log(res)
       toast({
         title: "User Created!",
         description: "We've created your account for you.",
@@ -76,7 +76,6 @@ export default function EditUserProfile() {
         duration: 9000,
         isClosable: true,
       });
-
       loadUser();
       router.push("/home");
     } catch (error) {
@@ -121,6 +120,7 @@ export default function EditUserProfile() {
 
   if (!firebaseUser || loading) return <>Loading...</>;
 
+  // return <h1> hello</h1>
   return (
     <>
       <Flex minH={"100vh"} align={"center"} justify={"center"} bg={color1}>
@@ -153,14 +153,16 @@ export default function EditUserProfile() {
             <Stack direction={["column", "row"]} spacing={6}>
               <Center>
                 <Avatar size="xl">
-                  <Image
-                    src={firebaseUser.photoURL}
-                    referrerPolicy="no-referrer"
-                    width={100}
-                    height={100}
-                    alt="profile photo"
-                    style={{ borderRadius: "50%" }}
-                  />
+                  {firebaseUser.photoURL ? (
+                    <Image
+                      src={firebaseUser.photoURL}
+                      referrerPolicy="no-referrer"
+                      width={100}
+                      height={100}
+                      alt="profile photo"
+                      style={{ borderRadius: "50%" }}
+                    />
+                  ) : null}
                   <AvatarBadge
                     disabled
                     as={IconButton}
