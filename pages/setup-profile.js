@@ -47,7 +47,6 @@ export default function EditUserProfile() {
 
     if (firebaseUser) {
       setFullname(firebaseUser.displayName);
-      console.log(firebaseUser);
     }
     // if (!loading && Object.keys(user) == 0) router.push("/login");
     // checking for googleUID in the user object to make sure used is in db
@@ -64,7 +63,9 @@ export default function EditUserProfile() {
         fullname,
         username,
         roll,
-        photoURL: firebaseUser.photoURL,
+        photoURL:
+          firebaseUser.photoURL ||
+          "https://ik.imagekit.io/couponluxury/coding_ducks/user-solid_ThAFc0bNo.svg",
         googleUID: firebaseUser.uid,
         email: firebaseUser.email,
       };
@@ -120,7 +121,6 @@ export default function EditUserProfile() {
 
   if (!firebaseUser || loading) return <>Loading...</>;
 
-  // return <h1> hello</h1>
   return (
     <>
       <Flex minH={"100vh"} align={"center"} justify={"center"} bg={color1}>
