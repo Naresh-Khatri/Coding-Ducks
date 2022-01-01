@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Center,
   Checkbox,
   Container,
   Divider,
@@ -10,11 +11,16 @@ import {
   HStack,
   Input,
   Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   useBreakpointValue,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 // import { Logo } from "./Logo";
 
 import { ButtonGroup, VisuallyHidden } from "@chakra-ui/react";
@@ -84,13 +90,81 @@ const providers = [
 ];
 
 export const LoginPage = () => {
-  const { user, loading, signInWithGoogle } = useContext(userContext);
+  const {
+    user,
+    loading,
+    signInWithGoogle,
+    registerWithEmailAndPassword,
+    logInWithEmailAndPassword,
+  } = useContext(userContext);
+
   const router = useRouter();
   useEffect(() => {
     if (Object.keys(user).length) {
       router.push("/setup-profile");
     }
   });
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [isEmailValid, setIsEmailValid] = useState(true);
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
+  const [isPassword2Valid, setIsPassword2Valid] = useState(true);
+  const emailRegex =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const passwordRegex = /^\S{8,24}$/;
+
+  const handleOnEmailChange = (e) => {
+    const email = e.target.value;
+    setEmail(email);
+    if (emailRegex.test(email)) {
+      setIsEmailValid(true);
+    } else {
+      setIsEmailValid(false);
+    }
+  };
+  const handleOnPasswordChange = (e) => {
+    const password = e.target.value;
+    setPassword(password);
+    if (passwordRegex.test(password)) {
+      setIsPasswordValid(true);
+    } else {
+      setIsPasswordValid(false);
+    }
+  };
+  const handleOnPassword2Change = (e) => {
+    const password2 = e.target.value;
+    setPassword2(password2);
+    if (passwordRegex.test(password2) && password2 === password) {
+      setIsPassword2Valid(true);
+    } else {
+      setIsPassword2Valid(false);
+    }
+  };
+
+  const onLoginBtnClicked = async () => {
+    if (isEmailValid && isPasswordValid) {
+      try {
+        const res = await logInWithEmailAndPassword(email, password);
+        console.log(res);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+  const onRegisterBtnClicked = async () => {
+    if (isEmailValid && isPasswordValid) {
+      try {
+        console.log(email, password);
+        const res = await registerWithEmailAndPassword(email, password);
+        console.log(res);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
   return (
     <Container
@@ -104,7 +178,6 @@ export const LoginPage = () => {
       >
         <Stack spacing="6">
           <ThemeToggler />
-          {/* <Logo /> */}
           <Text
             fontSize={"6xl"}
             fontWeight={"extrabold"}
@@ -113,17 +186,118 @@ export const LoginPage = () => {
           >
             Coding Ducks
           </Text>
-          <Stack spacing={{ base: "2", md: "3" }} textAlign="center">
-            <Heading size={useBreakpointValue({ base: "xs", md: "sm" })}>
-              Log in to your account
-            </Heading>
-            {/* <HStack spacing="1" justify="center">
-            <Text color="muted">Don't have an account?</Text>
-            <Button variant="link" colorScheme="blue">
-              Sign up
-            </Button>
-          </HStack> */}
-          </Stack>
+          <Tabs isFitted variant="enclosed">
+            <TabList mb="1em">
+              <Tab>Login</Tab>
+              <Tab>Register</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <Stack spacing="6">
+                  <Stack spacing="5">
+                    <FormControl isRequired>
+                      <FormLabel htmlFor="login-email">Email</FormLabel>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        errorBorderColor="crimson"
+                        focusBorderColor={
+                          isEmailValid ? "green.500" : "red.500"
+                        }
+                        isInvalid={!isEmailValid && email != ""}
+                        value={email}
+                        onChange={handleOnEmailChange}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack>
+                    <FormControl isRequired>
+                      <FormLabel htmlFor="login-password">Password</FormLabel>
+                      <Input
+                        id="login-password"
+                        type="password"
+                        errorBorderColor="crimson"
+                        focusBorderColor={
+                          isPasswordValid ? "green.500" : "red.500"
+                        }
+                        isInvalid={!isPasswordValid && password !== ""}
+                        value={password}
+                        onChange={handleOnPasswordChange}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <HStack justify="space-between">
+                    <Checkbox defaultChecked>Remember me</Checkbox>
+                    <Button variant="link" colorScheme="blue" size="sm">
+                      Forgot password?
+                    </Button>
+                  </HStack>
+                </Stack>
+                <Button
+                  mt={10}
+                  w="full"
+                  colorScheme="purple"
+                  onClick={onLoginBtnClicked}
+                >
+                  Login
+                </Button>
+              </TabPanel>
+              <TabPanel>
+                <FormControl isRequired mt={3}>
+                  <FormLabel htmlFor="reg-email">Email</FormLabel>
+                  <Input
+                    id="reg-email"
+                    type="email"
+                    value={email}
+                    onChange={handleOnEmailChange}
+                    errorBorderColor="crimson"
+                    focusBorderColor={isEmailValid ? "green.500" : "red.500"}
+                    isInvalid={!isEmailValid && email != ""}
+                  />
+                </FormControl>
+                <FormControl isRequired mt={3}>
+                  <FormLabel htmlFor="reg-password">Password</FormLabel>
+                  <Input
+                    id="reg-password"
+                    type="password"
+                    value={password}
+                    onChange={handleOnPasswordChange}
+                    errorBorderColor="crimson"
+                    focusBorderColor={isPasswordValid ? "green.500" : "red.500"}
+                    isInvalid={!isPasswordValid && password !== ""}
+                  />
+                </FormControl>
+                <FormControl isRequired mt={3}>
+                  <FormLabel htmlFor="reg-password2">
+                    Confirm password
+                  </FormLabel>
+                  <Input
+                    id="reg-password2"
+                    type="password"
+                    value={password2}
+                    onChange={handleOnPassword2Change}
+                    errorBorderColor="crimson"
+                    focusBorderColor={
+                      isPassword2Valid ? "green.500" : "red.500"
+                    }
+                    isInvalid={!isPassword2Valid && password2 !== ""}
+                  />
+                </FormControl>
+                <Button
+                  mt={10}
+                  w="full"
+                  colorScheme="purple"
+                  onClick={onRegisterBtnClicked}
+                >
+                  Register
+                </Button>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+          <Divider />
+          <Center>
+            <Text>Or</Text>
+          </Center>
         </Stack>
         <Box
           py={{ base: "0", sm: "8" }}
@@ -131,23 +305,6 @@ export const LoginPage = () => {
           bg={useBreakpointValue({ base: "transparent", sm: "bg-surface" })}
           borderRadius={{ base: "none", sm: "xl" }}
         >
-          {/* <Box pointerEvents="none">
-          <Stack spacing="6">
-            <Stack spacing="5">
-              <FormControl>
-                <FormLabel htmlFor="email">Email</FormLabel>
-                <Input id="email" type="email" />
-              </FormControl>
-            </Stack>
-            <HStack justify="space-between">
-              <Checkbox defaultChecked>Remember me</Checkbox>
-              <Button variant="link" colorScheme="blue" size="sm">
-                Forgot password?
-              </Button>
-            </HStack>
-          </Stack>
-        </Box> */}
-
           <Stack spacing="6">
             <ButtonGroup variant="outline" spacing="4" width="full">
               {providers.map(({ name, icon }) => (
