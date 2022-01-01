@@ -19,6 +19,7 @@ import {
   Text,
   useBreakpointValue,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 // import { Logo } from "./Logo";
@@ -29,6 +30,7 @@ import { useRouter } from "next/router";
 import { createIcon } from "@chakra-ui/react";
 import ThemeToggler from "../components/ThemeToggler";
 import { userContext } from "../contexts/userContext";
+import ForgotPassword from "../components/ForgotPassword";
 
 export const GoogleIcon = createIcon({
   displayName: "GoogleIcon",
@@ -90,6 +92,7 @@ const providers = [
 ];
 
 export const LoginPage = () => {
+  const toast = useToast();
   const {
     user,
     loading,
@@ -150,21 +153,43 @@ export const LoginPage = () => {
       try {
         setLogginInProgress(true);
         const res = await logInWithEmailAndPassword(email, password);
+        toast({
+          title: `Logged in as $ {user}!`,
+          position: "top-right",
+          status: "success",
+          duration: 9000,
+          isClosable: true,
+        });
         setLogginInProgress(false);
       } catch (error) {
         console.log(error);
+        toast({
+          title: "Login failed!",
+          description: "User not found.",
+          position: "top-right",
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+        });
         setLogginInProgress(false);
       }
     }
   };
   const onRegisterBtnClicked = async () => {
-    if (isEmailValid && isPasswordValid) {
+    if (isEmailValid && isPasswordValid && password == password2) {
       try {
         setLogginInProgress(true);
         const res = await registerWithEmailAndPassword(email, password);
         setLogginInProgress(false);
       } catch (error) {
-        console.log(error);
+        toast({
+          title: "Registration failed!",
+          description: "Couldn't create new user.",
+          position: "top-right",
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+        });
         setLogginInProgress(false);
       }
     }
@@ -181,15 +206,15 @@ export const LoginPage = () => {
         boxShadow={{ base: "none", sm: useColorModeValue("md", "md-dark") }}
       >
         <Stack spacing="6">
-          <ThemeToggler />
-          <Text
+          {/* <ThemeToggler /> */}
+          {/* <Text
             fontSize={"6xl"}
             fontWeight={"extrabold"}
             align="center"
             color={"purple.500"}
           >
             Coding Ducks
-          </Text>
+          </Text> */}
           <Tabs isFitted variant="enclosed">
             <TabList mb="1em">
               <Tab>Login</Tab>
@@ -232,9 +257,7 @@ export const LoginPage = () => {
                   </Stack>
                   <HStack justify="space-between">
                     <Checkbox defaultChecked>Remember me</Checkbox>
-                    <Button variant="link" colorScheme="blue" size="sm">
-                      Forgot password?
-                    </Button>
+                    <ForgotPassword />
                   </HStack>
                 </Stack>
                 <Button
@@ -248,55 +271,69 @@ export const LoginPage = () => {
                 </Button>
               </TabPanel>
               <TabPanel>
-                <FormControl isRequired mt={3}>
-                  <FormLabel htmlFor="reg-email">Email</FormLabel>
-                  <Input
-                    id="reg-email"
-                    type="email"
-                    value={email}
-                    onChange={handleOnEmailChange}
-                    errorBorderColor="crimson"
-                    focusBorderColor={isEmailValid ? "green.500" : "red.500"}
-                    isInvalid={!isEmailValid && email != ""}
-                  />
-                </FormControl>
-                <FormControl isRequired mt={3}>
-                  <FormLabel htmlFor="reg-password">Password</FormLabel>
-                  <Input
-                    id="reg-password"
-                    type="password"
-                    value={password}
-                    onChange={handleOnPasswordChange}
-                    errorBorderColor="crimson"
-                    focusBorderColor={isPasswordValid ? "green.500" : "red.500"}
-                    isInvalid={!isPasswordValid && password !== ""}
-                  />
-                </FormControl>
-                <FormControl isRequired mt={3}>
-                  <FormLabel htmlFor="reg-password2">
-                    Confirm password
-                  </FormLabel>
-                  <Input
-                    id="reg-password2"
-                    type="password"
-                    value={password2}
-                    onChange={handleOnPassword2Change}
-                    errorBorderColor="crimson"
-                    focusBorderColor={
-                      isPassword2Valid ? "green.500" : "red.500"
-                    }
-                    isInvalid={!isPassword2Valid && password2 !== ""}
-                  />
-                </FormControl>
-                <Button
-                  mt={10}
-                  w="full"
-                  colorScheme="purple"
-                  onClick={onRegisterBtnClicked}
-                  isLoading={logginInProgress}
-                >
-                  Register
-                </Button>
+                <Stack spacing="6">
+                  <Stack spacing="5">
+                    <FormControl isRequired>
+                      <FormLabel htmlFor="reg-email">Email</FormLabel>
+                      <Input
+                        id="reg-email"
+                        type="email"
+                        value={email}
+                        onChange={handleOnEmailChange}
+                        errorBorderColor="crimson"
+                        focusBorderColor={
+                          isEmailValid ? "green.500" : "red.500"
+                        }
+                        isInvalid={!isEmailValid && email != ""}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack>
+                    <FormControl isRequired>
+                      <FormLabel htmlFor="reg-password">Password</FormLabel>
+                      <Input
+                        id="reg-password"
+                        type="password"
+                        value={password}
+                        onChange={handleOnPasswordChange}
+                        errorBorderColor="crimson"
+                        focusBorderColor={
+                          isPasswordValid ? "green.500" : "red.500"
+                        }
+                        isInvalid={!isPasswordValid && password !== ""}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack>
+                    <FormControl isRequired>
+                      <FormLabel htmlFor="reg-password2">
+                        Confirm password
+                      </FormLabel>
+                      <Input
+                        id="reg-password2"
+                        type="password"
+                        value={password2}
+                        onChange={handleOnPassword2Change}
+                        errorBorderColor="crimson"
+                        focusBorderColor={
+                          isPassword2Valid ? "green.500" : "red.500"
+                        }
+                        isInvalid={!isPassword2Valid && password2 !== ""}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack>
+                    <Button
+                     
+                      w="full"
+                      colorScheme="purple"
+                      onClick={onRegisterBtnClicked}
+                      isLoading={logginInProgress}
+                    >
+                      Register
+                    </Button>
+                  </Stack>
+                </Stack>
               </TabPanel>
             </TabPanels>
           </Tabs>
@@ -306,7 +343,6 @@ export const LoginPage = () => {
           </Center>
         </Stack>
         <Box
-          py={{ base: "0", sm: "8" }}
           px={{ base: "4", sm: "10" }}
           bg={useBreakpointValue({ base: "transparent", sm: "bg-surface" })}
           borderRadius={{ base: "none", sm: "xl" }}
