@@ -113,8 +113,9 @@ export const LoginPage = () => {
   const [isPassword2Valid, setIsPassword2Valid] = useState(true);
   const emailRegex =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
   const passwordRegex = /^\S{8,24}$/;
+
+  const [logginInProgress, setLogginInProgress] = useState(false);
 
   const handleOnEmailChange = (e) => {
     const email = e.target.value;
@@ -147,18 +148,24 @@ export const LoginPage = () => {
   const onLoginBtnClicked = async () => {
     if (isEmailValid && isPasswordValid) {
       try {
+        setLogginInProgress(true);
         const res = await logInWithEmailAndPassword(email, password);
+        setLogginInProgress(false);
       } catch (error) {
         console.log(error);
+        setLogginInProgress(false);
       }
     }
   };
   const onRegisterBtnClicked = async () => {
     if (isEmailValid && isPasswordValid) {
       try {
+        setLogginInProgress(true);
         const res = await registerWithEmailAndPassword(email, password);
+        setLogginInProgress(false);
       } catch (error) {
         console.log(error);
+        setLogginInProgress(false);
       }
     }
   };
@@ -235,6 +242,7 @@ export const LoginPage = () => {
                   w="full"
                   colorScheme="purple"
                   onClick={onLoginBtnClicked}
+                  isLoading={logginInProgress}
                 >
                   Login
                 </Button>
@@ -285,6 +293,7 @@ export const LoginPage = () => {
                   w="full"
                   colorScheme="purple"
                   onClick={onRegisterBtnClicked}
+                  isLoading={logginInProgress}
                 >
                   Register
                 </Button>
