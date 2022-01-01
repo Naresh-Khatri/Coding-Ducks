@@ -148,7 +148,6 @@ export const LoginPage = () => {
     if (isEmailValid && isPasswordValid) {
       try {
         const res = await logInWithEmailAndPassword(email, password);
-        console.log(res);
       } catch (error) {
         console.log(error);
       }
@@ -157,9 +156,7 @@ export const LoginPage = () => {
   const onRegisterBtnClicked = async () => {
     if (isEmailValid && isPasswordValid) {
       try {
-        console.log(email, password);
         const res = await registerWithEmailAndPassword(email, password);
-        console.log(res);
       } catch (error) {
         console.log(error);
       }
