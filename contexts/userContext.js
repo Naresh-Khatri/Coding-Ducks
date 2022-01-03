@@ -7,6 +7,7 @@ import {
   logout as logoutFromFirebase,
   registerWithEmailAndPassword,
   logInWithEmailAndPassword,
+  sendPasswordReset
 } from "../firebase/firebase";
 import axios from "../utils/axios";
 
@@ -18,6 +19,7 @@ export const userContext = createContext({
   signInWithGoogle: null,
   registerWithEmailAndPassword: null,
   logInWithEmailAndPassword: null,
+  sendPasswordReset,
   logout: null,
   updateUser: null,
   loadUser: null,
@@ -116,6 +118,7 @@ export function AuthUserProvider({ children }) {
         signInWithGoogle,
         registerWithEmailAndPassword,
         logInWithEmailAndPassword,
+        sendPasswordReset,
         logout,
         updateUser,
         loadUser,
