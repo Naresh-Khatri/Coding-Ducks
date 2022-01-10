@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -30,7 +30,7 @@ import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
 import ToolBar from "../components/ToolBar";
 
 function Playground() {
-  const [code, setCode] = useState("print('hello world'");
+  const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState("");
@@ -64,6 +64,17 @@ function Playground() {
   const saveCode = () => {
     console.log("saving file");
   };
+  useEffect(() => {
+    if (!code) return;
+    localStorage.setItem("playground-code", code);
+  }, [code]);
+  useEffect(() => {
+    const code = localStorage.getItem("playground-code");
+    if (code) {
+      setCode(code);
+    } else setCode(`print("Hello World")`);
+  }, []);
+
   const shortcuts = [
     {
       key: "Ctrl-Enter",
