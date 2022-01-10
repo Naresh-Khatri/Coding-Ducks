@@ -27,8 +27,9 @@ export default function ToolBar({
           value={lang}
           onChange={(e) => {
             setLang(e.target.value);
+            localStorage.setItem("lang", e.target.value);
           }}
-          fontWeight='extrabold'
+          fontWeight="extrabold"
         >
           <option style={{ color: color }} value="py">
             Python
@@ -48,12 +49,14 @@ export default function ToolBar({
         </Select>
         <Select
           maxW={40}
-          onChange={(e) => setTheme(e.target.value)}
+          onChange={(e) => {
+            setTheme(e.target.value);
+            localStorage.setItem("theme", e.target.value);
+          }}
           bg="purple.500"
           color="white"
-          fontWeight={'extrabold'}
+          fontWeight={"extrabold"}
         >
-
           <option style={{ color }} value="dracula">
             Dracula
           </option>
