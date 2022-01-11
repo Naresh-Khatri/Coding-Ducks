@@ -69,10 +69,9 @@ function Playground() {
     localStorage.setItem("playground-code", code);
   }, [code]);
   useEffect(() => {
-    const code = localStorage.getItem("playground-code");
-    if (code) {
-      setCode(code);
-    } else setCode(`print("Hello World")`);
+    setCode(localStorage.getItem("playground-code") || print("Hello World"));
+    setLang(localStorage.getItem("lang") || "py");
+    setTheme(localStorage.getItem("theme") || "dracula");
   }, []);
 
   const shortcuts = [
