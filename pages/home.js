@@ -14,14 +14,16 @@ import {
   IconButton,
   SimpleGrid,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ExamCard from "../components/ExamCard";
+import { userContext } from "../contexts/userContext";
 
 import NormalLayout from "../layout/NormalLayout";
 import axios from "../utils/axios";
 
 export default function HomePage() {
   const [exams, setExams] = useState([]);
+  const {user} = useContext(userContext)
   const fetchExams = async () => {
     const res = await axios.get("/exams");
     setExams(res.data);
@@ -33,7 +35,12 @@ export default function HomePage() {
     <>
       <NormalLayout>
         <Container maxW={"6xl"}>
-          <Heading my={10}>
+          <Heading mt={10}>
+            <Text as={"span"} fontSize={"3xl"}>
+              Welcome Back {user.fullname}!
+            </Text>
+          </Heading>
+          <Heading mb={10}>
             <Text as={"span"} fontSize={"6xl"} color={"purple.400"}>
               Upcoming Exams
             </Text>
