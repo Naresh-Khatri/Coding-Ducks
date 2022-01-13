@@ -15,6 +15,7 @@ import Link from "next/link";
 import ThemeToggler from "../components/ThemeToggler";
 import { userContext } from "../contexts/userContext";
 import UserProfile from "../components/UserProfile";
+import { useRouter } from "next/router";
 
 function NormalLayout({ children }) {
   return (
@@ -32,14 +33,11 @@ const links = [
   { name: "Home", href: "/" },
   { name: "Users", href: "/users" },
   { name: "Tests", href: "/home" },
+  { name: "Playground", href: "/playground" },
 ];
 
 function NavBar() {
   const { user, loading } = useContext(userContext);
-
-  // useEffect(() => {
-  //   console.log("user", user);
-  // }, [user]);
 
   return (
     <Box as="header">
@@ -84,21 +82,27 @@ function NavBar() {
   );
 }
 
-const NavLink = ({ children, href }) => (
-  <Link
-    px={2}
-    py={1}
-    rounded={"md"}
-    _hover={{
-      textDecoration: "none",
-      bg: useColorModeValue("gray.200", "gray.700"),
-    }}
-    href={href}
-  >
-    <Button variant={"ghost"} colorScheme="purple">
-      {children}
-    </Button>
-  </Link>
-);
-
+const NavLink = ({ children, href }) => {
+  const router = useRouter();
+  console.log();
+  return (
+    <Link
+      px={2}
+      py={1}
+      rounded={"md"}
+      _hover={{
+        textDecoration: "none",
+        bg: useColorModeValue("gray.200", "gray.700"),
+      }}
+      href={href}
+    >
+      <Button
+        variant={router.pathname === href ? "solid" : "ghost"}
+        colorScheme="purple"
+      >
+        {children}
+      </Button>
+    </Link>
+  );
+};
 export default NormalLayout;
