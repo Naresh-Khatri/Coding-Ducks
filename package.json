@@ -11,21 +11,36 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.0.11",
     "@chakra-ui/react": "^2.3.5",
+    "@codemirror/lang-cpp": "^6.0.1",
+    "@codemirror/lang-java": "^6.0.0",
+    "@codemirror/lang-javascript": "^6.0.2",
+    "@codemirror/lang-python": "^6.0.1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
+    "@fortawesome/free-brands-svg-icons": "^6.2.0",
     "@fortawesome/free-solid-svg-icons": "^6.2.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@uiw/codemirror-extensions-langs": "^4.11.6",
+    "@uiw/codemirror-theme-atomone": "^4.12.1",
+    "@uiw/codemirror-theme-dracula": "^4.11.6",
+    "@uiw/codemirror-theme-duotone": "^4.12.1",
+    "@uiw/codemirror-theme-eclipse": "^4.12.1",
+    "@uiw/codemirror-theme-github": "^4.12.1",
+    "@uiw/codemirror-theme-okaidia": "^4.12.1",
+    "@uiw/codemirror-theme-xcode": "^4.12.1",
+    "@uiw/react-codemirror": "^4.11.6",
     "firebase": "^9.12.1",
     "framer-motion": "^6",
-    "next": "12.3.1",
+    "next": "^13.0.3",
     "prisma": "^4.5.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-firebase-hooks": "^5.0.3"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-firebase-hooks": "^5.0.3",
+    "react-split": "^2.0.14"
   },
   "devDependencies": {
     "eslint": "8.26.0",
-    "eslint-config-next": "12.3.1"
+    "eslint-config-next": "^13.0.3"
   }
 }
