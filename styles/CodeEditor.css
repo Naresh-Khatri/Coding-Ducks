@@ -1,0 +1,26 @@
+.editor-frame{
+    position: relative;
+    width: 100%;
+    background-color: #000a;
+    border-radius: 12px 12px 0 0;
+    height: 45px;
+    display: flex;
+    align-items: center;
+  }
+  .frame-header{
+    display: grid;
+    grid-template-columns: 60px auto 60px;
+    height: 15px;
+  }
+  .controls{
+    display: flex;
+    z-index: 2;
+  }
+  .control{
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    background-color: #ffffff2b;
+    margin-right: 8px;
+  }
+  
