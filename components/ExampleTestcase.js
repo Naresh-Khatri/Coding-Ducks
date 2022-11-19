@@ -8,7 +8,7 @@ function ExampleTestcase({ testCase }) {
     width: "-moz-fit-content",
     width: "fit-content",
     maxWidth: "800px",
-    color: 'white',
+    color: "white",
     fontSize: "18px",
     padding: "20px",
     fontFamily: "Consolas,Courier New,monospace",
@@ -57,19 +57,19 @@ function ExampleTestcase({ testCase }) {
           ></Text>
         </Box>
       )}
-      <Text display="inline">
+      <Box display="inline">
         Output:
         <br />
         <Text display="inline" pl={5}>
           {testCase.output}
         </Text>
-      </Text>
+      </Box>
       {testCase.explaination && (
-        <Text>
+        <Box>
           <br />
           <Text>Explaination:</Text>
           <Text pl={5}>{testCase.explaination}</Text>
-        </Text>
+        </Box>
       )}
     </Box>
   );
