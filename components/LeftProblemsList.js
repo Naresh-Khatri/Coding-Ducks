@@ -1,9 +1,4 @@
-import {
-  Box,
-  Flex,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
 import React from "react";
 
 function ProblemSelector({ problemId, isActive, isComplete }) {
@@ -31,14 +26,21 @@ function ProblemSelector({ problemId, isActive, isComplete }) {
   );
 }
 
-function LeftProblemsList({ problems }) {
+function LeftProblemsList({ problems, currentProblemId, setCurrentProblemId }) {
   return (
     <Box>
       {problems.map((problem) => (
-        <Box key={problem.id} my={2} mx={1}>
+        <Box
+          key={problem.id}
+          my={2}
+          mx={1}
+          onClick={() => {
+            setCurrentProblemId(problem.id);
+          }}
+        >
           <ProblemSelector
             problemId={problem.id}
-            isActive={problem.id == 7}
+            isActive={problem.id == currentProblemId}
             isComplete={problem.id < 5}
           />
         </Box>
