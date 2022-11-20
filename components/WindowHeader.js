@@ -23,7 +23,7 @@ function WindowHeader({ title }) {
               r="6"
               fill="#FF5F56"
               stroke="#E0443E"
-              stroke-width=".5"
+              strokeWidth=".5"
             ></circle>
             <circle
               cx="26"
@@ -31,7 +31,7 @@ function WindowHeader({ title }) {
               r="6"
               fill="#FFBD2E"
               stroke="#DEA123"
-              stroke-width=".5"
+              strokeWidth=".5"
             ></circle>
             <circle
               cx="46"
@@ -39,7 +39,7 @@ function WindowHeader({ title }) {
               r="6"
               fill="#27C93F"
               stroke="#1AAB29"
-              stroke-width=".5"
+              strokeWidth=".5"
             ></circle>
           </svg>
         </Box>
