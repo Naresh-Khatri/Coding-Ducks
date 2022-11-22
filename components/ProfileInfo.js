@@ -60,7 +60,7 @@ function ProfileInfo() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log(userContext);
+  // console.log(userContext);
 
   const {
     user,
