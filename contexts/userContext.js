@@ -1,14 +1,16 @@
-import { createContext, useContext, Context } from 'react'
+import { createContext, useContext, Context } from "react";
 // import useFirebaseAuth from '../hooks/useFirebase';
 
-const authUserContext = createContext({
+export const userContext = createContext({
   authUser: null,
-  loading: true
+  loading: true,
 });
 
 export function AuthUserProvider({ children }) {
   // const auth = useFirebaseAuth();
-  return <authUserContext.Provider value={{}}>{children}</authUserContext.Provider>;
+  return (
+    <userContext.Provider value={{}}>{children}</userContext.Provider>
+  );
 }
-// custom hook to use the authUserContext and access authUser and loading
-export const useAuth = () => useContext(authUserContext);
+// custom hook to use the userContext and access authUser and loading
+export const useAuth = () => useContext(userContext);
