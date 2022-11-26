@@ -17,12 +17,10 @@ import {
 
 import Split from "react-split";
 
-import Header from "../components/Header";
 import ToolBar from "../components/ToolBar";
 import CodeEditor from "../components/CodeEditor";
 import OutputViewer from "../components/OutputViewer";
 import ProblemStatement from "../components/ProblemStatement";
-import ProblemSelector from "../components/ProblemSelector";
 import LeftProblemsList from "../components/LeftProblemsList";
 import MainLayout from "../layout/MainLayout";
 
