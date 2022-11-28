@@ -1,23 +1,9 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  Flex,
-  HStack,
-  IconButton,
-  LightMode,
-  Spacer,
-  Text,
-  useColorMode,
-} from "@chakra-ui/react";
-import { faLightbulb, faMoon } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Box, Flex, HStack, IconButton, Spacer, Text } from "@chakra-ui/react";
 import Link from "next/link";
-import ProfileInfo from "../components/ProfileInfo";
-import Sidebar from "../components/Sidebar";
+import ThemeToggler from "../components/ThemeToggler";
+import UserProfile from "../components/UserProfile";
 
 function MainLayout({ children }) {
-  const { colorMode, toggleColorMode } = useColorMode();
   return (
     <Flex direction={"column"} h={"100vh"}>
       <Flex
@@ -39,24 +25,8 @@ function MainLayout({ children }) {
         <Box></Box>
         <Spacer />
         <HStack>
-          <Avatar
-            name="Kola Tioluwani"
-            src="https://bit.ly/tioluwani-kolawole"
-          />
-          <IconButton
-            bg={colorMode === "light" ? "grey.900" : "grey.300"}
-            _hover={{ bg: colorMode === "light" ? "grey.900" : "grey.300" }}
-            icon={
-              <FontAwesomeIcon
-                icon={colorMode === "light" ? faMoon : faLightbulb}
-              />
-            }
-            onClick={toggleColorMode}
-          />
-          <ProfileInfo />
-          <Button variant={"solid"} bg={"red.400"}>
-            Logout
-          </Button>
+          <ThemeToggler />
+          <UserProfile />
         </HStack>
       </Flex>
       <Flex w={"100vw"} flexGrow={1} overflowY="hidden">
@@ -78,6 +48,20 @@ function MainLayout({ children }) {
             <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
               <Text fontWeight={"extrabold"} fontSize={"1xl"}>
                 Exams
+              </Text>
+            </Box>
+          </Link>
+          <Link href={"/dashboard/problems"}>
+            <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
+              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
+                Problems
+              </Text>
+            </Box>
+          </Link>
+          <Link href={"/dashboard/add-problem"}>
+            <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
+              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
+                Add problem
               </Text>
             </Box>
           </Link>
