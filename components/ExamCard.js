@@ -35,14 +35,16 @@ function ExamCard({ examData }) {
       {/* <Button onClick={onToggle}>toggle</Button> */}
       <Box w={300} h={180} position={"relative"} overflow={"hidden"}>
         <Image
-          src={
-            "https://res.cloudinary.com/demo/image/fetch/" + coverImg ||
-            "https://ik.imagekit.io/couponluxury/cat_programing_zFoOoPSNb"
-          }
-          width={300}
-          height={20}
+          src={coverImg}
+          width={"300"}
+          height={"300"}
           alt="cat exam"
-          style={{ borderRadius: "20px 20px 0 0" }}
+          style={{
+            borderRadius: "20px 20px 0 0",
+            objectFit: "cover",
+            width: "100%",
+            height: "auto",
+          }}
         />
       </Box>
       <Stack p={3}>
