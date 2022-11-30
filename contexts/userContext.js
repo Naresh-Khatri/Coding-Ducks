@@ -13,6 +13,16 @@ export const userContext = createContext({
   updateUser: null,
 });
 
+const saveInCookie = (user) => {
+  
+  //save user in cookie on client side
+  if (typeof window !== "undefined") {
+    document.cookie = `token=${user.accessToken}; path=/`;
+    // console.log("cookie", user.accessToken);
+    // console.log("cookie", document.cookie);
+  }
+};
+
 export function AuthUserProvider({ children }) {
   const router = useRouter();
   const [user, loading, error] = useAuthState(auth);
@@ -24,7 +34,7 @@ export function AuthUserProvider({ children }) {
         ...updatedUser,
         googleUID: user.googleUID || user.uid,
       });
-      console.log(res.data);
+      // console.log(res.data);
       setCompleteUser(res.data);
     } catch (error) {
       console.log(error);
@@ -49,6 +59,8 @@ export function AuthUserProvider({ children }) {
   useEffect(() => {
     // check if user is stored in db
     if (user) {
+      // console.log(user)
+      saveInCookie(user);
       axios
         .get(`http://localhost:3333/users/${user.uid}`)
         .then((res) => {
