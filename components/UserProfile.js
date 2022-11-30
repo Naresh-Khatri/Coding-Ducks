@@ -32,6 +32,7 @@ import React, { useEffect, useContext } from "react";
 import { userContext } from "../contexts/userContext";
 import { logout } from "../firebase/firebase";
 import EditProfileInModel from "./EditProfileInModel";
+import Link from "next/link";
 
 function UserProfile() {
   const { user } = useContext(userContext);
@@ -100,6 +101,7 @@ function UserProfile() {
             >
               {fullname}
             </Text>
+
             <Divider mt={15} h={70}></Divider>
             <Center position="relative">
               <Image
@@ -112,7 +114,19 @@ function UserProfile() {
               />
             </Center>
           </ModalHeader>
-
+          <Link href="/dashboard">
+            <Button
+              position="absolute"
+              top={2}
+              right={2}
+              bg="transparent"
+              color="white"
+              variant={"outline"}
+              icon={<FontAwesomeIcon icon={faSignOut} />}
+            >
+              Dashboard
+            </Button>
+          </Link>
           <ModalBody mt={70}>
             {isEditing ? (
               <EditProfileInModel
