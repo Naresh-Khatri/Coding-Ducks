@@ -23,7 +23,7 @@ import { userContext } from "../contexts/userContext";
 import ThemeToggler from "../components/ThemeToggler";
 import Image from "next/image";
 
-import axios from "axios";
+import axios from "../utils/axios";
 import { logout } from "../firebase/firebase";
 
 export default function EditUserProfile() {
