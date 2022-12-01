@@ -17,12 +17,15 @@ import React, { useEffect, useState } from "react";
 import ExamRow from "../../components/admin/ExamRow";
 import AdminLayout from "../../layout/AdminLayout";
 
+import axios from "../../utils/axios";
+
 function Exams() {
   const [exams, setExams] = useState([]);
   const fetchExams = async () => {
-    const res = await fetch("http://localhost:3333/exams");
-    const data = await res.json();
-    setExams(data);
+    try {
+      const res = await axios.get("/exams");
+      setExams(res.data);
+    } catch (error) {}
   };
   useEffect(() => {
     fetchExams();
@@ -34,6 +37,9 @@ function Exams() {
           <Link href="/dashboard/add-exam">
             <Button bg="green.400">Add Exam</Button>
           </Link>
+          <Button bg="green.400" onClick={fetchExams}>
+            Refresh
+          </Button>
         </Box>
         <TableContainer>
           <Table variant="simple">
