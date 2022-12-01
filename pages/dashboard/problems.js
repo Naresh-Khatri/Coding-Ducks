@@ -14,42 +14,45 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import ExamRow from "../../components/admin/ExamRow";
+import ProblemRow from "../../components/admin/ProblemRow";
 import AdminLayout from "../../layout/AdminLayout";
+import axios from "../../utils/axios";
 
-function Exams() {
-  const [exams, setExams] = useState([]);
-  const fetchExams = async () => {
-    const res = await fetch("http://localhost:3333/exams");
-    const data = await res.json();
-    setExams(data);
+function ProblemPage() {
+  const [problems, setProblems] = useState([]);
+  const fetchProblems = async () => {
+    const res = await axios("/problems");
+    setProblems(res.data);
   };
   useEffect(() => {
-    fetchExams();
+    fetchProblems();
   }, []);
   return (
     <AdminLayout>
       <Container maxW="container.xl">
         <Box m={10}>
-          <Link href="/dashboard/add-exam">
-            <Button bg="green.400">Add Exam</Button>
+          <Link href="/dashboard/add-problem">
+            <Button bg="green.400">Add Problem</Button>
           </Link>
         </Box>
         <TableContainer>
           <Table variant="simple">
-            <TableCaption>Exams</TableCaption>
+            <TableCaption>ProblemPage</TableCaption>
             <Thead>
               <Tr>
                 <Th>Id</Th>
-                <Th>Cover image</Th>
+                <Th>difficulty</Th>
                 <Th>Title</Th>
-                <Th>Starts on</Th>
                 <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {exams.map((exam) => (
-                <ExamRow key={exam.id} exam={exam} fetchExams={fetchExams} />
+              {problems.map((problem) => (
+                <ProblemRow
+                  key={problem.id}
+                  problem={problem}
+                  fetchProblems={fetchProblems}
+                />
               ))}
             </Tbody>
             {/* <Tfoot>
@@ -66,4 +69,4 @@ function Exams() {
   );
 }
 
-export default Exams;
+export default ProblemPage;
