@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Progress,
   Box,
@@ -13,6 +13,7 @@ import {
   FormHelperText,
   Text,
   HStack,
+  IconButton,
 } from "@chakra-ui/react";
 
 import AdminLayout from "../../layout/AdminLayout";
@@ -21,34 +22,63 @@ import { useToast } from "@chakra-ui/react";
 
 import "react-quill/dist/quill.snow.css";
 
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import axios from "axios";
+import axios from "../../utils/axios";
 import { useRouter } from "next/router";
+import { Cropper } from "react-advanced-cropper";
+import "react-advanced-cropper/dist/style.css";
+
+import dynamic from "next/dynamic";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
 });
 
 const AddExam = () => {
-  const [show, setShow] = useState(false);
   const [desc, setDesc] = useState("");
   const [title, setTitle] = useState("");
   const [startTime, setStartTime] = useState("");
   const [coverImg, setCoverImg] = useState("");
 
+  const cropperRef = useRef(null);
   const toast = useToast();
   const router = useRouter();
 
+  const onFileChange = (e) => {
+    if (!e.target) return;
+    console.log(e);
+    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
+    console.log(file);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async (e) => {
+      setCoverImg(e.target.result);
+    };
+  };
+
+  const convertCanvasToBlob = (canvas) => {
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      });
+    });
+  };
   const submit = async () => {
     try {
-      const payload = {
-        title,
-        description: desc,
-        startTime: new Date(startTime).toISOString(),
-        coverImg,
-      };
-      const res = await axios.post("http://localhost:3333/exams", payload);
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", desc);
+      formData.append("startTime", new Date(startTime).toISOString());
+      formData.append(
+        "coverImg",
+        await convertCanvasToBlob(cropperRef.current.getCanvas())
+      );
+
+      // console.log(cropperRef.current.getCanvas());
+      // console.log(await convertCanvasToBlob(cropperRef.current.getCanvas()));
+      // return;
+      const res = await axios.post("http://localhost:3333/exams", formData);
       toast({
         title: "Exam created!",
         status: "success",
@@ -72,7 +102,13 @@ const AddExam = () => {
   return (
     <>
       <AdminLayout>
-        <Flex direction={"column"} p={10} w={"100%"} alignItems="center">
+        <Flex
+          direction={"column"}
+          p={10}
+          w={"100%"}
+          alignItems="center"
+          overflowY={"scroll"}
+        >
           <Box w={"900px"}>
             <Heading
               w="100%"
@@ -101,7 +137,6 @@ const AddExam = () => {
                 </FormLabel>
                 <InputGroup size="md">
                   <Input
-                    pr="4.5rem"
                     type={"datetime-local"}
                     placeholder="Enter password"
                     value={startTime}
@@ -130,27 +165,43 @@ const AddExam = () => {
                 <FormLabel htmlFor="cover-img" fontWeight={"normal"}>
                   Cover photo (URL)
                 </FormLabel>
-                <Input
-                  id="cover-img"
-                  placeholder="Image URL"
-                  value={coverImg}
-                  onChange={(e) => setCoverImg(e.target.value)}
-                />
+                {coverImg ? (
+                  <>
+                    <Box position={"relative"}>
+                      <Cropper
+                        ref={cropperRef}
+                        src={coverImg}
+                        onChange={onFileChange}
+                        className={"cropper"}
+                        aspectRatio={16 / 10}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          maxWidth: "300px",
+                          maxHeight: "300px",
+                        }}
+                      />
+                      <IconButton
+                        position={"absolute"}
+                        zIndex={1}
+                        top={-5}
+                        right={-5}
+                        icon={<FontAwesomeIcon icon={faTrash} />}
+                        bg="red.300"
+                        color="white"
+                        onClick={() => setCoverImg("")}
+                      />
+                      {/* <img src={coverImg} alt="cover image" /> */}
+                    </Box>
+                  </>
+                ) : (
+                  <Input type="file" onChange={onFileChange} accept="image/*" />
+                )}
               </FormControl>
-              {coverImg && (
-                <img
-                  src={coverImg}
-                  alt="cover image"
-                  height="200"
-                  width="auto"
-                />
-              )}
             </Flex>
             <FormControl>
-              <Button bg="green.500" mt={3} onClick={submit}>
-                <Text fontWeight={"extrabold"} fontSize={"2xl"}>
-                  Create
-                </Text>
+              <Button colorScheme={"green"} mt={3} onClick={submit}>
+                Create
               </Button>
             </FormControl>
           </Box>
