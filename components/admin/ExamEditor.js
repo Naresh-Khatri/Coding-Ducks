@@ -5,6 +5,7 @@ import {
   FormControl,
   FormLabel,
   HStack,
+  IconButton,
   Input,
   InputGroup,
   Modal,
@@ -19,10 +20,15 @@ import {
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
+import { Cropper } from "react-advanced-cropper";
+import "react-advanced-cropper/dist/style.css";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { async } from "@firebase/util";
-import axios from "axios";
+import axios from "../../utils/axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import Image from "next/image";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -39,27 +45,52 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 };
 function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
-  const { title, description, startTime, coverImg } = examData;
+  const { title, description, startTime, coverImg, slug } = examData;
 
   const [newTitle, setNewTitle] = useState(title);
+  const [newSlug, setNewSlug] = useState(slug);
   const [newDescription, setNewDescription] = useState(
     description.replace(/\\n/g, " ")
   );
   const [newStartTime, setNewStartTime] = useState(formatDate(startTime));
-  const [newCoverImg, setNewCoverImg] = useState(coverImg);
+  const [oldCoverImg, setOldCoverImg] = useState(coverImg);
+  const [newCoverImg, setNewCoverImg] = useState();
+
+  const cropperRef = useRef(null);
 
   const toast = useToast();
-  const updateExam = async () => {
-    const payload = {
-      title: newTitle,
-      description: newDescription,
-      startTime: new Date(newStartTime).toISOString(),
-      coverImg: newCoverImg,
+
+  const convertCanvasToBlob = (canvas) => {
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      });
+    });
+  };
+  const onFileChange = (e) => {
+    if (!e.target) return;
+    console.log(e);
+    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
+    console.log(file);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async (e) => {
+      setNewCoverImg(e.target.result);
     };
+  };
+  const updateExam = async () => {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", newDescription);
+    formData.append("startTime", new Date(startTime).toISOString());
+    if (newCoverImg) {
+      const data = await convertCanvasToBlob(cropperRef.current.getCanvas());
+      formData.append("coverImg", data);
+    }
     try {
       const res = await axios.patch(
         `http://localhost:3333/exams/${examData.id}`,
-        payload
+        formData
       );
       toast({
         title: "Exam updated!",
@@ -113,6 +144,18 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
               </InputGroup>
             </FormControl>
           </HStack>
+          <HStack my={3}>
+            <FormControl>
+              <FormLabel htmlFor="slug">Slug</FormLabel>
+              <Input
+                id="slug"
+                placeholder="Slug"
+                value={newSlug}
+                onChange={(e) => setNewSlug(encodeURI(e.target.value))}
+              />
+            </FormControl>
+            
+          </HStack>
 
           <FormControl my={3}>
             <FormLabel htmlFor="desc">Description</FormLabel>
@@ -128,24 +171,52 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
           </FormControl>
 
           <Flex mt={10}>
-            <FormControl mr="5%">
-              <FormLabel htmlFor="cover-img" fontWeight={"normal"}>
-                Cover photo (URL)
-              </FormLabel>
-              <Input
-                id="cover-img"
-                placeholder="Image URL"
-                value={newCoverImg}
-                onChange={(e) => setNewCoverImg(e.target.value)}
-              />
-            </FormControl>
-            {newCoverImg && (
-              <img
-                src={newCoverImg}
-                alt="cover image"
-                width="300px"
-                style={{ borderRadius: 20 }}
-              />
+            {oldCoverImg ? (
+              <Box position={"relative"}>
+                <Image
+                  width={"300"}
+                  height={"170"}
+                  src={oldCoverImg}
+                  alt="cover image"
+                  style={{ borderRadius: "10%" }}
+                />
+                <IconButton
+                  position={"absolute"}
+                  zIndex={1}
+                  top={-5}
+                  right={-5}
+                  icon={<FontAwesomeIcon icon={faTrash} />}
+                  bg="red.300"
+                  color="white"
+                  onClick={() => setOldCoverImg("")}
+                />
+              </Box>
+            ) : newCoverImg ? (
+              <Box position={"relative"}>
+                <Cropper
+                  ref={cropperRef}
+                  src={newCoverImg}
+                  className={"cropper"}
+                  aspectRatio={16 / 10}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    maxHeight: "300px",
+                  }}
+                />
+                <IconButton
+                  position={"absolute"}
+                  zIndex={1}
+                  top={-5}
+                  right={-5}
+                  icon={<FontAwesomeIcon icon={faTrash} />}
+                  bg="red.300"
+                  color="white"
+                  onClick={() => setNewCoverImg("")}
+                />
+              </Box>
+            ) : (
+              <Input type="file" onChange={onFileChange} accept="image/*" />
             )}
           </Flex>
         </ModalBody>
