@@ -17,16 +17,16 @@ import axios from "../../utils/axios";
 import React from "react";
 import ExamCard from "../ExamCard";
 
-function ExamDeleteModal({ examData, isOpen, onClose, onDeleteSuccess }) {
+function ProblemDeleteModle({ problemData, isOpen, onClose, onDeleteSuccess }) {
   const toast = useToast();
-  const deleteExam = async () => {
+  const deleteProblem = async () => {
     try {
-      const res = await axios.delete(`/exams/${examData.id}`);
+      const res = await axios.delete(`/problems/${problemData.id}`);
       console.log(res.data);
       toast({
-        title: "Exam deleted!",
+        title: "Problem deleted!",
         status: "success",
-        description: "Exam has been deleted.",
+        description: "Problem has been deleted.",
         duration: 9000,
         isClosable: true,
       });
@@ -46,12 +46,14 @@ function ExamDeleteModal({ examData, isOpen, onClose, onDeleteSuccess }) {
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{examData.title}</ModalHeader>
+        <ModalHeader>Are you sure?</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text>Are you sure you wanna delete this exam?</Text>
+          <Text>{problemData.title}</Text>
           <Flex justify={"center"} p={5} pointerEvents={"none"}>
-            <ExamCard examData={examData} />
+            <Text
+              dangerouslySetInnerHTML={{ __html: problemData.description }}
+            ></Text>
           </Flex>
         </ModalBody>
 
@@ -60,7 +62,7 @@ function ExamDeleteModal({ examData, isOpen, onClose, onDeleteSuccess }) {
             <Button variant={"outline"} onClick={onClose}>
               Close
             </Button>
-            <Button bg="red.500" onClick={deleteExam}>
+            <Button bg="red.500" onClick={deleteProblem}>
               Delete
             </Button>
           </HStack>
@@ -70,4 +72,4 @@ function ExamDeleteModal({ examData, isOpen, onClose, onDeleteSuccess }) {
   );
 }
 
-export default ExamDeleteModal;
+export default ProblemDeleteModle;

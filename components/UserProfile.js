@@ -16,6 +16,7 @@ import {
   Spacer,
   Text,
   useDisclosure,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
@@ -36,7 +37,7 @@ import Link from "next/link";
 
 function UserProfile() {
   const { user } = useContext(userContext);
-  const { fullname, email, photoURL, isAdmin } = user;
+  const { fullname, email, roll, photoURL, isAdmin, username } = user;
 
   const [maskedEmail, setMaskedEmail] = useState("");
   const [isEmailMasked, setIsEmailMasked] = useState(true);
@@ -73,14 +74,13 @@ function UserProfile() {
         </IconButton>
         <Flex direction={"column"} alignItems="center">
           <Text fontWeight={"extrabold"}>{fullname}</Text>
-          {isAdmin ? (
+          {isAdmin && (
             <HStack alignItems={"center"} color="gold">
               <FontAwesomeIcon icon={faCrown} height={20} />
               <Text>Admin</Text>
             </HStack>
-          ) : (
-            <HStack>k</HStack>
           )}
+          <Text>{roll}</Text>
         </Flex>
       </HStack>
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -114,19 +114,21 @@ function UserProfile() {
               />
             </Center>
           </ModalHeader>
-          <Link href="/dashboard">
-            <Button
-              position="absolute"
-              top={2}
-              right={2}
-              bg="transparent"
-              color="white"
-              variant={"outline"}
-              icon={<FontAwesomeIcon icon={faSignOut} />}
-            >
-              Dashboard
-            </Button>
-          </Link>
+          {user && user.isAdmin && (
+            <Link href="/dashboard">
+              <Button
+                position="absolute"
+                top={2}
+                right={2}
+                bg="transparent"
+                color="white"
+                variant={"outline"}
+                icon={<FontAwesomeIcon icon={faSignOut} />}
+              >
+                Dashboard
+              </Button>
+            </Link>
+          )}
           <ModalBody mt={70}>
             {isEditing ? (
               <EditProfileInModel
@@ -141,8 +143,7 @@ function UserProfile() {
                       {fullname}
                     </Text>
                     <Text fontSize="sm" color="gray.500">
-                      username
-                      {/* {username} */}
+                      {username}
                     </Text>
                   </HStack>
                   <Box>

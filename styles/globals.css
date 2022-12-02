@@ -24,3 +24,9 @@ a {
     background: black;
   }
 }
+
+code {
+  font-family: "Fira Code", monospace;
+  padding: 0 0.2rem;
+  /* border: 1px solid #707070; */
+}

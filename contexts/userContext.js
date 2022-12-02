@@ -14,7 +14,6 @@ export const userContext = createContext({
 });
 
 const saveInCookie = (user) => {
-  
   //save user in cookie on client side
   if (typeof window !== "undefined") {
     document.cookie = `token=${user.accessToken}; path=/`;
@@ -30,7 +29,7 @@ export function AuthUserProvider({ children }) {
 
   const updateUser = async (updatedUser) => {
     try {
-      const res = await axios.patch(`http://localhost:3333/users/`, {
+      const res = await axios.patch(`/users/`, {
         ...updatedUser,
         googleUID: user.googleUID || user.uid,
       });

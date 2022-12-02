@@ -62,7 +62,7 @@ export default function EditUserProfile() {
         googleUID: firebaseUser.uid,
         email: firebaseUser.email,
       };
-      const res = await axios.post("http://localhost:3333/users", payload);
+      const res = await axios.post("/users", payload);
       toast({
         title: "User Created!",
         description: "We've created your account for you.",

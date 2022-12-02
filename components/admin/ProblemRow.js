@@ -5,9 +5,11 @@ import Image from "next/image";
 import React from "react";
 import ExamDeleteModal from "./ExamDeleteModal";
 import ExamEditor from "./ExamEditor";
+import ProblemDeleteModal from "./ProblemDeleteModal";
+import ProblemEditor from "./ProblemEditor";
 
 function ProblemRow({ problem, fetchProblems }) {
-  const { id, difficulty, title, description, tags } = problem;
+  const { id, order, difficulty, title, description, tags } = problem;
   const {
     onOpen: onEditOpen,
     onClose: onEditClose,
@@ -23,6 +25,7 @@ function ProblemRow({ problem, fetchProblems }) {
   return (
     <Tr>
       <Td>{id}</Td>
+      <Td>{order}</Td>
       <Td>{difficulty}</Td>
       <Td>{title}</Td>
       <Td>
@@ -31,23 +34,8 @@ function ProblemRow({ problem, fetchProblems }) {
             icon={<FontAwesomeIcon icon={faEdit} />}
             onClick={onEditOpen}
           />
-          {/* <ExamDeleteModal
-            examData={problem}
-            isOpen={isDeleteOpen}
-            onClose={onDeleteClose}
-            onOpen={onDeleteOpen}
-            onDeleteSuccess={() => {
-              fetchProblems();
-              onDeleteClose();
-            }}
-          /> */}
-          <IconButton
-            bg="red.300"
-            icon={<FontAwesomeIcon icon={faTrash} />}
-            onClick={onDeleteOpen}
-          />
-          {/* <ExamEditor
-            examData={problem}
+          <ProblemEditor
+            problemData={problem}
             isOpen={isEditOpen}
             onClose={onEditClose}
             onOpen={onEditOpen}
@@ -55,7 +43,22 @@ function ProblemRow({ problem, fetchProblems }) {
               fetchProblems();
               onEditClose();
             }}
-          /> */}
+          />
+          <IconButton
+            bg="red.500"
+            icon={<FontAwesomeIcon icon={faTrash} />}
+            onClick={onDeleteOpen}
+          />
+          <ProblemDeleteModal
+            problemData={problem}
+            isOpen={isDeleteOpen}
+            onClose={onDeleteClose}
+            onOpen={onDeleteOpen}
+            onDeleteSuccess={() => {
+              fetchProblems();
+              onDeleteClose();
+            }}
+          />
         </HStack>
       </Td>
     </Tr>

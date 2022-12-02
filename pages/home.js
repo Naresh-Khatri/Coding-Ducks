@@ -22,7 +22,7 @@ import NormalLayout from "../layout/NormalLayout";
 export default function HomePage() {
   const [exams, setExams] = useState([]);
   const fetchExams = () => {
-    fetch("http://localhost:3333/exams")
+    fetch("/exams")
       .then((res) => res.json())
       .then((data) => {
         setExams(data);

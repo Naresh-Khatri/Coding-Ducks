@@ -9,13 +9,14 @@ function ProblemStaement({ problem }) {
       {/* {JSON.stringify(problem, null, 2)} */}
       <Box>
         <Text fontWeight={"extrabold"} fontSize="4xl">
-          #{problem.id}.{problem.title}
+          #{problem.order}. {problem.title}
         </Text>
 
         <Badge colorScheme="green">{problem.diffLevel}</Badge>
         <Box p={5}>
           <Text
             dangerouslySetInnerHTML={{ __html: problem.description }}
+            fontSize="xl"
           ></Text>
         </Box>
         {problem.testCases.map((testCase, index) => (

@@ -15,7 +15,6 @@ function LoadingOverlay() {
                 <Text mt={5} fontSize={'xl'}>
                     Waiting...
                 </Text>
-
             </Center>
         </Box>
     )

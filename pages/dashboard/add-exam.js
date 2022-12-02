@@ -78,7 +78,7 @@ const AddExam = () => {
       // console.log(cropperRef.current.getCanvas());
       // console.log(await convertCanvasToBlob(cropperRef.current.getCanvas()));
       // return;
-      const res = await axios.post("http://localhost:3333/exams", formData);
+      const res = await axios.post("/exams", formData);
       toast({
         title: "Exam created!",
         status: "success",

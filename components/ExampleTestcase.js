@@ -50,10 +50,8 @@ function ExampleTestcase({ testCase }) {
           <Text
             as="span"
             pl={5}
-            style={
-              testCase.inputFront.includes("<br>") ? { display: "block" } : {}
-            }
-            dangerouslySetInnerHTML={{ __html: testCase.inputFront }}
+            style={testCase.input.includes("<br>") ? { display: "block" } : {}}
+            dangerouslySetInnerHTML={{ __html: testCase.input }}
           ></Text>
         </Box>
       )}

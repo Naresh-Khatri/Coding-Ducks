@@ -79,7 +79,7 @@ const AddExam = () => {
         duration: 9000,
         isClosable: true,
       });
-      // router.push("/dashboard/problems");
+      router.push("/dashboard/problems");
     } catch (error) {
       toast({
         title: "Please check the fields!",
@@ -112,7 +112,7 @@ const AddExam = () => {
           alignItems="center"
           overflowY="scroll"
         >
-          <Container maxW={"8xl"}>
+          <Container maxW={"8xl"} overflowY="scroll">
             <Heading
               w="100%"
               textAlign={"center"}
@@ -151,6 +151,21 @@ const AddExam = () => {
                 <QuillNoSSRWrapper
                   theme="snow"
                   value={desc}
+                  modules={{
+                    toolbar: [
+                      [{ header: [1, 2, false] }],
+                      ["bold", "italic", "underline", "strike", "blockquote"],
+                      ["code"],
+                      [
+                        { list: "ordered" },
+                        { list: "bullet" },
+                        { indent: "-1" },
+                        { indent: "+1" },
+                      ],
+                      ["link", "image"],
+                      ["clean"],
+                    ],
+                  }}
                   onChange={setDesc}
                 />
               </Box>
@@ -179,7 +194,7 @@ const AddExam = () => {
                       <Th>Input</Th>
                       <Th>Output</Th>
                       <Th>explaination</Th>
-                      <Th>Private</Th>
+                      <Th>Public</Th>
                       <Th>Remove</Th>
                     </Tr>
                   </Thead>

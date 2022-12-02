@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   AlertDialog,
   AlertDialogBody,
@@ -17,14 +23,19 @@ import {
 
 import Split from "react-split";
 
-import ToolBar from "../components/ToolBar";
-import CodeEditor from "../components/CodeEditor";
-import OutputViewer from "../components/OutputViewer";
-import ProblemStatement from "../components/ProblemStatement";
-import LeftProblemsList from "../components/LeftProblemsList";
-import MainLayout from "../layout/MainLayout";
+import ToolBar from "../../components/ToolBar";
+import CodeEditor from "../../components/CodeEditor";
+import OutputViewer from "../../components/OutputViewer";
+import ProblemStatement from "../../components/ProblemStatement";
+import LeftProblemsList from "../../components/LeftProblemsList";
+import MainLayout from "../../layout/MainLayout";
+import { userContext } from "../../contexts/userContext";
+import axios from "../../utils/axios";
+import { useRouter } from "next/router";
 
 function TakeTest() {
+  const { user } = useContext(userContext);
+
   const [code, setCode] = useState("print('hi mom!')");
   const [lang, setLang] = useState("py");
   const [theme, setTheme] = useState("dracula");
@@ -33,14 +44,27 @@ function TakeTest() {
   const [currentProblemId, setCurrentProblemId] = useState(8);
 
   const [problems, setProblems] = useState([]);
+
+  const [examData, setExamData] = useState(null);
+
+  const router = useRouter();
+  const { query } = router;
+  const fetchData = useCallback(async () => {
+    try {
+      if (!query.slug) return;
+
+      let res = await axios.get(`/exams/slug/${router.query.slug}`);
+      setExamData(res.data);
+      res = await axios.get("/problems/examProblems/" + res.data.id);
+      setProblems(res.data);
+    } catch (error) {
+      console.log("error", error);
+      router.push("/home");
+    }
+  }, [router]);
   useEffect(() => {
-    fetch("https://coding_ducks.panipuri.tech/problems")
-    // fetch("http://localhost:4000/problems")
-      .then((res) => res.json())
-      .then((data) => {
-        setProblems(data);
-      });
-  }, []);
+    fetchData();
+  }, [router.query.slug, fetchData]);
 
   const {
     isOpen: isAlertOpen,
@@ -53,20 +77,16 @@ function TakeTest() {
   const toast = useToast();
   const runCode = async () => {
     setIsLoading(true);
-    const payload = { code, lang };
+    console.log(problems[currentProblemId]);
+    const payload = {
+      code,
+      lang,
+      problemId: problems[currentProblemId].id - 1,
+    };
     try {
-      console.log("running code");
-      // const res = await fetch("https://coding_ducks.panipuri.tech/runCode", {
-      const res = await fetch("http://localhost:3333/runCode", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      console.log(data);
-      setOutput(data);
+      const res = await axios.post("/runCode", payload);
+      console.log(res.data);
+      setOutput(res.data);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -102,7 +122,7 @@ function TakeTest() {
               minSize={450}
               style={{ height: "100%", width: "100%" }}
             >
-              <ProblemStatement problem={problems[currentProblemId]} />
+              <ProblemStatement problem={problems[currentProblemId - 1]} />
               <Flex direction={"column"} width="100%" px={2}>
                 <ToolBar
                   isLoading={isLoading}

@@ -16,6 +16,7 @@ import {
 } from "@chakra-ui/react";
 
 import NormalLayout from "../layout/NormalLayout";
+import Link from "next/link";
 
 export default function CallToActionWithAnnotation() {
   return (
@@ -47,18 +48,20 @@ export default function CallToActionWithAnnotation() {
               alignSelf={"center"}
               position={"relative"}
             >
-              <Button
-                colorScheme={"purple"}
-                bg={"purple.400"}
-                rounded={"2xl"}
-                px={6}
-                size={"lg"}
-                _hover={{
-                  bg: "purple.500",
-                }}
-              >
-                Get Started
-              </Button>
+              <Link href={"/home"}>
+                <Button
+                  colorScheme={"purple"}
+                  bg={"purple.400"}
+                  rounded={"2xl"}
+                  px={6}
+                  size={"lg"}
+                  _hover={{
+                    bg: "purple.500",
+                  }}
+                >
+                  Get Started
+                </Button>
+              </Link>
               <Button variant={"link"} colorScheme={"blue"} size={"sm"}>
                 Learn more
               </Button>

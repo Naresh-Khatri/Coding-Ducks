@@ -1,9 +1,30 @@
-import { Box, Flex, HStack, IconButton, Spacer, Text } from "@chakra-ui/react";
+import { Box, Flex, HStack, IconButton, Spacer, Text, useToast } from "@chakra-ui/react";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useContext, useEffect } from "react";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
+import { userContext } from "../contexts/userContext";
 
-function MainLayout({ children }) {
+function AdminLayout({ children }) {
+  const { user } = useContext(userContext);
+
+  const router = useRouter();
+  const toast = useToast();
+
+  useEffect(() => {
+    //TODO: add better redirect logic user is not logged in
+    if (Object.keys(user).length && !user?.isAdmin) {
+      toast({
+        title: "You are not authorized to view this page",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      router.push("/home");
+    }
+  });
+
   return (
     <Flex direction={"column"} h={"100vh"}>
       <Flex
@@ -72,4 +93,4 @@ function MainLayout({ children }) {
   );
 }
 
-export default MainLayout;
+export default AdminLayout;

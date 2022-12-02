@@ -51,14 +51,15 @@ function TestCaseRow({ testCases, index, setTestCases }) {
       </Td>
       <Td m={0} py={4} px={2}>
         <Flex justifyContent="center">
-          {testCases[index].isPublic ? "Public" : "Private"}
+          {/* {testCases[index].isPublic ? "Public" : "Private"} */}
           <Switch
             id="private"
             size={"lg"}
             colorScheme="green"
-            value={testCases[index].isPublic}
+            isChecked={testCases[index].isPublic}
             onChange={(e) => {
               const newTestCases = [...testCases];
+              console.log("new state", e.target.checked);
               newTestCases[index].isPublic = e.target.checked;
               setTestCases(newTestCases);
               console.log(testCases);

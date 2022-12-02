@@ -53,6 +53,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     description.replace(/\\n/g, " ")
   );
   const [newStartTime, setNewStartTime] = useState(formatDate(startTime));
+
   const [oldCoverImg, setOldCoverImg] = useState(coverImg);
   const [newCoverImg, setNewCoverImg] = useState();
 
@@ -82,16 +83,14 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", newDescription);
+    formData.append("slug", newSlug);
     formData.append("startTime", new Date(startTime).toISOString());
     if (newCoverImg) {
       const data = await convertCanvasToBlob(cropperRef.current.getCanvas());
       formData.append("coverImg", data);
     }
     try {
-      const res = await axios.patch(
-        `http://localhost:3333/exams/${examData.id}`,
-        formData
-      );
+      const res = await axios.patch(`/exams/${examData.id}`, formData);
       toast({
         title: "Exam updated!",
         status: "success",
@@ -154,7 +153,6 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                 onChange={(e) => setNewSlug(encodeURI(e.target.value))}
               />
             </FormControl>
-            
           </HStack>
 
           <FormControl my={3}>

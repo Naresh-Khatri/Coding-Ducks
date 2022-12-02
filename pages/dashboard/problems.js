@@ -29,7 +29,7 @@ function ProblemPage() {
   }, []);
   return (
     <AdminLayout>
-      <Container maxW="container.xl">
+      <Container maxW="container.xl" overflowY={'scroll'}>
         <Box m={10}>
           <Link href="/dashboard/add-problem">
             <Button bg="green.400">Add Problem</Button>
@@ -41,13 +41,14 @@ function ProblemPage() {
             <Thead>
               <Tr>
                 <Th>Id</Th>
+                <Th>order</Th>
                 <Th>difficulty</Th>
                 <Th>Title</Th>
                 <Th>Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {problems.map((problem) => (
+              {problems.map((problem, index) => (
                 <ProblemRow
                   key={problem.id}
                   problem={problem}

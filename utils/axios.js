@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  //   baseURL: "https://ducks.panipuri.tech",
-  baseURL: "http://localhost:3333",
+    baseURL: "https://ducks.panipuri.tech",
+  // baseURL: "http://localhost:3333",
   transformRequest: [
     (data, headers) => {
       // modify data here
@@ -23,8 +23,8 @@ const axiosInstance = axios.create({
     (data) => {
       // modify data here
       // clear cookie and cache and redirect to login page
-      console.log(data)
-      if (data.code == 401 && typeof window !== "undefined")
+      console.log(data);
+      if (data?.code == 401 && typeof window !== "undefined")
         window.location.href = "/login";
       return data;
     },

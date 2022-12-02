@@ -29,19 +29,19 @@ function ProblemSelector({ problemId, isActive, isComplete }) {
 function LeftProblemsList({ problems, currentProblemId, setCurrentProblemId }) {
   return (
     <Box>
-      {problems.map((problem) => (
+      {problems.map((problem, index) => (
         <Box
-          key={problem.id}
+          key={index}
           my={2}
           mx={1}
           onClick={() => {
-            setCurrentProblemId(problem.id);
+            setCurrentProblemId(problem.order);
           }}
         >
           <ProblemSelector
-            problemId={problem.id}
-            isActive={problem.id == currentProblemId}
-            isComplete={problem.id < 5}
+            problemId={problem.order}
+            isActive={problem.order == currentProblemId}
+            isComplete={problem.order < 5}
           />
         </Box>
       ))}

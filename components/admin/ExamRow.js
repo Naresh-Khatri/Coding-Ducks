@@ -40,21 +40,6 @@ function ExamRow({ exam, fetchExams }) {
             icon={<FontAwesomeIcon icon={faEdit} />}
             onClick={onEditOpen}
           />
-          <ExamDeleteModal
-            examData={exam}
-            isOpen={isDeleteOpen}
-            onClose={onDeleteClose}
-            onOpen={onDeleteOpen}
-            onDeleteSuccess={() => {
-              fetchExams();
-              onDeleteClose();
-            }}
-          />
-          <IconButton
-            bg="red.300"
-            icon={<FontAwesomeIcon icon={faTrash} />}
-            onClick={onDeleteOpen}
-          />
           <ExamEditor
             examData={exam}
             isOpen={isEditOpen}
@@ -63,6 +48,21 @@ function ExamRow({ exam, fetchExams }) {
             onEditSuccess={() => {
               fetchExams();
               onEditClose();
+            }}
+          />
+          <IconButton
+            bg="red.300"
+            icon={<FontAwesomeIcon icon={faTrash} />}
+            onClick={onDeleteOpen}
+          />
+          <ExamDeleteModal
+            examData={exam}
+            isOpen={isDeleteOpen}
+            onClose={onDeleteClose}
+            onOpen={onDeleteOpen}
+            onDeleteSuccess={() => {
+              fetchExams();
+              onDeleteClose();
             }}
           />
         </HStack>
