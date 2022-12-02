@@ -18,15 +18,13 @@ import { useEffect, useState } from "react";
 import ExamCard from "../components/ExamCard";
 
 import NormalLayout from "../layout/NormalLayout";
+import axios from "../utils/axios";
 
 export default function HomePage() {
   const [exams, setExams] = useState([]);
-  const fetchExams = () => {
-    fetch("/exams")
-      .then((res) => res.json())
-      .then((data) => {
-        setExams(data);
-      });
+  const fetchExams = async () => {
+    const res = await axios.get("/exams");
+    setExams(res.data);
   };
   useEffect(() => {
     fetchExams();
