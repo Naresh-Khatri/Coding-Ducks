@@ -1,8 +1,8 @@
-import axios from "axios";
 import { useRouter } from "next/router";
 import { createContext, useContext, Context, useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { signInWithGoogle, auth, logout } from "../firebase/firebase";
+import axios from "../utils/axios";
 
 export const userContext = createContext({
   user: null,
@@ -61,7 +61,7 @@ export function AuthUserProvider({ children }) {
       // console.log(user)
       saveInCookie(user);
       axios
-        .get(`http://localhost:3333/users/${user.uid}`)
+        .get(`/users/${user.uid}`)
         .then((res) => {
           console.log("user changed", res.data);
 
