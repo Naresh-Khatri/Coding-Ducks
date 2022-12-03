@@ -8,9 +8,10 @@ import { duotoneDark, duotoneLight } from "@uiw/codemirror-theme-duotone";
 import { xcodeDark, xcodeLight } from "@uiw/codemirror-theme-xcode";
 import { Box } from "@chakra-ui/react";
 import WindowHeader from "./WindowHeader";
+import { useEffect, useState } from "react";
 
 export default function CodeEditor({ output, theme }) {
-  const outputText = output.stdout || output.stderr || output.code;
+  console.log(output);
   const hasError = output.hasOwnProperty("error");
   const supportedThemes = {
     dracula: dracula,
@@ -24,6 +25,28 @@ export default function CodeEditor({ output, theme }) {
     xcodeDark: xcodeDark,
     xcodeLight: xcodeLight,
   };
+  const [outputText, setOutputText] = useState("");
+  const formatResult = (res) => {
+    setOutputText(
+      `tests passed: ${res.passedCount}/${res.totalCount} ${
+        res.passedCount / res.totalCount === 1 ? "😎😍" : "😵"
+      }\n\n`
+    );
+    res.results.forEach((test, index) => {
+      setOutputText(
+        (p) =>
+          (p += `test #${index + 1}\ninput :\n${test.input}
+expected  output: ${test.actualOutput}
+your code output: ${test.output}\n${
+            test.isCorrect ? "Passed ✅" : "Failed ❌"
+          }\n\n`)
+      );
+    });
+    console.log(outputText);
+  };
+  useEffect(() => {
+    if (output) formatResult(output);
+  }, [output]);
   // TODO: Turn text color red if error
   // useEffect(()=>{
   //   const container = document.querySelectorAll('.cm-editor')
@@ -36,6 +59,7 @@ export default function CodeEditor({ output, theme }) {
   // }, [output])
   return (
     <>
+      {/* {outputText} */}
       {/* {hasError? 'yess error':'no error'} */}
       <Box h={"100%"} maxH={"100%"} mb={40}>
         <WindowHeader title={"console.exe"} />
