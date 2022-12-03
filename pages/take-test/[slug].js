@@ -36,12 +36,15 @@ import { useRouter } from "next/router";
 function TakeTest() {
   const { user } = useContext(userContext);
 
-  const [code, setCode] = useState("print('hi mom!')");
+  const [code, setCode] = useState(`a = input()
+  b = input()
+  
+  print(b, a)`);
   const [lang, setLang] = useState("py");
   const [theme, setTheme] = useState("dracula");
   const [output, setOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [currentProblemId, setCurrentProblemId] = useState(8);
+  const [currentProblemId, setCurrentProblemId] = useState(2);
 
   const [problems, setProblems] = useState([]);
 
@@ -85,7 +88,7 @@ function TakeTest() {
     };
     try {
       const res = await axios.post("/runCode", payload);
-      console.log(res.data);
+      // console.log(res.data);
       setOutput(res.data);
       setIsLoading(false);
     } catch (error) {
@@ -139,7 +142,7 @@ function TakeTest() {
                   theme={theme}
                   runCode={runCode}
                 />
-                <Flex flexGrow={1} width="100%" height={"100%"}>
+                <Flex flexGrow={1} width="100%" height={"100%"} overflowY='scroll'>
                   {isLoading && (
                     <Stack bg="gray.800" h="100%">
                       <Skeleton
