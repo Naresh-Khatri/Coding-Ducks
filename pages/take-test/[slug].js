@@ -142,7 +142,12 @@ function TakeTest() {
                   theme={theme}
                   runCode={runCode}
                 />
-                <Flex flexGrow={1} width="100%" height={"100%"} overflowY='scroll'>
+                <Flex
+                  flexGrow={1}
+                  width="100%"
+                  height={"100%"}
+                  overflowY="scroll"
+                >
                   {isLoading && (
                     <Stack bg="gray.800" h="100%">
                       <Skeleton
@@ -163,7 +168,7 @@ function TakeTest() {
                     </Stack>
                   )}
                   {!isLoading && (
-                    <Box w={"100%"}>
+                    <Box w={"100%"} overflowY="hidden">
                       <OutputViewer output={output} theme={theme} />
                     </Box>
                   )}
