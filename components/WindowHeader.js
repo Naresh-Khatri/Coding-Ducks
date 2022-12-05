@@ -1,12 +1,19 @@
 import { Box, Flex, Spacer, Text } from "@chakra-ui/react";
 import React from "react";
 
-function WindowHeader({ title }) {
+function WindowHeader({ title, hasError }) {
   return (
     <>
       <Flex
         h={"30px"}
         alignItems={"center"}
+        bg={
+          hasError == true
+            ? "red.500"
+            : hasError == false
+            ? "green.500"
+            : "transparent"
+        }
         px={4}
         borderRadius="10px 10px 0 0"
       >
