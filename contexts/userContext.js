@@ -47,6 +47,8 @@ export function AuthUserProvider({ children }) {
       fullname: user.fullname,
       username: user.username,
       email: user.email,
+      followedBy: user.followedBy,
+      following: user.following,
       photoURL: user.photoURL,
       googleUID: user.uid || user.googleUID,
       isAdmin: user.isAdmin || false,
