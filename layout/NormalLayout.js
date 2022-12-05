@@ -16,13 +16,12 @@ import { userContext } from "../contexts/userContext";
 import UserProfile from "../components/UserProfile";
 
 function NavBar() {
-  const { user } = useContext(userContext);
+  const { user, loading } = useContext(userContext);
 
   // useEffect(() => {
   //   console.log("user", user);
   // }, [user]);
 
-  // console.log(user);
   return (
     <Box as="header">
       <Box as="nav">
@@ -32,7 +31,9 @@ function NavBar() {
           </Heading>
           <HStack>
             <ThemeToggler />
-            {Object.keys(user).length ? (
+            {loading ? (
+              <Text>Loading...</Text>
+            ) : user ? (
               <UserProfile />
             ) : (
               <Link href="/login">
