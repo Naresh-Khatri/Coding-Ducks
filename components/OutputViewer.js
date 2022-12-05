@@ -11,8 +11,6 @@ import WindowHeader from "./WindowHeader";
 import { useEffect, useState } from "react";
 
 export default function CodeEditor({ output, theme }) {
-  console.log(output);
-  const hasError = output.hasOwnProperty("error");
   const supportedThemes = {
     dracula: dracula,
     atomone: atomone,
@@ -26,7 +24,22 @@ export default function CodeEditor({ output, theme }) {
     xcodeLight: xcodeLight,
   };
   const [outputText, setOutputText] = useState("");
+  const [hasError, setHasError] = useState(false);
+
   const formatResult = (res) => {
+    //check if any test case has error
+    if (res.results.some((r) => r.errorOccurred)) {
+      //if any test case has error
+      //find the first test case with error
+      const firstError = res.results.find((result) => result.errorOccurred);
+      //set the output text to the error message
+      setOutputText(firstError.errorMessage);
+      //set hasError to true
+      setHasError(true);
+      return;
+    }
+
+    setHasError(false);
     setOutputText(
       `tests passed: ${res.passedCount}/${res.totalCount} ${
         res.passedCount / res.totalCount === 1 ? "😎😍" : "😵"
@@ -42,7 +55,6 @@ your code output: ${test.output}\n${
           }\n\n`)
       );
     });
-    console.log(outputText);
   };
   useEffect(() => {
     if (output) formatResult(output);
@@ -62,7 +74,7 @@ your code output: ${test.output}\n${
       {/* {outputText} */}
       {/* {hasError? 'yess error':'no error'} */}
       <Box h={"100%"} maxH={"100%"} mb={40}>
-        <WindowHeader title={"console.exe"} />
+        <WindowHeader hasError={hasError} title={"console.exe"} />
         <CodeMirror
           basicSetup={{
             lineNumbers: false,
