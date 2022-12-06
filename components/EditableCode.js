@@ -1,11 +1,25 @@
-import { Box, Text } from "@chakra-ui/react";
-import React from "react";
+import { Box, Input, Text } from "@chakra-ui/react";
+import { useContext } from "react";
+import { exerciseContext } from "../contexts/exerciseContext";
 
-function EditableCode({ text }) {
+const CustomInput = ({ text, idx, setInputs }) => {
+  return (
+    <Input
+      style={{ padding: "0 4px", width: `${text.length * 13 + 10}px` }}
+      onChange={(e) => {
+        setInputs((p) => {
+          return { ...p, [Math.floor(+(idx / 2))]: e.target.value };
+        });
+      }}
+    />
+  );
+};
+function EditableCode() {
+  const { sections, currProblem, currSection, userInputs, setUserInputs } =
+    useContext(exerciseContext);
   const styles = {
-    minHeight: "100px",
-    minWidth: "400px",
-    width: "-moz-fit-content",
+    minHeight: "300px",
+    minWidth: "500px",
     width: "fit-content",
     maxWidth: "800px",
     color: "white",
@@ -18,12 +32,9 @@ function EditableCode({ text }) {
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,.125)",
   };
-  let textArray = text.split("%%");
-  console.log(textArray)
-  let parsed = textArray.map((text, index) => {
-    if (index % 2 == 0) return text;
-    else return `<input style=width:${text.length}rem value='ff' />`;
-  });
+
+  // let textArray = code.split("%%");
+  let textArray = sections[currSection].problems[currProblem].code.split("%%");
 
   return (
     <Box style={styles}>
@@ -33,12 +44,27 @@ function EditableCode({ text }) {
           <circle cx="26" cy="6" r="6" fill="#FFBD2E" stroke="#DEA123"></circle>
           <circle cx="46" cy="6" r="6" fill="#27C93F" stroke="#1AAB29"></circle>
         </svg>
-        <Text
-          as="span"
-          pl={5}
-          // style={testCase.input.includes("<br>") ? { display: "block" } : {}}
-          dangerouslySetInnerHTML={{ __html: parsed }}
-        ></Text>
+        {textArray.map((text, index) => {
+          if (index % 2 == 0)
+            return (
+              <Text
+                key={index}
+                dangerouslySetInnerHTML={{
+                  __html: text.replaceAll("\n", "<br>"),
+                }}
+                display="inline"
+              ></Text>
+            );
+          else
+            return (
+              <CustomInput
+                key={index}
+                idx={index}
+                text={text}
+                setInputs={setUserInputs}
+              />
+            );
+        })}
       </Box>
     </Box>
   );
