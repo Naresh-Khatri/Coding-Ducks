@@ -86,6 +86,13 @@ function AdminLayout({ children }) {
               </Text>
             </Box>
           </Link>
+          <Link href={"/dashboard/exercises"}>
+            <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
+              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
+                Exercises
+              </Text>
+            </Box>
+          </Link>
         </Flex>
         {children}
       </Flex>
