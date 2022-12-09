@@ -52,19 +52,16 @@ function CodeEditor({ code, setCode, lang, theme, runCode }) {
       },
     },
     {
-      key: "Shift-Ctrl-S",
+      key: "Ctrl-s",
       preventDefault: true,
-      run: () => {
-        saveCode();
-        return true;
-      },
+      run: saveCode,
     },
   ];
   const save = (e) => {
     console.log("save", e);
   };
   return (
-    <Flex direction={"column"} my={2} >
+    <Flex direction={"column"} my={2}>
       <WindowHeader title={"editor.exe"} />
       <CodeMirror
         autoFocus
@@ -75,9 +72,7 @@ function CodeEditor({ code, setCode, lang, theme, runCode }) {
         theme={supportedThemes[theme]}
         // extensions={[loadLanguage('cpp')]}
         extensions={[keymap.of(shortcuts), supportedLangs[lang]]}
-        onChange={(value) => {
-          setCode(value);
-        }}
+        onChange={(value) => setCode(value)}
       />
     </Flex>
   );
