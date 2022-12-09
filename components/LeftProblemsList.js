@@ -1,7 +1,15 @@
 import { Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
-import React from "react";
+import React, { useContext } from "react";
+import { submissionsContext } from "../contexts/submissionsContext";
 
-function ProblemSelector({ problemId, isActive, isComplete }) {
+function ProblemSelector({ problemId, isActive, state }) {
+  const bgColor = isActive
+    ? "blue.300"
+    : state == "passed"
+    ? "green.300"
+    : state == "tried"
+    ? "yellow.600"
+    : "gray.700";
   return (
     <Box>
       <Flex
@@ -11,7 +19,7 @@ function ProblemSelector({ problemId, isActive, isComplete }) {
         w={55}
         h={55}
         transform={isActive ? "scale(1.15)" : ""}
-        bg={isActive ? "blue.300" : isComplete ? "green.300" : "gray.700"}
+        bg={bgColor}
         textAlign="center"
         // bg={isComplete ? 'green.400' : 'brand.900'}
         border={isActive ? "2px solid white" : ""}
@@ -27,6 +35,14 @@ function ProblemSelector({ problemId, isActive, isComplete }) {
 }
 
 function LeftProblemsList({ problems, currentProblemId, setCurrentProblemId }) {
+  const { submissions } = useContext(submissionsContext);
+  const getState = (problemId) => {
+    const submission = submissions.find((sub) => sub.problemId === problemId);
+    if (submission?.marks == 10) return "passed";
+    else if (submission?.marks < 10) return "tried";
+    else return "notAttempted";
+  };
+
   return (
     <Box>
       {problems.map((problem, index) => (
@@ -41,7 +57,7 @@ function LeftProblemsList({ problems, currentProblemId, setCurrentProblemId }) {
           <ProblemSelector
             problemId={problem.order}
             isActive={problem.order == currentProblemId}
-            isComplete={problem.order < 5}
+            state={getState(problem.id)}
           />
         </Box>
       ))}
