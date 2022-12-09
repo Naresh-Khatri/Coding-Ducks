@@ -14,12 +14,7 @@ import {
 } from "@chakra-ui/react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPlay,
-  faEdit,
-  faSave,
-  faCancel,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
 import { useContext, useState } from "react";
 import { userContext } from "../contexts/userContext";
@@ -45,7 +40,7 @@ export default function ToolBar({
           bg="purple.600"
           leftIcon={<FontAwesomeIcon icon={faReact} />}
           color="white"
-          onClick={runCode}
+          onClick={() => runCode(false)}
         >
           Run
         </Button>
@@ -55,7 +50,7 @@ export default function ToolBar({
           bg="green.400"
           leftIcon={<FontAwesomeIcon icon={faPlay} />}
           color="white"
-          onClick={runCode}
+          onClick={() => runCode(true)}
         >
           Submit
         </Button>
