@@ -32,14 +32,13 @@ import MainLayout from "../../layout/MainLayout";
 import { userContext } from "../../contexts/userContext";
 import axios from "../../utils/axios";
 import { useRouter } from "next/router";
+import { submissionsContext } from "../../contexts/submissionsContext";
 
 function TakeTest() {
   const { user } = useContext(userContext);
+  const { refreshSubmissions } = useContext(submissionsContext);
 
-  const [code, setCode] = useState(`a = input()
-  b = input()
-  
-  print(b, a)`);
+  const [code, setCode] = useState("");
   const [lang, setLang] = useState("py");
   const [theme, setTheme] = useState("dracula");
   const [output, setOutput] = useState("");
@@ -52,12 +51,24 @@ function TakeTest() {
 
   const router = useRouter();
   const { query } = router;
+
+  useEffect(() => {
+    setCode(
+      localStorage.getItem(`code ${examData?.id} ${currentProblemId}`) || ""
+    );
+  }, [currentProblemId]);
+
+  useEffect(() => {
+    localStorage.setItem(`code ${examData?.id} ${currentProblemId}`, code);
+  }, [code]);
+
   const fetchData = useCallback(async () => {
     try {
       if (!query.slug) return;
 
       let res = await axios.get(`/exams/slug/${router.query.slug}`);
       setExamData(res.data);
+      console.log(examData?.id);
       res = await axios.get("/problems/examProblems/" + res.data.id);
       setProblems(res.data);
     } catch (error) {
@@ -65,8 +76,10 @@ function TakeTest() {
       router.push("/home");
     }
   }, [router]);
+
   useEffect(() => {
     fetchData();
+    setTimeout(() => setCurrentProblemId(1), 1000);
   }, [router.query.slug, fetchData]);
 
   const {
@@ -78,17 +91,23 @@ function TakeTest() {
   const cancelRef = useRef();
 
   const toast = useToast();
-  const runCode = async () => {
+  const runCode = async (submit = false) => {
     setIsLoading(true);
-    console.log(problems[currentProblemId]);
+    console.log(examData);
     const payload = {
       code,
       lang,
+      submit,
       problemId: problems[currentProblemId].id - 1,
+      examId: examData.id,
     };
     try {
       const res = await axios.post("/runCode", payload);
       // console.log(res.data);
+      if (submit) {
+        // console.log(refreshSubmissions);
+        refreshSubmissions();
+      }
       setOutput(res.data);
       setIsLoading(false);
     } catch (error) {
@@ -102,7 +121,7 @@ function TakeTest() {
         isClosable: true,
       });
 
-      setOutput({ error: "Somehings fishy :thinking_face:" });
+      // setOutput({ error: "Somehings fishy :thinking_face:" });
     }
   };
 
@@ -140,7 +159,7 @@ function TakeTest() {
                   setCode={setCode}
                   lang={lang}
                   theme={theme}
-                  runCode={runCode}
+                  runCode={() => runCode(false)}
                 />
                 <Flex
                   flexGrow={1}
