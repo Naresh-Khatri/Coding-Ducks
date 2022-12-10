@@ -7,11 +7,14 @@ import {
   Spacer,
   Text,
 } from "@chakra-ui/react";
+import { useContext } from "react";
 // import Sidebar from "../components/Sidebar";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
+import { submissionsContext } from "../contexts/submissionsContext";
 
 function MainLayout({ children }) {
+  const { totalMarks, marks } = useContext(submissionsContext);
   return (
     <Flex direction={"column"} h={"100vh"}>
       <Flex
@@ -35,7 +38,9 @@ function MainLayout({ children }) {
         </Box>
         <Spacer />
         <HStack>
-          <Text fontWeight={"extrabold"}>97/100</Text>
+          <Text fontWeight={"extrabold"}>
+            {marks}/{totalMarks}
+          </Text>
           <ThemeToggler />
           <UserProfile />
 
