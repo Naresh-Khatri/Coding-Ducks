@@ -1,5 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { extendTheme } from "@chakra-ui/react";
+import { SubmissionProvider } from "../contexts/submissionsContext";
 import { AuthUserProvider } from "../contexts/userContext";
 
 import MainLayout from "../layout/MainLayout";
@@ -13,6 +14,10 @@ const colors = {
     800: "#153e75",
     700: "#2a69ac",
   },
+  dark: {
+    900: "#012244",
+    800: "#1a3b5a",
+  },
 };
 const theme = extendTheme({ colors });
 
@@ -20,7 +25,9 @@ function MyApp({ Component, pageProps }) {
   return (
     <ChakraProvider theme={theme}>
       <AuthUserProvider>
-        <Component {...pageProps} />
+        <SubmissionProvider>
+          <Component {...pageProps} />
+        </SubmissionProvider>
       </AuthUserProvider>
     </ChakraProvider>
   );
