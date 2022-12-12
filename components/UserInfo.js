@@ -151,10 +151,10 @@ function UserInfo({ viewingUser }) {
               <Box>
                 <VStack>
                   <Text fontSize="md" fontWeight="extrabold">
-                    423.2K
+                    0
                   </Text>
                   <Text fontSize="sm" style={{ margin: 0 }} color="gray.500">
-                    Views
+                    pulihora
                   </Text>
                 </VStack>
               </Box>
