@@ -58,9 +58,12 @@ function ExampleTestcase({ testCase }) {
       <Box display="inline">
         Output:
         <br />
-        <Text display="inline" pl={5}>
-          {testCase.output}
-        </Text>
+        <Text
+          display="inline"
+          dangerouslySetInnerHTML={{
+            __html: testCase.output.replaceAll("\n", "<br>"),
+          }}
+        ></Text>
       </Box>
       {testCase.explaination && (
         <Box>
