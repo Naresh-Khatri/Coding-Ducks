@@ -34,7 +34,7 @@ function ProblemSelector({ problemId, isActive, state }) {
   );
 }
 
-function LeftProblemsList({ problems, currentProblemId, setCurrentProblemId }) {
+function LeftProblemsList({ problems, currentProblemIdx, setCurrentProblemIdx }) {
   const { submissions } = useContext(submissionsContext);
   const getState = (problemId) => {
     const submission = submissions.find((sub) => sub.problemId === problemId);
@@ -51,12 +51,12 @@ function LeftProblemsList({ problems, currentProblemId, setCurrentProblemId }) {
           my={2}
           mx={1}
           onClick={() => {
-            setCurrentProblemId(problem.order);
+            setCurrentProblemIdx(problem.order);
           }}
         >
           <ProblemSelector
             problemId={problem.order}
-            isActive={problem.order == currentProblemId}
+            isActive={problem.order == currentProblemIdx}
             state={getState(problem.id)}
           />
         </Box>
