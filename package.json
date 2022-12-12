@@ -31,6 +31,7 @@
     "@uiw/codemirror-theme-xcode": "^4.12.1",
     "@uiw/react-codemirror": "^4.11.6",
     "axios": "^1.2.0",
+    "canvas-confetti": "^1.6.0",
     "firebase": "^9.12.1",
     "framer-motion": "^6",
     "next": "^13.0.3",
