@@ -7,6 +7,8 @@ import {
   Spacer,
   Text,
 } from "@chakra-ui/react";
+import { faClock } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext } from "react";
 // import Sidebar from "../components/Sidebar";
 import ThemeToggler from "../components/ThemeToggler";
@@ -33,9 +35,10 @@ function MainLayout({ children }) {
           </Text>
         </HStack>
         <Spacer />
-        <Box>
-          <Text fontWeight={"extrabold"}> 00:10:43 </Text>
-        </Box>
+        <HStack>
+          <FontAwesomeIcon height={"1.2rem"} icon={faClock} />
+          <Text fontWeight={"extrabold"}> Time not set </Text>
+        </HStack>
         <Spacer />
         <HStack>
           <Text fontWeight={"extrabold"}>
@@ -44,7 +47,7 @@ function MainLayout({ children }) {
           <ThemeToggler />
           <UserProfile />
 
-          <Button variant={"solid"} bg={"red.400"}>
+          <Button variant={"solid"} bg={"red.400"} disabled>
             Finish
           </Button>
         </HStack>
