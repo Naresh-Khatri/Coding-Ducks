@@ -15,7 +15,10 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Radio,
+  RadioGroup,
   Select,
+  Stack,
   Table,
   TableContainer,
   Tbody,
@@ -127,6 +130,13 @@ function ProblemEditor({ isOpen, onClose, problemData, onEditSuccess }) {
                 onChange={(e) => setNewOrder(e.target.value)}
               />
             </FormControl>
+            <RadioGroup onChange={setNewDifficulty} value={newDifficulty}>
+              <Stack direction="row">
+                <Radio value="easy">Easy</Radio>
+                <Radio value="medium">Medium</Radio>
+                <Radio value="hard">hard</Radio>
+              </Stack>
+            </RadioGroup>
           </HStack>
           {/* <HStack my={3}>
             <FormControl>
