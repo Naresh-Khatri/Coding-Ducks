@@ -178,7 +178,7 @@ const AddExam = () => {
               <Select ref={selectedExam}>
                 {examsList.map((exam) => (
                   <option key={exam.id} value={exam.id}>
-                    {`${exam.title} - /exmas/${exam.slug}`}
+                    {`${exam.title} - /exams/${exam.slug}`}
                   </option>
                 ))}
               </Select>
