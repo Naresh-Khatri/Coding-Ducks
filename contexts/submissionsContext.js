@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import axios from "../utils/axios";
 
 export const submissionsContext = createContext({
@@ -28,7 +28,6 @@ export const SubmissionProvider = ({ children }) => {
         bestSubs.push(submission);
       }
     });
-    console.log(bestSubs);
     setSubmissions(bestSubs);
     let marksObtained = bestSubs.reduce((acc, curr) => acc + curr.marks, 0);
     setMarks(marksObtained);
@@ -38,12 +37,10 @@ export const SubmissionProvider = ({ children }) => {
       const res = await axios.get(`/exams/getProgress/${examId}`);
       formatSubmission(res.data);
     } catch (err) {
-      throw new Error(err);
+      console.log(err);
+      // throw new Error(err);
     }
   };
-  useEffect(() => {
-    refreshSubmissions();
-  }, []);
   return (
     <submissionsContext.Provider
       value={{
