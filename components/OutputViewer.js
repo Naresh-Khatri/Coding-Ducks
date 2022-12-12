@@ -27,8 +27,8 @@ export default function CodeEditor({ output, theme }) {
   const [hasError, setHasError] = useState(false);
 
   const formatResult = (res) => {
-    //check if any test case has error
-    if (res.results.some((r) => r.errorOccurred)) {
+    console.log(res);
+    if (res.results?.some((r) => r.errorOccurred)) {
       //if any test case has error
       //find the first test case with error
       const firstError = res.results.find((result) => result.errorOccurred);
@@ -49,10 +49,10 @@ export default function CodeEditor({ output, theme }) {
       setOutputText(
         (p) =>
           (p += `test #${index + 1}\ninput :\n${test.input}
-expected  output: ${test.actualOutput}
-your code output: ${test.output}\n${
+Expected  output: \n${test.output}
+Your code output: \n${test.actualOutput}\n${
             test.isCorrect ? "Passed ✅" : "Failed ❌"
-          }\n\n`)
+          }\n----------------------------------------------\n\n`)
       );
     });
   };
@@ -95,3 +95,13 @@ your code output: ${test.output}\n${
     </>
   );
 }
+// n = int(input())
+
+// t1 = 0
+// t2 = 1
+
+// for _ in range(n):
+//   print(t1, end=" ")
+//   temp = t1 + t2
+//   t1 = t2
+//   t2 = temp
