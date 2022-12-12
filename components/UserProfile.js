@@ -34,6 +34,7 @@ import { userContext } from "../contexts/userContext";
 import { logout } from "../firebase/firebase";
 import EditProfileInModel from "./EditProfileInModel";
 import Link from "next/link";
+import FollowDetailsModal from "./FollowDetailsModal";
 
 function UserProfile() {
   const { user } = useContext(userContext);
@@ -53,6 +54,12 @@ function UserProfile() {
   const [isEditing, setIsEditing] = useState(false);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  // this will be used to show followers and following details
+  const {
+    isOpen: isFollowInfoOpen,
+    onOpen: onFollowInfoOpen,
+    onClose: onFollowInfoClose,
+  } = useDisclosure();
 
   const profileEdited = () => {
     //TODO: add update profile logic
@@ -164,12 +171,23 @@ function UserProfile() {
                     </HStack>
                   </Box>
                   <Divider />
-                  <HStack w="100%" justify="center" h={10}>
+                  <FollowDetailsModal
+                    isOpen={isFollowInfoOpen}
+                    onClose={onFollowInfoClose}
+                    followData={user}
+                  />
+                  <HStack
+                    w="100%"
+                    justify="center"
+                    h={10}
+                    onClick={onFollowInfoOpen}
+                    cursor="pointer"
+                  >
                     <Flex w="50%">
                       <Box>
                         <VStack>
                           <Text fontSize="md" fontWeight="extrabold">
-                            23.4K
+                            {user.followedBy.length || 0}
                           </Text>
                           <Text
                             fontSize="sm"
@@ -184,14 +202,14 @@ function UserProfile() {
                       <Box>
                         <VStack>
                           <Text fontSize="md" fontWeight="extrabold">
-                            4.5K
+                            {user.following.length || 0}
                           </Text>
                           <Text
                             fontSize="sm"
                             style={{ margin: 0 }}
                             color="gray.500"
                           >
-                            Likes
+                            following
                           </Text>
                         </VStack>
                       </Box>
@@ -199,14 +217,14 @@ function UserProfile() {
                       <Box>
                         <VStack>
                           <Text fontSize="md" fontWeight="extrabold">
-                            423.2K
+                            0
                           </Text>
                           <Text
                             fontSize="sm"
                             style={{ margin: 0 }}
                             color="gray.500"
                           >
-                            Views
+                            pulihora
                           </Text>
                         </VStack>
                       </Box>
