@@ -38,6 +38,7 @@ const QuillNoSSRWrapper = dynamic(import("react-quill"), {
 const AddExam = () => {
   const [desc, setDesc] = useState("");
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState('')
   const [startTime, setStartTime] = useState("");
   const [coverImg, setCoverImg] = useState("");
 
@@ -68,6 +69,7 @@ const AddExam = () => {
     try {
       const formData = new FormData();
       formData.append("title", title);
+      formData.append("slug", slug);
       formData.append("description", desc);
       formData.append("startTime", new Date(startTime).toISOString());
       formData.append(
@@ -130,7 +132,18 @@ const AddExam = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
-              </FormControl>{" "}
+              </FormControl>
+              <FormControl mr="5%">
+                <FormLabel htmlFor="first-name" fontWeight={"normal"}>
+                  Slug
+                </FormLabel>
+                <Input
+                  id="first-name"
+                  placeholder="Slug"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                />
+              </FormControl>
               <FormControl>
                 <FormLabel fontWeight={"normal"} mt="2%">
                   Start time
@@ -155,7 +168,14 @@ const AddExam = () => {
                   theme="snow"
                   value={desc}
                   onChange={setDesc}
+                  modules={{
+                    toolbar: [
+                      ["bold", "italic", "underline", "strike", "blockquote"],
+                      ["code"],
+                    ],
+                  }}
                 />
+                
               </Box>
               <FormHelperText>Describe about your exam</FormHelperText>
             </FormControl>
