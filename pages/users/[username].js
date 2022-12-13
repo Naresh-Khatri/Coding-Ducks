@@ -1,4 +1,4 @@
-import { Container } from "@chakra-ui/react";
+import { Container, Flex } from "@chakra-ui/react";
 import React from "react";
 import UserInfo from "../../components/UserInfo";
 
@@ -6,11 +6,13 @@ import NormalLayout from "../../layout/NormalLayout";
 import axios from "../../utils/axios";
 
 function UsersPage({ user }) {
-  
+  console.log(user);
   return (
     <NormalLayout>
       <Container maxW={"8xl"}>
-        <UserInfo viewingUser={user}/>
+        <Flex justify={"center"} align="center">
+          <UserInfo viewingUser={user} />
+        </Flex>
       </Container>
     </NormalLayout>
   );
