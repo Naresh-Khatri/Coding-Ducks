@@ -1,17 +1,25 @@
 import { Container, Flex } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import UserInfo from "../../components/UserInfo";
 
 import NormalLayout from "../../layout/NormalLayout";
 import axios from "../../utils/axios";
 
-function UsersPage({ user }) {
-  console.log(user);
+function UsersPage({ username }) {
+  // console.log(user);
+  const [user, setUser] = useState();
+  useEffect(() => {
+    async function fetchUser() {
+      const user = await getUserByUsername(username);
+      setUser(user);
+    }
+    fetchUser();
+  });
   return (
     <NormalLayout>
       <Container maxW={"8xl"}>
         <Flex justify={"center"} align="center">
-          <UserInfo viewingUser={user} />
+          {user && <UserInfo viewingUser={user} />}
         </Flex>
       </Container>
     </NormalLayout>
@@ -20,10 +28,11 @@ function UsersPage({ user }) {
 
 export const getServerSideProps = async (ctx) => {
   const { username } = ctx.params;
-  const user = await getUserByUsername(username);
+  // const user = await getUserByUsername(username);
   return {
     props: {
-      user,
+      // user,
+      username,
     },
   };
 };
