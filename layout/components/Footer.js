@@ -42,7 +42,7 @@ const Footer = () => (
         direction={{ base: "column-reverse", md: "column", lg: "row" }}
         spacing={{ base: "12", md: "8" }}
       >
-        <Stack direction="row" spacing="8">
+        {/* <Stack direction="row" spacing="8">
           <Stack spacing="4" minW="36" flex="1">
             <Text fontSize="sm" fontWeight="semibold" color="subtle">
               Product
@@ -63,8 +63,8 @@ const Footer = () => (
               <Button variant="link">License</Button>
             </Stack>
           </Stack>
-        </Stack>
-        <Stack spacing="4">
+        </Stack> */}
+        {/* <Stack spacing="4">
           <Text fontSize="sm" fontWeight="semibold" color="subtle">
             Stay up to date
           </Text>
@@ -78,7 +78,7 @@ const Footer = () => (
               Subscribe
             </Button>
           </Stack>
-        </Stack>
+        </Stack> */}
       </Stack>
     </Stack>
     <Divider />
