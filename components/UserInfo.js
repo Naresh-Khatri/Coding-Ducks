@@ -53,9 +53,9 @@ function UserInfo({ viewingUser }) {
     console.log(viewingUserState);
   };
 
-  if (!loggedInUser.id) return <>Loading...</>;
+  // if (!loggedInUser.id) return <>Loading...</>;
   return (
-    <Box maxW={"500px"} h={"600px"}>
+    <Box w={"500px"} h={"600px"}>
       <FollowDetailsModal
         isOpen={isOpen}
         onClose={onClose}
@@ -109,6 +109,7 @@ function UserInfo({ viewingUser }) {
           </HStack>
           <HStack>
             <Button
+              disabled={!loggedInUser.id}
               bg={isFollowing ? "gray.700" : "purple.600"}
               color="white"
               onClick={handleFollowBtnClick}
