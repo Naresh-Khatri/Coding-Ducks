@@ -33,7 +33,7 @@ function NavBar() {
             <ThemeToggler />
             {loading ? (
               <Text>Loading...</Text>
-            ) : user ? (
+            ) : Object.keys(user).length > 0 ? (
               <UserProfile />
             ) : (
               <Link href="/login">
