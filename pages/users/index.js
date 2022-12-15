@@ -1,11 +1,19 @@
 import { Box, Container, Flex, SimpleGrid, Text } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import NormalLayout from "../../layout/NormalLayout";
 import axios from "../../utils/axios";
 
-function UsersPage({ users }) {
+function UsersPage() {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    axios.get("/users").then((data) => {
+      setUsers(data.data);
+    });
+  }, []);
+  console.log(users);
   return (
     <NormalLayout>
       <Container mt={70} maxW={"6xl"} minH={"100vh"}>
@@ -62,22 +70,25 @@ const UserCard = ({ user }) => {
   );
 };
 
-export const getServerSideProps = async () => {
-  try {
-    const { data } = await axios.get("/users");
-    return {
-      props: {
-        users: data,
-      },
-    };
-  } catch (err) {
-    console.log(err);
-    return {
-      props: {
-        users: [],
-      },
-    };
-  }
-};
+// export const getServerSideProps = async () => {
+//   try {
+//     // const { data } = await axios.get("/users");
+//     const res = await fetch("/users");
+//     const data = await res.json();
+//     console.log(data);
+//     return {
+//       props: {
+//         users: data,
+//       },
+//     };
+//   } catch (err) {
+//     console.log(err);
+//     return {
+//       props: {
+//         users: [],
+//       },
+//     };
+//   }
+// };
 
 export default UsersPage;
