@@ -20,7 +20,6 @@ import FollowDetailsModal from "./FollowDetailsModal";
 function UserInfo({ viewingUser }) {
   const { user: loggedInUser } = useContext(userContext);
   const [viewingUserState, setViewingUserState] = useState(viewingUser);
-  // setViewingUserState();
 
   const { onOpen, onClose, isOpen } = useDisclosure();
 
@@ -55,7 +54,7 @@ function UserInfo({ viewingUser }) {
   };
 
   return (
-    <Box w={"100%"} maxW={"500px"} h={"600px"}>
+    <Box w={"500px"}>
       <FollowDetailsModal
         isOpen={isOpen}
         onClose={onClose}
