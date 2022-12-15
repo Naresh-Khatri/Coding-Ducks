@@ -34,7 +34,7 @@ export default function ToolBar({
   return (
     <Box bg={useColorModeValue("gray.200", "gray.800")}>
       <HStack p={2} justifyContent="end">
-        <Button
+        {/* <Button
           loadingText="Running..."
           isLoading={isLoading}
           bg="purple.600"
@@ -53,7 +53,7 @@ export default function ToolBar({
           onClick={() => runCode(true)}
         >
           Submit
-        </Button>
+        </Button> */}
         <Select
           bg="purple.500"
           color="white"
