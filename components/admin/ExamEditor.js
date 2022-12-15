@@ -15,6 +15,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Switch,
   Text,
   useToast,
 } from "@chakra-ui/react";
@@ -45,10 +46,11 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 };
 function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
-  const { title, description, startTime, coverImg, slug } = examData;
+  const { title, description, startTime, coverImg, slug, active } = examData;
 
   const [newTitle, setNewTitle] = useState(title);
   const [newSlug, setNewSlug] = useState(slug);
+  const [newActive, setNewActive] = useState(active);
   const [newDescription, setNewDescription] = useState(
     description.replace(/\\n/g, " ")
   );
@@ -84,6 +86,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     formData.append("title", title);
     formData.append("description", newDescription);
     formData.append("slug", newSlug);
+    formData.append("active", newActive);
     formData.append("startTime", new Date(startTime).toISOString());
     if (newCoverImg) {
       const data = await convertCanvasToBlob(cropperRef.current.getCanvas());
@@ -151,6 +154,16 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                 placeholder="Slug"
                 value={newSlug}
                 onChange={(e) => setNewSlug(encodeURI(e.target.value))}
+              />
+            </FormControl>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="active" mb="0">
+                Set Active?
+              </FormLabel>
+              <Switch
+                id="active"
+                isChecked={newActive}
+                onChange={(e) => setNewActive(e.target.checked)}
               />
             </FormControl>
           </HStack>
