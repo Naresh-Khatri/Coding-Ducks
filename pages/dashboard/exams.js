@@ -50,6 +50,7 @@ function Exams() {
                 <Th>Cover image</Th>
                 <Th>Title</Th>
                 <Th>Starts on</Th>
+                <Th>active</Th>
                 <Th>Actions</Th>
               </Tr>
             </Thead>
