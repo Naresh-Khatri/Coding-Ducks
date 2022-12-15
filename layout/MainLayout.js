@@ -37,7 +37,7 @@ function MainLayout({ children }) {
         <Spacer />
         <HStack>
           <FontAwesomeIcon height={"1.2rem"} icon={faClock} />
-          <Text fontWeight={"extrabold"}> Time not set </Text>
+          <Text fontWeight={"extrabold"}> Unbounded </Text>
         </HStack>
         <Spacer />
         <HStack>
