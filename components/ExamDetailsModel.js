@@ -13,11 +13,18 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import { useState } from "react";
 
 function ExamDetailsModel({ examData, isOpen, onClose, onOpen }) {
+  const [readMore, setReadMore] = useState(false);
+
+  // this func closes modal and sets readMore to false
+  const handleClose = () => {
+    onClose();
+    setReadMore(false);
+  };
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Exam Details</ModalHeader>
@@ -45,14 +52,24 @@ function ExamDetailsModel({ examData, isOpen, onClose, onOpen }) {
           </Flex>
           <Text
             color={"gray.500"}
-            noOfLines={4}
+            noOfLines={readMore ? null : 4}
             pt={4}
             dangerouslySetInnerHTML={{ __html: examData.description }}
           ></Text>
+          {!readMore && (
+            <Button
+              variant={"ghost"}
+              onClick={() => setReadMore(true)}
+              size="sm"
+              p={0}
+            >
+              Read more...
+            </Button>
+          )}
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
+          <Button variant="ghost" mr={3} onClick={handleClose}>
             Close
           </Button>
           <Link href={"/take-test/" + examData.slug}>
