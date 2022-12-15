@@ -31,17 +31,17 @@ import ProblemRow from "../../components/admin/ProblemRow";
 import AdminLayout from "../../layout/AdminLayout";
 import axios from "../../utils/axios";
 
-function ProblemPage({ initialProblems }) {
+function ProblemPage() {
   useEffect(() => {
     axios("/problems").then((res) => setProblems(res.data));
   }, []);
 
-  const [problems, setProblems] = useState(initialProblems);
+  const [problems, setProblems] = useState();
   const [filteredProblems, setFilteredProblems] = useState(problems);
   const [examsList, setExamsList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  console.log(problems);
+  // console.log(problems);
   const fetchProblems = async () => {
     const res = await axios("/problems");
     setProblems(res.data);
@@ -53,7 +53,7 @@ function ProblemPage({ initialProblems }) {
         list.push({ id: problem.examId, title: problem.exam.title });
     });
     setExamsList(list);
-    console.log(list);
+    // console.log(list);
   }, [problems]);
 
   const handleOnFilterChange = (e) => {
