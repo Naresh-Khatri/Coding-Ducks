@@ -34,6 +34,8 @@ import MainLayout from "../../layout/MainLayout";
 import SubmissionModal from "../../components/modals/Submission";
 
 import { submissionsContext } from "../../contexts/submissionsContext";
+import BottomActions from "../../components/BottomActions";
+import NewConsole from "../../components/NewConsole";
 
 function TakeTest() {
   const { refreshSubmissions } = useContext(submissionsContext);
@@ -45,6 +47,7 @@ function TakeTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentProblemIdx, setCurrentProblemIdx] = useState(2);
   const [lastSubmissionPassed, setLastSubmissionPassed] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
 
   const [problems, setProblems] = useState([]);
 
@@ -57,11 +60,13 @@ function TakeTest() {
     setCode(
       localStorage.getItem(`code ${examData?.id} ${currentProblemIdx}`) || ""
     );
+    setShowConsole(false);
+    setOutput({});
   }, [currentProblemIdx]);
 
   useEffect(() => {
     localStorage.setItem(`code ${examData?.id} ${currentProblemIdx}`, code);
-  }, [code]);
+  }, [code, currentProblemIdx]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -102,6 +107,7 @@ function TakeTest() {
   const toast = useToast();
   const runCode = async (submit = false) => {
     setIsLoading(true);
+    setShowConsole(true);
     const payload = {
       code,
       lang,
@@ -162,18 +168,31 @@ function TakeTest() {
                   setLang={setLang}
                   setTheme={setTheme}
                 />
-                <CodeEditor
-                  code={code}
-                  setCode={setCode}
-                  lang={lang}
-                  theme={theme}
-                  runCode={() => runCode(false)}
-                />
-                <Flex
+                <Flex flexGrow={1} width="100%" height={"100%"}>
+                  <CodeEditor
+                    code={code}
+                    setCode={setCode}
+                    lang={lang}
+                    theme={theme}
+                    runCode={() => runCode(false)}
+                  />
+                </Flex>
+                <Flex direction="column">
+                  <Flex flexGrow={1}>
+                    {showConsole && <NewConsole output={output} />}
+                  </Flex>
+                  <BottomActions
+                    setShowConsole={setShowConsole}
+                    showConsole={showConsole}
+                    runCode={runCode}
+                    isLoading={isLoading}
+                  />
+                </Flex>
+                {/* <Flex
                   flexGrow={1}
                   width="100%"
                   height={"100%"}
-                  overflowY="scroll"
+                  overflowY="hidden"
                 >
                   {isLoading && (
                     <Stack bg="gray.800" h="100%">
@@ -194,12 +213,8 @@ function TakeTest() {
                       />
                     </Stack>
                   )}
-                  {!isLoading && (
-                    <Box w={"100%"} overflowY="hidden">
-                      <OutputViewer output={output} theme={theme} />
-                    </Box>
-                  )}
-                </Flex>
+                  {!isLoading && <OutputViewer output={output} theme={theme} />}
+                </Flex> */}
               </Flex>
             </Split>
           </Flex>
@@ -238,6 +253,8 @@ function TakeTest() {
           onOpen={onSubmissionModalOpen}
           isOpen={isSubmissionModalOpen}
           passed={lastSubmissionPassed}
+          setCurrentProblemIdx={setCurrentProblemIdx}
+          canGoToNextProblem={currentProblemIdx < problems.length}
         />
       </Flex>
     </MainLayout>
