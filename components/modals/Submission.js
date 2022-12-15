@@ -32,7 +32,13 @@ const negativeImgs = [
   "https://ik.imagekit.io/couponluxury/b9eb2b42094811.57c019c4dd143_D0CjrE5ta.gif",
   "https://ik.imagekit.io/couponluxury/614ab270936397.5bb439fbdab5d_BzKOTRnS-.gif",
 ];
-function Submission({ isOpen, onClose, passed }) {
+function Submission({
+  isOpen,
+  onClose,
+  passed,
+  setCurrentProblemIdx,
+  canGoToNextProblem,
+}) {
   useEffect(() => {
     if (passed && typeof window !== "undefined")
       confetti({
@@ -75,16 +81,43 @@ function Submission({ isOpen, onClose, passed }) {
                     <StarIcon color={"gold"} fontSize={"4xl"} />
                   </HStack>
                   <Text fontWeight={"extrabold"}>Added</Text>
+                  <Flex mt={5}>
+                    <Button
+                      variant={"outline"}
+                      w={"40"}
+                      mr={3}
+                      onClick={onClose}
+                    >
+                      Close
+                    </Button>
+                    <Button
+                      colorScheme="purple"
+                      w={"40"}
+                      mr={3}
+                      onClick={() => {
+                        setCurrentProblemIdx((prev) => prev + 1);
+                        onClose();
+                      }}
+                      disabled={!canGoToNextProblem}
+                    >
+                      Next Problem
+                    </Button>
+                  </Flex>
                 </Flex>
               ) : (
-                <Text fontSize={"3xl"} fontWeight={"extrabold"}>
-                  Some test cases did not pass, check the console!
-                </Text>
+                <>
+                  <Text fontSize={"3xl"} fontWeight={"extrabold"}>
+                    Some test cases did not pass, check the console!
+                  </Text>
+                  <Button colorScheme="purple" mr={3} onClick={onClose}>
+                    Close
+                  </Button>
+                </>
               )}
 
-              <Button colorScheme="purple" mr={3} onClick={onClose}>
+              {/* <Button colorScheme="purple" mr={3} onClick={onClose}>
                 Close
-              </Button>
+              </Button> */}
             </Flex>
           </SimpleGrid>
         </ModalBody>
