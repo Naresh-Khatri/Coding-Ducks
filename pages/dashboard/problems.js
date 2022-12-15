@@ -33,11 +33,16 @@ import axios from "../../utils/axios";
 
 function ProblemPage() {
   useEffect(() => {
-    axios("/problems").then((res) => setProblems(res.data));
+    const getProblems = async () => {
+      const { data } = await axios.get("/problems");
+      setProblems(data);
+      setFilteredProblems(data)
+    };
+    getProblems();
   }, []);
 
   const [problems, setProblems] = useState();
-  const [filteredProblems, setFilteredProblems] = useState(problems);
+  const [filteredProblems, setFilteredProblems] = useState();
   const [examsList, setExamsList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -48,7 +53,7 @@ function ProblemPage() {
   };
   useEffect(() => {
     const list = [];
-    problems.forEach((problem) => {
+    problems?.forEach((problem) => {
       if (!list.find((exam) => exam.id === problem.examId))
         list.push({ id: problem.examId, title: problem.exam.title });
     });
@@ -82,6 +87,8 @@ function ProblemPage() {
       );
     }
   };
+
+  if (filteredProblems == undefined) return <div>Loading...</div>;
 
   return (
     <AdminLayout>
