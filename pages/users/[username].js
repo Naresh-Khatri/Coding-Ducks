@@ -14,13 +14,18 @@ function UsersPage() {
   const [progress, setProgress] = useState();
   useEffect(() => {
     async function fetchUser() {
-      const user = await getUserByUsername(username);
-      setUser(user);
-      const progress = await getUserProgress(user.id);
-      setProgress(progress);
+      try {
+        const user = await getUserByUsername(username);
+        setUser(user);
+        const progress = await getUserProgress(user.id);
+        setProgress(progress);
+      } catch (err) {
+        router.push("/404");
+        console.log(err);
+      }
     }
-    fetchUser();
-  }, []);
+    if (username) fetchUser();
+  }, [username]);
   return (
     <NormalLayout>
       <Container maxW={"8xl"} minH={"100vh"}>
