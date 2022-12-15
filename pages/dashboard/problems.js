@@ -32,6 +32,10 @@ import AdminLayout from "../../layout/AdminLayout";
 import axios from "../../utils/axios";
 
 function ProblemPage({ initialProblems }) {
+  useEffect(() => {
+    axios("/problems").then((res) => setProblems(res.data));
+  }, []);
+
   const [problems, setProblems] = useState(initialProblems);
   const [filteredProblems, setFilteredProblems] = useState(problems);
   const [examsList, setExamsList] = useState([]);
@@ -160,15 +164,15 @@ function ProblemPage({ initialProblems }) {
 
 export default ProblemPage;
 
-export async function getServerSideProps() {
-  try {
-    const res = await axios("/problems");
-    return {
-      props: {
-        initialProblems: res.data,
-      },
-    };
-  } catch (err) {
-    console.log(err);
-  }
-}
+// export async function getServerSideProps() {
+//   try {
+//     const res = await axios("/problems");
+//     return {
+//       props: {
+//         initialProblems: res.data,
+//       },
+//     };
+//   } catch (err) {
+//     console.log(err);
+//   }
+// }
