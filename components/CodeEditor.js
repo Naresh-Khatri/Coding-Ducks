@@ -61,13 +61,13 @@ function CodeEditor({ code, setCode, lang, theme, runCode }) {
     console.log("save", e);
   };
   return (
-    <Flex direction={"column"} my={2}>
+    <Flex direction={"column"} my={2} h={"100%"} w={"100%"}>
       <WindowHeader title={"editor.exe"} />
       <CodeMirror
         autoFocus
+        height="100%"
         value={code}
-        height="40vh"
-        style={{ fontSize: "1.2rem" }}
+        style={{ fontSize: "1.2rem", height: "100%" }}
         basicSetup={{ defaultKeymap: false }}
         theme={supportedThemes[theme]}
         // extensions={[loadLanguage('cpp')]}
