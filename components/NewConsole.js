@@ -82,9 +82,16 @@ function NewConsole({ output }) {
         <Box py={2}>
           <Text>Input: </Text>
           <Box bg={"gray.700"} p={3} borderRadius={10}>
-            <Text as="code" w={"100%"}>
-              {output?.results[selectedCase]?.input}
-            </Text>
+            <Text
+              as="code"
+              w={"100%"}
+              dangerouslySetInnerHTML={{
+                __html: output?.results[selectedCase]?.input.replace(
+                  /\n/g,
+                  "<br />"
+                ),
+              }}
+            ></Text>
           </Box>
         </Box>
         <Box py={2}>
@@ -96,9 +103,17 @@ function NewConsole({ output }) {
             maxH={200}
             overflowY={"auto"}
           >
-            <Text as="code" w={"100%"} maxH={200}>
-              {output?.results[selectedCase].actualOutput}
-            </Text>
+            <Text
+              as="code"
+              w={"100%"}
+              maxH={200}
+              dangerouslySetInnerHTML={{
+                __html: output?.results[selectedCase].actualOutput.replace(
+                  /\n/g,
+                  "<br />"
+                ),
+              }}
+            ></Text>
           </Box>
         </Box>
         <Box py={2}>
@@ -110,9 +125,16 @@ function NewConsole({ output }) {
             maxH={200}
             overflowY={"auto"}
           >
-            <Text as="code" w={"100%"}>
-              {output?.results[selectedCase].output}
-            </Text>
+            <Text
+              as="code"
+              w={"100%"}
+              dangerouslySetInnerHTML={{
+                __html: output?.results[selectedCase].output.replace(
+                  /\n/g,
+                  "<br />"
+                ),
+              }}
+            ></Text>
           </Box>
         </Box>
       </Box>
