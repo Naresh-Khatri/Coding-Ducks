@@ -19,7 +19,7 @@ function NewConsole({ output }) {
 
   if (output.results?.some((r) => r.errorOccurred))
     return (
-      <Box w={"100%"} p={5} overflowY={"auto"}>
+      <Box w={"100%"} p={5}>
         <Text color={"red.400"} fontWeight="extrabold" fontSize={"xl"}>
           Compilation Error
         </Text>
@@ -39,7 +39,7 @@ function NewConsole({ output }) {
     );
 
   return (
-    <Box w={"100%"} p={5} overflowY={"auto"}>
+    <Box w={"100%"} p={5} overflowY={"auto"} maxH={400}>
       <HStack>
         <Flex justify={"space-between"} mb={5} w="100%">
           <Text
@@ -78,7 +78,7 @@ function NewConsole({ output }) {
           </Button>
         ))}
       </HStack>
-      <Box>
+      <Box overflow={"auto"}>
         <Box py={2}>
           <Text>Input: </Text>
           <Box bg={"gray.700"} p={3} borderRadius={10}>

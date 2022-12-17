@@ -154,67 +154,53 @@ function TakeTest() {
         ) : (
           <Flex flexGrow={1}>
             <Split
-              className="split"
+              className="split-h"
               minSize={450}
               style={{ height: "100%", width: "100%" }}
             >
               <ProblemStatement problem={problems[currentProblemIdx - 1]} />
-              <Flex direction={"column"} width="100%" px={2}>
-                <ToolBar
-                  isLoading={isLoading}
-                  runCode={runCode}
-                  lang={lang}
-                  theme={theme}
-                  setLang={setLang}
-                  setTheme={setTheme}
-                />
-                <Flex flexGrow={1} width="100%" height={"100%"}>
-                  <CodeEditor
-                    code={code}
-                    setCode={setCode}
+              <Flex
+                direction={"column"}
+                justify="space-between"
+                width="100%"
+                px={2}
+              >
+                <Flex justify={"end"}>
+                  <ToolBar
+                    isLoading={isLoading}
+                    runCode={runCode}
                     lang={lang}
                     theme={theme}
-                    runCode={() => runCode(false)}
+                    setLang={setLang}
+                    setTheme={setTheme}
                   />
                 </Flex>
-                <Flex direction="column">
-                  <Flex flexGrow={1}>
-                    {showConsole && <NewConsole output={output} />}
+                <Flex flexGrow={1} direction="column" h={"500"}>
+                  <Flex flexGrow={1} overflow="auto">
+                    <CodeEditor
+                      code={code}
+                      setCode={setCode}
+                      lang={lang}
+                      theme={theme}
+                      runCode={() => runCode(false)}
+                    />
                   </Flex>
+                  <Flex w={"full"}>
+                    {showConsole && (
+                      <Box overflow={"auto"} w={"full"}>
+                        <NewConsole output={output} />
+                      </Box>
+                    )}
+                  </Flex>
+                </Flex>
+                <Flex h={"50px"}>
                   <BottomActions
-                    setShowConsole={setShowConsole}
                     showConsole={showConsole}
+                    setShowConsole={setShowConsole}
                     runCode={runCode}
                     isLoading={isLoading}
                   />
                 </Flex>
-                {/* <Flex
-                  flexGrow={1}
-                  width="100%"
-                  height={"100%"}
-                  overflowY="hidden"
-                >
-                  {isLoading && (
-                    <Stack bg="gray.800" h="100%">
-                      <Skeleton
-                        height="20px"
-                        fadeDuration={1}
-                        isLoaded={!isLoading}
-                      />
-                      <Skeleton
-                        height="20px"
-                        fadeDuration={3}
-                        isLoaded={!isLoading}
-                      />
-                      <Skeleton
-                        height="20px"
-                        fadeDuration={5}
-                        isLoaded={!isLoading}
-                      />
-                    </Stack>
-                  )}
-                  {!isLoading && <OutputViewer output={output} theme={theme} />}
-                </Flex> */}
               </Flex>
             </Split>
           </Flex>

@@ -7,14 +7,14 @@ import React from "react";
 
 function BottomActions({ setShowConsole, showConsole, isLoading, runCode }) {
   return (
-    <Flex w="100%" justify={"space-between"} pb={5}>
+    <Flex w="100%" justify={"space-between"}>
       <Button
         onClick={() => setShowConsole((p) => !p)}
         rightIcon={showConsole ? <ChevronDownIcon /> : <ChevronUpIcon />}
       >
         Console
       </Button>
-      <HStack>
+      <HStack my={0} py={0}>
         <Button
           loadingText="Running..."
           isLoading={isLoading}
