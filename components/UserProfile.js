@@ -31,13 +31,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useContext } from "react";
 import { userContext } from "../contexts/userContext";
-import { logout } from "../firebase/firebase";
 import EditProfileInModel from "./EditProfileInModel";
 import Link from "next/link";
 import FollowDetailsModal from "./FollowDetailsModal";
 
 function UserProfile() {
-  const { user } = useContext(userContext);
+  const { user, logout } = useContext(userContext);
   const { fullname, email, roll, photoURL, isAdmin, username } = user;
 
   const [maskedEmail, setMaskedEmail] = useState("");

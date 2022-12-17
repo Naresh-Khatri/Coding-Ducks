@@ -1,7 +1,11 @@
 import { useRouter } from "next/router";
 import { createContext, useContext, Context, useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { signInWithGoogle, auth, logout } from "../firebase/firebase";
+import {
+  signInWithGoogle,
+  auth,
+  logout as logoutFromFirebase,
+} from "../firebase/firebase";
 import axios from "../utils/axios";
 
 export const userContext = createContext({
@@ -10,6 +14,7 @@ export const userContext = createContext({
   error: null,
   logout: null,
   signInWithGoogle: null,
+  logout: null,
   updateUser: null,
 });
 
@@ -81,6 +86,10 @@ export function AuthUserProvider({ children }) {
         });
     }
   }, [user, loading]);
+  const logout = () => {
+    logoutFromFirebase();
+    setCompleteUser({});
+  };
 
   return (
     <userContext.Provider
@@ -89,8 +98,8 @@ export function AuthUserProvider({ children }) {
         firebaseUser: user,
         loading,
         error,
-        logout,
         signInWithGoogle,
+        logout,
         updateUser,
       }}
     >
