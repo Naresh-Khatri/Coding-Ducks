@@ -7,15 +7,16 @@ import {
   Spacer,
   Text,
 } from "@chakra-ui/react";
-import { faClock } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faHome, faLeftLong } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
 import { useContext } from "react";
 // import Sidebar from "../components/Sidebar";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
 import { submissionsContext } from "../contexts/submissionsContext";
 
-function MainLayout({ children }) {
+function MainLayout({ children, title }) {
   const { totalMarks, marks } = useContext(submissionsContext);
   return (
     <Flex direction={"column"} h={"100vh"}>
@@ -29,9 +30,20 @@ function MainLayout({ children }) {
         h={"70px"}
       >
         <HStack alignItems={"center"} h={"70px"}>
-          <IconButton bg={"transparent"} />
+          <Link href={"/home"}>
+            <IconButton
+              bg={"transparent"}
+              icon={<FontAwesomeIcon height={"1.2rem"} icon={faLeftLong} />}
+            />
+          </Link>
+          <Link href={"/"}>
+            <IconButton
+              bg={"transparent"}
+              icon={<FontAwesomeIcon height={"1.2rem"} icon={faHome} />}
+            />
+          </Link>
           <Text fontSize="20px" fontWeight={"extrabold"} noOfLines={1}>
-            Coding karlo frenzzzz
+            {title}
           </Text>
         </HStack>
         <Spacer />
@@ -47,9 +59,9 @@ function MainLayout({ children }) {
           <ThemeToggler />
           <UserProfile />
 
-          <Button variant={"solid"} bg={"red.400"} disabled>
+          {/* <Button variant={"solid"} bg={"red.400"} disabled>
             Finish
-          </Button>
+          </Button> */}
         </HStack>
       </Flex>
       <Flex w={"100vw"} flexGrow={1} overflowY="hidden">
