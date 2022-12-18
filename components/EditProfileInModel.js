@@ -24,14 +24,15 @@ function EditProfileInModel({ onCancel, onSubmit }) {
   const toast = useToast();
   const updateProfile = async () => {
     console.log("update profile");
-    const payload = {
-      fullname: fullname,
-      roll: newRoll,
-      email: newEmail,
-      username: newUsername,
-    };
+    const payload = {};
+    if (user.fullname !== fullname) payload.fullname = fullname;
+    if (user.roll !== newRoll) payload.roll = newRoll;
+    if (user.email !== newEmail) payload.email = newEmail;
+    if (user.username !== newUsername) payload.username = newUsername;
+
     try {
-      const res = await updateUser(payload);
+      await updateUser(payload);
+      console.log(payload);
       toast({
         title: "Profile Updated!",
         description: "We've updated your profile for you.",
