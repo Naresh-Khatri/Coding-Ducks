@@ -36,7 +36,7 @@ function ProblemPage() {
     const getProblems = async () => {
       const { data } = await axios.get("/problems");
       setProblems(data);
-      setFilteredProblems(data)
+      setFilteredProblems(data);
     };
     getProblems();
   }, []);
@@ -49,13 +49,18 @@ function ProblemPage() {
   // console.log(problems);
   const fetchProblems = async () => {
     const res = await axios("/problems");
+    console.log(res.data);
     setProblems(res.data);
   };
   useEffect(() => {
     const list = [];
     problems?.forEach((problem) => {
       if (!list.find((exam) => exam.id === problem.examId))
-        list.push({ id: problem.examId, title: problem.exam.title });
+        list.push({
+          id: problem.examId,
+          title: problem.exam.title,
+          slug: problem.exam.slug,
+        });
     });
     setExamsList(list);
     // console.log(list);
@@ -152,6 +157,7 @@ function ProblemPage() {
                   key={problem.id}
                   problem={problem}
                   fetchProblems={fetchProblems}
+                  examsList={examsList}
                 />
               ))}
             </Tbody>
