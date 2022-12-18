@@ -7,6 +7,7 @@ import {
   Heading,
   HStack,
   Text,
+  useColorModeValue,
 } from "@chakra-ui/react";
 
 import Footer from "./components/Footer";
@@ -14,6 +15,24 @@ import Link from "next/link";
 import ThemeToggler from "../components/ThemeToggler";
 import { userContext } from "../contexts/userContext";
 import UserProfile from "../components/UserProfile";
+
+function NormalLayout({ children }) {
+  return (
+    <>
+      <Flex direction={"column"} flex="1">
+        <NavBar />
+        <Box as="main">{children}</Box>
+        <Footer />
+      </Flex>
+    </>
+  );
+}
+
+const links = [
+  { name: "Home", href: "/" },
+  { name: "Users", href: "/users" },
+  { name: "Tests", href: "/home" },
+];
 
 function NavBar() {
   const { user, loading } = useContext(userContext);
@@ -25,10 +44,22 @@ function NavBar() {
   return (
     <Box as="header">
       <Box as="nav">
-        <Flex px={{ base: 0, md: 10 }} py={2} justifyContent="space-between">
+        <Flex
+          px={{ base: 0, md: 10 }}
+          py={2}
+          justifyContent="space-between"
+          align={"center"}
+        >
           <Heading>
-            <Text></Text>
+            <Text fontSize={"3xl"}>Coding ducks🦆</Text>
           </Heading>
+          <HStack as={"nav"}>
+            {links.map((link) => (
+              <NavLink key={link.name} href={link.href}>
+                {link.name}
+              </NavLink>
+            ))}
+          </HStack>
           <HStack>
             <ThemeToggler />
             {loading ? (
@@ -52,16 +83,22 @@ function NavBar() {
     </Box>
   );
 }
-function NormalLayout({ children }) {
-  return (
-    <>
-      <Flex direction={"column"} flex="1">
-        <NavBar />
-        <Box as="main">{children}</Box>
-        <Footer />
-      </Flex>
-    </>
-  );
-}
+
+const NavLink = ({ children, href }) => (
+  <Link
+    px={2}
+    py={1}
+    rounded={"md"}
+    _hover={{
+      textDecoration: "none",
+      bg: useColorModeValue("gray.200", "gray.700"),
+    }}
+    href={href}
+  >
+    <Button variant={"ghost"} colorScheme="purple">
+      {children}
+    </Button>
+  </Link>
+);
 
 export default NormalLayout;
