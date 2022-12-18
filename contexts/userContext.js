@@ -38,7 +38,7 @@ export function AuthUserProvider({ children }) {
         ...updatedUser,
         googleUID: user.googleUID || user.uid,
       });
-      // console.log(res.data);
+      console.log(res.data);
       setCompleteUser(res.data);
     } catch (error) {
       console.log(error);
@@ -63,32 +63,38 @@ export function AuthUserProvider({ children }) {
     setCompleteUser(obj);
   };
   useEffect(() => {
-    // check if user is stored in db
-    if (user) {
-      // console.log(user)
-      saveInCookie(user);
-      axios
-        .get(`/users/${user.uid}`)
-        .then((res) => {
-          console.log("user changed", res.data);
+    if (!loading) {
+      // check if user is stored in db
+      if (user) {
+        // console.log(user)
+        saveInCookie(user);
+        axios
+          .get(`/users/${user.uid}`)
+          .then((res) => {
+            console.log("user changed", res.data);
 
-          if (res.data.length == 0) {
-            // if user doesnt exist, redirect to setup-profile
-            router.push("/setup-profile");
-          } else {
-            // if user exist in db then set completeUser to the user object
-            // console.log(res.data)
-            makeUserObject(res.data);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+            if (res.data.length == 0) {
+              // if user doesnt exist, redirect to setup-profile
+              router.push("/setup-profile");
+            } else {
+              // if user exist in db then set completeUser to the user object
+              // console.log(res.data)
+              makeUserObject(res.data);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        console.log("user is null");
+        router.push("/login");
+      }
     }
   }, [user, loading]);
   const logout = () => {
     logoutFromFirebase();
     setCompleteUser({});
+    axios.get(`/users/${user.uid}`);
   };
 
   return (
