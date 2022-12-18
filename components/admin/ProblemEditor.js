@@ -45,7 +45,13 @@ const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   loading: () => <p>Loading ...</p>,
 });
 
-function ProblemEditor({ isOpen, onClose, problemData, onEditSuccess }) {
+function ProblemEditor({
+  isOpen,
+  onClose,
+  problemData,
+  onEditSuccess,
+  examsList,
+}) {
   const { title, description, difficulty, examId, order, testCases } =
     problemData;
   const [newOrder, setNewOrder] = useState(order);
@@ -56,17 +62,7 @@ function ProblemEditor({ isOpen, onClose, problemData, onEditSuccess }) {
   );
   const [newTestCases, setNewTestCases] = useState(testCases);
 
-  const [examsList, setExamsList] = useState([]);
   const [selectedExam, setSelectedExam] = useState(examId);
-  const fetchExams = async () => {
-    const res = await axios.get("/exams");
-    setExamsList(res.data);
-    // console.log(res);
-  };
-  useEffect(() => {
-    fetchExams();
-  }, []);
-
   const toast = useToast();
 
   const updateProblem = async () => {
@@ -99,7 +95,8 @@ function ProblemEditor({ isOpen, onClose, problemData, onEditSuccess }) {
       });
     }
   };
-
+  if (!problemData || !examsList) return <Box> loading... </Box>;
+  // console.log(examsList);
   return (
     <Modal onClose={onClose} size={"4xl"} isOpen={isOpen}>
       <ModalOverlay backdropFilter="auto" backdropBlur="2px" />
