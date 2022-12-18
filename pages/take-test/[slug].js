@@ -140,7 +140,7 @@ function TakeTest() {
   };
 
   return (
-    <MainLayout>
+    <MainLayout title={examData?.title || "Unknown test"}>
       <Flex w={"100vw"} direction="row">
         <Flex>
           <LeftProblemsList
