@@ -29,7 +29,7 @@ function UserStats({ progress }) {
 }
 
 const ExamCard = ({ submissions }) => {
-  console.log(submissions)
+  // console.log(submissions)
   return (
     <Link href={`/take-test/${submissions[0].Exam.slug}`}>
       <Grid h={100} w={"100%"} templateColumns="repeat(5, 1fr)" m={2}>
