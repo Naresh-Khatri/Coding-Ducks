@@ -67,7 +67,7 @@ function CodeEditor({ code, setCode, lang, theme, runCode }) {
         autoFocus
         value={code}
         height="600px"
-        style={{ fontSize: "1.2rem" }}
+        style={{ fontSize: "1.2rem", maxWidth: "60vw" }}
         theme={supportedThemes[theme]}
         extensions={[keymap.of(shortcuts), supportedLangs[lang]]}
         onChange={(value) => setCode(value)}
