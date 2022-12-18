@@ -78,10 +78,11 @@ function ExamCard({ examData }) {
         mb={4}
         mx={2}
         shadow={"2xl"}
-        disabled
+        // disabled
         _hover={{}}
       >
-        Opens on {start}
+        {/* Opens on {start} */}
+        Details
       </Button>
       <ExamDetailsModel
         examData={examData}
