@@ -1,4 +1,12 @@
-import { HStack, IconButton, Td, Tr, useDisclosure } from "@chakra-ui/react";
+import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
+import {
+  CloseButton,
+  HStack,
+  IconButton,
+  Td,
+  Tr,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
@@ -7,7 +15,7 @@ import ExamDeleteModal from "./ExamDeleteModal";
 import ExamEditor from "./ExamEditor";
 
 function ExamRow({ exam, fetchExams }) {
-  const { id, coverImg, title, description, endTime, startTime } = exam;
+  const { id, coverImg, title, description, endTime, startTime, active } = exam;
   const {
     onOpen: onEditOpen,
     onClose: onEditClose,
@@ -34,6 +42,13 @@ function ExamRow({ exam, fetchExams }) {
       </Td>
       <Td>{title}</Td>
       <Td>{startTime}</Td>
+      <Td>
+        {active ? (
+          <CheckIcon color={"green.400"} />
+        ) : (
+          <CloseIcon color={"red.600"} />
+        )}
+      </Td>
       <Td>
         <HStack>
           <IconButton
