@@ -37,6 +37,7 @@ function ExamDetailsModel({ examData, isOpen, onClose, onOpen }) {
               width={200}
               height={200}
               alt={"exam name " + examData.title}
+              style={{ objectFit: "cover", borderRadius: "20px" }}
             />
             <Flex
               justifyContent={"center"}
