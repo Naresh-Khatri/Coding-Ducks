@@ -7,6 +7,7 @@ import {
   Divider,
   Flex,
   HStack,
+  Icon,
   IconButton,
   Modal,
   ModalBody,
@@ -66,9 +67,9 @@ function UserProfile() {
   if (!photoURL) return <>Loading...</>;
   return (
     <Box>
-      <HStack>
+      <HStack onClick={onOpen} cursor="pointer">
         <IconButton borderRadius={50}>
-          <Avatar onClick={onOpen}>
+          <Avatar>
             <Image
               src={photoURL}
               alt="Profile Picture"
@@ -79,13 +80,14 @@ function UserProfile() {
           </Avatar>
         </IconButton>
         <Flex direction={"column"} alignItems="center">
-          <Text fontWeight={"extrabold"}>{fullname}</Text>
-          {isAdmin && (
-            <HStack alignItems={"center"} color="gold">
-              <FontAwesomeIcon icon={faCrown} height={20} />
-              <Text>Admin</Text>
-            </HStack>
-          )}
+          <Flex>
+            <Text fontWeight={"extrabold"}>{fullname}</Text>
+            {isAdmin && (
+              <Box color={"gold"}>
+                <FontAwesomeIcon icon={faCrown} height={20} />
+              </Box>
+            )}
+          </Flex>
           <Text>{roll}</Text>
         </Flex>
       </HStack>
@@ -170,65 +172,69 @@ function UserProfile() {
                     </HStack>
                   </Box>
                   <Divider />
-                  <FollowDetailsModal
-                    isOpen={isFollowInfoOpen}
-                    onClose={onFollowInfoClose}
-                    followData={user}
-                  />
-                  <HStack
-                    w="100%"
-                    justify="center"
-                    h={10}
-                    onClick={onFollowInfoOpen}
-                    cursor="pointer"
-                  >
-                    <Flex w="50%">
-                      <Box>
-                        <VStack>
-                          <Text fontSize="md" fontWeight="extrabold">
-                            {user.followedBy.length || 0}
-                          </Text>
-                          <Text
-                            fontSize="sm"
-                            style={{ margin: 0 }}
-                            color="gray.500"
-                          >
-                            Followers
-                          </Text>
-                        </VStack>
-                      </Box>
-                      <Spacer />
-                      <Box>
-                        <VStack>
-                          <Text fontSize="md" fontWeight="extrabold">
-                            {user.following.length || 0}
-                          </Text>
-                          <Text
-                            fontSize="sm"
-                            style={{ margin: 0 }}
-                            color="gray.500"
-                          >
-                            following
-                          </Text>
-                        </VStack>
-                      </Box>
-                      <Spacer />
-                      <Box>
-                        <VStack>
-                          <Text fontSize="md" fontWeight="extrabold">
-                            0
-                          </Text>
-                          <Text
-                            fontSize="sm"
-                            style={{ margin: 0 }}
-                            color="gray.500"
-                          >
-                            pulihora
-                          </Text>
-                        </VStack>
-                      </Box>
-                    </Flex>
-                  </HStack>
+                  {!!user.followedBy && (
+                    <>
+                      <FollowDetailsModal
+                        isOpen={isFollowInfoOpen}
+                        onClose={onFollowInfoClose}
+                        followData={user}
+                      />
+                      <HStack
+                        w="100%"
+                        justify="center"
+                        h={10}
+                        onClick={onFollowInfoOpen}
+                        cursor="pointer"
+                      >
+                        <Flex w="50%">
+                          <Box>
+                            <VStack>
+                              <Text fontSize="md" fontWeight="extrabold">
+                                {user.followedBy?.length || 0}
+                              </Text>
+                              <Text
+                                fontSize="sm"
+                                style={{ margin: 0 }}
+                                color="gray.500"
+                              >
+                                Followers
+                              </Text>
+                            </VStack>
+                          </Box>
+                          <Spacer />
+                          <Box>
+                            <VStack>
+                              <Text fontSize="md" fontWeight="extrabold">
+                                {user.following?.length || 0}
+                              </Text>
+                              <Text
+                                fontSize="sm"
+                                style={{ margin: 0 }}
+                                color="gray.500"
+                              >
+                                following
+                              </Text>
+                            </VStack>
+                          </Box>
+                          <Spacer />
+                          <Box>
+                            <VStack>
+                              <Text fontSize="md" fontWeight="extrabold">
+                                0
+                              </Text>
+                              <Text
+                                fontSize="sm"
+                                style={{ margin: 0 }}
+                                color="gray.500"
+                              >
+                                pulihora
+                              </Text>
+                            </VStack>
+                          </Box>
+                        </Flex>
+                      </HStack>
+                    </>
+                  )}
                 </VStack>
               </HStack>
             )}
