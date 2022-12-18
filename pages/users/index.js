@@ -1,4 +1,11 @@
-import { Box, Container, Flex, SimpleGrid, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Container,
+  Flex,
+  SimpleGrid,
+  Text,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -13,7 +20,7 @@ function UsersPage() {
       setUsers(data.data);
     });
   }, []);
-  console.log(users);
+  //   console.log(users);
   return (
     <NormalLayout>
       <Container mt={70} maxW={"6xl"} minH={"100vh"}>
@@ -37,12 +44,12 @@ const UserCard = ({ user }) => {
         w={"full"}
         h={200}
         position="relative"
-        bg={"gray.700"}
-        backgroundColor="#111928bf"
+        bg={useColorModeValue("white", "#111928bf")}
+        boxShadow="2xl"
         backdropFilter="blur(4px) saturate(180%)"
         borderRadius="12px"
         border="1px solid rgba(255,255,255,.125)"
-        _hover={{ backgroundColor: "#111528" }}
+        _hover={{ backgroundColor: useColorModeValue("gray.100", "#111528") }}
       >
         <Box
           position="absolute"
