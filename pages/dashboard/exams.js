@@ -32,7 +32,7 @@ function Exams() {
   }, []);
   return (
     <AdminLayout>
-      <Container maxW="container.xl">
+      <Container maxW="container.xl" overflow={"auto"}>
         <Box m={10}>
           <Link href="/dashboard/add-exam">
             <Button bg="green.400">Add Exam</Button>
