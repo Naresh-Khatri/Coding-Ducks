@@ -82,7 +82,7 @@ function ExamCard({ examData }) {
         _hover={{}}
       >
         {/* Opens on {start} */}
-        Details
+        Show details
       </Button>
       <ExamDetailsModel
         examData={examData}
