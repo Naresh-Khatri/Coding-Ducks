@@ -8,7 +8,7 @@ import ExamEditor from "./ExamEditor";
 import ProblemDeleteModal from "./ProblemDeleteModal";
 import ProblemEditor from "./ProblemEditor";
 
-function ProblemRow({ problem, fetchProblems }) {
+function ProblemRow({ problem, fetchProblems, examsList }) {
   const { id, order, difficulty, title, description, tags } = problem;
   const {
     onOpen: onEditOpen,
@@ -36,6 +36,7 @@ function ProblemRow({ problem, fetchProblems }) {
           />
           <ProblemEditor
             problemData={problem}
+            examsList={examsList}
             isOpen={isEditOpen}
             onClose={onEditClose}
             onOpen={onEditOpen}
