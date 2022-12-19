@@ -24,16 +24,20 @@ import ThemeToggler from "../components/ThemeToggler";
 import Image from "next/image";
 
 import axios from "../utils/axios";
-import { logout } from "../firebase/firebase";
 
 export default function EditUserProfile() {
   const toast = useToast();
   const router = useRouter();
-  const { user, firebaseUser, loading } = useContext(userContext);
+  const { user, firebaseUser, loading, logout, loadUser } = useContext(userContext);
 
   const [fullname, setFullname] = useState("");
   const [username, setUsername] = useState("");
   const [roll, setRoll] = useState("");
+  const [isUsernameValid, setIsUsernameValid] = useState(false);
+  const [isRollValid, setIsRollValid] = useState(false);
+
+  const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
+  const rollRegex = /^[0-9]{2}[a-zA-Z]{2}[0-9]{1}[a-zA-Z0-9]{5}$/;
 
   useEffect(() => {
     // if not loading, firebaseuser null and user null, redirect to login
@@ -42,6 +46,7 @@ export default function EditUserProfile() {
 
     if (firebaseUser) {
       setFullname(firebaseUser.displayName);
+      console.log('firebaseUser', firebaseUser)
     }
     // if (!loading && Object.keys(user) == 0) router.push("/login");
     // checking for googleUID in the user object to make sure used is in db
@@ -63,6 +68,7 @@ export default function EditUserProfile() {
         email: firebaseUser.email,
       };
       const res = await axios.post("/users", payload);
+      console.log(res)
       toast({
         title: "User Created!",
         description: "We've created your account for you.",
@@ -70,6 +76,8 @@ export default function EditUserProfile() {
         duration: 9000,
         isClosable: true,
       });
+
+      loadUser();
       router.push("/home");
     } catch (error) {
       if (error.response.data.code == 69)
@@ -88,8 +96,27 @@ export default function EditUserProfile() {
   const color1 = useColorModeValue("gray.50", "gray.800");
   const color2 = useColorModeValue("white", "gray.700");
   const handleLogout = async () => {
-    await logout();
+    logout();
     router.push("/login");
+  };
+
+  const handleUsernameChange = (e) => {
+    const username = e.target.value;
+    setUsername(username);
+    if (usernameRegex.test(username)) {
+      setIsUsernameValid(true);
+    } else {
+      setIsUsernameValid(false);
+    }
+  };
+  const handleRollChange = (e) => {
+    const roll = e.target.value;
+    setRoll(roll);
+    if (rollRegex.test(roll) && roll.length == 10) {
+      setIsRollValid(true);
+    } else {
+      setIsRollValid(false);
+    }
   };
 
   if (!firebaseUser || loading) return <>Loading...</>;
@@ -167,10 +194,13 @@ export default function EditUserProfile() {
             <FormLabel>Username</FormLabel>
             <Input
               placeholder="Enter your username"
+              errorBorderColor="crimson"
+              focusBorderColor={isUsernameValid ? "green.500" : "red.500"}
               _placeholder={{ color: "gray.500" }}
               type="text"
+              isInvalid={!isUsernameValid}
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => handleUsernameChange(e)}
             />
           </FormControl>
           <FormControl id="roll" isRequired>
@@ -180,8 +210,11 @@ export default function EditUserProfile() {
               placeholder="22FH1A0---"
               _placeholder={{ color: "gray.500" }}
               type="text"
+              errorBorderColor="crimson"
+              focusBorderColor={isRollValid ? "green.500" : "red.500"}
+              isInvalid={!isRollValid}
               value={roll}
-              onChange={(e) => setRoll(e.target.value)}
+              onChange={(e) => handleRollChange(e)}
             />
           </FormControl>
           <FormControl id="email" isRequired>
@@ -213,6 +246,7 @@ export default function EditUserProfile() {
                 bg: "purple.500",
               }}
               onClick={handleSubmitClick}
+              disabled={!isUsernameValid || !isRollValid}
             >
               Submit
             </Button>
