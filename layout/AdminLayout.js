@@ -1,4 +1,12 @@
-import { Box, Flex, HStack, IconButton, Spacer, Text, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  HStack,
+  IconButton,
+  Spacer,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useEffect } from "react";
@@ -87,7 +95,14 @@ function AdminLayout({ children }) {
             </Box>
           </Link>
           <Link href={"/dashboard/exercises"}>
-            <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
+            <Box
+              bg={"purple.800"}
+              px={8}
+              py={5}
+              borderRadius={20}
+              my={2}
+              _disabled
+            >
               <Text fontWeight={"extrabold"} fontSize={"1xl"}>
                 Exercises
               </Text>

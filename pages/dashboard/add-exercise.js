@@ -46,59 +46,88 @@ const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   loading: () => <p>Loading ...</p>,
 });
 
-const SectionInfo = ({ section, setSections }) => {
-  const [sectionTitle, setSectionTitle] = useState(section.title);
-  const [problems, setProblems] = useState(section.problems);
-  console.log(section);
+const SectionInfo = ({ sections, secIdx, setSections }) => {
+  // const [problems, setProblems] = useState(section.problems);
 
-  const handleOnRemoveSectionClick = () => {};
+  const handleOnRemoveSectionClick = () => {
+    setSections((p) => p.filter((item, index) => secIdx != index));
+  };
 
   const handleOnSectionTitleChange = (e) => {
-    
+    setSections((secs) =>
+      secs.map((sec, index) => {
+        if (secIdx == index) return { ...sec, title: e.target.value };
+        else return sec;
+      })
+    );
   };
-  return (
-    <TabPanel>
-      {JSON.stringify(section)}
-      <Flex>
-        <FormControl mr="5%">
-          <FormLabel htmlFor="section-title" fontWeight={"normal"}>
-            Section Title
-          </FormLabel>
-          <Input
-            id="first-name"
-            placeholder="Title"
-            w={"-moz-fit-content"}
-            value={section.title}
-            onChange={handleOnSectionTitleChange}
-          />
-        </FormControl>
-        <Button colorScheme={"red"} onClick={handleOnRemoveSectionClick}>
-          Remove Section
+  const handleOnAddNewProblem = () => {
+    setSections((secs) =>
+      secs.map((sec, _secIdx) => {
+        if (secIdx == _secIdx)
+          return {
+            ...sec,
+            probelms: sec.problems.push({
+              id: sec.problems.length,
+              title: "",
+              description: "",
+              code: "",
+            }),
+          };
+        else return sec;
+      })
+    );
+  };
+  console.log(sections);
+  if (!sections[0]) return null;
+  else
+    return (
+      <TabPanel>
+        <Flex>
+          <FormControl mr="5%">
+            <FormLabel htmlFor="section-title" fontWeight={"normal"}>
+              Section Title
+            </FormLabel>
+            <Input
+              id="first-name"
+              placeholder="Title"
+              w={"-moz-fit-content"}
+              value={sections[secIdx].title}
+              onChange={handleOnSectionTitleChange}
+            />
+          </FormControl>
+          <Button colorScheme={"red"} onClick={handleOnRemoveSectionClick}>
+            Remove Section
+          </Button>
+        </Flex>
+        <TableContainer>
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>Id</Th>
+                <Th>Title</Th>
+                <Th>problem description</Th>
+                <Th>code</Th>
+                <Th>delete</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {sections[secIdx].problems.map((problem, probIdx) => (
+                <ExerciseRow
+                  key={problem.id}
+                  secIdx={secIdx}
+                  probIdx={probIdx}
+                  setSections={setSections}
+                />
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
+        <Button colorScheme={"green"} onClick={handleOnAddNewProblem}>
+          Add problem
         </Button>
-      </Flex>
-      <TableContainer>
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>Id</Th>
-              <Th>Title</Th>
-              <Th>problem description</Th>
-              <Th>code</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {problems.map((problem) => (
-              <ExerciseRow
-                key={problem.id}
-                problem={problem}
-                setProblems={setProblems}
-              />
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
-    </TabPanel>
-  );
+      </TabPanel>
+    );
 };
 
 const AddExam = () => {
@@ -233,10 +262,17 @@ const AddExam = () => {
                   />
                 </TabList>
                 <TabPanels>
+                  {/* {sections.map((section, index) => (
+                    <TabPanel key={index}>
+                      <Box>{JSON.stringify(section)}</Box>
+                    </TabPanel>
+                  ))} */}
+
                   {sections.map((section, index) => (
                     <SectionInfo
                       key={index}
-                      section={section}
+                      sections={sections}
+                      secIdx={index}
                       setSections={setSections}
                     />
                   ))}

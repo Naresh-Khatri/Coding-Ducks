@@ -27,7 +27,7 @@ export default function CodeEditor({ output, theme }) {
   const [hasError, setHasError] = useState(false);
 
   const formatResult = (res) => {
-    console.log(res);
+    //check if any test case has error
     if (res.results?.some((r) => r.errorOccurred)) {
       //if any test case has error
       //find the first test case with error
@@ -73,35 +73,29 @@ Your code output: \n${test.actualOutput}\n${
     <>
       {/* {outputText} */}
       {/* {hasError? 'yess error':'no error'} */}
-      <Box h={"100%"} maxH={"100%"} mb={40}>
+      <Box h={"100%"} maxH={"100%"} mb={40} w={"100%"} maxW={"500px"}>
         <WindowHeader hasError={hasError} title={"console.exe"} />
-        <CodeMirror
-          basicSetup={{
-            lineNumbers: false,
-            highlightActiveLine: false,
-            highlightActiveLineGutter: false,
-            highlightSelectionMatches: false,
-            highlightSpecialChars: false,
-            styleActiveLine: false,
-          }}
-          style={{ fontSize: "1.2rem", height: "90%" }}
-          height="100%"
-          readOnly={true}
-          editable={false}
-          value={outputText}
-          theme={supportedThemes[theme]}
-        />
+        <Box bg={"gray.900"} h={"100%"}>
+          {hasError && (
+            <CodeMirror
+              basicSetup={{
+                lineNumbers: false,
+                highlightActiveLine: false,
+                highlightActiveLineGutter: false,
+                highlightSelectionMatches: false,
+                highlightSpecialChars: false,
+                styleActiveLine: false,
+              }}
+              style={{ fontSize: "1.2rem", height: "90%", overflow: "hidden" }}
+              height="100%"
+              readOnly={true}
+              editable={false}
+              value={outputText}
+              theme={supportedThemes[theme]}
+            />
+          )}
+        </Box>
       </Box>
     </>
   );
 }
-// n = int(input())
-
-// t1 = 0
-// t2 = 1
-
-// for _ in range(n):
-//   print(t1, end=" ")
-//   temp = t1 + t2
-//   t1 = t2
-//   t2 = temp
