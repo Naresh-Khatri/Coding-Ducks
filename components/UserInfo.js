@@ -55,11 +55,6 @@ function UserInfo({ viewingUser }) {
 
   return (
     <Box w={"500px"}>
-      <FollowDetailsModal
-        isOpen={isOpen}
-        onClose={onClose}
-        followData={viewingUserState}
-      />
       <Box
         borderRadius="5px"
         bg="purple.500"
@@ -125,11 +120,16 @@ function UserInfo({ viewingUser }) {
             onClick={onOpen}
             cursor="pointer"
           >
+            <FollowDetailsModal
+              isOpen={isOpen}
+              onClose={onClose}
+              followData={viewingUserState}
+            />
             <Flex w="50%">
               <Box>
                 <VStack>
                   <Text fontSize="md" fontWeight="extrabold">
-                    {viewingUserState.followedBy.length || 0}
+                    {viewingUserState.followedBy?.length || 0}
                   </Text>
                   <Text fontSize="sm" style={{ margin: 0 }} color="gray.500">
                     Followers
@@ -140,7 +140,7 @@ function UserInfo({ viewingUser }) {
               <Box>
                 <VStack>
                   <Text fontSize="md" fontWeight="extrabold">
-                    {viewingUserState.following.length || 0}
+                    {viewingUserState.following?.length || 0}
                   </Text>
                   <Text fontSize="sm" style={{ margin: 0 }} color="gray.500">
                     following
