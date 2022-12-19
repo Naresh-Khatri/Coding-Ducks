@@ -1,18 +1,36 @@
 import {
+  Box,
   Button,
+  Flex,
   FormControl,
   FormLabel,
   Heading,
+  IconButton,
   Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Stack,
   useColorModeValue,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useState } from "react";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Image from "next/image";
+import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../contexts/userContext";
 
+import { Cropper } from "react-advanced-cropper";
+import "react-advanced-cropper/dist/style.css";
+import axios from "../utils/axios";
+
 function EditProfileInModel({ onCancel, onSubmit }) {
-  const { user, updateUser } = useContext(userContext);
+  const { user, updateUser, loadUser } = useContext(userContext);
 
   const [fullname, setFullname] = useState(user.fullname || "");
   const [newRoll, setNewRoll] = useState(user.roll || "");
@@ -21,6 +39,10 @@ function EditProfileInModel({ onCancel, onSubmit }) {
   const [isUsernameValid, setIsUsernameValid] = useState(false);
   const [isRollValid, setIsRollValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
+
+  const [newProfilePicture, setNewProfilePicture] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cropperRef = useRef(null);
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
   const rollRegex = /^[0-9]{2}[a-zA-Z]{2}[0-9]{1}[a-zA-Z0-9]{5}$/;
@@ -61,6 +83,59 @@ function EditProfileInModel({ onCancel, onSubmit }) {
       });
     }
   };
+  const UploadProfilePicture = async () => {
+    const convertCanvasToBlob = (canvas) => {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        });
+      });
+    };
+    try {
+      const formData = new FormData();
+      formData.append(
+        "newProfilePicture",
+        await convertCanvasToBlob(cropperRef.current.getCanvas())
+      );
+      const res = await axios.post("/users/uploadProfilePicture", formData);
+      console.log(res);
+      toast({
+        title: "Profile Picture Updated!",
+        description: "We've updated your profile picture for you.",
+        position: "top-right",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+      onCancel();
+      loadUser();
+    } catch (err) {
+      toast({
+        title: "Error Updating Profile Picture!",
+        description:
+          "We've encountered an error while updating your profile picture.",
+        position: "top-right",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+
+      console.log(err);
+    }
+  };
+
+  const onFileChange = (e) => {
+    if (!e.target) return;
+    console.log(e);
+    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
+    console.log(file);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async (e) => {
+      setNewProfilePicture(e.target.result);
+    };
+  };
+
   useEffect(() => {
     handleRollChange({ target: { value: newRoll } });
     handleUsernameChange({ target: { value: newUsername } });
@@ -102,8 +177,60 @@ function EditProfileInModel({ onCancel, onSubmit }) {
       bg={color}
       rounded={"xl"}
       boxShadow={"lg"}
-      p={6}
+      pb={6}
+      px={6}
     >
+      <Button onClick={onOpen}>change photo</Button>
+      <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Change Profile Picture</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody w={"100%"}>
+            {!newProfilePicture ? (
+              <>
+                <Input type="file" accept="image/*" onChange={onFileChange} />
+                {/* <Button  */}
+              </>
+            ) : (
+              <Flex position={"relative"} w={"100%"}>
+                <Cropper
+                  ref={cropperRef}
+                  src={newProfilePicture}
+                  onChange={onFileChange}
+                  className={"cropper"}
+                  aspectRatio={1}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                  }}
+                />
+                <IconButton
+                  position={"absolute"}
+                  zIndex={1}
+                  top={-5}
+                  right={-5}
+                  icon={<FontAwesomeIcon icon={faTrash} />}
+                  bg="red.300"
+                  color="white"
+                  onClick={() => setNewProfilePicture("")}
+                />
+                {/* <img src={coverImg} alt="cover image" /> */}
+              </Flex>
+            )}
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
+              Close
+            </Button>
+            <Button variant="ghost" onClick={UploadProfilePicture}>
+              Upload
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       <Heading fontSize={{ base: "2xl", sm: "3xl" }}>User Profile Edit</Heading>
       <FormControl id="fullname" isRequired>
         <FormLabel>Full Name</FormLabel>
