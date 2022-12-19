@@ -8,7 +8,7 @@ import {
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { userContext } from "../contexts/userContext";
 
 function EditProfileInModel({ onCancel, onSubmit }) {
@@ -18,6 +18,14 @@ function EditProfileInModel({ onCancel, onSubmit }) {
   const [newRoll, setNewRoll] = useState(user.roll || "");
   const [newEmail, setNewEmail] = useState(user.email || "");
   const [newUsername, setNewUsername] = useState(user.username || "");
+  const [isUsernameValid, setIsUsernameValid] = useState(false);
+  const [isRollValid, setIsRollValid] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
+
+  const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
+  const rollRegex = /^[0-9]{2}[a-zA-Z]{2}[0-9]{1}[a-zA-Z0-9]{5}$/;
+  const emailRegex =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
   const color = useColorModeValue("white", "gray.700");
 
@@ -31,8 +39,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
     if (user.username !== newUsername) payload.username = newUsername;
 
     try {
-      await updateUser(payload);
-      console.log(payload);
+      const res = await updateUser(payload);
       toast({
         title: "Profile Updated!",
         description: "We've updated your profile for you.",
@@ -54,6 +61,39 @@ function EditProfileInModel({ onCancel, onSubmit }) {
       });
     }
   };
+  useEffect(() => {
+    handleRollChange({ target: { value: newRoll } });
+    handleUsernameChange({ target: { value: newUsername } });
+    handleEmailChange({ target: { value: newEmail } });
+  });
+  const handleUsernameChange = (e) => {
+    const username = e.target.value;
+    setNewUsername(username);
+    if (usernameRegex.test(username)) {
+      setIsUsernameValid(true);
+    } else {
+      setIsUsernameValid(false);
+    }
+  };
+  const handleRollChange = (e) => {
+    const roll = e.target.value;
+    setNewRoll(roll);
+    if (rollRegex.test(roll) && roll.length == 10) {
+      setIsRollValid(true);
+    } else {
+      setIsRollValid(false);
+    }
+  };
+  const handleEmailChange = (e) => {
+    const email = e.target.value;
+    setNewEmail(email);
+    if (emailRegex.test(email)) {
+      setIsEmailValid(true);
+    } else {
+      setIsEmailValid(false);
+    }
+  };
+
   return (
     <Stack
       spacing={4}
@@ -82,7 +122,10 @@ function EditProfileInModel({ onCancel, onSubmit }) {
           placeholder="Enter your new Username"
           _placeholder={{ color: "gray.500" }}
           value={newUsername}
-          onChange={(e) => setNewUsername(e.target.value)}
+          errorBorderColor="crimson"
+          focusBorderColor={isUsernameValid ? "green.500" : "red.500"}
+          isInvalid={!isUsernameValid}
+          onChange={(e) => handleUsernameChange(e)}
         />
       </FormControl>
       <FormControl id="email" isRequired>
@@ -91,7 +134,10 @@ function EditProfileInModel({ onCancel, onSubmit }) {
           placeholder="Enter your new Email"
           _placeholder={{ color: "gray.500" }}
           value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
+          errorBorderColor="crimson"
+          focusBorderColor={isEmailValid ? "green.500" : "red.500"}
+          isInvalid={!isEmailValid}
+          onChange={(e) => handleEmailChange(e)}
           type="email"
         />
       </FormControl>
@@ -101,7 +147,10 @@ function EditProfileInModel({ onCancel, onSubmit }) {
           placeholder="Enter your new Roll No."
           _placeholder={{ color: "gray.500" }}
           value={newRoll}
-          onChange={(e) => setNewRoll(e.target.value)}
+          errorBorderColor="crimson"
+          focusBorderColor={isRollValid ? "green.500" : "red.500"}
+          isInvalid={!isRollValid}
+          onChange={(e) => handleRollChange(e)}
         />
       </FormControl>
       <Stack spacing={6} direction={["column", "row"]}>
@@ -120,6 +169,15 @@ function EditProfileInModel({ onCancel, onSubmit }) {
           w="full"
           _hover={{ bg: "purple.600" }}
           onClick={updateProfile}
+          disabled={
+            !isRollValid ||
+            !isUsernameValid ||
+            !isEmailValid ||
+            !fullname ||
+            !newEmail ||
+            !newRoll ||
+            !newUsername
+          }
         >
           Submit
         </Button>
