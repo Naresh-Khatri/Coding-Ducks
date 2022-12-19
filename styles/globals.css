@@ -31,3 +31,8 @@ code {
   font-weight: 600;
   /* border: 1px solid #707070; */
 }
+
+::selection{
+  background: #7d4ddd;
+  color: white;
+}
