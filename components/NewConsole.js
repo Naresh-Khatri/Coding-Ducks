@@ -25,10 +25,11 @@ function NewConsole({ output }) {
         </Text>
         <Box py={2}>
           <Text>Details: </Text>
-          <Box bg={"gray.700"} p={3} borderRadius={10}>
+          <Box bg={"#f1635f22"} p={3} borderRadius={10}>
             <Text
               as="code"
               w={"100%"}
+              color={"red.400"}
               dangerouslySetInnerHTML={{
                 __html: output.results[0].errorMessage.replace(/\n/g, "<br />"),
               }}
