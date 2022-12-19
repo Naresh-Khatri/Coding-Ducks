@@ -43,6 +43,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
   const [newProfilePicture, setNewProfilePicture] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cropperRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
   const rollRegex = /^[0-9]{2}[a-zA-Z]{2}[0-9]{1}[a-zA-Z0-9]{5}$/;
@@ -53,7 +54,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
 
   const toast = useToast();
   const updateProfile = async () => {
-    console.log("update profile");
+    setIsLoading(true);
     const payload = {};
     if (user.fullname !== fullname) payload.fullname = fullname;
     if (user.roll !== newRoll) payload.roll = newRoll;
@@ -71,6 +72,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
         isClosable: true,
       });
       onCancel();
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
       toast({
@@ -81,9 +83,11 @@ function EditProfileInModel({ onCancel, onSubmit }) {
         duration: 9000,
         isClosable: true,
       });
+      setIsLoading(false);
     }
   };
   const UploadProfilePicture = async () => {
+    setIsLoading(true);
     const convertCanvasToBlob = (canvas) => {
       return new Promise((resolve) => {
         canvas.toBlob((blob) => {
@@ -109,6 +113,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
       });
       onCancel();
       loadUser();
+      setIsLoading(false);
     } catch (err) {
       toast({
         title: "Error Updating Profile Picture!",
@@ -119,7 +124,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
         duration: 9000,
         isClosable: true,
       });
-
+      setIsLoading(false);
       console.log(err);
     }
   };
@@ -181,11 +186,18 @@ function EditProfileInModel({ onCancel, onSubmit }) {
       px={6}
     >
       <Button onClick={onOpen}>change photo</Button>
-      <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size="3xl"
+        closeOnEsc={!isLoading}
+        closeOnOverlayClick={!isLoading}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Change Profile Picture</ModalHeader>
-          <ModalCloseButton />
+
+          <ModalCloseButton isDisabled={isLoading} />
           <ModalBody w={"100%"}>
             {!newProfilePicture ? (
               <>
@@ -206,6 +218,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
                   }}
                 />
                 <IconButton
+                  isLoading={isLoading}
                   position={"absolute"}
                   zIndex={1}
                   top={-5}
@@ -221,10 +234,19 @@ function EditProfileInModel({ onCancel, onSubmit }) {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={onClose}
+              isDisabled={isLoading}
+            >
               Close
             </Button>
-            <Button variant="ghost" onClick={UploadProfilePicture}>
+            <Button
+              variant="ghost"
+              onClick={UploadProfilePicture}
+              isLoading={isLoading}
+            >
               Upload
             </Button>
           </ModalFooter>
@@ -296,6 +318,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
           w="full"
           _hover={{ bg: "purple.600" }}
           onClick={updateProfile}
+          isLoading={isLoading}
           disabled={
             !isRollValid ||
             !isUsernameValid ||
