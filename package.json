@@ -37,6 +37,7 @@
     "next": "^13.0.3",
     "react": "^18.2.0",
     "react-advanced-cropper": "^0.17.0",
+    "react-calendar-heatmap": "^1.9.0",
     "react-dom": "^18.2.0",
     "react-firebase-hooks": "^5.1.1",
     "react-quill": "^2.0.0",
