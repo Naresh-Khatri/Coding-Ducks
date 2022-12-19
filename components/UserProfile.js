@@ -112,14 +112,16 @@ function UserProfile() {
 
             <Divider mt={15} h={70}></Divider>
             <Center position="relative">
-              <Image
-                referrerPolicy="no-referrer"
-                style={{ borderRadius: "50%", position: "absolute" }}
-                src={photoURL}
-                width={150}
-                height={150}
-                alt="profile"
-              />
+              <Box  position={'absolute'}>
+                <Image
+                  referrerPolicy="no-referrer"
+                  style={{ borderRadius: "50%",}}
+                  src={photoURL}
+                  width={150}
+                  height={150}
+                  alt="profile"
+                />
+              </Box>
             </Center>
           </ModalHeader>
           {user && user.isAdmin && (
