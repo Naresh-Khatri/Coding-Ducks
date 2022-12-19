@@ -66,7 +66,7 @@ function CodeEditor({ code, setCode, lang, theme, runCode }) {
       <CodeMirror
         autoFocus
         value={code}
-        height="600px"
+        height="67vh"
         style={{ fontSize: "1.2rem", maxWidth: "60vw" }}
         theme={supportedThemes[theme]}
         extensions={[keymap.of(shortcuts), supportedLangs[lang]]}
