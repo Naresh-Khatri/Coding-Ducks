@@ -1,4 +1,4 @@
-import { Box, Container, Flex } from "@chakra-ui/react";
+import { Box, Container, Flex, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import UserInfo from "../../components/UserInfo";
@@ -12,6 +12,8 @@ function UsersPage() {
   const { username } = router.query;
   const [user, setUser] = useState();
   const [progress, setProgress] = useState();
+
+  const toast = useToast();
   useEffect(() => {
     async function fetchUser() {
       try {
@@ -20,7 +22,14 @@ function UsersPage() {
         const progress = await getUserProgress(user.id);
         setProgress(progress);
       } catch (err) {
-        router.push("/404");
+        toast({
+          title: "User not found",
+          description: "The user you are looking for does not exist",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        router.push("/users");
         console.log(err);
       }
     }
