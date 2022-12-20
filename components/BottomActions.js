@@ -10,6 +10,7 @@ function BottomActions({ setShowConsole, showConsole, isLoading, runCode }) {
     <Flex w="100%" justify={"space-between"}>
       <Button
         onClick={() => setShowConsole((p) => !p)}
+        bg={showConsole ? "gray.600" : ""}
         rightIcon={showConsole ? <ChevronDownIcon /> : <ChevronUpIcon />}
       >
         Console
