@@ -49,7 +49,6 @@ function ExampleTestcase({ testCase }) {
           <br />
           <Text
             as="span"
-            pl={5}
             style={testCase.input.includes("<br>") ? { display: "block" } : {}}
             dangerouslySetInnerHTML={{ __html: testCase.input }}
           ></Text>
