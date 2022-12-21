@@ -69,15 +69,13 @@ function UserProfile() {
     <Box>
       <HStack onClick={onOpen} cursor="pointer">
         <IconButton borderRadius={50}>
-          <Avatar>
-            <Image
-              src={photoURL}
-              alt="Profile Picture"
-              width={200}
-              height={100}
-              style={{ borderRadius: "50%" }}
-            />
-          </Avatar>
+          <Image
+            src={photoURL}
+            alt="Profile Picture"
+            width={30}
+            height={30}
+            style={{ borderRadius: "50%", width: "50px", height: "50px" }}
+          />
         </IconButton>
         <Flex direction={"column"} alignItems="center">
           <Flex>
@@ -112,10 +110,10 @@ function UserProfile() {
 
             <Divider mt={15} h={70}></Divider>
             <Center position="relative">
-              <Box  position={'absolute'}>
+              <Box position={"absolute"}>
                 <Image
                   referrerPolicy="no-referrer"
-                  style={{ borderRadius: "50%",}}
+                  style={{ borderRadius: "50%", width: "150px" }}
                   src={photoURL}
                   width={150}
                   height={150}
