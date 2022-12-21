@@ -75,7 +75,7 @@ function NewConsole({ output }) {
               <Box bg={"red"} mr={2} w={2} h={2} borderRadius={"50%"}></Box>
             )}
             {/* {res.isCorrect && <Box bg={"green"} w={10} h={10}></Box>} */}
-            Case {i}
+            Case {i + 1}
           </Button>
         ))}
       </HStack>
