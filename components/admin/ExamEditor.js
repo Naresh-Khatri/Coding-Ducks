@@ -46,7 +46,8 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 };
 function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
-  const { title, description, startTime, coverImg, slug, active } = examData;
+  const { title, description, startTime, coverImg, slug, active, marks } =
+    examData;
 
   const [newTitle, setNewTitle] = useState(title);
   const [newSlug, setNewSlug] = useState(slug);
@@ -55,6 +56,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     description.replace(/\\n/g, " ")
   );
   const [newStartTime, setNewStartTime] = useState(formatDate(startTime));
+  const [newMarks, setNewMarks] = useState(marks);
 
   const [oldCoverImg, setOldCoverImg] = useState(coverImg);
   const [newCoverImg, setNewCoverImg] = useState();
@@ -87,6 +89,8 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     formData.append("description", newDescription);
     formData.append("slug", newSlug);
     formData.append("active", newActive);
+    formData.append("marks", newMarks);
+
     formData.append("startTime", new Date(startTime).toISOString());
     if (newCoverImg) {
       const data = await convertCanvasToBlob(cropperRef.current.getCanvas());
@@ -142,6 +146,16 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                     console.log(e.target.value);
                     setNewStartTime(e.target.value);
                   }}
+                />
+              </InputGroup>
+            </FormControl>
+            <FormControl>
+              <FormLabel fontWeight={"normal"}>Marks</FormLabel>
+              <InputGroup size="md">
+                <Input
+                  type={"number"}
+                  value={newMarks}
+                  onChange={(e) => setNewMarks(e.target.value)}
                 />
               </InputGroup>
             </FormControl>
