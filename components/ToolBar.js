@@ -32,28 +32,8 @@ export default function ToolBar({
   saveBtnLoading,
 }) {
   return (
-    <Box bg={useColorModeValue("gray.200", "gray.800")}>
+    <Box>
       <HStack p={2} justifyContent="end">
-        {/* <Button
-          loadingText="Running..."
-          isLoading={isLoading}
-          bg="purple.600"
-          leftIcon={<FontAwesomeIcon icon={faReact} />}
-          color="white"
-          onClick={() => runCode(false)}
-        >
-          Run
-        </Button>
-        <Button
-          loadingText="Running..."
-          isLoading={isLoading}
-          bg="green.400"
-          leftIcon={<FontAwesomeIcon icon={faPlay} />}
-          color="white"
-          onClick={() => runCode(true)}
-        >
-          Submit
-        </Button> */}
         <Select
           bg="purple.500"
           color="white"
