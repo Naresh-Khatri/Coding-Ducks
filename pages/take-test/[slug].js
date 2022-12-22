@@ -155,7 +155,8 @@ function TakeTest() {
           <Flex flexGrow={1}>
             <Split
               className="split-h"
-              minSize={450}
+              minSize={300}
+              autoSave={true}
               style={{ height: "100%", width: "100%" }}
             >
               <ProblemStatement problem={problems[currentProblemIdx - 1]} />
@@ -175,7 +176,7 @@ function TakeTest() {
                     setTheme={setTheme}
                   />
                 </Flex>
-                <Flex flexGrow={1} direction="column" h={"500"}>
+                <Flex flexGrow={1} direction="column" h={"45"}>
                   <Flex flexGrow={1} overflow="auto">
                     <CodeEditor
                       code={code}
