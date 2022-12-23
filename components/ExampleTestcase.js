@@ -50,7 +50,7 @@ function ExampleTestcase({ testCase }) {
           <Text
             as="span"
             style={testCase.input.includes("<br>") ? { display: "block" } : {}}
-            dangerouslySetInnerHTML={{ __html: testCase.input }}
+            dangerouslySetInnerHTML={{ __html: testCase.input.replaceAll('\n', '<br>') }}
           ></Text>
         </Box>
       )}
