@@ -6,6 +6,8 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -38,6 +40,12 @@ function UsersPage() {
 }
 
 const UserCard = ({ user }) => {
+  const rankColor = (rank) => {
+    if (rank === 1) return "gold";
+    if (rank === 2) return "silver";
+    if (rank === 3) return "bronze";
+    return "gray";
+  };
   return (
     <Link href={`/users/${user.username}`}>
       <Box
@@ -58,19 +66,36 @@ const UserCard = ({ user }) => {
           _hover={{ top: -55 }}
           transition="all .1s ease-in-out"
         >
-          <Image
-            src={user.photoURL}
-            alt="Picture of the author"
-            width={130}
-            height={130}
-            style={{ borderRadius: "50%" }}
-          />
+          <Box position={"relative"}>
+            <Image
+              src={user.photoURL}
+              alt="Picture of the author"
+              width={130}
+              height={130}
+              style={{ borderRadius: "50%" }}
+            />
+            {user.rank <= 3 && (
+              <Box position={"absolute"} top={0} right={0}>
+                <Box>
+                  <FontAwesomeIcon
+                    icon={faStar}
+                    size={"3x"}
+                    color={rankColor(user.rank)}
+                  />
+                </Box>
+              </Box>
+            )}
+          </Box>
         </Box>
         <Flex mt={100} align="center" direction={"column"}>
           <Text fontWeight={"extrabold"} fontSize={"xl"}>
             {user.fullname}
           </Text>
           <Text color={"gray"}>@{user.username}</Text>
+          <Text color={rankColor(user.rank)} fontSize="xl">
+            {" "}
+            #{user.rank}
+          </Text>
         </Flex>
       </Box>
     </Link>
