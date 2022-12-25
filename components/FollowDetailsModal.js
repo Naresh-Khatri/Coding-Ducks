@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Flex,
+  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -17,13 +18,23 @@ import {
   Text,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/router";
 import React from "react";
 
-const UserList = ({ user }) => {
+const UserList = ({ user, onClose }) => {
+  const router = useRouter();
+  const visitUser = () => {
+    router.push("/users/" + user.username);
+    onClose();
+  };
   return (
-    <Link href={"/users/" + user.username}>
-      <Flex justify={"space-between"} alignItems="center" my={2}>
+    <Link>
+      <Flex
+        justify={"space-between"}
+        alignItems="center"
+        my={2}
+        onClick={visitUser}
+      >
         <Image
           src={user.photoURL}
           width={50}
@@ -62,7 +73,11 @@ function FollowDetailsModal({ onClose, isOpen, followData }) {
               <TabPanel>
                 {followedBy.length > 0 ? (
                   followedBy.map((follower) => (
-                    <UserList key={follower.id} user={follower} />
+                    <UserList
+                      key={follower.id}
+                      user={follower}
+                      onClose={onClose}
+                    />
                   ))
                 ) : (
                   <No text={"followers"} />
@@ -71,7 +86,7 @@ function FollowDetailsModal({ onClose, isOpen, followData }) {
               <TabPanel>
                 {following.length > 0 ? (
                   following.map((user) => (
-                    <UserList key={user.id} user={user} />
+                    <UserList key={user.id} user={user} onClose={onClose} />
                   ))
                 ) : (
                   <No text={"following"} />
