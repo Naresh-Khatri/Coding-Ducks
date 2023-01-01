@@ -77,7 +77,7 @@ function ForgotPassword() {
           <ModalHeader>Forgot your password?</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            We'll email you a password reset link.
+            We&lsquo;ll email you a password reset link.
             <Input
               mt={5}
               value={email}
