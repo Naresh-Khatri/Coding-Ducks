@@ -1,9 +1,10 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { extendTheme } from "@chakra-ui/react";
+import { useContext } from "react";
+import LoadingOverlay from "../components/LoadingOverlay";
+import LoadingContext from "../contexts/loadingContext";
 import { SubmissionProvider } from "../contexts/submissionsContext";
 import { AuthUserProvider } from "../contexts/userContext";
-
-import MainLayout from "../layout/MainLayout";
 
 import "../styles/globals.css";
 import "../styles/split.css";
@@ -22,10 +23,13 @@ const colors = {
 const theme = extendTheme({ colors });
 
 function MyApp({ Component, pageProps }) {
+  const { isLoading } = useContext(LoadingContext);
   return (
     <ChakraProvider theme={theme}>
       <AuthUserProvider>
         <SubmissionProvider>
+          {isLoading && <LoadingOverlay />}
+          <LoadingOverlay />
           <Component {...pageProps} />
         </SubmissionProvider>
       </AuthUserProvider>
