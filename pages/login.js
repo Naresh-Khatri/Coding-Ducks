@@ -194,6 +194,28 @@ export const LoginPage = () => {
       }
     }
   };
+  const handleSignInWithGoogle = async() =>{
+    try {
+      console.log('started')
+      await signInWithGoogle();
+      console.log('ended')
+      toast({
+        title: `Logged in as $ {user}!`,
+        position: "top-right",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+    } catch (err) {
+      toast({
+        title: `Logged in as $ {user}!`,
+        position: "top-right",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+    }
+  }
 
   return (
     <Container
@@ -354,7 +376,7 @@ export const LoginPage = () => {
                   key={name}
                   width="full"
                   disabled={name === "Twitter" || name === "GitHub"}
-                  onClick={signInWithGoogle}
+                  onClick={handleSignInWithGoogle}
                 >
                   <VisuallyHidden>Sign in with {name}</VisuallyHidden>
                   {icon}
