@@ -62,7 +62,7 @@ function TakeTest() {
     );
     setShowConsole(false);
     setOutput({});
-  }, [currentProblemIdx]);
+  }, [currentProblemIdx, examData?.id]);
 
   useEffect(() => {
     localStorage.setItem(`code ${examData?.id} ${currentProblemIdx}`, code);
