@@ -88,7 +88,7 @@ const UserCard = ({ user }) => {
           </Box>
         </Box>
         <Flex mt={100} align="center" direction={"column"}>
-          <Text fontWeight={"extrabold"} fontSize={"xl"}>
+          <Text fontWeight={"extrabold"} fontSize={"xl"} noOfLines={1} textAlign='center'>
             {user.fullname}
           </Text>
           <Text color={"gray"}>@{user.username}</Text>
