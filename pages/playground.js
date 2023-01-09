@@ -5,8 +5,6 @@ import {
   Container,
   Flex,
   HStack,
-  IconButton,
-  Stack,
   Text,
   useToast,
 } from "@chakra-ui/react";
@@ -28,15 +26,10 @@ import { java } from "@codemirror/lang-java";
 import NormalLayout from "../layout/NormalLayout";
 import axios from "../utils/axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBoxOpen,
-  faPlay,
-  faSave,
-  faShare,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
 import ToolBar from "../components/ToolBar";
 
-function playground() {
+function Playground() {
   const [code, setCode] = useState("print('hello world'");
   const [output, setOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -146,7 +139,13 @@ function playground() {
 
               </Box>
             </HStack> */}
-            <Flex alignItems={"center"} bg={"#1d1d1d"} h={7} px={5} borderRadius='10px 10px 0 0'>
+            <Flex
+              alignItems={"center"}
+              bg={"#1d1d1d"}
+              h={7}
+              px={5}
+              borderRadius="10px 10px 0 0"
+            >
               <Text>main.py</Text>
             </Flex>
             <CodeMirror
@@ -194,4 +193,4 @@ function playground() {
   );
 }
 
-export default playground;
+export default Playground;
