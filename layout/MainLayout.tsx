@@ -23,8 +23,8 @@ function MainLayout({ children, title }) {
       <Flex
         as="nav"
         alignItems={"center"}
-        bg="purple.600"
-        color={"white"}
+        // bg="purple.600"
+        // color={"white"}
         w={"100vw"}
         px={2}
         h={"70px"}

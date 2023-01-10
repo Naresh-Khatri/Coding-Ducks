@@ -1,5 +1,12 @@
 import { useRouter } from "next/router";
-import { createContext, useContext, Context, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  Context,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import {
   signInWithGoogle,
@@ -7,23 +14,40 @@ import {
   logout as logoutFromFirebase,
   registerWithEmailAndPassword,
   logInWithEmailAndPassword,
-  sendPasswordReset
+  sendPasswordReset,
 } from "../firebase/firebase";
 import axios from "../utils/axios";
 
-export const userContext = createContext({
-  user: null,
-  loading: null,
-  error: null,
-  logout: null,
-  signInWithGoogle: null,
-  registerWithEmailAndPassword: null,
-  logInWithEmailAndPassword: null,
-  sendPasswordReset,
-  logout: null,
-  updateUser: null,
-  loadUser: null,
-});
+interface User {
+  id: number;
+  googleUID: string;
+  uid?: string;
+  fullname: string;
+  displayName?: string;
+  email: string;
+  photoURL: string;
+  roll: string;
+  username: string;
+  isAdmin: boolean;
+  registeredAt: string;
+  bio: string;
+  followedBy: Array<{}>;
+  following: Array<{}>;
+}
+interface userContextProps {
+  user: User;
+  loading: boolean;
+  error: any;
+  firebaseUser: User;
+  logout: () => void;
+  signInWithGoogle: () => void;
+  registerWithEmailAndPassword: () => {};
+  logInWithEmailAndPassword: () => {};
+  sendPasswordReset: () => void;
+  updateUser: (updatedUser: any) => Promise<void>;
+  loadUser: () => void;
+}
+export const userContext = createContext({} as userContextProps);
 
 const saveInCookie = (user) => {
   //save user in cookie on client side
@@ -34,7 +58,7 @@ const saveInCookie = (user) => {
   }
 };
 
-export function AuthUserProvider({ children }) {
+export function AuthUserProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, loading, error] = useAuthState(auth);
   const [completeUser, setCompleteUser] = useState({});
@@ -48,7 +72,7 @@ export function AuthUserProvider({ children }) {
       setCompleteUser(res.data);
     } catch (error) {
       console.log(error);
-      reject(error);
+      // reject(error);
     }
   };
 
@@ -111,8 +135,8 @@ export function AuthUserProvider({ children }) {
   return (
     <userContext.Provider
       value={{
-        user: completeUser,
-        firebaseUser: user,
+        user: completeUser as User,
+        firebaseUser: user as any,
         loading,
         error,
         signInWithGoogle,

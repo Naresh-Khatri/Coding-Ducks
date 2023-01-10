@@ -16,6 +16,7 @@ import {
   faTwitter,
 } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Icon, IconProp } from "@fortawesome/fontawesome-svg-core";
 
 const Footer = () => (
   <Container as="footer" role="contentinfo" maxW={"7xl"}>
@@ -41,45 +42,7 @@ const Footer = () => (
       <Stack
         direction={{ base: "column-reverse", md: "column", lg: "row" }}
         spacing={{ base: "12", md: "8" }}
-      >
-        {/* <Stack direction="row" spacing="8">
-          <Stack spacing="4" minW="36" flex="1">
-            <Text fontSize="sm" fontWeight="semibold" color="subtle">
-              Product
-            </Text>
-            <Stack spacing="3" shouldWrapChildren>
-              <Button variant="link">How it works</Button>
-              <Button variant="link">Pricing</Button>
-              <Button variant="link">Use Cases</Button>
-            </Stack>
-          </Stack>
-          <Stack spacing="4" minW="36" flex="1">
-            <Text fontSize="sm" fontWeight="semibold" color="subtle">
-              Legal
-            </Text>
-            <Stack spacing="3" shouldWrapChildren>
-              <Button variant="link">Privacy</Button>
-              <Button variant="link">Terms</Button>
-              <Button variant="link">License</Button>
-            </Stack>
-          </Stack>
-        </Stack> */}
-        {/* <Stack spacing="4">
-          <Text fontSize="sm" fontWeight="semibold" color="subtle">
-            Stay up to date
-          </Text>
-          <Stack
-            spacing="4"
-            direction={{ base: "column", sm: "row" }}
-            maxW={{ lg: "360px" }}
-          >
-            <Input placeholder="Enter your email" type="email" required />
-            <Button variant="primary" type="submit" flexShrink={0}>
-              Subscribe
-            </Button>
-          </Stack>
-        </Stack> */}
-      </Stack>
+      ></Stack>
     </Stack>
     <Divider />
     <Stack
@@ -96,21 +59,27 @@ const Footer = () => (
       <ButtonGroup variant="ghost">
         <IconButton
           as="a"
-          href="#"
+          href="https://www.linkedin.com/naresh-khatri"
           aria-label="LinkedIn"
-          icon={<FontAwesomeIcon height={"1.2rem"} icon={faLinkedin} />}
+          icon={
+            <FontAwesomeIcon height={"1.2rem"} icon={faLinkedin as IconProp} />
+          }
         />
         <IconButton
           as="a"
-          href="#"
+          href="https://www.github.com/naresh-khatri"
           aria-label="GitHub"
-          icon={<FontAwesomeIcon height={"1.2rem"} icon={faGithub} />}
+          icon={
+            <FontAwesomeIcon height={"1.2rem"} icon={faGithub as IconProp} />
+          }
         />
         <IconButton
           as="a"
-          href="#"
+          href="https://www.twitter.com/naresh-khatri"
           aria-label="Twitter"
-          icon={<FontAwesomeIcon height={"1.2rem"} icon={faTwitter} />}
+          icon={
+            <FontAwesomeIcon height={"1.2rem"} icon={faTwitter as IconProp} />
+          }
         />
       </ButtonGroup>
     </Stack>

@@ -26,7 +26,7 @@ function LoadingOverlay(children) {
     <>
       {isLoading && (
         <Box
-          position={"absolute"}
+          position={"fixed"}
           zIndex="100"
           h={"100vh"}
           w="100vw"
@@ -35,7 +35,7 @@ function LoadingOverlay(children) {
           style={{ background: "#33333377" }}
         >
           <Center h={"100%"} flexDir="column" color={"white"}>
-            <Spinner h={100} w={100} thickness={10} />
+            <Spinner h={100} w={100} thickness={'10px'} />
             <Text mt={5} fontSize={"xl"}>
               Waiting...
             </Text>

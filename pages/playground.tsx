@@ -6,6 +6,7 @@ import {
   Flex,
   HStack,
   Text,
+  useClipboard,
   useToast,
 } from "@chakra-ui/react";
 import CodeMirror from "@uiw/react-codemirror";
@@ -28,10 +29,17 @@ import axios from "../utils/axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
 import ToolBar from "../components/ToolBar";
+import { useRouter } from "next/router";
+
+interface OutputType {
+  stdout?: string;
+  stderr?: string;
+  error?: string;
+}
 
 function Playground() {
   const [code, setCode] = useState("");
-  const [output, setOutput] = useState("");
+  const [output, setOutput] = useState<OutputType>({});
   const [isLoading, setIsLoading] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState("");
   const [runTime, setRunTime] = useState(0);
@@ -41,6 +49,8 @@ function Playground() {
   const [theme, setTheme] = useState("dracula");
 
   const toast = useToast();
+  const router = useRouter();
+  const { setValue, hasCopied, onCopy } = useClipboard("");
 
   const supportedLangs = {
     py: python(),
@@ -69,11 +79,18 @@ function Playground() {
     localStorage.setItem("playground-code", code);
   }, [code]);
   useEffect(() => {
-    setCode(localStorage.getItem("playground-code") || print("Hello World"));
+    setCode(localStorage.getItem("playground-code") || `print("Hello World")`);
     setLang(localStorage.getItem("lang") || "py");
     setTheme(localStorage.getItem("theme") || "dracula");
   }, []);
-
+  useEffect(() => {
+    console.log(router);
+    if (router.query.code) {
+      console.log(router.query);
+      // setCode(router.query.code || 'cant find code!')
+      // setLang(router.query.lang || "py")
+    }
+  }, [router]);
   const shortcuts = [
     {
       key: "Ctrl-Enter",
@@ -121,6 +138,13 @@ function Playground() {
     }
   };
 
+  const shareCode = () => {
+    // console.log(`${router.pathname}?code=${code}&lang=${lang}`);
+    setValue(
+      `http://localhost:3000${router.pathname}?lang=${lang}&code=${code}`
+    );
+    onCopy();
+  };
   return (
     <NormalLayout>
       <Container maxW={"5xl"} minH={"100vh"}>
@@ -164,7 +188,7 @@ function Playground() {
               height="60vh"
               style={{ fontSize: "1rem" }}
               theme={supportedThemes[theme]}
-              extensions={[keymap.of(shortcuts), supportedLangs[lang]]}
+              extensions={[keymap.of(shortcuts as any), supportedLangs[lang]]}
               onChange={(value) => setCode(value)}
             />
             <HStack justify={"space-between"}>
@@ -177,7 +201,10 @@ function Playground() {
                 >
                   Run
                 </Button>
-                <Button leftIcon={<FontAwesomeIcon icon={faShare} />}>
+                <Button
+                  onClick={shareCode}
+                  leftIcon={<FontAwesomeIcon icon={faShare} />}
+                >
                   Share
                 </Button>
               </HStack>
@@ -194,7 +221,6 @@ function Playground() {
               color={output.stderr ? "red.300" : "white"}
               dangerouslySetInnerHTML={{ __html: consoleOutput }}
               h={"100px"}
-              resize
             ></Box>
           </Box>
         </Box>

@@ -16,8 +16,7 @@ import ExamDetailsModel from "./ExamDetailsModel";
 
 function ExamCard({ examData }) {
   const { title, description, coverImg } = examData;
-  const start = "12/12/2021";
-  const { isOpen, OnOpen, onClose, onToggle } = useDisclosure();
+  const { isOpen, onOpen, onClose, onToggle } = useDisclosure();
   return (
     <Flex
       direction={"column"}
@@ -88,7 +87,7 @@ function ExamCard({ examData }) {
         examData={examData}
         onClose={onClose}
         isOpen={isOpen}
-        OnOpen={OnOpen}
+        onOpen={onOpen}
       />
     </Flex>
   );

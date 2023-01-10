@@ -7,8 +7,13 @@ import UserStats from "../../components/UserStats";
 import NormalLayout from "../../layout/NormalLayout";
 import axios from "../../utils/axios";
 
-import "react-calendar-heatmap/dist/styles.css";
-import CalendarHeatmap from "react-calendar-heatmap";
+// import "react-calendar-heatmap/dist/styles.css";
+// import CalendarHeatmap from "react-calendar-heatmap";
+import dynamic from "next/dynamic";
+
+const ReactApexChart = dynamic(() => import("react-apexcharts"), {
+  ssr: false,
+});
 
 function UsersPage() {
   const router = useRouter();
@@ -24,6 +29,7 @@ function UsersPage() {
         setUser(user);
         const progress = await getUserProgress(user.id);
         setProgress(progress);
+        console.log(progress);
         createGraphValues(progress);
       } catch (err) {
         toast({
@@ -38,10 +44,9 @@ function UsersPage() {
       }
     }
     if (username) fetchUser();
-  }, [username]);
+  }, [username, router]);
 
   const createGraphValues = (progress) => {
-    console.log(progress);
     const temp = {};
     for (let examId in progress) {
       progress[examId].forEach((sub) => {
@@ -63,21 +68,111 @@ function UsersPage() {
     newDate.setDate(newDate.getDate() + numDays);
     return newDate;
   }
+  function generateData(count, yrange) {
+    var i = 0;
+    var series = [];
+    while (i < count) {
+      var x = (i + 1).toString();
+      var y =
+        Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
+
+      series.push({
+        x: x,
+        y: y,
+      });
+      i++;
+    }
+    return series;
+  }
+  const series = [
+    {
+      name: "Mon",
+      data: generateData(18, {
+        min: 0,
+        max: 90,
+      }),
+    },
+    {
+      name: "Tue",
+      data: generateData(18, {
+        min: 0,
+        max: 90,
+      }),
+    },
+    {
+      name: "Wed",
+      data: generateData(18, {
+        min: 0,
+        max: 90,
+      }),
+    },
+    {
+      name: "Thu",
+      data: generateData(18, {
+        min: 0,
+        max: 90,
+      }),
+    },
+    {
+      name: "Fri",
+      data: generateData(18, {
+        min: 0,
+        max: 90,
+      }),
+    },
+    {
+      name: "Sat",
+      data: generateData(18, {
+        min: 0,
+        max: 90,
+      }),
+    },
+    {
+      name: "Sun",
+      data: generateData(18, {
+        min: 0,
+        max: 90,
+      }),
+    },
+  ];
+  // console.log(series);
+
+  const options = {
+    chart: {
+      height: 200,
+      type: "heatmap",
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    colors: ["#008FFB"],
+  };
   return (
     <NormalLayout>
       <Container maxW={"8xl"} minH={"100vh"}>
         <Flex align="center" justify={"center"} w={"100%"} h={"100%"} mt={100}>
           <Flex>{user && <UserInfo viewingUser={user} />}</Flex>
           <Flex flexGrow={1} ml={40}>
-            {progress && <UserStats progress={progress} />}
+            {progress && Object.keys(progress).length > 0 ? (
+              <UserStats progress={progress} />
+            ) : (
+              <Text fontSize={"2xl"}>No progress yet</Text>
+            )}
           </Flex>
         </Flex>
-        <Flex justify={"center"}>
-          <Box w={"900px"} mt={20}>
-            <Text fontSize={"xl"} fontWeight={"extrabold"} mb={5}>
-              Submission history
-            </Text>
-            <CalendarHeatmap
+        {progress && Object.keys(progress).length > 0 && (
+          <Flex justify={"center"}>
+            <Box w={"900px"} mt={20}>
+              <Text fontSize={"xl"} fontWeight={"extrabold"} mb={5}>
+                Submission history
+              </Text>
+              <ReactApexChart
+                options={options}
+                series={series}
+                type="heatmap"
+                height={350}
+              />
+              {/* <CalendarHeatmap
               startDate={shiftDate(new Date(), -365)}
               endDate={new Date()}
               values={graphValues}
@@ -88,9 +183,10 @@ function UsersPage() {
                 };
               }}
               showWeekdayLabels={true}
-            />
-          </Box>
-        </Flex>
+            /> */}
+            </Box>
+          </Flex>
+        )}
       </Container>
     </NormalLayout>
   );

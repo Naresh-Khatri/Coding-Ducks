@@ -1,6 +1,5 @@
-import React, { useContext, useEffect } from "react";
+import React, { ReactNode, useContext, useEffect } from "react";
 import {
-  Avatar,
   Box,
   Button,
   Flex,
@@ -17,7 +16,7 @@ import { userContext } from "../contexts/userContext";
 import UserProfile from "../components/UserProfile";
 import { useRouter } from "next/router";
 
-function NormalLayout({ children }) {
+function NormalLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <Flex direction={"column"} flex="1">
