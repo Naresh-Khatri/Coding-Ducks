@@ -6,6 +6,8 @@ import LoadingContext from "../contexts/loadingContext";
 import { SubmissionProvider } from "../contexts/submissionsContext";
 import { AuthUserProvider } from "../contexts/userContext";
 
+import {QueryClientProvider, QueryClient} from '@tanstack/react-query'
+
 import "../styles/globals.css";
 import "../styles/split.css";
 
@@ -22,10 +24,13 @@ const colors = {
 };
 const theme = extendTheme({ colors });
 
+const client = new QueryClient()
+
 function MyApp({ Component, pageProps }) {
   const { isLoading } = useContext(LoadingContext);
   return (
     <ChakraProvider theme={theme}>
+      <QueryClientProvider client={client}>
       <AuthUserProvider>
         <SubmissionProvider>
           {isLoading && <LoadingOverlay />}
@@ -33,6 +38,7 @@ function MyApp({ Component, pageProps }) {
           <Component {...pageProps} />
         </SubmissionProvider>
       </AuthUserProvider>
+      </QueryClientProvider>
     </ChakraProvider>
   );
 }
