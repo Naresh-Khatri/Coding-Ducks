@@ -8,6 +8,7 @@ import {
 } from "@chakra-ui/react";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -15,13 +16,14 @@ import NormalLayout from "../../layout/NormalLayout";
 import axios from "../../utils/axios";
 
 function UsersPage() {
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    axios.get("/users").then((data) => {
-      setUsers(data.data);
-    });
-  }, []);
+  // const [users, setUsers] = useState([]);
+  const { data } = useQuery(["users"], () => axios.get("/users"));
+  console.log(data);
+  // useEffect(() => {
+  //   axios.get("/users").then((data) => {
+  //     setUsers(data.data);
+  //   });
+  // }, []);
   //   console.log(users);
   return (
     <NormalLayout>
@@ -29,10 +31,10 @@ function UsersPage() {
         <Text fontSize="4xl" fontWeight="bold" mb={10}>
           Users
         </Text>
+        {/* {data && JSON.stringify(data.data)} */}
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={10}>
-          {users.map((user) => (
-            <UserCard key={user.id} user={user} />
-          ))}
+          {data &&
+            data.data.map((user) => <UserCard key={user.id} user={user} />)}
         </SimpleGrid>
       </Container>
     </NormalLayout>
@@ -88,7 +90,12 @@ const UserCard = ({ user }) => {
           </Box>
         </Box>
         <Flex mt={100} align="center" direction={"column"}>
-          <Text fontWeight={"extrabold"} fontSize={"xl"} noOfLines={1} textAlign='center'>
+          <Text
+            fontWeight={"extrabold"}
+            fontSize={"xl"}
+            noOfLines={1}
+            textAlign="center"
+          >
             {user.fullname}
           </Text>
           <Text color={"gray"}>@{user.username}</Text>
