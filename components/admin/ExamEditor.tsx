@@ -59,7 +59,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
   const [newMarks, setNewMarks] = useState(marks);
 
   const [oldCoverImg, setOldCoverImg] = useState(coverImg);
-  const [newCoverImg, setNewCoverImg] = useState();
+  const [newCoverImg, setNewCoverImg] = useState<any>();
 
   const cropperRef = useRef(null);
 
@@ -230,6 +230,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                   }}
                 />
                 <IconButton
+                  ariaLabel={"delete button"}
                   position={"absolute"}
                   zIndex={1}
                   top={-5}
