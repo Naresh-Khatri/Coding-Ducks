@@ -2,24 +2,17 @@ import { Box, Center, Spinner, Text } from "@chakra-ui/react";
 import Router from "next/router";
 import { useContext, useEffect, useState } from "react";
 import { userContext } from "../contexts/userContext";
-function LoadingOverlay(children) {
+function LoadingOverlay() {
   const [isLoading, setIsLoading] = useState(false);
-  const [timer, setTimer] = useState(null);
-  const {loading: userIsLoading} = useContext(userContext)
+  const { loading: userIsLoading } = useContext(userContext);
 
-  useEffect(()=>{
-    setIsLoading(userIsLoading)
-  }, [userIsLoading])
+  useEffect(() => {
+    setIsLoading(userIsLoading);
+  }, [userIsLoading]);
   Router.events.on("routeChangeStart", () => {
-    clearTimeout(timer);
-    setTimer(
-      setTimeout(() => {
-        setIsLoading(true);
-      }, 0)
-    );
+    setIsLoading(true);
   });
   Router.events.on("routeChangeComplete", () => {
-    clearTimeout(timer);
     setIsLoading(false);
   });
   return (
@@ -35,7 +28,7 @@ function LoadingOverlay(children) {
           style={{ background: "#33333377" }}
         >
           <Center h={"100%"} flexDir="column" color={"white"}>
-            <Spinner h={100} w={100} thickness={'10px'} />
+            <Spinner h={100} w={100} thickness={"10px"} />
             <Text mt={5} fontSize={"xl"}>
               Waiting...
             </Text>
