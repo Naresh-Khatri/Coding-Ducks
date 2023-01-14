@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 function NewConsole({ output }) {
   const [selectedCase, setSelectedCase] = useState(0);
   if (!output?.results) return null;
-  console.log(output);
 
   const memoryUsage =
     output.results?.reduce((acc, res) => {
