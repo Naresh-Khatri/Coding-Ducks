@@ -129,7 +129,7 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     logoutFromFirebase();
     setCompleteUser({});
-    axios.get(`/users/${user.uid}`);
+    // axios.get(`/users/${user.uid}`);
   };
 
   return (
