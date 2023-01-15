@@ -13,24 +13,20 @@ import {
   HStack,
   IconButton,
   SimpleGrid,
+  SkeletonText,
+  Spacer,
+  Skeleton,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import ExamCard from "../components/ExamCard";
 import { userContext } from "../contexts/userContext";
+import { useExamsData } from "../hooks/useExamsData";
 
 import NormalLayout from "../layout/NormalLayout";
-import axios from "../utils/axios";
 
 export default function HomePage() {
-  const [exams, setExams] = useState([]);
-  const {user} = useContext(userContext)
-  const fetchExams = async () => {
-    const res = await axios.get("/exams");
-    setExams(res.data);
-  };
-  useEffect(() => {
-    fetchExams();
-  }, []);
+  const { data: examsData, isLoading: examsDataLoading } = useExamsData();
+  const { user } = useContext(userContext);
   return (
     <>
       <NormalLayout>
@@ -40,21 +36,72 @@ export default function HomePage() {
               Welcome Back {user.fullname}!
             </Text>
           </Heading>
-          <Heading mb={10}>
+          <Heading mt={10}>
             <Text as={"span"} fontSize={"6xl"} color={"purple.400"}>
               Upcoming Exams
             </Text>
           </Heading>
           <SimpleGrid columns={[1, 2, 3]} spacing={10} placeItems="center">
-            {exams.map((exam) => (
-              <ExamCard key={exam.id} examData={exam} />
-            ))}
+            {examsDataLoading &&
+              [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}
+            {examsData &&
+              examsData.data.map((exam) => (
+                <ExamCard key={exam.id} examData={exam} />
+              ))}
           </SimpleGrid>
         </Container>
       </NormalLayout>
     </>
   );
 }
+
+const ExamCardLoading = () => {
+  return (
+    <Flex
+      direction={"column"}
+      bg={useColorModeValue("white", "gray.700")}
+      boxShadow={"2xl"}
+      w={300}
+      h={420}
+      borderRadius={20}
+      transition="all 0.2s ease-in-out"
+      _hover={{
+        transform: "scale(1.05)",
+      }}
+    >
+      <Box w={300} h={180} position={"relative"} overflow={"hidden"}>
+        <Skeleton w={300} h={180} borderRadius={"20px"} />
+      </Box>
+      <Stack p={3}>
+        <Text
+          color={"green.500"}
+          textTransform={"uppercase"}
+          fontWeight={800}
+          fontSize={"sm"}
+          letterSpacing={1.1}
+        >
+          Exam
+        </Text>
+
+        <Skeleton>
+          <Heading
+            color={useColorModeValue("gray.700", "white")}
+            fontSize={"2xl"}
+            fontFamily={"body"}
+            noOfLines={1}
+          >
+            Loading
+          </Heading>
+        </Skeleton>
+        <SkeletonText noOfLines={3} spacing="4" />
+      </Stack>
+      <Spacer />
+      <Button bg={"purple.600"} mb={4} mx={2} isLoading>
+        Show details
+      </Button>
+    </Flex>
+  );
+};
 
 const Arrow = createIcon({
   displayName: "Arrow",
