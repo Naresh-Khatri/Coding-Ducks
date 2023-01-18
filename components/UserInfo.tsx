@@ -25,7 +25,6 @@ function UserInfo({ viewingUser }) {
   const [isFollowing, setIsFollowing] = useState(
     !!loggedInUser.following?.find((user) => user.id === viewingUser.id)
   );
-  console.log("viewingUserState", viewingUserState)
   useEffect(() => {
     setIsFollowing(
       !!loggedInUser.following?.find((user) => user.id === viewingUser.id)
@@ -51,7 +50,6 @@ function UserInfo({ viewingUser }) {
       `/users/username/${viewingUserState.username}`
     );
     setViewingUserState(data);
-    console.log(viewingUserState);
   };
 
   return (
