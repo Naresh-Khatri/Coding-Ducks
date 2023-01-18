@@ -3,36 +3,30 @@ import {
   Container,
   Flex,
   SimpleGrid,
+  Skeleton,
+  SkeletonCircle,
   Text,
   useColorModeValue,
+  VStack,
 } from "@chakra-ui/react";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { useUsersData } from "../../hooks/useUsersData";
 import NormalLayout from "../../layout/NormalLayout";
-import axios from "../../utils/axios";
 
 function UsersPage() {
-  // const [users, setUsers] = useState([]);
-  const { data } = useQuery(["users"], () => axios.get("/users"));
-  console.log(data);
-  // useEffect(() => {
-  //   axios.get("/users").then((data) => {
-  //     setUsers(data.data);
-  //   });
-  // }, []);
-  //   console.log(users);
+  const { data, isLoading } = useUsersData();
   return (
     <NormalLayout>
       <Container mt={70} maxW={"6xl"} minH={"100vh"}>
         <Text fontSize="4xl" fontWeight="bold" mb={10}>
           Users
         </Text>
-        {/* {data && JSON.stringify(data.data)} */}
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={10}>
+          {isLoading &&
+            [...Array(20)].map((num) => <LoadingUserCard key={num} />)}
           {data &&
             data.data.map((user) => <UserCard key={user.id} user={user} />)}
         </SimpleGrid>
@@ -41,8 +35,42 @@ function UsersPage() {
   );
 }
 
+const LoadingUserCard = () => {
+  return (
+    <Box
+      w={"full"}
+      h={200}
+      position="relative"
+      bg={useColorModeValue("white", "#111928bf")}
+      boxShadow="2xl"
+      backdropFilter="blur(4px) saturate(180%)"
+      borderRadius="12px"
+      border="1px solid rgba(255,255,255,.125)"
+      _hover={{ backgroundColor: useColorModeValue("gray.100", "#111528") }}
+    >
+      <Box
+        position="absolute"
+        top={-10}
+        left={"25%"}
+        _hover={{ top: -55 }}
+        transition="all .1s ease-in-out"
+      >
+        <Box position={"relative"}>
+          <SkeletonCircle size="130px" />{" "}
+        </Box>
+      </Box>
+      <Flex mt={100} align="center" direction={"column"}>
+        <VStack>
+          <Skeleton h={"20px"} w={"5em"} />
+          <Skeleton h="14px" w={"4em"} />
+          <Skeleton mt={3} h="20px" w={"1.5em"} />
+        </VStack>
+      </Flex>
+    </Box>
+  );
+};
 const UserCard = ({ user }) => {
-  const rankColor = (rank) => {
+  const rankColor = (rank: number) => {
     if (rank === 1) return "gold";
     if (rank === 2) return "silver";
     if (rank === 3) return "bronze";
