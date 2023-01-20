@@ -26,7 +26,7 @@ function UsersPage() {
         </Text>
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={10}>
           {isLoading &&
-            [...Array(20)].map((num) => <LoadingUserCard key={num} />)}
+            [...Array(20)].map((_, num) => <LoadingUserCard key={num} />)}
           {data &&
             data.data.map((user) => <UserCard key={user.id} user={user} />)}
         </SimpleGrid>
