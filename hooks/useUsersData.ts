@@ -19,6 +19,7 @@ export const useUserData = (username: string) => {
     return useQuery(['user',], () => axios.get(`/users/username/${username}`), {
         refetchOnMount: false,
         cacheTime: 0,
+        enabled: !!username
     })
 }
 export const useUserProgress = (username: string) => {
