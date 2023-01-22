@@ -1,5 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import { Box, Button, Flex, HStack, Spacer } from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faReact } from "@fortawesome/free-brands-svg-icons";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,7 +21,7 @@ function BottomActions({ setShowConsole, showConsole, isLoading, runCode }) {
           loadingText="Running..."
           isLoading={isLoading}
           bg="purple.600"
-          leftIcon={<FontAwesomeIcon icon={faReact} />}
+          leftIcon={<FontAwesomeIcon icon={faReact as IconProp} />}
           color="white"
           onClick={() => runCode(false)}
         >
@@ -30,7 +31,7 @@ function BottomActions({ setShowConsole, showConsole, isLoading, runCode }) {
           loadingText="Running..."
           isLoading={isLoading}
           bg="green.400"
-          leftIcon={<FontAwesomeIcon icon={faPlay} />}
+          leftIcon={<FontAwesomeIcon icon={faPlay as IconProp} />}
           color="white"
           onClick={() => runCode(true)}
         >
