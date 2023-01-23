@@ -35,6 +35,7 @@ import { userContext } from "../contexts/userContext";
 import EditProfileInModel from "./EditProfileInModel";
 import Link from "next/link";
 import FollowDetailsModal from "./FollowDetailsModal";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 function UserProfile() {
   const { user, logout } = useContext(userContext);
@@ -68,12 +69,12 @@ function UserProfile() {
   return (
     <Box>
       <HStack onClick={onOpen} cursor="pointer">
-        <IconButton borderRadius={50}>
+        <IconButton aria-label="profile picture" borderRadius={50}>
           <Image
             src={photoURL}
             alt="Profile Picture"
-            width={30}
-            height={30}
+            width={40}
+            height={40}
             style={{ borderRadius: "50%", width: "50px", height: "50px" }}
           />
         </IconButton>
@@ -82,7 +83,7 @@ function UserProfile() {
             <Text fontWeight={"extrabold"}>{fullname}</Text>
             {isAdmin && (
               <Box color={"gold"}>
-                <FontAwesomeIcon icon={faCrown} height={20} />
+                <FontAwesomeIcon icon={faCrown as IconProp} height={20} />
               </Box>
             )}
           </Flex>
@@ -131,7 +132,7 @@ function UserProfile() {
                 bg="transparent"
                 color="white"
                 variant={"outline"}
-                icon={<FontAwesomeIcon icon={faSignOut} />}
+                leftIcon={<FontAwesomeIcon icon={faSignOut as IconProp} />}
               >
                 Dashboard
               </Button>
@@ -139,10 +140,7 @@ function UserProfile() {
           )}
           <ModalBody mt={70}>
             {isEditing ? (
-              <EditProfileInModel
-                onCancel={() => setIsEditing(false)}
-                // onSuccess={profileEdited}
-              />
+              <EditProfileInModel onCancel={() => setIsEditing(false)} />
             ) : (
               <HStack spacing={4}>
                 <VStack spacing={4} w="100%">
@@ -160,6 +158,7 @@ function UserProfile() {
                         {isEmailMasked ? maskedEmail : email}
                       </Text>
                       <IconButton
+                        aria-label="unmask email"
                         variant="outline"
                         icon={
                           <FontAwesomeIcon
@@ -241,7 +240,10 @@ function UserProfile() {
             {!isEditing && (
               <Flex m={2} justify="space-between">
                 <Button colorScheme="red" variant="outline" onClick={logout}>
-                  <FontAwesomeIcon icon={faSignOut} height={"1.3rem"} />
+                  <FontAwesomeIcon
+                    icon={faSignOut as IconProp}
+                    height={"1.3rem"}
+                  />
                   Logout
                 </Button>
 
@@ -252,7 +254,10 @@ function UserProfile() {
                   color="white"
                   onClick={() => setIsEditing((p) => !p)}
                 >
-                  <FontAwesomeIcon icon={faEdit} height={"1.3rem"} />
+                  <FontAwesomeIcon
+                    icon={faEdit as IconProp}
+                    height={"1.3rem"}
+                  />
                   Edit
                 </Button>
               </Flex>
