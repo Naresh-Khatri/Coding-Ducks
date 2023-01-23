@@ -1,4 +1,5 @@
 import { HStack, IconButton, Td, Tr, useDisclosure } from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
@@ -31,7 +32,8 @@ function ProblemRow({ problem, fetchProblems, examsList }) {
       <Td>
         <HStack>
           <IconButton
-            icon={<FontAwesomeIcon icon={faEdit} />}
+            aria-label="Edit Problem"
+            icon={<FontAwesomeIcon icon={faEdit as IconProp} />}
             onClick={onEditOpen}
           />
           <ProblemEditor
@@ -39,22 +41,21 @@ function ProblemRow({ problem, fetchProblems, examsList }) {
             examsList={examsList}
             isOpen={isEditOpen}
             onClose={onEditClose}
-            onOpen={onEditOpen}
             onEditSuccess={() => {
               fetchProblems();
               onEditClose();
             }}
           />
           <IconButton
+            aria-label="Delete Problem"
             bg="red.500"
-            icon={<FontAwesomeIcon icon={faTrash} />}
+            icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
             onClick={onDeleteOpen}
           />
           <ProblemDeleteModal
             problemData={problem}
             isOpen={isDeleteOpen}
             onClose={onDeleteClose}
-            onOpen={onDeleteOpen}
             onDeleteSuccess={() => {
               fetchProblems();
               onDeleteClose();
