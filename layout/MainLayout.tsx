@@ -7,11 +7,11 @@ import {
   Spacer,
   Text,
 } from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faClock, faHome, faLeftLong } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { useContext } from "react";
-// import Sidebar from "../components/Sidebar";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
 import { submissionsContext } from "../contexts/submissionsContext";
@@ -32,14 +32,23 @@ function MainLayout({ children, title }) {
         <HStack alignItems={"center"} h={"70px"}>
           <Link href={"/home"}>
             <IconButton
+              aria-label="Go back"
               bg={"transparent"}
-              icon={<FontAwesomeIcon height={"1.2rem"} icon={faLeftLong} />}
+              icon={
+                <FontAwesomeIcon
+                  height={"1.2rem"}
+                  icon={faLeftLong as IconProp}
+                />
+              }
             />
           </Link>
           <Link href={"/"}>
             <IconButton
+              aria-label="Go home"
               bg={"transparent"}
-              icon={<FontAwesomeIcon height={"1.2rem"} icon={faHome} />}
+              icon={
+                <FontAwesomeIcon height={"1.2rem"} icon={faHome as IconProp} />
+              }
             />
           </Link>
           <Text fontSize="20px" fontWeight={"extrabold"} noOfLines={1}>
@@ -48,7 +57,7 @@ function MainLayout({ children, title }) {
         </HStack>
         <Spacer />
         <HStack>
-          <FontAwesomeIcon height={"1.2rem"} icon={faClock} />
+          <FontAwesomeIcon height={"1.2rem"} icon={faClock as IconProp} />
           <Text fontWeight={"extrabold"}> Unbounded </Text>
         </HStack>
         <Spacer />
@@ -65,7 +74,6 @@ function MainLayout({ children, title }) {
         </HStack>
       </Flex>
       <Flex w={"100vw"} flexGrow={1} overflowY="hidden">
-        {/* <Sidebar /> */}
         {children}
       </Flex>
     </Flex>
