@@ -8,6 +8,7 @@ import {
   Textarea,
   Tr,
 } from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
@@ -70,8 +71,9 @@ function TestCaseRow({ testCases, index, setTestCases }) {
       <Td m={0} py={4} px={2}>
         <Flex justifyContent="center">
           <IconButton
+          aria-label="Delete test case"
             bg={"red.500"}
-            icon={<FontAwesomeIcon icon={faTrash} />}
+            icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
             onClick={() => {
               const newTestCases = [...testCases];
               newTestCases.splice(index, 1);
