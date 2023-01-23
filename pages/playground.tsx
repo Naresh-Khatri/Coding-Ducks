@@ -30,6 +30,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
 import ToolBar from "../components/ToolBar";
 import { useRouter } from "next/router";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface OutputType {
   stdout?: string;
@@ -106,7 +107,7 @@ function Playground() {
       run: saveCode,
     },
   ];
-  const save = (e) => {
+  const save = (e: string) => {
     console.log("save", e);
   };
   const runCode = async () => {
@@ -157,7 +158,6 @@ function Playground() {
               setLang={setLang}
               theme={theme}
               setTheme={setTheme}
-              saveBtnLoading={false}
             />
             {/*
             <HStack spacing={4}>
@@ -197,13 +197,13 @@ function Playground() {
                   colorScheme={"green"}
                   isLoading={isLoading}
                   onClick={runCode}
-                  leftIcon={<FontAwesomeIcon icon={faPlay} />}
+                  leftIcon={<FontAwesomeIcon icon={faPlay as IconProp} />}
                 >
                   Run
                 </Button>
                 <Button
                   onClick={shareCode}
-                  leftIcon={<FontAwesomeIcon icon={faShare} />}
+                  leftIcon={<FontAwesomeIcon icon={faShare as IconProp} />}
                 >
                   Share
                 </Button>
