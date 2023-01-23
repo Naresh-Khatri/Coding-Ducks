@@ -14,7 +14,6 @@ export default function ToolBar({
   setLang,
   theme,
   setTheme,
-  saveBtnLoading,
 }) {
   const color = useColorModeValue("black", "white");
   return (
