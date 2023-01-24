@@ -25,11 +25,23 @@ import Image from "next/image";
 import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../contexts/userContext";
 
-import { Cropper } from "react-advanced-cropper";
+import { createAspectRatio, Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 import axios from "../utils/axios";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
-function EditProfileInModel({ onCancel, onSubmit }) {
+interface ProfileUpdatePayload {
+  fullname?: string;
+  roll?: string;
+  email?: string;
+  username?: string;
+  photoURL?: string;
+}
+interface EditProfileInModelProps {
+  onCancel: () => void;
+  onSubmit?: () => void;
+}
+function EditProfileInModel({ onCancel, onSubmit }: EditProfileInModelProps) {
   const { user, updateUser, loadUser } = useContext(userContext);
 
   const [fullname, setFullname] = useState(user.fullname || "");
@@ -55,7 +67,7 @@ function EditProfileInModel({ onCancel, onSubmit }) {
   const toast = useToast();
   const updateProfile = async () => {
     setIsLoading(true);
-    const payload = {};
+    const payload: ProfileUpdatePayload = {};
     if (user.fullname !== fullname) payload.fullname = fullname;
     if (user.roll !== newRoll) payload.roll = newRoll;
     if (user.email !== newEmail) payload.email = newEmail;
@@ -88,9 +100,9 @@ function EditProfileInModel({ onCancel, onSubmit }) {
   };
   const UploadProfilePicture = async () => {
     setIsLoading(true);
-    const convertCanvasToBlob = (canvas) => {
+    const convertCanvasToBlob = (canvas: any): Promise<Blob> => {
       return new Promise((resolve) => {
-        canvas.toBlob((blob) => {
+        canvas.toBlob((blob: Blob) => {
           resolve(blob);
         });
       });
@@ -211,19 +223,20 @@ function EditProfileInModel({ onCancel, onSubmit }) {
                   src={newProfilePicture}
                   onChange={onFileChange}
                   className={"cropper"}
-                  aspectRatio={1}
+                  aspectRatio={createAspectRatio(1)}
                   style={{
                     width: "100%",
                     height: "100%",
                   }}
                 />
                 <IconButton
+                  aria-label="Delete Profile Picture"
                   isLoading={isLoading}
                   position={"absolute"}
                   zIndex={1}
                   top={-5}
                   right={-5}
-                  icon={<FontAwesomeIcon icon={faTrash} />}
+                  icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
                   bg="red.300"
                   color="white"
                   onClick={() => setNewProfilePicture("")}
