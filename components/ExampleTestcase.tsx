@@ -5,7 +5,6 @@ function ExampleTestcase({ testCase }) {
   const styles = {
     minHeight: "100px",
     minWidth: "400px",
-    width: "-moz-fit-content",
     width: "fit-content",
     maxWidth: "800px",
     color: "white",
@@ -50,7 +49,9 @@ function ExampleTestcase({ testCase }) {
           <Text
             as="span"
             style={testCase.input.includes("<br>") ? { display: "block" } : {}}
-            dangerouslySetInnerHTML={{ __html: testCase.input.replaceAll('\n', '<br>') }}
+            dangerouslySetInnerHTML={{
+              __html: testCase.input.replaceAll("\n", "<br>"),
+            }}
           ></Text>
         </Box>
       )}

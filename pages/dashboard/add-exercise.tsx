@@ -40,6 +40,7 @@ import { useRouter } from "next/router";
 import axios from "../../utils/axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
@@ -257,7 +258,8 @@ const AddExam = () => {
                   ))}
 
                   <IconButton
-                    icon={<FontAwesomeIcon icon={faAdd} />}
+                    aria-label="Add section"
+                    icon={<FontAwesomeIcon icon={faAdd as IconProp} />}
                     onClick={addSectionHandler}
                   />
                 </TabList>
