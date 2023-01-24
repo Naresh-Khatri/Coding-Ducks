@@ -21,7 +21,7 @@ import {
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import { Cropper } from "react-advanced-cropper";
+import { createAspectRatio, Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 
 import { useRef, useState } from "react";
@@ -30,6 +30,7 @@ import axios from "../../utils/axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -65,9 +66,9 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
 
   const toast = useToast();
 
-  const convertCanvasToBlob = (canvas) => {
+  const convertCanvasToBlob = (canvas: any): Promise<Blob> => {
     return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
+      canvas.toBlob((blob: Blob) => {
         resolve(blob);
       });
     });
@@ -206,11 +207,12 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                   style={{ borderRadius: "10%" }}
                 />
                 <IconButton
+                  aria-label="Delete"
                   position={"absolute"}
                   zIndex={1}
                   top={-5}
                   right={-5}
-                  icon={<FontAwesomeIcon icon={faTrash} />}
+                  icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
                   bg="red.300"
                   color="white"
                   onClick={() => setOldCoverImg("")}
@@ -222,7 +224,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                   ref={cropperRef}
                   src={newCoverImg}
                   className={"cropper"}
-                  aspectRatio={16 / 10}
+                  aspectRatio={createAspectRatio(16 / 9)}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -230,12 +232,12 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                   }}
                 />
                 <IconButton
-                  ariaLabel={"delete button"}
+                  aria-label="Delete"
                   position={"absolute"}
                   zIndex={1}
                   top={-5}
                   right={-5}
-                  icon={<FontAwesomeIcon icon={faTrash} />}
+                  icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
                   bg="red.300"
                   color="white"
                   onClick={() => setNewCoverImg("")}
