@@ -1,8 +1,8 @@
+import { User, UserCredential } from "firebase/auth";
 import { useRouter } from "next/router";
 import {
   createContext,
   useContext,
-  Context,
   useState,
   useEffect,
   ReactNode,
@@ -18,7 +18,14 @@ import {
 } from "../firebase/firebase";
 import axios from "../utils/axios";
 
-interface User {
+interface Follower {
+  fullname: string;
+  id: number;
+  photoURL: string;
+  registeredAt: string;
+  username: string;
+}
+export interface MyUser {
   id: number;
   googleUID: string;
   uid?: string;
@@ -31,19 +38,22 @@ interface User {
   isAdmin: boolean;
   registeredAt: string;
   bio: string;
-  followedBy: Array<{}>;
-  following: Array<{}>;
+  followedBy: Array<Follower>;
+  following: Array<Follower>;
 }
 interface userContextProps {
-  user: User;
+  user: MyUser;
   loading: boolean;
   error: any;
   firebaseUser: User;
   logout: () => void;
-  signInWithGoogle: () => void;
-  registerWithEmailAndPassword: () => {};
-  logInWithEmailAndPassword: () => {};
-  sendPasswordReset: () => void;
+  signInWithGoogle: () => Promise<User>;
+  registerWithEmailAndPassword: (
+    email: string,
+    password: string
+  ) => Promise<UserCredential>;
+  logInWithEmailAndPassword: (email: string, password: string) => Promise<User>;
+  sendPasswordReset: (email: string) => Promise<void>;
   updateUser: (updatedUser: any) => Promise<void>;
   loadUser: () => void;
 }
@@ -67,7 +77,7 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
     try {
       const res = await axios.patch(`/users/`, {
         ...updatedUser,
-        googleUID: user.googleUID || user.uid,
+        googleUID: user.uid,
       });
       setCompleteUser(res.data);
     } catch (error) {
@@ -93,9 +103,6 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
     };
     setCompleteUser(obj);
   };
-  useEffect(() => {
-    loadUser();
-  }, [user, loading]);
   const loadUser = async () => {
     try {
       if (!loading) {
@@ -125,6 +132,9 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {}
   };
+  useEffect(() => {
+    loadUser();
+  }, [user, loading]);
 
   const logout = () => {
     logoutFromFirebase();
@@ -134,7 +144,7 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
   return (
     <userContext.Provider
       value={{
-        user: completeUser as User,
+        user: completeUser as MyUser,
         firebaseUser: user as any,
         loading,
         error,
