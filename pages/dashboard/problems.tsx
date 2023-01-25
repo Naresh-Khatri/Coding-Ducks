@@ -24,12 +24,24 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import ProblemRow from "../../components/admin/ProblemRow";
 import AdminLayout from "../../layout/AdminLayout";
 import axios from "../../utils/axios";
+
+interface Problem {
+  id: number;
+  title: string;
+  order: number;
+  difficulty: string;
+  examId: number;
+  exam: {
+    id: number;
+    title: string;
+    slug: string;
+  };
+}
 
 function ProblemPage() {
   useEffect(() => {
@@ -41,8 +53,8 @@ function ProblemPage() {
     getProblems();
   }, []);
 
-  const [problems, setProblems] = useState();
-  const [filteredProblems, setFilteredProblems] = useState();
+  const [problems, setProblems] = useState<Array<Problem>>([]);
+  const [filteredProblems, setFilteredProblems] = useState<Array<Problem>>();
   const [examsList, setExamsList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
