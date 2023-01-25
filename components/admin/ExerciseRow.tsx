@@ -7,6 +7,7 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dynamic from "next/dynamic";
@@ -101,9 +102,10 @@ function ExerciseRow({ probIdx, secIdx, setSections }) {
       </Td>
       <Td>
         <IconButton
+          aria-label="Remove Problem"
           onClick={handleOnProblemRemoved}
           colorScheme={"red"}
-          icon={<FontAwesomeIcon icon={faTrash} />}
+          icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
         />
       </Td>
     </Tr>
