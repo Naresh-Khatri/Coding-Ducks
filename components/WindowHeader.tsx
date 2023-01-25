@@ -1,16 +1,21 @@
 import { Box, Flex, Spacer, Text } from "@chakra-ui/react";
 import React from "react";
 
-function WindowHeader({ title, hasError }) {
+interface WindowHeaderProps {
+  title: string;
+  status: "error" | "success" | "none";
+}
+
+function WindowHeader({ title, status }: WindowHeaderProps) {
   return (
     <>
       <Flex
         h={"30px"}
         alignItems={"center"}
         bg={
-          hasError == true
+          status === "error"
             ? "red.500"
-            : hasError == false
+            : status === "success"
             ? "green.500"
             : "transparent"
         }
