@@ -24,7 +24,8 @@ const ProblemStatement = () => {
 };
 
 function ExercisePage() {
-  const { sections, currProblem, currSection } = useContext(exerciseContext);
+  const { userInputs, sections, currProblem, currSection } =
+    useContext(exerciseContext);
   return (
     <>
       <ExerciseProvider>
