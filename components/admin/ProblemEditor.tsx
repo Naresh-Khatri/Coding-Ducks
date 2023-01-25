@@ -34,10 +34,7 @@ import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 
 import { useEffect, useRef, useState } from "react";
-import { async } from "@firebase/util";
 import axios from "../../utils/axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import TestCaseRow from "./TestCaseRow";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
