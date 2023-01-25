@@ -1,13 +1,26 @@
 import { createContext, useState } from "react";
 import axios from "../utils/axios";
 
-export const submissionsContext = createContext({
-  marks: 0,
-  totalMarks: 100,
-  submisisons: [{}],
-  refreshSubmissions: null,
-});
-
+interface Submission {
+  id: number;
+  problemId: number;
+  examId: number;
+  code: string;
+  marks: number;
+  tests_passed: number;
+  total_tests: number;
+  timestamp: string;
+  userId: number;
+  tests: Array<{}>;
+}
+interface submissionsContextProps {
+  marks: number;
+  totalMarks: number;
+  submissions: Array<Submission>;
+  setSubmissions: (submissions: Array<Submission>) => void;
+  refreshSubmissions: (examId: number) => void;
+}
+export const submissionsContext = createContext({} as submissionsContextProps);
 export const SubmissionProvider = ({ children }) => {
   const [submissions, setSubmissions] = useState([]);
   const [marks, setMarks] = useState(0);
@@ -28,6 +41,7 @@ export const SubmissionProvider = ({ children }) => {
         bestSubs.push(submission);
       }
     });
+    console.log(bestSubs);
     setSubmissions(bestSubs);
     let marksObtained = bestSubs.reduce((acc, curr) => acc + curr.marks, 0);
     setMarks(marksObtained);
