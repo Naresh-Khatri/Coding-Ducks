@@ -8,6 +8,7 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
+  User,
 } from "firebase/auth";
 
 const firebaseConfig = {
@@ -19,33 +20,23 @@ const firebaseConfig = {
   appId: "1:860368859150:web:cf7028f6fe11f67a3bcc5f",
   measurementId: "G-LNDQQ0RCC5",
 };
-// const firebaseConfig = {
-//   apiKey: "AIzaSyBNxGSzXlVfHdUBodnNssbITxASlizlvXA",
-//   authDomain: "hackoverflow-3e2f0.firebaseapp.com",
-//   projectId: "hackoverflow-3e2f0",
-//   storageBucket: "hackoverflow-3e2f0.appspot.com",
-//   messagingSenderId: "770731497160",
-//   appId: "1:770731497160:web:be9b01628bca737be7f7fd",
-//   measurementId: "G-N7KM04BG24"
-// };
 
 const googleProvider = new GoogleAuthProvider();
 
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 const auth = getAuth(app);
-const signInWithGoogle = async () => {
+const signInWithGoogle = async (): Promise<User> => {
   try {
     const res = await signInWithPopup(auth, googleProvider);
-    const user = res.user;
+    const user = res.user as User;
     return user;
   } catch (err) {
     console.error(err);
-    // alert(err.message);
   }
 };
 
-const logInWithEmailAndPassword = async (email, password) => {
+const logInWithEmailAndPassword = async (email: string, password: string): Promise<User> => {
   return new Promise(async (resolve, reject) => {
     try {
       return await signInWithEmailAndPassword(auth, email, password);
@@ -55,7 +46,7 @@ const logInWithEmailAndPassword = async (email, password) => {
     }
   });
 };
-const registerWithEmailAndPassword = async (email, password) => {
+const registerWithEmailAndPassword = async (email: string, password: string) => {
   try {
     return await createUserWithEmailAndPassword(auth, email, password);
   } catch (err) {
@@ -63,14 +54,12 @@ const registerWithEmailAndPassword = async (email, password) => {
     alert(err.message);
   }
 };
-const sendPasswordReset = async (email) => {
-  return new Promise(async (resolve, reject)=>{
-    try {
-      return resolve(await sendPasswordResetEmail(auth, email))
-    } catch (err) {
-      reject(err.message);
-    }
-  })
+const sendPasswordReset = async (email: string): Promise<void> => {
+  try {
+    return await sendPasswordResetEmail(auth, email)
+  } catch (err) {
+    return err.message
+  }
 };
 const logout = () => {
   console.log("logging out");
