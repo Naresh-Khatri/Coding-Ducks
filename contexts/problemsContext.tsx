@@ -1,8 +1,9 @@
 import { createContext } from "react";
 
-const ProblemContext = createContext({
-  problems: [],
-  currentProblemId: 0,
-});
+interface ProblemsContextProp {
+  problems: Array<{}>;
+  currentProblemId: number;
+}
+const ProblemContext = createContext({} as ProblemsContextProp);
 
 export default ProblemContext;
