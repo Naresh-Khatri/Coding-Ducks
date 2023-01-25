@@ -15,7 +15,6 @@ export const useExamData = (examSlug: string) => {
 export const useExamProblemsData = ({ examId, enabled, }: {
     examId: number; enabled: boolean;
 }) => {
-    console.log(examId, enabled);
     return useQuery(
         ["examProblems", examId],
         () => axiosInstance.get(`/problems/examProblems/${examId}`),
