@@ -62,14 +62,14 @@ function CodeEditor({ code, setCode, lang, theme, runCode }) {
   };
   return (
     <Flex direction={"column"} my={2} w={"100%"}>
-      <WindowHeader title={"editor.exe"} />
+      <WindowHeader title={"editor.exe"} status={"none"} />
       <CodeMirror
         autoFocus
         value={code}
         height="67vh"
         style={{ fontSize: "1.2rem", maxWidth: "60vw" }}
         theme={supportedThemes[theme]}
-        extensions={[keymap.of(shortcuts), supportedLangs[lang]]}
+        extensions={[keymap.of(shortcuts as any), supportedLangs[lang]]}
         onChange={(value) => setCode(value)}
       />
     </Flex>
