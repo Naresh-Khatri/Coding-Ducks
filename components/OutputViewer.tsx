@@ -74,7 +74,10 @@ Your code output: \n${test.actualOutput}\n${
       {/* {outputText} */}
       {/* {hasError? 'yess error':'no error'} */}
       <Box h={"100%"} maxH={"100%"} mb={40} w={"100%"} maxW={"500px"}>
-        <WindowHeader hasError={hasError} title={"console.exe"} />
+        <WindowHeader
+          status={hasError ? "error" : "none"}
+          title={"console.exe"}
+        />
         <Box bg={"gray.900"} h={"100%"}>
           {hasError && (
             <CodeMirror
@@ -84,7 +87,6 @@ Your code output: \n${test.actualOutput}\n${
                 highlightActiveLineGutter: false,
                 highlightSelectionMatches: false,
                 highlightSpecialChars: false,
-                styleActiveLine: false,
               }}
               style={{ fontSize: "1.2rem", height: "90%", overflow: "hidden" }}
               height="100%"
