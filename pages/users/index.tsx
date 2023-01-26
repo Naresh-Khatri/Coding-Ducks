@@ -9,6 +9,7 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
@@ -108,7 +109,7 @@ const UserCard = ({ user }) => {
               <Box position={"absolute"} top={0} right={0}>
                 <Box>
                   <FontAwesomeIcon
-                    icon={faStar}
+                    icon={faStar as IconProp}
                     size={"3x"}
                     color={rankColor(user.rank)}
                   />
