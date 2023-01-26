@@ -48,13 +48,13 @@ function ExercisePage() {
               </Tr>
             </Thead>
             <Tbody>
-              {problems.map((problem, index) => (
+              {/* {problems.map((problem, index) => (
                 <ProblemRow
                   key={problem.id}
                   problem={problem}
                   fetchProblems={fetchProblems}
                 />
-              ))}
+              ))} */}
             </Tbody>
             {/* <Tfoot>
               <Tr>
