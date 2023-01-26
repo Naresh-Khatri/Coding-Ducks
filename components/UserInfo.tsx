@@ -22,14 +22,14 @@ function UserInfo({ viewingUser }) {
   const [viewingUserState, setViewingUserState] = useState(viewingUser);
 
   const { onOpen, onClose, isOpen } = useDisclosure();
-  const [isFollowing, setIsFollowing] = useState(
-    !!loggedInUser.following?.find((user) => user.id === viewingUser.id)
+  const [isFollowing, setIsFollowing] = useState<boolean>(
+    !!loggedInUser.following.find((user) => user.id === viewingUser.id)
   );
   useEffect(() => {
     setIsFollowing(
       !!loggedInUser.following?.find((user) => user.id === viewingUser.id)
     );
-    setViewingUserState(viewingUser)
+    setViewingUserState(viewingUser);
   }, [loggedInUser.following, viewingUser, viewingUser.id]);
 
   const handleFollowBtnClick = async () => {
