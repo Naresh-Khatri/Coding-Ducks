@@ -45,7 +45,7 @@ function AdminLayout({ children }) {
         h={"70px"}
       >
         <HStack alignItems={"center"} h={"70px"}>
-          <IconButton bg={"transparent"} />
+          <IconButton aria-label="idk" bg={"transparent"} />
           <Text fontSize="20px" fontWeight={"extrabold"} noOfLines={1}>
             Dashboard
           </Text>
@@ -101,7 +101,7 @@ function AdminLayout({ children }) {
               py={5}
               borderRadius={20}
               my={2}
-              _disabled
+              _disabled={{ bg: "purple.800" }}
             >
               <Text fontWeight={"extrabold"} fontSize={"1xl"}>
                 Exercises

@@ -19,8 +19,6 @@ import Link from "next/link";
 import ThemeToggler from "../components/ThemeToggler";
 import { userContext } from "../contexts/userContext";
 import UserProfile from "../components/UserProfile";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { exerciseContext } from "../contexts/exerciseContext";
 
 function NavBar({ children }) {
@@ -72,8 +70,6 @@ const ProblemSelector = ({ sectionIdx, problemIdx, isActive, isCompleted }) => {
     <Button
       w={"100%"}
       h={10}
-      // leftIcon={<FontAwesomeIcon height={"2rem"} icon={faCheckCircle} />}
-      // color="green.400"
       bg={
         sectionIdx == currSection && problemIdx == currProblem
           ? "gray.700"
@@ -108,13 +104,13 @@ const ProblemSection = ({ sectionIdx }) => {
       </AccordionButton>
       <AccordionPanel pb={4}>
         <VStack>
-          {sections[sectionIdx].problems.map((problem, problemIdx) => (
+          {/* {sections[sectionIdx].problems.map((problem, problemIdx) => (
             <ProblemSelector
               key={problem.id}
               sectionIdx={sectionIdx}
               problemIdx={problemIdx}
             />
-          ))}
+          ))} */}
         </VStack>
       </AccordionPanel>
     </AccordionItem>
