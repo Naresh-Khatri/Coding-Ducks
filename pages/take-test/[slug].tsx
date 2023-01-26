@@ -30,6 +30,28 @@ import BottomActions from "../../components/BottomActions";
 import NewConsole from "../../components/NewConsole";
 import { useExamData, useExamProblemsData } from "../../hooks/useExamsData";
 
+interface Output {
+  isCorrect: boolean;
+  passedCount: number;
+  totalCount: number;
+  results: {
+    errorMessage?: string;
+    errorOccured?: boolean;
+    actualOutput?: string;
+    output?: string;
+    isCorrect?: boolean;
+    input?: string;
+    result?: {
+      cpuUsage: number;
+      memoryUsage: number;
+      exitCode: number;
+      signal: any;
+      stderr: string;
+      stdout: string;
+    };
+  };
+}
+
 function TakeTest() {
   const { refreshSubmissions } = useContext(submissionsContext);
   const router = useRouter();
@@ -52,7 +74,7 @@ function TakeTest() {
   const [code, setCode] = useState("");
   const [lang, setLang] = useState("py");
   const [theme, setTheme] = useState("dracula");
-  const [output, setOutput] = useState("");
+  const [output, setOutput] = useState<Output>();
   const [isLoading, setIsLoading] = useState(false);
   const [currentProblemIdx, setCurrentProblemIdx] = useState(2);
   const [lastSubmissionPassed, setLastSubmissionPassed] = useState(false);
@@ -64,7 +86,7 @@ function TakeTest() {
     }
     if (router.isReady && slug) {
       refetchExamData();
-      refreshSubmissions();
+      refreshSubmissions(examData?.data.id);
       refetchProblemsData();
       setCurrentProblemIdx(1);
     }
@@ -75,7 +97,7 @@ function TakeTest() {
         ""
     );
     setShowConsole(false);
-    setOutput({});
+    setOutput(null);
   }, [currentProblemIdx, examData?.data.id]);
 
   useEffect(() => {
