@@ -38,12 +38,14 @@
     "framer-motion": "^6",
     "next": "^13.0.3",
     "react": "^18.2.0",
+    "react-activity-calendar": "^1.7.0",
     "react-advanced-cropper": "^0.17.0",
     "react-apexcharts": "^1.4.0",
     "react-dom": "^18.2.0",
     "react-firebase-hooks": "^5.1.1",
     "react-quill": "^2.0.0",
-    "react-split": "^2.0.14"
+    "react-split": "^2.0.14",
+    "react-tooltip": "^5.7.1"
   },
   "devDependencies": {
     "@types/react": "18.0.27",
