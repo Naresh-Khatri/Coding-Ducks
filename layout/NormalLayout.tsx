@@ -85,18 +85,16 @@ const NavLink = ({ children, href }) => {
   const router = useRouter();
   console.log();
   return (
-    <Link
-      px={2}
-      py={1}
-      rounded={"md"}
-      _hover={{
-        textDecoration: "none",
-        bg: useColorModeValue("gray.200", "gray.700"),
-      }}
-      href={href}
-    >
+    <Link href={href} style={{ margin: "0 .5em" }}>
       <Button
+        px={2}
+        py={1}
+        rounded={"md"}
         variant={router.pathname === href ? "solid" : "ghost"}
+        _hover={{
+          textDecoration: "none",
+          bg: useColorModeValue("gray.200", "gray.700"),
+        }}
         colorScheme="purple"
       >
         {children}
