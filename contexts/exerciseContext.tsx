@@ -52,6 +52,9 @@ export const exerciseContext = createContext({
   sections: exampleSections,
   setCurrProblem: null,
   setCurrSection: null,
+  setSections: null,
+  userInputs: {},
+  setUserInputs: null,
 });
 
 export const getExercise = async () => {
