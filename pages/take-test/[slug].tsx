@@ -1,18 +1,5 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  Box,
-  Button,
-  Flex,
-  Skeleton,
-  useDisclosure,
-  useToast,
-} from "@chakra-ui/react";
+import React, { useEffect, useRef, useState } from "react";
+import { Box, Flex, Skeleton, useDisclosure, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
 import Split from "react-split";
@@ -25,10 +12,11 @@ import LeftProblemsList from "../../components/LeftProblemsList";
 import MainLayout from "../../layout/MainLayout";
 import SubmissionModal from "../../components/modals/Submission";
 
-import { submissionsContext } from "../../contexts/submissionsContext";
 import BottomActions from "../../components/BottomActions";
 import NewConsole from "../../components/NewConsole";
 import { useExamData, useExamProblemsData } from "../../hooks/useExamsData";
+import ConfirmCodeRetrievalModel from "../../components/modals/ConfirmCodeRetrievalModal";
+import { useLastSubmissionData } from "../../hooks/useUsersData";
 
 interface Output {
   isCorrect: boolean;
@@ -53,24 +41,8 @@ interface Output {
 }
 
 function TakeTest() {
-  const { refreshSubmissions } = useContext(submissionsContext);
   const router = useRouter();
   const { slug } = router.query;
-  const {
-    data: examData,
-    refetch: refetchExamData,
-    isError: examDataError,
-  } = useExamData(slug as string);
-  const {
-    data: problemsData,
-    refetch: refetchProblemsData,
-    isLoading: problemsDataLoading,
-    isError: problemsDataError,
-  } = useExamProblemsData({
-    examId: examData?.data.id as number,
-    enabled: !!examData?.data.id,
-  });
-
   const [code, setCode] = useState("");
   const [lang, setLang] = useState("py");
   const [theme, setTheme] = useState("dracula");
@@ -80,17 +52,74 @@ function TakeTest() {
   const [lastSubmissionPassed, setLastSubmissionPassed] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
 
+  const toast = useToast();
+
+  const {
+    data: examData,
+    refetch: refetchExamData,
+    isLoading: examDataLoading,
+    isError: examDataError,
+  } = useExamData(slug as string);
+
+  const {
+    data: problemsData,
+    refetch: refetchProblemsData,
+    isLoading: problemsDataLoading,
+    isError: problemsDataError,
+  } = useExamProblemsData({ examId: examData?.data?.id as number });
+
+  const onCodeRetriveSuccess = async (lastSubmission) => {
+    try {
+      setCode(lastSubmission?.data?.code || "");
+      onCodeRetrievalModalClose();
+      if (!!lastSubmission?.data)
+        toast({
+          title: "Code Retrieved",
+          description: "Your code has been retrieved successfully",
+          position: "top",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      else
+        toast({
+          title: "No Code Found",
+          description: "No code found for this problem",
+          position: "top",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+    } catch (err) {
+      console.log(err);
+      onCodeRetrievalModalClose();
+    }
+  };
+  // this custom hook works on onSuccess only.
+  const {
+    refetch: refrechLastSubmission,
+    isLoading: lastSubmissionIsLoading,
+    fetchStatus: lastSubmissionFetchStatus,
+  } = useLastSubmissionData(
+    problemsData?.data[currentProblemIdx - 1]?.id,
+    onCodeRetriveSuccess
+  );
+
   useEffect(() => {
-    if (examDataError || problemsDataError) {
-      router.push("/home");
-    }
-    if (router.isReady && slug) {
+    if (!!!examData) {
       refetchExamData();
-      refreshSubmissions(examData?.data.id);
-      refetchProblemsData();
-      setCurrentProblemIdx(1);
     }
-  }, [router.isReady, router.query, slug, examDataError, problemsDataError]);
+    if (!!examData && !!!problemsData) {
+      refetchProblemsData();
+    }
+  }, [
+    examData,
+    problemsData,
+    refetchExamData,
+    refetchProblemsData,
+    examDataLoading,
+    problemsDataLoading,
+  ]);
   useEffect(() => {
     setCode(
       localStorage.getItem(`code ${examData?.data.id} ${currentProblemIdx}`) ||
@@ -98,29 +127,31 @@ function TakeTest() {
     );
     setShowConsole(false);
     setOutput(null);
-  }, [currentProblemIdx, examData?.data.id]);
+  }, [currentProblemIdx, examData?.data?.id]);
 
   useEffect(() => {
     localStorage.setItem(
-      `code ${examData?.data.id} ${currentProblemIdx}`,
+      `code ${examData?.data?.id} ${currentProblemIdx}`,
       code
     );
-  }, [code, currentProblemIdx]);
-
-  const {
-    isOpen: isAlertOpen,
-    onOpen,
-    onClose: onAlertClose,
-  } = useDisclosure();
+  }, [code, examData?.data, currentProblemIdx]);
 
   const {
     isOpen: isSubmissionModalOpen,
     onOpen: onSubmissionModalOpen,
     onClose: onSubmissionModalClose,
   } = useDisclosure();
-  const cancelRef = useRef();
 
-  const toast = useToast();
+  const {
+    isOpen: isCodeRetrievalModalOpen,
+    onOpen: onCodeRetrievalModalOpen,
+    onClose: onCodeRetrievalModalClose,
+  } = useDisclosure();
+
+  const handleOnCodeRetrive = async () => {
+    refrechLastSubmission();
+  };
+
   const runCode = async (submit = false) => {
     setIsLoading(true);
     setShowConsole(true);
@@ -134,7 +165,8 @@ function TakeTest() {
     try {
       const res = await axios.post("/runCode", payload);
       if (submit) {
-        refreshSubmissions(examData?.data.id);
+        // TODO: refresh submissions
+        // refreshSubmissions(examData?.data.id);
         setLastSubmissionPassed(res.data.isCorrect);
         onSubmissionModalOpen();
       }
@@ -157,10 +189,14 @@ function TakeTest() {
 
   if (!examData || problemsDataLoading) return <div>Loading...</div>;
   return (
-    <MainLayout title={examData ? examData.data?.title : "Unknown test"}>
+    <MainLayout
+      title={examData ? examData.data?.title : "Unknown test"}
+      examId={examData ? examData.data?.id : 2}
+    >
       <Flex w={"100vw"} direction="row">
         <Flex>
           <LeftProblemsList
+            examId={examData?.data.id}
             problems={problemsData?.data}
             currentProblemIdx={currentProblemIdx}
             setCurrentProblemIdx={setCurrentProblemIdx}
@@ -192,6 +228,7 @@ function TakeTest() {
                     theme={theme}
                     setLang={setLang}
                     setTheme={setTheme}
+                    onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
                   />
                 </Flex>
                 <Flex flexGrow={1} direction="column" h={"45"}>
@@ -224,32 +261,14 @@ function TakeTest() {
             </Split>
           </Flex>
         )}
-        <AlertDialog
-          isOpen={isAlertOpen}
-          leastDestructiveRef={cancelRef}
-          onClose={onAlertClose}
-        >
-          <AlertDialogOverlay>
-            <AlertDialogContent>
-              <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                MASTERRRRRRRRRRRR
-              </AlertDialogHeader>
-
-              <AlertDialogBody>
-                Are you sure? You cant undo this action afterwards.
-              </AlertDialogBody>
-
-              <AlertDialogFooter>
-                <Button ref={cancelRef} onClick={onAlertClose} mr={4}>
-                  Cancel
-                </Button>
-                <Button colorScheme="red" onClick={onAlertClose}>
-                  Delete
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialogOverlay>
-        </AlertDialog>
+        <ConfirmCodeRetrievalModel
+          onClose={onCodeRetrievalModalClose}
+          isOpen={isCodeRetrievalModalOpen}
+          onConfirm={handleOnCodeRetrive}
+          isLoading={
+            lastSubmissionIsLoading && lastSubmissionFetchStatus !== "idle"
+          }
+        />
         <SubmissionModal
           onClose={() => {
             setLastSubmissionPassed(false);
