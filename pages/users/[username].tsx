@@ -5,7 +5,6 @@ import UserInfo from "../../components/UserInfo";
 import UserStats from "../../components/UserStats";
 
 import NormalLayout from "../../layout/NormalLayout";
-// import ActivityCalendar from  "react-activity-calendar";
 import SubsActivityCalendar from "../../components/SubsActivityCalendar";
 
 import { useUserData, useUserProgress } from "../../hooks/useUsersData";
@@ -73,19 +72,6 @@ function UsersPage() {
                 subsData={progressData.data.dailySubmissions}
                 isLoading={progressDataLoading}
               />
-              {/* <ActivityCalender /> */}
-              {/* <CalendarHeatmap
-              startDate={shiftDate(new Date(), -365)}
-              endDate={new Date()}
-              values={graphValues}
-              tooltipDataAttrs={(value) => {
-                console.log(value);
-                return {
-                  "data-tip": `oiajsdfkjasldkfj`,
-                };
-              }}
-              showWeekdayLabels={true}
-            /> */}
             </Box>
           </Flex>
         )}
