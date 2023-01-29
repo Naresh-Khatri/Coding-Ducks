@@ -23,7 +23,7 @@ function UsersPage() {
     <NormalLayout>
       <Container mt={70} maxW={"6xl"} minH={"100vh"}>
         <Text fontSize="4xl" fontWeight="bold" mb={10}>
-          Users
+          Users ({data?.data.length})
         </Text>
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={10}>
           {isLoading &&
