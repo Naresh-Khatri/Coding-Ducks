@@ -14,6 +14,7 @@ import {
   Text,
   HStack,
   IconButton,
+  Switch,
 } from "@chakra-ui/react";
 
 import AdminLayout from "../../layout/AdminLayout";
@@ -41,6 +42,8 @@ const AddExam = () => {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [startTime, setStartTime] = useState("");
+  const [active, setActive] = useState(false);
+  const [totalMarks, setTotalMarks] = useState(100);
   const [coverImg, setCoverImg] = useState(null);
 
   const cropperRef = useRef(null);
@@ -49,9 +52,7 @@ const AddExam = () => {
 
   const onFileChange = (e) => {
     if (!e.target) return;
-    console.log(e);
     const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
-    console.log(file);
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async (e) => {
@@ -73,6 +74,8 @@ const AddExam = () => {
       formData.append("slug", slug);
       formData.append("description", desc);
       formData.append("startTime", new Date(startTime).toISOString());
+      formData.append("marks", totalMarks.toString());
+      formData.append("active", active.toString());
       formData.append(
         "coverImg",
         await convertCanvasToBlob(cropperRef.current.getCanvas())
@@ -157,6 +160,29 @@ const AddExam = () => {
                     onChange={(e) => setStartTime(e.target.value)}
                   />
                 </InputGroup>
+              </FormControl>
+              <FormControl>
+                <FormLabel fontWeight={"normal"} mt="2%">
+                  Marks
+                </FormLabel>
+                <InputGroup size="md">
+                  <Input
+                    type="number"
+                    value={totalMarks}
+                    min={1}
+                    onChange={(e) => setTotalMarks(+e.target.value)}
+                  />
+                </InputGroup>
+              </FormControl>
+              <FormControl display="flex" alignItems="center">
+                <FormLabel htmlFor="active" mb="0">
+                  Set Active?
+                </FormLabel>
+                <Switch
+                  id="active"
+                  isChecked={active}
+                  onChange={(e) => setActive(e.target.checked)}
+                />
               </FormControl>
             </HStack>
 
