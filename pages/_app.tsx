@@ -3,10 +3,10 @@ import { extendTheme } from "@chakra-ui/react";
 import { useContext } from "react";
 import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingContext from "../contexts/loadingContext";
-import { SubmissionProvider } from "../contexts/submissionsContext";
 import { AuthUserProvider } from "../contexts/userContext";
 
-import {QueryClientProvider, QueryClient} from '@tanstack/react-query'
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
 import "../styles/split.css";
@@ -24,20 +24,19 @@ const colors = {
 };
 const theme = extendTheme({ colors });
 
-const client = new QueryClient()
+const client = new QueryClient();
 
 function MyApp({ Component, pageProps }) {
   const { isLoading } = useContext(LoadingContext);
   return (
     <ChakraProvider theme={theme}>
       <QueryClientProvider client={client}>
-      <AuthUserProvider>
-        <SubmissionProvider>
+        <AuthUserProvider>
           {isLoading && <LoadingOverlay />}
           <LoadingOverlay />
           <Component {...pageProps} />
-        </SubmissionProvider>
-      </AuthUserProvider>
+        </AuthUserProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </ChakraProvider>
   );
