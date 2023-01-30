@@ -22,6 +22,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.2.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@tanstack/react-query": "^4.23.0",
+    "@tanstack/react-query-devtools": "^4.24.4",
     "@uiw/codemirror-extensions-langs": "^4.11.6",
     "@uiw/codemirror-theme-atomone": "^4.12.1",
     "@uiw/codemirror-theme-dracula": "^4.11.6",
