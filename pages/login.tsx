@@ -194,13 +194,11 @@ export const LoginPage = () => {
       }
     }
   };
-  const handleSignInWithGoogle = async() =>{
+  const handleSignInWithGoogle = async () => {
     try {
-      console.log('started')
-      await signInWithGoogle();
-      console.log('ended')
+      const user = await signInWithGoogle();
       toast({
-        title: `Logged in as $ {user}!`,
+        title: `Logged in as ${user.displayName}!`,
         position: "top-right",
         status: "success",
         duration: 9000,
@@ -215,7 +213,7 @@ export const LoginPage = () => {
         isClosable: true,
       });
     }
-  }
+  };
 
   return (
     <Container
@@ -346,7 +344,6 @@ export const LoginPage = () => {
                   </Stack>
                   <Stack>
                     <Button
-                     
                       w="full"
                       colorScheme="purple"
                       onClick={onRegisterBtnClicked}

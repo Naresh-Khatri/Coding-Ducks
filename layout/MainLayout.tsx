@@ -1,6 +1,4 @@
 import {
-  Box,
-  Button,
   Flex,
   HStack,
   IconButton,
@@ -11,13 +9,22 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faClock, faHome, faLeftLong } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
-import { useContext } from "react";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
-import { submissionsContext } from "../contexts/submissionsContext";
+import { useExamSubmissionsData } from "../hooks/useExamsData";
 
-function MainLayout({ children, title }) {
-  const { totalMarks, marks } = useContext(submissionsContext);
+interface MainLayoutProps {
+  children: React.ReactNode;
+  title: string;
+  examId: number;
+}
+//this fucntion takes examId to show the marks obtained in the exam
+function MainLayout({ children, title, examId }: MainLayoutProps) {
+  const { data: submissionData } = useExamSubmissionsData(examId);
+  const { totalMarks, marksObtained } = submissionData?.data || {
+    totalMarks: 0,
+    marksObtained: 0,
+  };
   return (
     <Flex direction={"column"} h={"100vh"}>
       <Flex
@@ -63,7 +70,7 @@ function MainLayout({ children, title }) {
         <Spacer />
         <HStack>
           <Text fontWeight={"extrabold"}>
-            {marks}/{totalMarks}
+            {marksObtained}/{totalMarks}
           </Text>
           <ThemeToggler />
           <UserProfile />
