@@ -5,20 +5,40 @@ import {
   HStack,
   Select,
   useColorModeValue,
+  IconButton,
+  Tooltip,
 } from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faCode, faStepBackward } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+interface ToolBarProps {
+  isLoading?: boolean;
+  runCode?: () => void;
+  lang?: string;
+  setLang: (lang: string) => void;
+  theme?: string;
+  setTheme: (theme: string) => void;
+  onCodeRetrievalModalOpen: () => void;
+}
 
 export default function ToolBar({
-  isLoading,
-  runCode,
   lang,
   setLang,
-  theme,
   setTheme,
-}) {
+  onCodeRetrievalModalOpen,
+}: ToolBarProps) {
   const color = useColorModeValue("black", "white");
   return (
     <Box>
       <HStack p={2} justifyContent="end">
+        <Tooltip label="Retrieve last submitted code">
+          <IconButton
+            aria-label="retrieve last submitted code"
+            icon={<FontAwesomeIcon icon={faCode as IconProp} />}
+            onClick={onCodeRetrievalModalOpen}
+          />
+        </Tooltip>
         <Select
           bg="purple.500"
           color="white"
