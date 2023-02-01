@@ -57,7 +57,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     description.replace(/\\n/g, " ")
   );
   const [newStartTime, setNewStartTime] = useState(formatDate(startTime));
-  const [newMarks, setNewMarks] = useState(marks);
+  const [newMarks, setNewMarks] = useState(marks || 0);
 
   const [oldCoverImg, setOldCoverImg] = useState(coverImg);
   const [newCoverImg, setNewCoverImg] = useState<any>();
@@ -75,9 +75,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
   };
   const onFileChange = (e) => {
     if (!e.target) return;
-    console.log(e);
     const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
-    console.log(file);
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async (e) => {
@@ -144,7 +142,6 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                   type={"datetime-local"}
                   value={newStartTime}
                   onChange={(e) => {
-                    console.log(e.target.value);
                     setNewStartTime(e.target.value);
                   }}
                 />
