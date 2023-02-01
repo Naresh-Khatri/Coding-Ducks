@@ -35,10 +35,10 @@ function ExamRow({ exam, fetchExams }) {
       <Td>
         <Image
           src={coverImg}
-          width={"100"}
-          height={"100"}
+          width={100}
+          height={100}
           alt={title + " cover image"}
-          style={{ borderRadius: "10%" }}
+          style={{ borderRadius: "10%", width: "auto", }}
         />
       </Td>
       <Td>{title}</Td>
@@ -67,7 +67,7 @@ function ExamRow({ exam, fetchExams }) {
             }}
           />
           <IconButton
-          aria-label="Delete Exam"
+            aria-label="Delete Exam"
             bg="red.300"
             icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
             onClick={onDeleteOpen}
