@@ -15,7 +15,6 @@ import { useContext, useEffect, useState } from "react";
 import { userContext } from "../contexts/userContext";
 import axios from "../utils/axios";
 import FollowDetailsModal from "./FollowDetailsModal";
-// import Link from "next/link";
 
 function UserInfo({ viewingUser }) {
   const { user: loggedInUser } = useContext(userContext);
@@ -23,7 +22,7 @@ function UserInfo({ viewingUser }) {
 
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [isFollowing, setIsFollowing] = useState<boolean>(
-    !!loggedInUser.following.find((user) => user.id === viewingUser.id)
+    !!loggedInUser?.following?.find((user) => user.id === viewingUser.id)
   );
   useEffect(() => {
     setIsFollowing(
