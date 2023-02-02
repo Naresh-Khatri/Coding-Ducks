@@ -1,6 +1,5 @@
 import { Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
-import React, { useContext } from "react";
-import { submissionsContext } from "../contexts/submissionsContext";
+import { useExamSubmissionsData } from "../hooks/useExamsData";
 
 function ProblemSelector({ problemId, isActive, state }) {
   const bgColor = isActive
@@ -34,9 +33,24 @@ function ProblemSelector({ problemId, isActive, state }) {
   );
 }
 
-function LeftProblemsList({ problems, currentProblemIdx, setCurrentProblemIdx }) {
-  const { submissions } = useContext(submissionsContext);
+interface LeftProblemsListProps {
+  examId: number;
+  problems: any[];
+  currentProblemIdx: number;
+  setCurrentProblemIdx: (idx: number) => void;
+}
+
+function LeftProblemsList({
+  examId,
+  problems,
+  currentProblemIdx,
+  setCurrentProblemIdx,
+}: LeftProblemsListProps) {
+  const { data: examSubmissionsData, refetch: refetchExamSubmissionsData } =
+    useExamSubmissionsData(examId);
+  const submissions = examSubmissionsData?.data?.submissions;
   const getState = (problemId) => {
+    if (!examSubmissionsData) return "notAttempted";
     const submission = submissions.find((sub) => sub.problemId === problemId);
     if (submission?.marks == 10) return "passed";
     else if (submission?.marks < 10) return "tried";
@@ -44,7 +58,7 @@ function LeftProblemsList({ problems, currentProblemIdx, setCurrentProblemIdx })
   };
 
   return (
-    <Box overflowY={'auto'}>
+    <Box overflowY={"auto"}>
       {problems.map((problem, index) => (
         <Box
           key={index}
@@ -58,6 +72,7 @@ function LeftProblemsList({ problems, currentProblemIdx, setCurrentProblemIdx })
             problemId={problem.order}
             isActive={problem.order == currentProblemIdx}
             state={getState(problem.id)}
+            // state={"notAttempted"}
           />
         </Box>
       ))}
