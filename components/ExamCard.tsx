@@ -35,13 +35,13 @@ function ExamCard({ examData }) {
       <Box w={300} h={180} position={"relative"} overflow={"hidden"}>
         <Image
           src={coverImg}
-          width={"300"}
-          height={"300"}
+          width={350}
+          height={350}
           alt="cat exam"
           style={{
             borderRadius: "20px 20px 0 0",
             objectFit: "cover",
-            width: "100%",
+            width: "auto",
             height: "auto",
           }}
         />
