@@ -1,4 +1,4 @@
-import { CloseIcon } from "@chakra-ui/icons";
+import { ChevronDownIcon, ChevronUpIcon, CloseIcon } from '@chakra-ui/icons'
 import {
   Box,
   Button,
@@ -23,181 +23,90 @@ import {
   Th,
   Thead,
   Tr,
-} from "@chakra-ui/react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import ProblemRow from "../../components/admin/ProblemRow";
-import AdminLayout from "../../layout/AdminLayout";
-import axios from "../../utils/axios";
+} from '@chakra-ui/react'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import ProblemRow from '../../components/admin/ProblemRow'
+import AdminLayout from '../../layout/AdminLayout'
+import { useProblemsData } from '../../hooks/useProblemsData'
+import CustomTable from '../../components/CustomTable'
 
 interface Problem {
-  id: number;
-  title: string;
-  order: number;
-  difficulty: string;
-  examId: number;
+  id: number
+  title: string
+  order: number
+  difficulty: string
+  examId: number
   exam: {
-    id: number;
-    title: string;
-    slug: string;
-  };
+    id: number
+    title: string
+    slug: string
+  }
 }
 
+type sortByCol = 'id' | 'order' | 'difficulty' | 'title'
+type sortByOrder = 1 | -1
+interface sortBy {
+  col: sortByCol
+  order: sortByOrder
+}
+
+const COLUMNS = [
+  {
+    Header: 'ID',
+    accessor: 'id',
+  },
+  {
+    Header: 'Exam',
+    accessor: 'examId',
+    filter: 'equals',
+  },
+  {
+    Header: 'Order',
+    accessor: 'order',
+  },
+  {
+    Header: 'Difficulty',
+    accessor: 'difficulty',
+  },
+  {
+    Header: 'Title',
+    accessor: 'title',
+  },
+  {
+    Header: 'Actions',
+  },
+]
 function ProblemPage() {
-  useEffect(() => {
-    const getProblems = async () => {
-      const { data } = await axios.get("/problems");
-      setProblems(data);
-      setFilteredProblems(data);
-    };
-    getProblems();
-  }, []);
+  const {
+    data: problemsData,
+    isLoading: problemsDataIsLoading,
+    error: problemsDataError,
+    refetch: fetchProblems,
+  } = useProblemsData()
+  console.log(problemsData, problemsDataIsLoading, problemsDataError)
 
-  const [problems, setProblems] = useState<Array<Problem>>([]);
-  const [filteredProblems, setFilteredProblems] = useState<Array<Problem>>();
-  const [examsList, setExamsList] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // console.log(problems);
-  const fetchProblems = async () => {
-    const res = await axios("/problems");
-    console.log(res.data);
-    setProblems(res.data);
-  };
-  useEffect(() => {
-    const list = [];
-    problems?.forEach((problem) => {
-      if (!list.find((exam) => exam.id === problem.examId))
-        list.push({
-          id: problem.examId,
-          title: problem.exam.title,
-          slug: problem.exam.slug,
-        });
-    });
-    setExamsList(list);
-    // console.log(list);
-  }, [problems]);
-
-  const handleOnFilterChange = (e) => {
-    setSearchTerm("");
-    if (e.target.value === "all") {
-      setFilteredProblems(problems);
-    } else {
-      setFilteredProblems(
-        problems
-          .filter((problem) => problem.examId === +e.target.value)
-          .sort((a, b) => a.order - b.order)
-      );
-    }
-  };
-
-  const handleOnSearchChange = (e) => {
-    const search = e.target.value;
-    setSearchTerm(search);
-    if (search === "") {
-      setFilteredProblems(problems);
-    } else {
-      setFilteredProblems(
-        problems.filter((problem) =>
-          problem.title.toLowerCase().includes(search.toLowerCase())
-        )
-      );
-    }
-  };
-
-  if (filteredProblems == undefined) return <div>Loading...</div>;
+  if (problemsDataIsLoading || !problemsData) return <div>Loading...</div>
 
   return (
     <AdminLayout>
-      <Container maxW="container.xl" overflowY={"scroll"}>
-        <Flex m={10} justify="space-between">
-          <Link href="/dashboard/add-problem">
-            <Button bg="green.400">Add Problem</Button>
+      <Container maxW='container.xl' overflowY={'scroll'}>
+        <Flex m={10} justify='space-between'>
+          <Link href='/dashboard/add-problem'>
+            <Button bg='green.400'>Add Problem</Button>
           </Link>
-          <Box>
-            <InputGroup size="md">
-              <Input
-                pr="4.5rem"
-                placeholder="Search titles"
-                value={searchTerm}
-                onChange={handleOnSearchChange}
-              />
-              {searchTerm != "" && (
-                <InputRightElement>
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      handleOnSearchChange({ target: { value: "" } })
-                    }
-                  >
-                    <CloseIcon />
-                  </Button>
-                </InputRightElement>
-              )}
-            </InputGroup>
-          </Box>
-          <HStack>
-            <Text> {filteredProblems.length} Problem(s)</Text>
-            <FormControl>
-              <FormLabel htmlFor="exam">Filter by exam</FormLabel>
-              <Select id="exam" onChange={handleOnFilterChange}>
-                <option value="all">All</option>
-                {examsList.map((exam) => (
-                  <option key={exam.id} value={exam.id}>
-                    {exam.title}
-                  </option>
-                ))}
-              </Select>
-            </FormControl>
-          </HStack>
         </Flex>
-        <TableContainer>
-          <Table variant="simple">
-            <TableCaption>ProblemPage</TableCaption>
-            <Thead>
-              <Tr>
-                <Th>Id</Th>
-                <Th>order</Th>
-                <Th>difficulty</Th>
-                <Th>Title</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filteredProblems.map((problem, index) => (
-                <ProblemRow
-                  key={problem.id}
-                  problem={problem}
-                  fetchProblems={fetchProblems}
-                  examsList={examsList}
-                />
-              ))}
-            </Tbody>
-            {/* <Tfoot>
-              <Tr>
-                <Th>To convert</Th>
-                <Th>into</Th>
-                <Th isNumeric>multiply by</Th>
-              </Tr>
-            </Tfoot> */}
-          </Table>
-        </TableContainer>
+        <CustomTable
+          columns={COLUMNS}
+          data={problemsData.problems}
+          examsList={problemsData.examsList}
+          refetchData={fetchProblems}
+          hasSearchBar={true}
+          hasSort={true}
+        />
       </Container>
     </AdminLayout>
-  );
+  )
 }
 
-export default ProblemPage;
-
-// export async function getServerSideProps() {
-//   try {
-//     const res = await axios("/problems");
-//     return {
-//       props: {
-//         initialProblems: res.data,
-//       },
-//     };
-//   } catch (err) {
-//     console.log(err);
-//   }
-// }
+export default ProblemPage
