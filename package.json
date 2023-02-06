@@ -46,6 +46,7 @@
     "react-firebase-hooks": "^5.1.1",
     "react-quill": "^2.0.0",
     "react-split": "^2.0.14",
+    "react-table": "^7.8.0",
     "react-tooltip": "^5.7.1"
   },
   "devDependencies": {
