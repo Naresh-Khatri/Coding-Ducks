@@ -30,7 +30,7 @@ function ExamRow({ exam, fetchExams }) {
   } = useDisclosure();
 
   return (
-    <Tr>
+    <>
       <Td>{id}</Td>
       <Td>
         <Image
@@ -38,7 +38,7 @@ function ExamRow({ exam, fetchExams }) {
           width={100}
           height={100}
           alt={title + " cover image"}
-          style={{ borderRadius: "10%", width: "auto", }}
+          style={{ borderRadius: "10%", width: "auto" }}
         />
       </Td>
       <Td>{title}</Td>
@@ -83,7 +83,7 @@ function ExamRow({ exam, fetchExams }) {
           />
         </HStack>
       </Td>
-    </Tr>
+    </>
   );
 }
 
