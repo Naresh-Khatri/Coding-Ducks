@@ -16,7 +16,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Switch,
-  Text,
   useToast,
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
@@ -24,8 +23,7 @@ import "react-quill/dist/quill.snow.css";
 import { createAspectRatio, Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 
-import { useRef, useState } from "react";
-import { async } from "@firebase/util";
+import { useEffect, useRef, useState } from "react";
 import axios from "../../utils/axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -65,6 +63,17 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
   const cropperRef = useRef(null);
 
   const toast = useToast();
+
+  useEffect(() => {
+    setNewTitle(title);
+    setNewSlug(slug);
+    setNewActive(active);
+    setNewDescription(description.replace(/\\n/g, " "));
+    setNewStartTime(formatDate(startTime));
+    setNewMarks(marks || 0);
+    setOldCoverImg(coverImg);
+    setNewCoverImg(null);
+  }, [examData]);
 
   const convertCanvasToBlob = (canvas: any): Promise<Blob> => {
     return new Promise((resolve) => {
@@ -197,11 +206,11 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
             {oldCoverImg ? (
               <Box position={"relative"}>
                 <Image
-                  width={"300"}
-                  height={"170"}
+                  width={300}
+                  height={300}
                   src={oldCoverImg}
                   alt="cover image"
-                  style={{ borderRadius: "10%" }}
+                  style={{ borderRadius: "10%", width: "auto" }}
                 />
                 <IconButton
                   aria-label="Delete"
