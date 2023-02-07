@@ -5,9 +5,7 @@ import {
   FormControl,
   FormLabel,
   HStack,
-  IconButton,
   Input,
-  InputGroup,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -30,12 +28,10 @@ import {
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "../../utils/axios";
-import Image from "next/image";
 import TestCaseRow from "./TestCaseRow";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
@@ -61,6 +57,15 @@ function ProblemEditor({
 
   const [selectedExam, setSelectedExam] = useState(examId);
   const toast = useToast();
+
+  useEffect(() => {
+    setNewOrder(order);
+    setNewTitle(title);
+    setNewDifficulty(difficulty);
+    setNewDescription(description.replace(/\\n/g, " "));
+    setNewTestCases(testCases);
+    setSelectedExam(examId);
+  }, [problemData]);
 
   const updateProblem = async () => {
     const payload = {
@@ -93,7 +98,6 @@ function ProblemEditor({
     }
   };
   if (!problemData || !examsList) return <Box> loading... </Box>;
-  // console.log(examsList);
   return (
     <Modal onClose={onClose} size={"4xl"} isOpen={isOpen}>
       <ModalOverlay backdropFilter="auto" backdropBlur="2px" />
@@ -101,7 +105,6 @@ function ProblemEditor({
         <ModalHeader>Edit Problem</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {/* {JSON.stringify(problemData, null, 2)} */}
           <HStack my={3}>
             <FormControl>
               <FormLabel htmlFor="title">Title</FormLabel>
@@ -143,7 +146,6 @@ function ProblemEditor({
               />
             </FormControl>
           </HStack> */}
-
           <FormControl my={3}>
             <FormLabel htmlFor="desc">Description</FormLabel>
 
@@ -214,7 +216,6 @@ function ProblemEditor({
               </Table>
               <Button
                 onClick={() => {
-                  console.log("lskdjflkj");
                   setNewTestCases((p) => [
                     ...p,
                     {
