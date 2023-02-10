@@ -1,16 +1,16 @@
-import CodeMirror from '@uiw/react-codemirror'
-import { javascript } from '@codemirror/lang-javascript'
-import { python } from '@codemirror/lang-python'
-import { cpp } from '@codemirror/lang-cpp'
-import { java } from '@codemirror/lang-java'
-import { dracula } from '@uiw/codemirror-theme-dracula'
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import { cpp } from "@codemirror/lang-cpp";
+import { java } from "@codemirror/lang-java";
+import { dracula } from "@uiw/codemirror-theme-dracula";
 const supportedLangs = {
   py: python(),
   js: javascript(),
   cpp: cpp(),
   c: cpp(),
   java: java(),
-}
+};
 import {
   Box,
   Button,
@@ -26,41 +26,41 @@ import {
   Stack,
   Table,
   Text,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react";
 import {
   Submission,
   User,
   useSubmissionData,
-} from '../../hooks/useSubmissionsData'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Exam, Problem } from '../../hooks/useProblemsData'
+} from "../../hooks/useSubmissionsData";
+import Image from "next/image";
+import Link from "next/link";
+import { Exam, Problem } from "../../hooks/useProblemsData";
 
 interface SubmissionViewerModalProps {
-  isOpen: boolean
-  onClose: () => void
-  submissionId: number
+  isOpen: boolean;
+  onClose: () => void;
+  submissionId: number;
 }
 function SubmissionViewerModal({
   isOpen,
   onClose,
   submissionId,
 }: SubmissionViewerModalProps) {
-  const { data, isLoading, error } = useSubmissionData(submissionId)
+  const { data, isLoading, error } = useSubmissionData(submissionId);
 
-  const submission = data?.data.submission as Submission
-  const user = data?.data.user as User
-  const exam = data?.data.exam as Exam
-  const problem = data?.data.problem as Problem
-  console.log(data)
+  const submission = data?.data.submission as Submission;
+  const user = data?.data.user as User;
+  const exam = data?.data.exam as Exam;
+  const problem = data?.data.problem as Problem;
+  console.log(data);
   return (
     <Modal
       onClose={onClose}
-      size={'6xl'}
-      motionPreset='slideInRight'
+      size={"6xl"}
+      motionPreset="slideInRight"
       isOpen={isOpen}
     >
-      <ModalOverlay backdropFilter='auto' backdropBlur='2px' />
+      <ModalOverlay backdropFilter="auto" backdropBlur="2px" />
       <ModalContent borderRadius={20}>
         <ModalHeader>Edit Problem</ModalHeader>
         <ModalCloseButton />
@@ -76,12 +76,12 @@ function SubmissionViewerModal({
                       <Box>
                         <Image
                           src={user?.photoURL}
-                          alt={'profile picture'}
+                          alt={"profile picture"}
                           width={150}
                           height={150}
                         />
                       </Box>
-                      <Box fontWeight='bold'>
+                      <Box fontWeight="bold">
                         <Box>Name: {user?.fullname}</Box>
                         <Box>Username: {user?.username}</Box>
                         <Box>roll: {user?.roll}</Box>
@@ -90,17 +90,17 @@ function SubmissionViewerModal({
                   </Box>
                   <Box mt={10}>
                     <SimpleGrid columns={2} spacing={10}>
-                      <Box as='span' fontWeight='bold'>
+                      <Box as="span" fontWeight="bold">
                         <HStack>
                           <Text>Tests</Text>
                           <Text
-                            as={'span'}
-                            fontSize={'6xl'}
-                            fontWeight={'bold'}
+                            as={"span"}
+                            fontSize={"6xl"}
+                            fontWeight={"bold"}
                             color={
                               submission.tests_passed === submission.total_tests
-                                ? 'green.500'
-                                : 'red.500'
+                                ? "green.500"
+                                : "red.500"
                             }
                           >
                             {submission.tests_passed}/{submission.total_tests}
@@ -110,7 +110,7 @@ function SubmissionViewerModal({
                           Exam: {exam.id}. {exam.title}
                         </Text>
                       </Box>
-                      <Box as='span' fontWeight='bold'>
+                      <Box as="span" fontWeight="bold">
                         <Text>
                           Exam: {exam.id}. {exam.title}
                         </Text>
@@ -124,7 +124,7 @@ function SubmissionViewerModal({
                     <TestsTable tests={submission.tests} />
                   </Box>
                   <Box>
-                    <Text fontWeight={'bold'} fontSize={'xl'}>
+                    <Text fontWeight={"bold"} fontSize={"xl"}>
                       {problem.id}. {problem.title}
                     </Text>
                     <Text
@@ -132,29 +132,19 @@ function SubmissionViewerModal({
                       dangerouslySetInnerHTML={{ __html: problem.description }}
                     ></Text>
                   </Box>
-                  {/* {JSON.stringify(data.data.submission)} */}
-                  {/* {Object.keys(submission).map((key) => {
-                    return (
-                      <Box key={key}>
-                        <Box as='span' fontWeight='bold'>
-                          {key}
-                        </Box>
-                      </Box>
-                    )
-                  })} */}
                 </Stack>
                 <Box>
-                  <Box as='span'>
-                    Language:{' '}
-                    <Text as={'span'} fontWeight={'bold'}>
+                  <Box as="span">
+                    Language:{" "}
+                    <Text as={"span"} fontWeight={"bold"}>
                       {submission.lang}
                     </Text>
                   </Box>
                   <CodeMirror
                     autoFocus
                     value={data.data.submission.code}
-                    height='67vh'
-                    style={{ fontSize: '1.2rem', maxWidth: '60vw' }}
+                    height="67vh"
+                    style={{ fontSize: "1.2rem", maxWidth: "60vw" }}
                     extensions={[supportedLangs[submission.lang]]}
                     theme={dracula}
                     readOnly={true}
@@ -166,14 +156,14 @@ function SubmissionViewerModal({
         </ModalBody>
         <ModalFooter>
           <HStack>
-            <Button variant={'outline'} onClick={onClose}>
+            <Button variant={"outline"} onClick={onClose}>
               Close
             </Button>
           </HStack>
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
+  );
 }
 
 const TestsTable = ({ tests }) => {
@@ -193,31 +183,40 @@ const TestsTable = ({ tests }) => {
           return (
             <tr key={idx}>
               <td>
-                <Text fontWeight='bold'>{idx + 1}</Text>
-              </td>
-              <td>
-                <Text fontWeight='bold'>{test.input}</Text>
-              </td>
-              <td>
-                <Text fontWeight='bold'>{test.actualOutput}</Text>
-              </td>
-              <td>
-                <Text fontWeight='bold'>{test.output}</Text>
+                <Text fontWeight="bold">{idx + 1}</Text>
               </td>
               <td>
                 <Text
-                  fontWeight='bold'
-                  color={test.isCorrect ? 'green.400' : 'red.400'}
+                  fontWeight="bold"
+                  dangerouslySetInnerHTML={{ __html: test.input }}
+                ></Text>
+              </td>
+              <td>
+                <Text
+                  fontWeight="bold"
+                  dangerouslySetInnerHTML={{ __html: test.actualOutput }}
+                ></Text>
+              </td>
+              <td>
+                <Text
+                  fontWeight="bold"
+                  dangerouslySetInnerHTML={{ __html: test.output }}
+                ></Text>
+              </td>
+              <td>
+                <Text
+                  fontWeight="bold"
+                  color={test.isCorrect ? "green.400" : "red.400"}
                 >
-                  {test.isCorrect === true ? 'Passed' : 'Failed'}
+                  {test.isCorrect === true ? "Passed" : "Failed"}
                 </Text>
               </td>
             </tr>
-          )
+          );
         })}
       </tbody>
     </Table>
-  )
-}
+  );
+};
 
-export default SubmissionViewerModal
+export default SubmissionViewerModal;
