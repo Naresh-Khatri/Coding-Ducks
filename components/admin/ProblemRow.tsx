@@ -2,15 +2,22 @@ import { HStack, IconButton, Td, Tr, useDisclosure } from "@chakra-ui/react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Image from "next/image";
 import React from "react";
-import ExamDeleteModal from "./ExamDeleteModal";
-import ExamEditor from "./ExamEditor";
 import ProblemDeleteModal from "./ProblemDeleteModal";
 import ProblemEditor from "./ProblemEditor";
+import { Exam, Problem } from "../../hooks/useProblemsData";
 
-function ProblemRow({ problem, fetchProblems, examsList }) {
-  const { id, order, difficulty, title, description, tags } = problem;
+function ProblemRow({
+  problem,
+  fetchProblems,
+  examsList,
+}: {
+  problem: Problem;
+  fetchProblems: () => void;
+  examsList: Exam[];
+}) {
+  const { id, exam, examId, order, difficulty, title, description, tags } =
+    problem;
   const {
     onOpen: onEditOpen,
     onClose: onEditClose,
@@ -24,8 +31,11 @@ function ProblemRow({ problem, fetchProblems, examsList }) {
   } = useDisclosure();
 
   return (
-    <Tr>
+    <>
       <Td>{id}</Td>
+      <Td>
+        {examId}. {exam.title}
+      </Td>
       <Td>{order}</Td>
       <Td>{difficulty}</Td>
       <Td>{title}</Td>
@@ -36,6 +46,9 @@ function ProblemRow({ problem, fetchProblems, examsList }) {
             icon={<FontAwesomeIcon icon={faEdit as IconProp} />}
             onClick={onEditOpen}
           />
+          <>
+            {id}, {examId}
+          </>
           <ProblemEditor
             problemData={problem}
             examsList={examsList}
@@ -63,7 +76,7 @@ function ProblemRow({ problem, fetchProblems, examsList }) {
           />
         </HStack>
       </Td>
-    </Tr>
+    </>
   );
 }
 
