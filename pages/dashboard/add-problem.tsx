@@ -73,9 +73,9 @@ const AddExam = () => {
       const res = await axios.post("/problems", payload);
       console.log(res);
       toast({
-        title: "Exam created!",
+        title: "Problem created!",
         status: "success",
-        description: "New exam has been created.",
+        description: "New Problem has been created.",
         duration: 9000,
         isClosable: true,
       });
