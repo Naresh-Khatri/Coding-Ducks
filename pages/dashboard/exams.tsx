@@ -2,34 +2,51 @@ import {
   Box,
   Button,
   Container,
-  Table,
-  TableCaption,
-  TableContainer,
-  Tbody,
-  Td,
-  Tfoot,
-  Th,
-  Thead,
-  Tr,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import ExamRow from "../../components/admin/ExamRow";
 import AdminLayout from "../../layout/AdminLayout";
 
-import axios from "../../utils/axios";
+import { useExamsData } from "../../hooks/useExamsData";
+import CustomTable from "../../components/CustomTable";
+
+const COLUMNS = [
+  {
+    Header: "ID",
+    accessor: "id",
+  },
+  {
+    Header: "Cover Image",
+    accessor: "coverImg",
+  },
+  {
+    Header: "Title",
+    accessor: "title",
+  },
+  {
+    Header: "Starts on",
+    accessor: "",
+  },
+  {
+    Header: "Active",
+    accessor: "active",
+  },
+  {
+    Header: "Actions",
+    accessor: "",
+  },
+];
 
 function Exams() {
-  const [exams, setExams] = useState([]);
-  const fetchExams = async () => {
-    try {
-      const res = await axios.get("/exams");
-      setExams(res.data);
-    } catch (error) {}
-  };
-  useEffect(() => {
-    fetchExams();
-  }, []);
+  const {
+    data: examsData,
+    isLoading: examsDataIsLoading,
+    error: examsDataError,
+    refetch: refetchExamData,
+  } = useExamsData();
+  console.log(examsData);
+
+  if (examsDataIsLoading || !examsData) return <div>Loading...</div>;
+
   return (
     <AdminLayout>
       <Container maxW="container.xl" overflow={"auto"}>
@@ -37,37 +54,16 @@ function Exams() {
           <Link href="/dashboard/add-exam">
             <Button bg="green.400">Add Exam</Button>
           </Link>
-          <Button bg="green.400" onClick={fetchExams}>
+          <Button bg="green.400" onClick={refetchExamData}>
             Refresh
           </Button>
         </Box>
-        <TableContainer>
-          <Table variant="simple">
-            <TableCaption>Exams</TableCaption>
-            <Thead>
-              <Tr>
-                <Th>Id</Th>
-                <Th>Cover image</Th>
-                <Th>Title</Th>
-                <Th>Starts on</Th>
-                <Th>active</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {exams.map((exam) => (
-                <ExamRow key={exam.id} exam={exam} fetchExams={fetchExams} />
-              ))}
-            </Tbody>
-            {/* <Tfoot>
-              <Tr>
-                <Th>To convert</Th>
-                <Th>into</Th>
-                <Th isNumeric>multiply by</Th>
-              </Tr>
-            </Tfoot> */}
-          </Table>
-        </TableContainer>
+        <CustomTable
+          columns={COLUMNS}
+          data={examsData.data}
+          refetchData={refetchExamData}
+          hasSort
+        />
       </Container>
     </AdminLayout>
   );
