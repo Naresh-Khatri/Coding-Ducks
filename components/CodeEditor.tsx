@@ -14,10 +14,8 @@ import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
-import { Box, Flex, Spacer, Text } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import WindowHeader from "./WindowHeader";
-
-// import "./CodeEditor.css";
 
 function CodeEditor({ code, setCode, lang, theme, runCode }) {
   const supportedLangs = {
