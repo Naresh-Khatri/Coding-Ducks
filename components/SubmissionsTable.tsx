@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from '@chakra-ui/icons'
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -18,78 +18,106 @@ import {
   Th,
   Thead,
   Tr,
-} from '@chakra-ui/react'
-import React, { useCallback, useEffect, useState } from 'react'
-import { useTable, useFilters, useGlobalFilter, useSortBy } from 'react-table'
+} from "@chakra-ui/react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useTable, useFilters, useGlobalFilter, useSortBy } from "react-table";
 import {
   ISubmissionsQuery,
   Submission,
   useSubmissionsData,
-} from '../hooks/useSubmissionsData'
-import SubmissionRow from './admin/SubmissionRow'
+} from "../hooks/useSubmissionsData";
+import SubmissionRow from "./admin/SubmissionRow";
 
 const COLUMNS = [
   {
-    Header: 'ID',
-    accessor: 'id',
+    Header: "ID",
+    accessor: "id",
   },
   {
-    Header: 'Exam',
-    accessor: 'examId',
-    filter: 'equals',
+    Header: "Exam",
+    accessor: "examId",
+    filter: "equals",
   },
   {
-    Header: 'Photo',
-    accessor: 'User.photoURL',
+    Header: "Photo",
+    accessor: "User.photoURL",
     //turn off sorting
     disableSortBy: true,
   },
   {
-    Header: 'User',
-    accessor: 'User',
+    Header: "User",
+    accessor: "User",
   },
   {
-    Header: 'Lang',
-    accessor: 'lang',
+    Header: "Lang",
+    accessor: "lang",
   },
   {
-    Header: 'Marks',
-    accessor: 'marks',
+    Header: "Marks",
+    accessor: "marks",
   },
   {
-    Header: 'Time',
-    accessor: 'timestamp',
+    Header: "Time",
+    accessor: "timestamp",
   },
   {
-    Header: 'Tests',
-    accessor: 'tests_passed',
+    Header: "Tests",
+    accessor: "tests_passed",
   },
   {
-    Header: 'Actions',
+    Header: "Actions",
   },
-]
+];
 
 function SubmissionsTable() {
   const [query, setQuery] = useState<ISubmissionsQuery>({
     skip: 0,
     take: 10,
-    orderBy: 'id',
+    searchTerm: "",
+    orderBy: "id",
     asc: false,
-  })
+  });
 
   const {
     data: submissionData,
     isLoading: submissionsDataIsLoading,
     error: submissionsDataError,
     refetch: fetchSubmissions,
-  } = useSubmissionsData(query)
-  console.log(submissionData, submissionsDataIsLoading, submissionsDataError)
-  console.log('skdf')
+  } = useSubmissionsData(query);
+  const [searchTerm, setSearchTerm] = useState("");
+  const handleOnSearchChange = (e) => {
+    const search = e.target.value;
 
-  // return null
+    setSearchTerm(search);
+  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQuery((p) => {
+        return { ...p, searchTerm };
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   return (
     <>
+      <Box>
+        <InputGroup size="md">
+          <Input
+            pr="4.5rem"
+            placeholder="Search names, usernames, roll and lang "
+            value={searchTerm}
+            onChange={handleOnSearchChange}
+          />
+          {searchTerm !== "" && (
+            <InputRightElement>
+              <Button size="sm" onClick={(e) => handleOnSearchChange(e)}>
+                <CloseIcon />
+              </Button>
+            </InputRightElement>
+          )}
+        </InputGroup>
+      </Box>
       {submissionsDataIsLoading || !submissionData ? (
         <Text>Loading...</Text>
       ) : (
@@ -100,7 +128,7 @@ function SubmissionsTable() {
         />
       )}
     </>
-  )
+  );
 }
 
 const Tablee = ({
@@ -108,11 +136,11 @@ const Tablee = ({
   query,
   setQuery,
 }: {
-  submissionsData: { submissions: Submission[]; count: number }
-  query: ISubmissionsQuery
-  setQuery: any
+  submissionsData: { submissions: Submission[]; count: number };
+  query: ISubmissionsQuery;
+  setQuery: any;
 }) => {
-  const { submissions, count } = submissionsData
+  const { submissions, count } = submissionsData;
   const {
     getTableProps,
     getTableBodyProps,
@@ -130,89 +158,61 @@ const Tablee = ({
     useFilters,
     useGlobalFilter,
     useSortBy
-  )
-  const [searchTerm, setSearchTerm] = useState('')
+  );
 
   useEffect(() => {
-    if (state.sortBy.length === 0) return
-    console.log(state.sortBy)
+    if (state.sortBy.length === 0) return;
+    console.log(state.sortBy);
     setQuery((p) => {
-      return { ...p, orderBy: state.sortBy[0].id, asc: state.sortBy[0].desc }
-    })
-  }, [state.sortBy])
+      return { ...p, orderBy: state.sortBy[0].id, asc: state.sortBy[0].desc };
+    });
+  }, [state.sortBy]);
 
-  const handleOnSearchChange = (e) => {
-    const search = e.target.value
-    setSearchTerm(search)
-    setGlobalFilter(search)
-  }
   return (
     <>
-      <HStack w={'100%'} justify={'space-between'}>
-        <Box>
-          <InputGroup size='md'>
-            <Input
-              pr='4.5rem'
-              placeholder='Search titles'
-              value={searchTerm}
-              onChange={handleOnSearchChange}
-            />
-            {searchTerm !== '' && (
-              <InputRightElement>
-                <Button size='sm' onClick={(e) => handleOnSearchChange(e)}>
-                  <CloseIcon />
-                </Button>
-              </InputRightElement>
-            )}
-          </InputGroup>
-        </Box>
-        <Flex>
-          <Stack>
-            <Text> Total subs: {count} </Text>
-            <HStack>
-              <Text> Showing </Text>
-              <Select
-                value={query.take}
-                onChange={(e) => {
-                  setQuery((p) => {
-                    return { ...p, take: +e.target.value }
-                  })
-                }}
-              >
-                <option value='10'>10</option>
-                <option value='25'>25</option>
-                <option value='50'>50</option>
-                <option value='100'>100</option>
-              </Select>
-              <Text>
-                Page: {query.skip / query.take + 1}/
-                {Math.floor(count / query.take)}
-              </Text>
-            </HStack>
-          </Stack>
-        </Flex>
-      </HStack>
-      <HStack>
-        <IconButton
-          aria-label='left'
-          disabled={query.skip === 0}
-          onClick={() => {
-            setQuery((p) => {
-              return { ...p, skip: p.skip - 10 }
-            })
-          }}
-          icon={<ChevronLeftIcon />}
-        />
-        <IconButton
-          aria-label='right'
-          disabled={query.skip + query.take >= count}
-          onClick={() => {
-            setQuery((p) => {
-              return { ...p, skip: p.skip + 10 }
-            })
-          }}
-          icon={<ChevronRightIcon />}
-        />
+      <HStack w={"100%"} justify={"space-between"}>
+        <HStack>
+          <IconButton
+            aria-label="left"
+            disabled={query.skip === 0}
+            onClick={() => {
+              setQuery((p) => {
+                return { ...p, skip: p.skip - 10 };
+              });
+            }}
+            icon={<ChevronLeftIcon />}
+          />
+          <IconButton
+            aria-label="right"
+            disabled={query.skip + query.take >= count}
+            onClick={() => {
+              setQuery((p) => {
+                return { ...p, skip: p.skip + 10 };
+              });
+            }}
+            icon={<ChevronRightIcon />}
+          />
+          <Text>
+            Page: {query.skip / query.take + 1}/{Math.floor(count / query.take)}
+          </Text>
+        </HStack>
+        <Text> Total subs: {count} </Text>
+        <HStack>
+          <Text> Showing </Text>
+          <Select
+            value={query.take}
+            onChange={(e) => {
+              setQuery((p) => {
+                return { ...p, take: +e.target.value };
+              });
+            }}
+          >
+            <option value="10">10 rows</option>
+            <option value="25">25 rows</option>
+            <option value="50">50 rows</option>
+            <option value="100">100 rows</option>
+          </Select>
+        </HStack>
       </HStack>
       <TableContainer>
         <Table {...getTableProps()}>
@@ -224,12 +224,12 @@ const Tablee = ({
                     key={j}
                     {...column.getHeaderProps(column.getSortByToggleProps())}
                   >
-                    {column.render('Header')}
+                    {column.render("Header")}
                     {column.isSorted && (
                       <span
                         style={{
-                          transition: 'all .2s ease-in-out',
-                          rotate: column.isSortedDesc ? '0deg' : '180deg',
+                          transition: "all .2s ease-in-out",
+                          rotate: column.isSortedDesc ? "0deg" : "180deg",
                         }}
                       >
                         {column.isSortedDesc ? (
@@ -246,14 +246,14 @@ const Tablee = ({
           </Thead>
           <Tbody {...getTableBodyProps()}>
             {rows.map((row, i: number) => {
-              prepareRow(row)
+              prepareRow(row);
               return (
                 <Tr
                   key={i}
                   bg={
                     row.original.tests_passed === row.original.total_tests
-                      ? ''
-                      : 'red.900'
+                      ? ""
+                      : "red.900"
                   }
                 >
                   <SubmissionRow submission={row.original} />
@@ -265,12 +265,12 @@ const Tablee = ({
                     )
                   })} */}
                 </Tr>
-              )
+              );
             })}
           </Tbody>
         </Table>
       </TableContainer>
     </>
-  )
-}
-export default SubmissionsTable
+  );
+};
+export default SubmissionsTable;
