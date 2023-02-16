@@ -54,7 +54,7 @@ function Exams() {
           <Link href="/dashboard/add-exam">
             <Button bg="green.400">Add Exam</Button>
           </Link>
-          <Button bg="green.400" onClick={refetchExamData}>
+          <Button bg="green.400" onClick={()=>refetchExamData()}>
             Refresh
           </Button>
         </Box>
