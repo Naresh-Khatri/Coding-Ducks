@@ -11,6 +11,7 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.0.11",
     "@chakra-ui/react": "^2.3.5",
+    "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/lang-cpp": "^6.0.1",
     "@codemirror/lang-java": "^6.0.0",
     "@codemirror/lang-javascript": "^6.0.2",
@@ -32,6 +33,7 @@
     "@uiw/codemirror-theme-okaidia": "^4.12.1",
     "@uiw/codemirror-theme-xcode": "^4.12.1",
     "@uiw/react-codemirror": "^4.11.6",
+    "ace-builds": "^1.15.3",
     "apexcharts": "^3.36.3",
     "axios": "^1.2.0",
     "canvas-confetti": "^1.6.0",
@@ -39,6 +41,7 @@
     "framer-motion": "^6",
     "next": "^13.0.3",
     "react": "^18.2.0",
+    "react-ace": "^10.1.0",
     "react-activity-calendar": "^1.7.0",
     "react-advanced-cropper": "^0.17.0",
     "react-apexcharts": "^1.4.0",
@@ -47,7 +50,8 @@
     "react-quill": "^2.0.0",
     "react-split": "^2.0.14",
     "react-table": "^7.8.0",
-    "react-tooltip": "^5.7.1"
+    "react-tooltip": "^5.7.1",
+    "socket.io-client": "^4.6.1"
   },
   "devDependencies": {
     "@types/react": "18.0.27",
