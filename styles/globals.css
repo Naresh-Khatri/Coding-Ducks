@@ -32,73 +32,88 @@ code {
   /* border: 1px solid #707070; */
 }
 
+.cm-theme,
+.cm-editor {
+  height: 100%;
+}
 ::selection {
   background: #7d4ddd;
   color: white;
 }
 
-.react-calendar-heatmap text {
-  font-size: 10px;
-  fill: #aaa;
+.ace_bookmark_name {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+}
+.ace_bookmark_hide {
+  /* display: none; */
+  animation: hide 2s ease-in-out forwards;
 }
 
-.react-calendar-heatmap .react-calendar-heatmap-small-text {
-  font-size: 5px;
+@keyframes hide {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+    display: none;
+  }
 }
 
-.react-calendar-heatmap rect:hover {
-  stroke: #555;
-  stroke-width: 1px;
+.ace_bookmark_name::after {
+  content: attr(data-name);
+  width: fit-content;
+  position: absolute;
+  top: -1.5rem;
+  padding: 0.1rem 0.5rem;
+  color: white;
+  border-radius: 10px;
+  z-index: 1;
 }
-
-/*
- * Default color scale
- */
-
-.react-calendar-heatmap .color-empty {
-  fill: #eeeeee;
+.ace_bookmark_name::before {
+  content: "";
+  position: absolute;
+  background: coral;
+  /* width: .3ch;
+  height: 1.2rem;
+  top: .2ch; */
+  width: 0.6rem;
+  height: 0.6rem;
+  left: -0.3ch;
+  top: -0.4rem;
+  right: 50%;
+  rotate: 45deg;
+  /* animation: blink 1s ease-in-out infinite; */
 }
-
-.react-calendar-heatmap .color-filled {
-  fill: #8cc665;
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
-
-/*
- * Github color scale
- */
-
-.react-calendar-heatmap .color-github-0 {
-  fill: #eeeeee;
+.ace_cursor_color_0::after,
+.ace_cursor_color_0::before {
+  background: #7c52e7;
 }
-.react-calendar-heatmap .color-github-1 {
-  fill: #d6e685;
+.ace_cursor_color_1::after,
+.ace_cursor_color_1::before {
+  background: #4b8de4;
 }
-.react-calendar-heatmap .color-github-2 {
-  fill: #8cc665;
+.ace_cursor_color_2::after,
+.ace_cursor_color_2::before {
+  background: #a11c39;
 }
-.react-calendar-heatmap .color-github-3 {
-  fill: #44a340;
+.ace_cursor_color_3::after,
+.ace_cursor_color_3::before {
+  background: #7faf0f;
 }
-.react-calendar-heatmap .color-github-4 {
-  fill: #1e6823;
-}
-
-/*
- * Gitlab color scale
- */
-
-.react-calendar-heatmap .color-gitlab-0 {
-  fill: #ededed;
-}
-.react-calendar-heatmap .color-gitlab-1 {
-  fill: #acd5f2;
-}
-.react-calendar-heatmap .color-gitlab-2 {
-  fill: #7fa8d1;
-}
-.react-calendar-heatmap .color-gitlab-3 {
-  fill: #49729b;
-}
-.react-calendar-heatmap .color-gitlab-4 {
-  fill: #254e77;
+.ace_cursor_color_4::after,
+.ace_cursor_color_4::before {
+  background: #18b96e;
 }
