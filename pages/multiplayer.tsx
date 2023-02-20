@@ -298,6 +298,16 @@ console.log(Math.random());
     });
   };
 
+  const handleLeaveRoom = () => {
+    socket.emit("leave-room", {
+      roomInfo: { name: room.roomInfo.name, id: room.roomInfo.id },
+      user: { id: user.id, username: user.username },
+    });
+    router.push("/multiplayer");
+    setRoom(null);
+    setConsoleInfo(null);
+  };
+
   return (
     <NormalLayout>
       <Container maxW={{ base: "100vw", md: "100vw" }} minH={"100vh"}>
@@ -309,6 +319,11 @@ console.log(Math.random());
         {room && !showChat && (
           <Button colorScheme="blue" onClick={() => setShowChat(true)}>
             Show Chat
+          </Button>
+        )}
+        {room && (
+          <Button colorScheme="blue" onClick={handleLeaveRoom}>
+            Leave Room
           </Button>
         )}
 
