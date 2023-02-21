@@ -33,6 +33,7 @@ const links = [
   { name: "Users", href: "/users" },
   { name: "Tests", href: "/home" },
   { name: "Playground", href: "/playground" },
+  { name: "Multiplayer", href: "/multiplayer" },
 ];
 
 function NavBar() {
