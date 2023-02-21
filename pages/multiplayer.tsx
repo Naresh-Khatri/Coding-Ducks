@@ -19,7 +19,11 @@ import {
 
 import NormalLayout from "../layout/NormalLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
+import {
+  faLeftLong,
+  faMessage,
+  faPlay,
+} from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/router";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { userContext } from "../contexts/userContext";
@@ -311,22 +315,29 @@ console.log(Math.random());
   return (
     <NormalLayout>
       <Container maxW={{ base: "100vw", md: "100vw" }} minH={"100vh"}>
-        {room && showChat && (
-          <Button colorScheme="blue" onClick={() => setShowChat(false)}>
-            Hide Chat
-          </Button>
-        )}
-        {room && !showChat && (
-          <Button colorScheme="blue" onClick={() => setShowChat(true)}>
-            Show Chat
-          </Button>
-        )}
-        {room && (
-          <Button colorScheme="blue" onClick={handleLeaveRoom}>
-            Leave Room
-          </Button>
-        )}
-
+          {room && showChat && (
+            <Button
+              colorScheme="blue"
+              onClick={() => setShowChat(false)}
+              leftIcon={<FontAwesomeIcon icon={faLeftLong as IconProp} />}
+            >
+              Hide Chat
+            </Button>
+          )}
+          {room && !showChat && (
+            <Button
+              colorScheme="blue"
+              onClick={() => setShowChat(true)}
+              rightIcon={<FontAwesomeIcon icon={faMessage as IconProp} />}
+            >
+              Show Chat
+            </Button>
+          )}
+          {room && (
+            <Button colorScheme="red" onClick={handleLeaveRoom}>
+              Leave Room
+            </Button>
+          )}
         {!room ? (
           <>
             <HStack justifyContent={"center"} alignItems={"center"} mt={20}>
