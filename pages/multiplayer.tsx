@@ -315,6 +315,7 @@ console.log(Math.random());
   return (
     <NormalLayout>
       <Container maxW={{ base: "100vw", md: "100vw" }} minH={"100vh"}>
+        <HStack justifyContent={"space-between"}>
           {room && showChat && (
             <Button
               colorScheme="blue"
@@ -338,6 +339,7 @@ console.log(Math.random());
               Leave Room
             </Button>
           )}
+        </HStack>
         {!room ? (
           <>
             <HStack justifyContent={"center"} alignItems={"center"} mt={20}>
