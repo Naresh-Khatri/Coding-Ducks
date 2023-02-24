@@ -93,7 +93,7 @@ console.log(getRandomInt(1));
 console.log(Math.random());
 // Expected output: a number from 0 to <1
 `);
-  const [roomname, setRoomname] = useState("room1");
+  const [roomname, setRoomname] = useState("");
 
   const [msgsList, setMsgsList] = useState<message[]>([]);
   const [cursors, setCursors] = useState<Map<string, Cursor>>(new Map());
@@ -345,6 +345,7 @@ console.log(Math.random());
             <HStack justifyContent={"center"} alignItems={"center"} mt={20}>
               <Input
                 value={roomname}
+                placeholder="Enter room name"
                 w={"50%"}
                 onChange={(e) => setRoomname(e.target.value)}
               />
