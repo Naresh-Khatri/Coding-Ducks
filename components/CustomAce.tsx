@@ -37,6 +37,9 @@ function CustomAce({
   const [markerIds, setMarkerIds] = useState<number[]>([]);
 
   useEffect(() => {
+    if (typeof window === "undefined" || window === null) return;
+    const windoww: any = window;
+    if(windoww.ace === undefined) return;
     const editor = editorRef.current.editor;
 
     if (markerIds.length > 0)
@@ -44,9 +47,8 @@ function CustomAce({
 
     let i = 0;
     cursors.forEach((cursor, userId) => {
-
       const nameMarker = editor.session.addMarker(
-        new window.ace.Range(
+        new windoww.ace.Range(
           cursor.row,
           cursor.col,
           cursor.row,
@@ -97,7 +99,7 @@ function CustomAce({
 
     // Create a text marker to display the name
     const nameMarker = editor.session.addMarker(
-      new window.ace.Range(
+      new windoww.ace.Range(
         cursorPosition.row,
         cursorPosition.column,
         cursorPosition.row,
