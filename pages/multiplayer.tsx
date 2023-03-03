@@ -117,8 +117,8 @@ console.log(Math.random());
   useEffect(() => {
     if (Object.keys(user).length === 0) return;
 
-    // console.log(Object.keys(user).length > 0);
-    const socketInstance = io("ws://localhost:3333");
+    // const socketInstance = io("ws://localhost:3333");
+    const socketInstance = io("wss://ducks.panipuri.tech");
     setSocket(socketInstance);
 
     socketInstance.on("connect success", (user) => {
