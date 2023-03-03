@@ -77,49 +77,10 @@ function CustomAce({
       }, 100);
     });
 
-    // addBookmark()
   }, [cursors, value]);
-  const addBookmark = () => {
-    // Get the editor instance from the ref
-    const editor = editorRef.current.editor;
-
-    // Get the current position of the cursor
-    const cursorPosition = editor.getCursorPosition();
-
-    // Create a marker on the current line
-    // const marker = editor.session.addMarker(
-    //   new window.ace.Range(cursorPosition.row, 0, cursorPosition.row, 1),
-    //   "ace_bookmark",
-    //   "fullLine",
-    //   false
-    // );
-
-    // Remove the previous marker
-    if (marker) editor.session.removeMarker(marker);
-
-    // Create a text marker to display the name
-    const nameMarker = editor.session.addMarker(
-      new windoww.ace.Range(
-        cursorPosition.row,
-        cursorPosition.column,
-        cursorPosition.row,
-        cursorPosition.column + 1
-      ),
-      "ace_bookmark_name",
-      "text",
-      true
-    );
-    setMarker(nameMarker);
-
-    // Set the name of the marker to the text of the line
-    // nameMarker.name = editor.session.getTextRange(
-    //   new window.ace.Range(cursorPosition.row, 0, cursorPosition.row, 1)
-    // );
-  };
 
   return (
     <>
-      {/* <button onClick={addBookmark}>Add Bookmark</button> */}
       <AceEditor
         ref={editorRef}
         mode="javascript"
