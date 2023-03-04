@@ -10,6 +10,13 @@ import {
   GridItem,
   HStack,
   Input,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
   Select,
   Text,
   VStack,
@@ -34,6 +41,7 @@ import { User } from "../hooks/useSubmissionsData";
 import ChatMessage from "../components/ChatMessage";
 import dynamic from "next/dynamic";
 import { Cursor } from "../components/CustomAce";
+import Image from "next/image";
 
 interface message {
   userId: number;
@@ -432,15 +440,48 @@ console.log(Math.random());
                 <HStack>
                   {Object.keys(room.clients).map((socketId, i) => (
                     <HStack key={socketId}>
-                      <Avatar
-                        key={i}
-                        name={room.clients[socketId].username}
-                        src={room.clients[socketId].photoURL}
-                        size="sm"
-                        colorScheme="green"
-                      >
-                        <AvatarBadge boxSize="1.25em" bg={"green.500"} />
-                      </Avatar>
+                      <Popover>
+                        <PopoverTrigger>
+                          <Avatar
+                            key={i}
+                            name={room.clients[socketId].username}
+                            src={room.clients[socketId].photoURL}
+                            size="sm"
+                            colorScheme="green"
+                          >
+                            <AvatarBadge boxSize="1.25em" bg={"green.500"} />
+                          </Avatar>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <PopoverArrow />
+                          <PopoverCloseButton />
+                          <PopoverHeader>User Info</PopoverHeader>
+                          <PopoverBody>
+                            <Grid templateColumns={"repeat(5, 1fr)"}>
+                              <GridItem colSpan={1}>
+                                <Image
+                                  width={100}
+                                  height={100}
+                                  src={room.clients[socketId].photoURL}
+                                  alt="profile photo"
+                                  style={{ borderRadius: "50%" }}
+                                />
+                              </GridItem>
+                              <GridItem colSpan={4} mx={2}>
+                                <HStack>
+                                  <Text>{room.clients[socketId].fullname}</Text>
+                                  {room.clients[socketId].id === user.id && (
+                                    <Text as="span" color="green.500">
+                                      (you)
+                                    </Text>
+                                  )}
+                                </HStack>
+                                <Text color={'gray.500'}>@{room.clients[socketId].username} </Text>
+                              </GridItem>
+                            </Grid>
+                          </PopoverBody>
+                        </PopoverContent>
+                      </Popover>
                     </HStack>
                   ))}
                 </HStack>
