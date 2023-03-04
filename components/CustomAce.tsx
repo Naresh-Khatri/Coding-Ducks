@@ -39,7 +39,7 @@ function CustomAce({
   useEffect(() => {
     if (typeof window === "undefined" || window === null) return;
     const windoww: any = window;
-    if(windoww.ace === undefined) return;
+    if (windoww.ace === undefined) return;
     const editor = editorRef.current.editor;
 
     if (markerIds.length > 0)
@@ -91,6 +91,8 @@ function CustomAce({
         name="my-editor"
         editorProps={{ $blockScrolling: true }}
         width="100%"
+        height="100%"
+        style={{ borderRadius: "15px" }}
         onCursorChange={(e) => {
           handleOnCursorChange({ row: e.cursor.row, col: e.cursor.column });
         }}
