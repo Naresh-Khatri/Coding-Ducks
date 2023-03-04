@@ -2,15 +2,27 @@ import {
   Box,
   Button,
   Container,
+  Flex,
   HStack,
+  IconButton,
   Input,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+  Stack,
   Text,
+  Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import React, { useState } from "react";
 import { Socket } from "socket.io-client";
 import { User } from "../hooks/useSubmissionsData";
+import { CopyIcon, Icon, InfoIcon } from "@chakra-ui/icons";
 
 interface message {
   userId: number;
@@ -43,7 +55,9 @@ const ChatMessage = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
 
   const formatTime = (time: string) => {
     const date = new Date(time);
-    return `${date.getHours()}:${date.getMinutes()}`;
+    return `${date.getHours() > 9 ? date.getHours() : "0" + date.getHours()}:${
+      date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
+    }`;
   };
 
   return (
@@ -55,37 +69,43 @@ const ChatMessage = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
+              placeholder="Type your message here"
               onKeyDown={(e) => {
                 if (e.key === "Enter") sendMsg();
               }}
             />
-            <Button onClick={sendMsg} colorScheme="green">Send</Button>
+            <Button onClick={sendMsg} colorScheme="green">
+              Send
+            </Button>
           </HStack>
-          <VStack maxH={"700px"} overflow={"auto"}>
+          <VStack maxH={"700px"} overflow={"auto"} mt={5}>
             {msgsList &&
               msgsList.map((msg, i) => {
                 return (
                   <HStack
-                    mt={5}
                     key={i}
                     bg={user.id == msg.userId ? "green.700" : "gray.700"}
                     borderRadius={"10px"}
-                    w={"100%"}
+                    minW={"300px"}
+                    p={"1rem "}
                     justifyContent={"space-between"}
-                    p={"1rem 2rem"}
                   >
-                    <HStack as="span">
+                    <HStack as="span" w={"100%"} align={"start"}>
                       <Image
                         src={msg.photoURL}
                         alt="profile photo"
                         style={{ borderRadius: "50%" }}
-                        width={50}
-                        height={50}
+                        width={40}
+                        height={40}
                       />
-                      <Text fontWeight={"extrabold"}>{msg.username}:</Text>
-                      <Text>{msg.text}</Text>
+                      <VStack w={"100%"} align={"start"}>
+                        <HStack justifyContent={"space-between"} w={"100%"}>
+                          <Text fontWeight={"extrabold"}>{msg.username}:</Text>
+                          <Text color={"gray.500"}>{formatTime(msg.time)}</Text>
+                        </HStack>
+                        <Text>{msg.text}</Text>
+                      </VStack>
                     </HStack>
-                    <Text color={"gray.500"}>{formatTime(msg.time)}</Text>
                   </HStack>
                 );
               })}
@@ -109,26 +129,51 @@ interface roomInfo {
 
 const RoomInfo = ({ roomInfo }: { roomInfo: roomInfo }) => {
   return (
-    <Box>
-      <HStack justifyContent={"space-between"}>
+    <HStack my={2} justifyContent={"space-between"}>
+      <Box>
         <Box>
-          <Text fontSize={"xl"}>Room name: {roomInfo.name}</Text>
-          <Text fontSize={"xl"}>Room id: {roomInfo.id}</Text>
+          <Text as="span">Room name:</Text>{" "}
+          <Text as="span" fontWeight={"bold"}>
+            {roomInfo.name}
+          </Text>
         </Box>
-        <HStack>
-          <Image
-            src={roomInfo.owner.photoURL}
-            alt="room creater photo"
-            width={50}
-            height={50}
-          />
-          <Box>
-            <Text>Room creater: {roomInfo.owner.fullname}</Text>
-            <Text>@{roomInfo.owner.username}</Text>
-          </Box>
-        </HStack>
+        <Box>
+          <Text as="span">Room id:</Text>{" "}
+          <Text as="span" fontWeight={"bold"}>
+            {roomInfo.id}
+          </Text>
+        </Box>
+      </Box>
+      <HStack>
+        <Tooltip label="Copy room link">
+          <IconButton aria-label="copy room link" icon={<CopyIcon />} />
+        </Tooltip>
+        <Popover>
+          <PopoverTrigger>
+            <IconButton aria-label="room info" icon={<InfoIcon />} />
+          </PopoverTrigger>
+          <PopoverContent>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader>Room Info</PopoverHeader>
+            <PopoverBody>
+              <HStack>
+                <Image
+                  src={roomInfo.owner.photoURL}
+                  alt="room creater photo"
+                  width={50}
+                  height={50}
+                />
+                <Box>
+                  <Text>Room creater: {roomInfo.owner.fullname}</Text>
+                  <Text>@{roomInfo.owner.username}</Text>
+                </Box>
+              </HStack>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
       </HStack>
-    </Box>
+    </HStack>
   );
 };
 
