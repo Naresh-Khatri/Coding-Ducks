@@ -118,27 +118,43 @@ console.log(Math.random());
   useEffect(() => {
     if (router.query.roomname && Object.keys(user).length > 0 && socket) {
       joinRoom(router.query.roomname as string);
-    }
+    } 
   }, [router.isReady, user.id, socket]);
 
   //setup socketio connection
   useEffect(() => {
     if (Object.keys(user).length === 0) return;
 
-    // const socketInstance = io("ws://localhost:3333");
-    const socketInstance = io("wss://ducks.panipuri.tech");
+    const socketInstance = io("ws://localhost:3333");
+    // const socketInstance = io("wss://ducks.panipuri.tech");
     setSocket(socketInstance);
 
     socketInstance.on("connect success", (user) => {
       console.log("naiceeeee", user);
     });
-    socketInstance.on("user-disconnected", (user) => {
-      console.log("user-disconnected", user);
+    socketInstance.on("user-joined", (payload) => {
+      const { user, clients } = payload;
+      console.log("user-connected", payload);
+      setRoom((p) => {
+        return { ...p, clients: clients };
+      });
+      toast({
+        title: "User connected",
+        description: `${user.username} has joined the room`,
+        status: "success",
+        isClosable: true,
+      });
+    });
+    socketInstance.on("user-disconnected", (payload) => {
+      const { user, clients } = payload;
       toast({
         title: "User disconnected",
         description: `${user.username} has left the room`,
         status: "error",
         isClosable: true,
+      });
+      setRoom((p) => {
+        return { ...p, clients: clients };
       });
     });
     socketInstance.on("create-room-update", (res) => {
@@ -192,12 +208,6 @@ console.log(Math.random());
     });
     socketInstance.on("disconnect", () => {
       if (room) socketInstance.emit("user-disconnected", room.roomInfo, user);
-    });
-    socketInstance.on("update-clients", (payload) => {
-      console.log(payload);
-      setRoom((p) => {
-        return { ...p, clients: payload.clients };
-      });
     });
     socketInstance.on("change-user-cursor", (payload) => {
       const { cursor: newCursors, user, roomInfo } = payload;
@@ -322,7 +332,7 @@ console.log(Math.random());
 
   return (
     <NormalLayout>
-      <Container maxW={{ base: "100vw", md: "100vw" }} minH={"100vh"}>
+      <Container maxW={{ base: "100vw", md: "90vw" }} minH={"100vh"}>
         <HStack justifyContent={"space-between"}>
           {room && showChat && (
             <Button
@@ -402,7 +412,7 @@ console.log(Math.random());
               </GridItem>
             )}
             <GridItem colSpan={3} height={"100%"}>
-              <HStack m={2} justify={"space-between"}>
+              <HStack my={2} justify={"space-between"}>
                 <Select
                   bg="purple.500"
                   color="white"
@@ -476,7 +486,9 @@ console.log(Math.random());
                                     </Text>
                                   )}
                                 </HStack>
-                                <Text color={'gray.500'}>@{room.clients[socketId].username} </Text>
+                                <Text color={"gray.500"}>
+                                  @{room.clients[socketId].username}{" "}
+                                </Text>
                               </GridItem>
                             </Grid>
                           </PopoverBody>
