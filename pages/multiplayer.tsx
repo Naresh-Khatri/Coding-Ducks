@@ -118,15 +118,15 @@ console.log(Math.random());
   useEffect(() => {
     if (router.query.roomname && Object.keys(user).length > 0 && socket) {
       joinRoom(router.query.roomname as string);
-    } 
+    }
   }, [router.isReady, user.id, socket]);
 
   //setup socketio connection
   useEffect(() => {
     if (Object.keys(user).length === 0) return;
 
-    const socketInstance = io("ws://localhost:3333");
-    // const socketInstance = io("wss://ducks.panipuri.tech");
+    // const socketInstance = io("ws://localhost:3333");
+    const socketInstance = io("wss://ducks.panipuri.tech");
     setSocket(socketInstance);
 
     socketInstance.on("connect success", (user) => {
@@ -287,7 +287,16 @@ console.log(Math.random());
 
   const handleOnCodeChange = (code: string) => {
     setCode(code);
-    socket.emit("code-change", { code, user, roomInfo: room.roomInfo });
+    const userr = {
+      id: user.id,
+      username: user.username,
+      fullname: user.fullname,
+    };
+    const roomInfoo = {
+      id: room.roomInfo.id,
+      name: room.roomInfo.name,
+    };
+    socket.emit("code-change", { code, userr, roomInfo: roomInfoo });
   };
 
   const handleOnCursorChange = (cursor) => {
