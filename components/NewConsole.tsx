@@ -1,5 +1,8 @@
 import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState } from "react";
 
 function NewConsole({ output }) {
   const [selectedCase, setSelectedCase] = useState(0);
@@ -61,19 +64,20 @@ function NewConsole({ output }) {
             key={i}
             bg={selectedCase == i ? "gray.600" : ""}
             onClick={() => setSelectedCase(i)}
+            disabled={res.isHidden}
           >
-            {res.isCorrect ? (
-              <Box
-                bg={"green.300"}
-                mr={2}
-                w={2}
-                h={2}
-                borderRadius={"50%"}
-              ></Box>
-            ) : (
-              <Box bg={"red"} mr={2} w={2} h={2} borderRadius={"50%"}></Box>
+            <Box
+              bg={res.isCorrect ? "green.300" : "red.400"}
+              mr={2}
+              w={2}
+              h={2}
+              borderRadius={"50%"}
+            ></Box>
+            {res.isHidden && (
+              <Box mx={1}>
+                <FontAwesomeIcon icon={faLock as IconProp} />
+              </Box>
             )}
-            {/* {res.isCorrect && <Box bg={"green"} w={10} h={10}></Box>} */}
             Case {i + 1}
           </Button>
         ))}
