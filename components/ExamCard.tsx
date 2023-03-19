@@ -10,13 +10,46 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useColorModeValue } from "@chakra-ui/react";
 import ExamDetailsModel from "./ExamDetailsModel";
+import { Exam } from "../hooks/useProblemsData";
 
 function ExamCard({ examData }) {
-  const { title, description, coverImg } = examData;
+  const { title, description, startTime, isBounded, coverImg }: Exam = examData;
   const { isOpen, onOpen, onClose, onToggle } = useDisclosure();
+
+  const [timerText, setTimerText] = useState("");
+  const [timer, setTimer] = useState(null);
+
+  useEffect(() => {
+    if (isBounded) {
+      setTimer(setInterval(updateTimerText, 1000));
+    }
+  }, []);
+
+  const updateTimerText = useCallback(() => {
+    const sTime = new Date(startTime);
+    const currTime = new Date();
+    if (sTime < currTime) {
+      setTimerText("00:00:00");
+      clearInterval(timer);
+      return;
+    }
+    const diffInMs = sTime - currTime;
+
+    // Get hours and minutes from the difference in milliseconds
+    const diffHours = Math.floor(diffInMs / 3600000);
+    const diffMinutes = Math.floor((diffInMs % 3600000) / 60000);
+    const diffSeconds = Math.floor(((diffInMs % 360000) % 60000) / 1000);
+
+    // Format the difference as a string in the format "hh:mm"
+    const formattedDiff = `${diffHours >= 10 ? diffHours : `0${diffHours}`}:${
+      diffMinutes >= 10 ? diffMinutes : `0${diffMinutes}`
+    }:${diffSeconds >= 10 ? diffSeconds : `0${diffSeconds}`}`;
+    setTimerText(formattedDiff);
+  }, [startTime, timer]);
+
   return (
     <Flex
       direction={"column"}
@@ -77,14 +110,15 @@ function ExamCard({ examData }) {
         mb={4}
         mx={2}
         shadow={"2xl"}
-        // disabled
+        disabled={isBounded && timerText !== "00:00:00"}
         _hover={{}}
       >
-        {/* Opens on {start} */}
-        Show details
+        {isBounded && timerText !== "00:00:00" ? timerText : "Start Exam"}
       </Button>
       <ExamDetailsModel
         examData={examData}
+        canStartExam={isBounded && timerText !== "00:00:00"}
+        timerText={timerText}
         onClose={onClose}
         isOpen={isOpen}
         onOpen={onOpen}
