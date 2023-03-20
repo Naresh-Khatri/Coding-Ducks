@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from '@chakra-ui/react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
-import { faCode, faStepBackward } from '@fortawesome/free-solid-svg-icons'
+import { faCode, faDeleteLeft, faStepBackward } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface ToolBarProps {
@@ -20,6 +20,7 @@ interface ToolBarProps {
   theme?: string
   setTheme: (theme: string) => void
   onCodeRetrievalModalOpen?: () => void
+  onCodeReset?: ()=>void
 }
 
 export default function ToolBar({
@@ -27,11 +28,22 @@ export default function ToolBar({
   setLang,
   setTheme,
   onCodeRetrievalModalOpen,
+  onCodeReset
 }: ToolBarProps) {
   const color = useColorModeValue('black', 'white')
   return (
     <Box>
       <HStack p={2} justifyContent='end'>
+        {onCodeReset&&(
+          <Tooltip label='Reset code to initial state'>
+            <IconButton
+              aria-label='Reset code to initial state'
+              icon={<FontAwesomeIcon icon={faDeleteLeft as IconProp} />}
+              onClick={onCodeReset}
+            />
+          </Tooltip>
+
+        )}
         {onCodeRetrievalModalOpen && (
           <Tooltip label='Retrieve last submitted code'>
             <IconButton
