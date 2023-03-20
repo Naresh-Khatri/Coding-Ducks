@@ -46,9 +46,6 @@ function ProblemRow({
             icon={<FontAwesomeIcon icon={faEdit as IconProp} />}
             onClick={onEditOpen}
           />
-          <>
-            {id}, {examId}
-          </>
           <ProblemEditor
             problemData={problem}
             examsList={examsList}
