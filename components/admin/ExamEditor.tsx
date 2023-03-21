@@ -29,6 +29,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { Exam } from "../../hooks/useProblemsData";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -45,8 +46,17 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 };
 function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
-  const { title, description, startTime, coverImg, slug, active, marks } =
-    examData;
+  const {
+    title,
+    description,
+    startTime,
+    endTime,
+    isBounded,
+    coverImg,
+    slug,
+    active,
+    marks,
+  }: Exam = examData;
 
   const [newTitle, setNewTitle] = useState(title);
   const [newSlug, setNewSlug] = useState(slug);
@@ -55,7 +65,9 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     description.replace(/\\n/g, " ")
   );
   const [newStartTime, setNewStartTime] = useState(formatDate(startTime));
+  const [newEndTime, setNewEndTime] = useState(formatDate(endTime))
   const [newMarks, setNewMarks] = useState(marks || 0);
+  const [newIsBounded, setNewIsBounded] = useState(isBounded);
 
   const [oldCoverImg, setOldCoverImg] = useState(coverImg);
   const [newCoverImg, setNewCoverImg] = useState<any>();
@@ -70,6 +82,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     setNewActive(active);
     setNewDescription(description.replace(/\\n/g, " "));
     setNewStartTime(formatDate(startTime));
+    setNewEndTime(formatDate(endTime));
     setNewMarks(marks || 0);
     setOldCoverImg(coverImg);
     setNewCoverImg(null);
@@ -96,10 +109,12 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     formData.append("title", title);
     formData.append("description", newDescription);
     formData.append("slug", newSlug);
-    formData.append("active", newActive);
-    formData.append("marks", newMarks);
-
-    formData.append("startTime", new Date(startTime).toISOString());
+    formData.append("active", String(newActive));
+    formData.append("isBounded", String(newIsBounded));
+    formData.append("marks", String(newMarks));
+    formData.append("startTime", new Date(newStartTime).toISOString());
+    formData.append("endTime", new Date(newEndTime).toISOString());
+    
     if (newCoverImg) {
       const data = await convertCanvasToBlob(cropperRef.current.getCanvas());
       formData.append("coverImg", data);
@@ -157,6 +172,18 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
               </InputGroup>
             </FormControl>
             <FormControl>
+              <FormLabel fontWeight={"normal"}>end time</FormLabel>
+              <InputGroup size="md">
+                <Input
+                  type={"datetime-local"}
+                  value={newEndTime}
+                  onChange={(e) => {
+                    setNewEndTime(e.target.value);
+                  }}
+                />
+              </InputGroup>
+            </FormControl>
+            <FormControl>
               <FormLabel fontWeight={"normal"}>Marks</FormLabel>
               <InputGroup size="md">
                 <Input
@@ -175,6 +202,16 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                 placeholder="Slug"
                 value={newSlug}
                 onChange={(e) => setNewSlug(encodeURI(e.target.value))}
+              />
+            </FormControl>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="isBounded" mb="0">
+                Is Bounded?
+              </FormLabel>
+              <Switch
+                id="isBounded"
+                isChecked={newIsBounded}
+                onChange={(e) => setNewIsBounded(e.target.checked)}
               />
             </FormControl>
             <FormControl display="flex" alignItems="center">
