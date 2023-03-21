@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Checkbox,
   Flex,
   FormControl,
   FormLabel,
@@ -33,6 +34,8 @@ import "react-advanced-cropper/dist/style.css";
 import { useEffect, useState } from "react";
 import axios from "../../utils/axios";
 import TestCaseRow from "./TestCaseRow";
+import { Problem } from "../../hooks/useProblemsData";
+const AceEditor = dynamic(import("react-ace"), { ssr: false });
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -45,8 +48,15 @@ function ProblemEditor({
   onEditSuccess,
   examsList,
 }) {
-  const { title, description, difficulty, examId, order, testCases } =
-    problemData;
+  const {
+    title,
+    description,
+    difficulty,
+    examId,
+    order,
+    testCases,
+    starterCode,
+  } = problemData as Problem;
   const [newOrder, setNewOrder] = useState(order);
   const [newTitle, setNewTitle] = useState(title);
   const [newDifficulty, setNewDifficulty] = useState(difficulty);
@@ -54,6 +64,8 @@ function ProblemEditor({
     description.replace(/\\n/g, " ")
   );
   const [newTestCases, setNewTestCases] = useState(testCases);
+  const [newHasStarterCode, setNewHasStarterCode] = useState(!!starterCode);
+  const [newStarterCode, setNewStartedCode] = useState(starterCode);
 
   const [selectedExam, setSelectedExam] = useState(examId);
   const toast = useToast();
@@ -74,6 +86,7 @@ function ProblemEditor({
       description: newDescription,
       difficulty: newDifficulty,
       testCases: newTestCases,
+      starterCode: newStarterCode,
       examId: selectedExam,
     };
     try {
@@ -124,7 +137,7 @@ function ProblemEditor({
                 placeholder="order"
                 value={newOrder}
                 type="number"
-                onChange={(e) => setNewOrder(e.target.value)}
+                onChange={(e) => setNewOrder(+e.target.value)}
               />
             </FormControl>
             <RadioGroup onChange={setNewDifficulty} value={newDifficulty}>
@@ -135,17 +148,6 @@ function ProblemEditor({
               </Stack>
             </RadioGroup>
           </HStack>
-          {/* <HStack my={3}>
-            <FormControl>
-              <FormLabel htmlFor="slug">Slug</FormLabel>
-              <Input
-                id="slug"
-                placeholder="Slug"
-                value={newSlug}
-                onChange={(e) => setNewSlug(encodeURI(e.target.value))}
-              />
-            </FormControl>
-          </HStack> */}
           <FormControl my={3}>
             <FormLabel htmlFor="desc">Description</FormLabel>
 
@@ -173,6 +175,30 @@ function ProblemEditor({
               />
             </Box>
           </FormControl>
+
+          <FormControl display="flex" alignItems="center">
+            <FormLabel htmlFor="email-alerts" mb="0">
+              Has a starter code?
+            </FormLabel>
+            <Checkbox
+              isChecked={newHasStarterCode}
+              onChange={() => setNewHasStarterCode((p) => !p)}
+            />
+          </FormControl>
+          {newHasStarterCode && (
+            <AceEditor
+              width="100%"
+              placeholder="starter code here"
+              mode="python"
+              theme="dracula"
+              fontSize={22}
+              showPrintMargin={true}
+              showGutter={true}
+              highlightActiveLine={true}
+              value={newStarterCode}
+              onChange={(newValue) => setNewStartedCode(newValue)}
+            />
+          )}
           <FormControl mt="2%">
             <FormLabel htmlFor="email" fontWeight={"normal"}>
               Select Exam
