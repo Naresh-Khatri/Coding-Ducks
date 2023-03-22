@@ -15,7 +15,7 @@ export const useExamProblemsData = ({ examId }: { examId: number }) => {
   return useQuery(
     ["examProblems", examId],
     () => axiosInstance.get(`/problems/examProblems/${examId}`),
-    { refetchOnMount: false, enabled: false }
+    { refetchOnMount: false, enabled: !!examId}
   );
 };
 export const useExamSubmissionsData = (examId: number) => {
