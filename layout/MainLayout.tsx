@@ -1,10 +1,4 @@
-import {
-  Flex,
-  HStack,
-  IconButton,
-  Spacer,
-  Text,
-} from "@chakra-ui/react";
+import { Flex, HStack, IconButton, Spacer, Text } from "@chakra-ui/react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faClock, faHome, faLeftLong } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,6 +6,7 @@ import Link from "next/link";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
 import { useExamSubmissionsData } from "../hooks/useExamsData";
+import Timer from "../components/Timer";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -63,10 +58,7 @@ function MainLayout({ children, title, examId }: MainLayoutProps) {
           </Text>
         </HStack>
         <Spacer />
-        <HStack>
-          <FontAwesomeIcon height={"1.2rem"} icon={faClock as IconProp} />
-          <Text fontWeight={"extrabold"}> Unbounded </Text>
-        </HStack>
+        <Timer />
         <Spacer />
         <HStack>
           <Text fontWeight={"extrabold"}>
