@@ -14,18 +14,16 @@ import {
   RadioGroup,
   Radio,
   Stack,
-  Switch,
-  Textarea,
-  IconButton,
   TableContainer,
   Table,
-  TableCaption,
   Thead,
   Tr,
   Th,
   Tbody,
   Container,
   Select,
+  Checkbox,
+  VStack,
 } from "@chakra-ui/react";
 
 import AdminLayout from "../../layout/AdminLayout";
@@ -38,6 +36,8 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import TestCaseRow from "../../components/admin/TestCaseRow";
 import axios from "../../utils/axios";
+
+const AceEditor = dynamic(import("react-ace"), { ssr: false });
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -46,6 +46,8 @@ const QuillNoSSRWrapper = dynamic(import("react-quill"), {
 const AddExam = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [hasStarterCode, setHasStarterCode] = useState(false);
+  const [starterCode, setStartedCode] = useState("");
   const [diffLevel, setDiffLevel] = useState("easy");
   const [examsList, setExamsList] = useState([]);
   const [testCases, setTestCases] = useState([
@@ -53,7 +55,6 @@ const AddExam = () => {
   ]);
 
   const selectedExam = useRef(null);
-  // const [tags, setTags] = useState([]);
 
   const router = useRouter();
 
@@ -67,8 +68,6 @@ const AddExam = () => {
       testCases,
       examId: +selectedExam.current.value,
     };
-    // console.log(payload)
-    // return
     try {
       const res = await axios.post("/problems", payload);
       console.log(res);
@@ -95,7 +94,6 @@ const AddExam = () => {
   const fetchExams = async () => {
     const res = await axios.get("/exams");
     setExamsList(res.data);
-    // console.log(res);
   };
 
   useEffect(() => {
@@ -169,8 +167,30 @@ const AddExam = () => {
                   onChange={setDesc}
                 />
               </Box>
-              <FormHelperText>Describe about your exam</FormHelperText>
             </FormControl>
+            <FormControl mt={"2%"} display="flex" alignItems="center">
+              <Checkbox
+                isChecked={hasStarterCode}
+                onChange={() => setHasStarterCode((p) => !p)}
+              />
+              <FormLabel htmlFor="email-alerts" mb="0" ml={2}>
+                has a starter code?
+              </FormLabel>
+            </FormControl>
+            {hasStarterCode && (
+              <AceEditor
+                placeholder="starter code here"
+                width="100%"
+                mode="python"
+                theme="dracula"
+                fontSize={22}
+                showPrintMargin={true}
+                showGutter={true}
+                highlightActiveLine={true}
+                value={starterCode}
+                onChange={(newValue) => setStartedCode(newValue)}
+              />
+            )}
             <FormControl mt="2%">
               <FormLabel htmlFor="email" fontWeight={"normal"}>
                 Select Exam
