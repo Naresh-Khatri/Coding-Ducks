@@ -43,6 +43,7 @@ const AddExam = () => {
   const [slug, setSlug] = useState("");
   const [startTime, setStartTime] = useState("");
   const [active, setActive] = useState(false);
+  const [isBounded, setIsBounded] = useState(false)
   const [totalMarks, setTotalMarks] = useState(100);
   const [coverImg, setCoverImg] = useState(null);
 
@@ -76,14 +77,12 @@ const AddExam = () => {
       formData.append("startTime", new Date(startTime).toISOString());
       formData.append("marks", totalMarks.toString());
       formData.append("active", active.toString());
+      formData.append("isBounded", isBounded.toString());
       formData.append(
         "coverImg",
         await convertCanvasToBlob(cropperRef.current.getCanvas())
       );
 
-      // console.log(cropperRef.current.getCanvas());
-      // console.log(await convertCanvasToBlob(cropperRef.current.getCanvas()));
-      // return;
       const res = await axios.post("/exams", formData);
       toast({
         title: "Exam created!",
@@ -182,6 +181,16 @@ const AddExam = () => {
                   id="active"
                   isChecked={active}
                   onChange={(e) => setActive(e.target.checked)}
+                />
+              </FormControl>
+              <FormControl display="flex" alignItems="center">
+                <FormLabel htmlFor="isBounded" mb="0">
+                  Is Bounded?
+                </FormLabel>
+                <Switch
+                  id="isBounded"
+                  isChecked={isBounded}
+                  onChange={(e) => setIsBounded(e.target.checked)}
                 />
               </FormControl>
             </HStack>
