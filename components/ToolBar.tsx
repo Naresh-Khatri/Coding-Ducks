@@ -73,9 +73,9 @@ export default function ToolBar({
           <option style={{ color }} value='cpp'>
             C++
           </option>
-          <option style={{ color }} value='c'>
+          {/* <option style={{ color }} value='c'>
             C
-          </option>
+          </option> */}
           <option style={{ color }} value='java'>
             Java
           </option>
