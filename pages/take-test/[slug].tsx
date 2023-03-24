@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Flex, Skeleton, useDisclosure, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
@@ -15,8 +15,9 @@ import SubmissionModal from "../../components/modals/Submission";
 import BottomActions from "../../components/BottomActions";
 import NewConsole from "../../components/NewConsole";
 import { useExamData, useExamProblemsData } from "../../hooks/useExamsData";
-import ConfirmCodeRetrievalModel from "../../components/modals/ConfirmCodeRetrievalModal";
 import { useLastSubmissionData } from "../../hooks/useUsersData";
+import WarnOnTabLeave from "../../components/WarnOnTabLeave";
+import ConfirmModal from "../../components/modals/ConfirmModal";
 
 interface Output {
   isCorrect: boolean;
@@ -48,7 +49,7 @@ function TakeTest() {
   const [theme, setTheme] = useState("dracula");
   const [output, setOutput] = useState<Output>();
   const [isLoading, setIsLoading] = useState(false);
-  const [currentProblemIdx, setCurrentProblemIdx] = useState(2);
+  const [currentProblemIdx, setCurrentProblemIdx] = useState(1);
   const [lastSubmissionPassed, setLastSubmissionPassed] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
 
@@ -65,12 +66,30 @@ function TakeTest() {
     data: problemsData,
     refetch: refetchProblemsData,
     isLoading: problemsDataLoading,
-    isError: problemsDataError,
+    isError: problemsDataIsError,
+    error: problemsDataError,
   } = useExamProblemsData({ examId: examData?.data?.id as number });
 
+  const {
+    isOpen: isSubmissionModalOpen,
+    onOpen: onSubmissionModalOpen,
+    onClose: onSubmissionModalClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isCodeResetModalOpen,
+    onOpen: onCodeResetModalOpen,
+    onClose: onCodeResetModalClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isCodeRetrievalModalOpen,
+    onOpen: onCodeRetrievalModalOpen,
+    onClose: onCodeRetrievalModalClose,
+  } = useDisclosure();
   const onCodeRetriveSuccess = async (lastSubmission) => {
     try {
-      setCode(lastSubmission?.data?.code || "");
+      if (lastSubmission?.data?.code) setCode(lastSubmission?.data?.code);
       onCodeRetrievalModalClose();
       if (!!lastSubmission?.data)
         toast({
@@ -95,6 +114,18 @@ function TakeTest() {
       onCodeRetrievalModalClose();
     }
   };
+  const onCodeReset = () => {
+    setCode(problemsData?.data[currentProblemIdx - 1].starterCode || "");
+    toast({
+      title: "Code Reset",
+      description: "Your code has been reset successfully",
+      position: "top",
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    });
+    onCodeResetModalClose();
+  };
   // this custom hook works on onSuccess only.
   const {
     refetch: refrechLastSubmission,
@@ -105,6 +136,40 @@ function TakeTest() {
     onCodeRetriveSuccess
   );
 
+  const redirectIfDontHaveAccess = useCallback(() => {
+    if (!problemsData && problemsDataIsError) {
+      toast({
+        title: "Exam Not Found",
+        description: "The exam you are trying to access does not exist",
+        position: "top",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      router.push("/home");
+    }
+  }, [problemsData, problemsDataIsError, router, toast]);
+
+  const redirectIfExamNotStarted = useCallback(() => {
+    if (!examData?.data) return;
+    const { data } = examData;
+    const { isBounded, startTime } = data;
+    const sTime = new Date(startTime);
+    const curr = new Date();
+
+    if (isBounded && sTime.getTime() > curr.getTime()) {
+      toast({
+        title: "Exam Not Started",
+        description: "The exam has not started yet",
+        position: "top",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      router.push("/home");
+    } else {
+    }
+  }, [examData, router, toast]);
   useEffect(() => {
     if (!!!examData) {
       refetchExamData();
@@ -112,6 +177,8 @@ function TakeTest() {
     if (!!examData && !!!problemsData) {
       refetchProblemsData();
     }
+    redirectIfDontHaveAccess();
+    redirectIfExamNotStarted();
   }, [
     examData,
     problemsData,
@@ -119,34 +186,28 @@ function TakeTest() {
     refetchProblemsData,
     examDataLoading,
     problemsDataLoading,
+    redirectIfExamNotStarted,
+    redirectIfDontHaveAccess,
+    problemsDataIsError,
   ]);
   useEffect(() => {
+    if (!problemsData) return;
     setCode(
-      localStorage.getItem(`code ${examData?.data.id} ${currentProblemIdx}`) ||
+      localStorage.getItem(`code ${examData?.data?.id} ${currentProblemIdx}`) ||
+        problemsData?.data[currentProblemIdx - 1]?.starterCode ||
         ""
     );
     setShowConsole(false);
     setOutput(null);
-  }, [currentProblemIdx, examData?.data?.id]);
+  }, [currentProblemIdx, examData?.data?.id, problemsData]);
 
   useEffect(() => {
+    if (code.trim().length === 0) return;
     localStorage.setItem(
       `code ${examData?.data?.id} ${currentProblemIdx}`,
       code
     );
   }, [code, examData?.data, currentProblemIdx]);
-
-  const {
-    isOpen: isSubmissionModalOpen,
-    onOpen: onSubmissionModalOpen,
-    onClose: onSubmissionModalClose,
-  } = useDisclosure();
-
-  const {
-    isOpen: isCodeRetrievalModalOpen,
-    onOpen: onCodeRetrievalModalOpen,
-    onClose: onCodeRetrievalModalClose,
-  } = useDisclosure();
 
   const handleOnCodeRetrive = async () => {
     refrechLastSubmission();
@@ -182,8 +243,6 @@ function TakeTest() {
         duration: 9000,
         isClosable: true,
       });
-
-      // setOutput({ error: "Somehings fishy :thinking_face:" });
     }
   };
 
@@ -193,6 +252,7 @@ function TakeTest() {
       title={examData ? examData.data?.title : "Unknown test"}
       examId={examData ? examData.data?.id : 2}
     >
+      <WarnOnTabLeave />
       <Flex w={"100vw"} direction="row">
         <Flex>
           <LeftProblemsList
@@ -202,7 +262,7 @@ function TakeTest() {
             setCurrentProblemIdx={setCurrentProblemIdx}
           />
         </Flex>
-        {problemsDataLoading || problemsData.data.length === 0 ? (
+        {problemsDataLoading || problemsData?.data.length === 0 ? (
           <Skeleton height="100vh" />
         ) : (
           <Flex flexGrow={1}>
@@ -229,6 +289,7 @@ function TakeTest() {
                     setLang={setLang}
                     setTheme={setTheme}
                     onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
+                    onCodeReset={onCodeResetModalOpen}
                   />
                 </Flex>
                 <Flex flexGrow={1} direction="column" h={"45"}>
@@ -261,14 +322,24 @@ function TakeTest() {
             </Split>
           </Flex>
         )}
-        <ConfirmCodeRetrievalModel
+        <ConfirmModal
+          onClose={onCodeResetModalClose}
+          isOpen={isCodeResetModalOpen}
+          onConfirm={onCodeReset}
+        >
+          This will replace your current code with the default code.
+        </ConfirmModal>
+        <ConfirmModal
           onClose={onCodeRetrievalModalClose}
           isOpen={isCodeRetrievalModalOpen}
           onConfirm={handleOnCodeRetrive}
           isLoading={
             lastSubmissionIsLoading && lastSubmissionFetchStatus !== "idle"
           }
-        />
+        >
+          This will replace your current code with the code from your last
+          submission.
+        </ConfirmModal>
         <SubmissionModal
           onClose={() => {
             setLastSubmissionPassed(false);
