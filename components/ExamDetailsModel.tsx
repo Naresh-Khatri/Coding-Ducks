@@ -15,7 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-function ExamDetailsModel({ examData, isOpen, onClose, onOpen }) {
+function ExamDetailsModel({ examData, isOpen, onClose, canStartExam, timerText, onOpen }) {
   const [readMore, setReadMore] = useState(false);
 
   // this func closes modal and sets readMore to false
@@ -74,7 +74,9 @@ function ExamDetailsModel({ examData, isOpen, onClose, onOpen }) {
             Close
           </Button>
           <Link href={"/take-test/" + examData.slug}>
-            <Button colorScheme="purple">Take test</Button>
+            <Button colorScheme="purple" disabled={canStartExam}>
+              {canStartExam ? timerText : "Start Exam"}
+              </Button>
           </Link>
         </ModalFooter>
       </ModalContent>
