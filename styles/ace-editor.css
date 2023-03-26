@@ -1,0 +1,27 @@
+.ace_bookmark_name {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+}
+
+.ace_bookmark_name::after {
+  content: "attr(name)";
+  width: fit-content;
+  position: absolute;
+  top: -1rem;
+  padding: 0.1rem 0.5rem;
+  background: coral;
+  color: white;
+  border-radius: 10px;
+}
+.ace_bookmark_name::before {
+  content: "";
+  position: absolute;
+  background: coral;
+  width: 0.5rem;
+  height: 0.5rem;
+  left: -0.5ch;
+  top: -0.4rem;
+  right: 50%;
+  rotate: 45deg;
+}
