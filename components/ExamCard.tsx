@@ -36,7 +36,7 @@ function ExamCard({ examData }) {
       clearInterval(timer);
       return;
     }
-    const diffInMs = sTime - currTime;
+    const diffInMs= sTime.getTime() - currTime.getTime();
 
     // Get hours and minutes from the difference in milliseconds
     const diffHours = Math.floor(diffInMs / 3600000);
