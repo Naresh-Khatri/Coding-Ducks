@@ -71,7 +71,7 @@ function Timer() {
       // router.push("/home");
       return;
     }
-    const diffInMs = eTime - currTime;
+    const diffInMs = eTime.getTime() - currTime.getTime();
 
     // Get hours and minutes from the difference in milliseconds
     const diffHours = Math.floor(diffInMs / 3600000);
