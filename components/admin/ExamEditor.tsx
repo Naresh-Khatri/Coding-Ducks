@@ -189,7 +189,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                 <Input
                   type={"number"}
                   value={newMarks}
-                  onChange={(e) => setNewMarks(e.target.value)}
+                  onChange={(e) => setNewMarks(+e.target.value)}
                 />
               </InputGroup>
             </FormControl>
