@@ -14,7 +14,11 @@ import SubmissionModal from "../../components/modals/Submission";
 
 import BottomActions from "../../components/BottomActions";
 import NewConsole from "../../components/NewConsole";
-import { useExamData, useExamProblemsData } from "../../hooks/useExamsData";
+import {
+  useExamData,
+  useExamProblemsData,
+  useExamSubmissionsData,
+} from "../../hooks/useExamsData";
 import { useLastSubmissionData } from "../../hooks/useUsersData";
 import WarnOnTabLeave from "../../components/WarnOnTabLeave";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -136,6 +140,8 @@ function TakeTest() {
     onCodeRetriveSuccess
   );
 
+  const { data: submissionData, refetch: refetchSubmissionData } =
+    useExamSubmissionsData(examData?.data?.id as number);
   const redirectIfDontHaveAccess = useCallback(() => {
     if (!problemsData && problemsDataIsError) {
       toast({
@@ -227,7 +233,7 @@ function TakeTest() {
       const res = await axios.post("/runCode", payload);
       if (submit) {
         // TODO: refresh submissions
-        // refreshSubmissions(examData?.data.id);
+        refetchSubmissionData();
         setLastSubmissionPassed(res.data.isCorrect);
         onSubmissionModalOpen();
       }
