@@ -52,6 +52,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     startTime,
     endTime,
     isBounded,
+    warnOnBlur,
     coverImg,
     slug,
     active,
@@ -68,6 +69,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
   const [newEndTime, setNewEndTime] = useState(formatDate(endTime))
   const [newMarks, setNewMarks] = useState(marks || 0);
   const [newIsBounded, setNewIsBounded] = useState(isBounded);
+  const [newWarnOnBlur, setNewWarnOnBlur] = useState(warnOnBlur);
 
   const [oldCoverImg, setOldCoverImg] = useState(coverImg);
   const [newCoverImg, setNewCoverImg] = useState<any>();
@@ -80,6 +82,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     setNewTitle(title);
     setNewSlug(slug);
     setNewActive(active);
+    setNewWarnOnBlur(warnOnBlur);
     setNewDescription(description.replace(/\\n/g, " "));
     setNewStartTime(formatDate(startTime));
     setNewEndTime(formatDate(endTime));
@@ -111,6 +114,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     formData.append("slug", newSlug);
     formData.append("active", String(newActive));
     formData.append("isBounded", String(newIsBounded));
+    formData.append("warnOnBlur", String(newWarnOnBlur));
     formData.append("marks", String(newMarks));
     formData.append("startTime", new Date(newStartTime).toISOString());
     formData.append("endTime", new Date(newEndTime).toISOString());
@@ -212,6 +216,16 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
                 id="isBounded"
                 isChecked={newIsBounded}
                 onChange={(e) => setNewIsBounded(e.target.checked)}
+              />
+            </FormControl>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="blur-warning" mb="0">
+                Warn on blur?
+              </FormLabel>
+              <Switch
+                id="blur-warning"
+                isChecked={newWarnOnBlur}
+                onChange={(e) => setNewWarnOnBlur(e.target.checked)}
               />
             </FormControl>
             <FormControl display="flex" alignItems="center">
