@@ -17,8 +17,6 @@ import Image from "next/image";
 import { useEffect } from "react";
 
 function WarnOnTabLeave() {
-  console.log('hi');
-  
   const images = [
     "https://ik.imagekit.io/couponluxury/63d98670936397.5bb439fbdfabb_jxOOxoUWlm.gif",
     "https://ik.imagekit.io/couponluxury/b9eb2b42094811.57c019c4dd143_D0CjrE5ta.gif",
