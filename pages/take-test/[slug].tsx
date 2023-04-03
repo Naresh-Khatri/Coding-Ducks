@@ -258,7 +258,7 @@ function TakeTest() {
       title={examData ? examData.data?.title : "Unknown test"}
       examId={examData ? examData.data?.id : 2}
     >
-      <WarnOnTabLeave />
+      {examData?.data?.warnOnBlur && <WarnOnTabLeave />}
       <Flex w={"100vw"} direction="row">
         <Flex>
           <LeftProblemsList
