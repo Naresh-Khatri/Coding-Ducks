@@ -21,10 +21,14 @@ function ProblemStaement({ problem }) {
         </Box>
         {problem.testCases.map((testCase, index) => (
           <Box key={index}>
-            <Text fontSize={"30px"} mt={20}>
-              Test Case: {index + 1}
-            </Text>
-            <ExampleTestcase testCase={testCase} />
+            {testCase.isPublic && (
+              <>
+                <Text fontSize={"30px"} mt={20}>
+                  Test Case: {index + 1}
+                </Text>
+                <ExampleTestcase testCase={testCase} />
+              </>
+            )}
           </Box>
         ))}
       </Box>
