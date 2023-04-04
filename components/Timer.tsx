@@ -68,7 +68,7 @@ function Timer() {
         duration: 5000,
         isClosable: true,
       });
-      // router.push("/home");
+      router.push("/home");
       return;
     }
     const diffInMs = eTime.getTime() - currTime.getTime();
