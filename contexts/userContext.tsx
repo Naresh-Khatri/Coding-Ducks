@@ -127,7 +127,7 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
             });
         } else {
           console.log("user is null");
-          router.push("/login");
+          if (router.pathname !== "/") router.push("/login");
         }
       }
     } catch (err) {}
