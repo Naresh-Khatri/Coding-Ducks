@@ -5,6 +5,7 @@ export interface Exam {
   id: number;
   slug: string;
   isBounded?: boolean;
+  warnOnBlur?: boolean;
   title: string;
   active?: boolean;
   coverImg?: string;
