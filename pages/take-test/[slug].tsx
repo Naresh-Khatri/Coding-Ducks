@@ -255,8 +255,7 @@ function TakeTest() {
   if (!examData || problemsDataLoading) return <div>Loading...</div>;
   return (
     <MainLayout
-      title={examData ? examData.data?.title : "Unknown test"}
-      examId={examData ? examData.data?.id : 2}
+      examData={examData?.data}
     >
       {examData?.data?.warnOnBlur && <WarnOnTabLeave />}
       <Flex w={"100vw"} direction="row">
