@@ -16,6 +16,11 @@ import {
   SkeletonText,
   Spacer,
   Skeleton,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from "@chakra-ui/react";
 import { useContext } from "react";
 import ExamCard from "../components/ExamCard";
@@ -27,20 +32,56 @@ import NormalLayout from "../layout/NormalLayout";
 export default function HomePage() {
   const { data: examsData, isLoading: examsDataLoading } = useExamsData();
   const { user } = useContext(userContext);
+
+  const currTime = new Date().getTime();
+  const availableExams = examsData?.data.filter(
+    (exam) =>
+      exam.isBounded === false || new Date(exam.endTime).getTime() > currTime
+  );
+  const upcomingExams = examsData?.data.filter(
+    (exam) =>
+      exam.isBounded === true && new Date(exam.endTime).getTime() > currTime
+  );
+
   return (
     <>
       <NormalLayout>
         <Container maxW={"6xl"}>
-          <Heading mt={10}>
+          <Heading my={10}>
             <Text as={"span"} fontSize={"3xl"}>
               Welcome Back {user.fullname}!
             </Text>
           </Heading>
-          <Heading mt={10}>
-            <Text as={"span"} fontSize={"6xl"} color={"purple.400"}>
-              Upcoming Exams
-            </Text>
-          </Heading>
+          {/* <Tabs m={10} variant="solid-rounded">
+            <TabList style={{ display: "flex", justifyContent: "center" }}>
+              <Tab>Available</Tab>
+              <Tab>Upcoming </Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <SimpleGrid
+                  columns={[1, 2, 3]}
+                  spacing={10}
+                  placeItems="center"
+                >
+                  {examsDataLoading &&
+                    [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}
+                  {availableExams &&
+                    availableExams.map((exam) => (
+                      <ExamCard key={exam.id} examData={exam} />
+                    ))}
+                </SimpleGrid>
+              </TabPanel>
+              <TabPanel>
+                {examsDataLoading &&
+                  [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}
+                {upcomingExams &&
+                  upcomingExams.map((exam) => (
+                    <ExamCard key={exam.id} examData={exam} />
+                  ))}
+              </TabPanel>
+            </TabPanels>
+          </Tabs> */}
           <SimpleGrid columns={[1, 2, 3]} spacing={10} placeItems="center">
             {examsDataLoading &&
               [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}
