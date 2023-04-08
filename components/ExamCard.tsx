@@ -110,7 +110,7 @@ function ExamCard({ examData }) {
           color={useColorModeValue("gray.700", "white")}
           fontSize={"2xl"}
           fontFamily={"body"}
-          noOfLines={1}
+          noOfLines={2}
         >
           {title}
         </Heading>
