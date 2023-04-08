@@ -91,7 +91,7 @@ function ExamCard({ examData }) {
           style={{
             borderRadius: "20px 20px 0 0",
             objectFit: "cover",
-            width: "auto",
+            width: "100%",
             height: "auto",
           }}
         />
