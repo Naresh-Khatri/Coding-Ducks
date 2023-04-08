@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Flex,
   HStack,
@@ -37,7 +38,9 @@ interface MainLayoutProps {
 //this fucntion takes examId to show the marks obtained in the exam
 function MainLayout({ children, examData }: MainLayoutProps) {
   const router = useRouter();
-  const { id: examId, title, slug: examSlug } = examData;
+  const { id: examId, slug: examSlug } = examData;
+  const title = examData ? examData?.data?.title : "Unknown test";
+
   const { data: submissionData } = useExamSubmissionsData(examId);
   const { totalMarks, marksObtained } = submissionData?.data || {
     totalMarks: 0,
