@@ -16,11 +16,14 @@ import ExamDetailsModel from "./ExamDetailsModel";
 import { Exam } from "../hooks/useProblemsData";
 
 function ExamCard({ examData }) {
-  const { title, description, startTime, isBounded, coverImg }: Exam = examData;
+  const { title, description, startTime, endTime, isBounded, coverImg }: Exam =
+    examData;
   const { isOpen, onOpen, onClose, onToggle } = useDisclosure();
 
   const [timerText, setTimerText] = useState("");
   const [timer, setTimer] = useState(null);
+  const [hasEnded, setHasEnded] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
     if (isBounded) {
@@ -30,13 +33,26 @@ function ExamCard({ examData }) {
 
   const updateTimerText = useCallback(() => {
     const sTime = new Date(startTime);
+    const eTime = new Date(endTime);
     const currTime = new Date();
-    if (sTime < currTime) {
+
+    let diffInMs;
+    // If the current time is past the end time, stop the timer
+    if (eTime < currTime) {
       setTimerText("00:00:00");
+      setHasEnded(true);
       clearInterval(timer);
       return;
     }
-    const diffInMs= sTime.getTime() - currTime.getTime();
+    // If the current time is past the start time, start the timer
+    if (sTime < currTime) {
+      setHasStarted(true);
+      diffInMs = eTime.getTime() - currTime.getTime();
+    }
+    // If the current time is before the start time, show the time until the start time
+    else {
+      diffInMs = eTime.getTime() - currTime.getTime();
+    }
 
     // Get hours and minutes from the difference in milliseconds
     const diffHours = Math.floor(diffInMs / 3600000);
@@ -47,8 +63,9 @@ function ExamCard({ examData }) {
     const formattedDiff = `${diffHours >= 10 ? diffHours : `0${diffHours}`}:${
       diffMinutes >= 10 ? diffMinutes : `0${diffMinutes}`
     }:${diffSeconds >= 10 ? diffSeconds : `0${diffSeconds}`}`;
+
     setTimerText(formattedDiff);
-  }, [startTime, timer]);
+  }, [endTime, startTime, timer]);
 
   return (
     <Flex
@@ -62,7 +79,7 @@ function ExamCard({ examData }) {
       _hover={{
         transform: "scale(1.05)",
       }}
-      onClick={onToggle}
+      onClick={isBounded && (!hasEnded || hasStarted) ? onToggle : null}
     >
       {/* <Button onClick={onToggle}>toggle</Button> */}
       <Box w={300} h={180} position={"relative"} overflow={"hidden"}>
@@ -110,14 +127,20 @@ function ExamCard({ examData }) {
         mb={4}
         mx={2}
         shadow={"2xl"}
-        disabled={isBounded && timerText !== "00:00:00"}
-        _hover={{}}
+        disabled={isBounded && hasEnded}
+        onClick={onOpen}
       >
-        {isBounded && timerText !== "00:00:00" ? timerText : "Start Exam"}
+        {isBounded
+          ? !hasStarted && !hasEnded
+            ? `Opens in ${timerText}`
+            : !hasEnded && hasStarted
+            ? `Closes in ${timerText}`
+            : "Exam ended"
+          : "Start Exam"}
       </Button>
       <ExamDetailsModel
         examData={examData}
-        canStartExam={isBounded && timerText !== "00:00:00"}
+        canStartExam={isBounded && hasEnded}
         timerText={timerText}
         onClose={onClose}
         isOpen={isOpen}
