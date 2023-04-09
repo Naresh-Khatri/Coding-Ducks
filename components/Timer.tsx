@@ -63,12 +63,12 @@ function Timer() {
       clearInterval(timer);
       toast({
         title: "Exam Ended",
-        description: "You can now view your results",
+        description: "Results would be announced soon",
         status: "success",
         duration: 5000,
         isClosable: true,
       });
-      router.push("/home");
+      router.push(`/feedback/${slug}`);
       return;
     }
     const diffInMs = eTime.getTime() - currTime.getTime();
