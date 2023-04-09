@@ -51,7 +51,7 @@ function ExamCard({ examData }) {
     }
     // If the current time is before the start time, show the time until the start time
     else {
-      diffInMs = eTime.getTime() - currTime.getTime();
+      diffInMs = sTime.getTime() - currTime.getTime();
     }
 
     // Get hours and minutes from the difference in milliseconds
