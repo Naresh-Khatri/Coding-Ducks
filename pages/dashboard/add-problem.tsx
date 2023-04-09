@@ -46,6 +46,7 @@ const QuillNoSSRWrapper = dynamic(import("react-quill"), {
 const AddExam = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [order, setOrder] = useState(0);
   const [hasStarterCode, setHasStarterCode] = useState(false);
   const [starterCode, setStartedCode] = useState("");
   const [diffLevel, setDiffLevel] = useState("easy");
@@ -66,7 +67,9 @@ const AddExam = () => {
       difficulty: diffLevel,
       tags: "aksdfl",
       testCases,
+      order,
       examId: +selectedExam.current.value,
+      starterCode,
     };
     try {
       const res = await axios.post("/problems", payload);
@@ -132,6 +135,18 @@ const AddExam = () => {
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </FormControl>
+              <FormControl mr="5%">
+                <FormLabel htmlFor="order" fontWeight={"normal"}>
+                  order
+                </FormLabel>
+                <Input
+                  id="order"
+                  placeholder="Order"
+                  value={order}
+                  onChange={(e) => setOrder(+e.target.value)}
+                />
+              </FormControl>
+
               <RadioGroup onChange={setDiffLevel} value={diffLevel}>
                 <Stack direction="row">
                   <Radio value="easy">Easy</Radio>
