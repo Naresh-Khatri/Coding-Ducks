@@ -307,8 +307,6 @@ export const LoginPage = () => {
                         isInvalid={!isEmailValid && email != ""}
                       />
                     </FormControl>
-                  </Stack>
-                  <Stack>
                     <FormControl isRequired>
                       <FormLabel htmlFor="reg-password">Password</FormLabel>
                       <Input
@@ -323,8 +321,6 @@ export const LoginPage = () => {
                         isInvalid={!isPasswordValid && password !== ""}
                       />
                     </FormControl>
-                  </Stack>
-                  <Stack>
                     <FormControl isRequired>
                       <FormLabel htmlFor="reg-password2">
                         Confirm password
@@ -341,8 +337,6 @@ export const LoginPage = () => {
                         isInvalid={!isPassword2Valid && password2 !== ""}
                       />
                     </FormControl>
-                  </Stack>
-                  <Stack>
                     <Button
                       w="full"
                       colorScheme="purple"
