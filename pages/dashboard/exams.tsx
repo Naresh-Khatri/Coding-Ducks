@@ -1,8 +1,4 @@
-import {
-  Box,
-  Button,
-  Container,
-} from "@chakra-ui/react";
+import { Box, Button, Container, HStack } from "@chakra-ui/react";
 import Link from "next/link";
 import AdminLayout from "../../layout/AdminLayout";
 
@@ -50,14 +46,14 @@ function Exams() {
   return (
     <AdminLayout>
       <Container maxW="container.xl" overflow={"auto"}>
-        <Box m={10}>
+        <HStack m={10}>
           <Link href="/dashboard/add-exam">
             <Button bg="green.400">Add Exam</Button>
           </Link>
-          <Button bg="green.400" onClick={()=>refetchExamData()}>
+          <Button bg="green.400" onClick={() => refetchExamData()}>
             Refresh
           </Button>
-        </Box>
+        </HStack>
         <CustomTable
           columns={COLUMNS}
           data={examsData.data}
