@@ -45,6 +45,7 @@ function Timer() {
 
   useEffect(() => {
     if (!examData || !examData.data.endTime) return;
+    if (!isBounded) return;
 
     const s = setInterval(startTimer, 1000);
     setTimer(s);
