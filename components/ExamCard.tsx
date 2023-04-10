@@ -79,7 +79,7 @@ function ExamCard({ examData }) {
       _hover={{
         transform: "scale(1.05)",
       }}
-      onClick={isBounded && (!hasEnded || hasStarted) ? onToggle : null}
+      // onClick={isBounded && (!hasEnded || hasStarted) ? onToggle : null}
     >
       {/* <Button onClick={onToggle}>toggle</Button> */}
       <Box w={300} h={180} position={"relative"} overflow={"hidden"}>
@@ -127,7 +127,7 @@ function ExamCard({ examData }) {
         mb={4}
         mx={2}
         shadow={"2xl"}
-        disabled={isBounded && hasEnded}
+        disabled={isBounded && (hasEnded|| !hasStarted)}
         onClick={onOpen}
       >
         {isBounded
