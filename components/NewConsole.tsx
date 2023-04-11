@@ -33,7 +33,7 @@ function NewConsole({ output }) {
               w={"100%"}
               color={"red.400"}
               dangerouslySetInnerHTML={{
-                __html: output.results[0].errorMessage.replace(/\n/g, "<br />"),
+                __html: output.results[0]?.errorMessage?.replace(/\n/g, "<br />"),
               }}
             ></Text>
           </Box>
