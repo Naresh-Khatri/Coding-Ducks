@@ -1,4 +1,4 @@
-import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, SimpleGrid, Text } from "@chakra-ui/react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -58,11 +58,12 @@ function NewConsole({ output }) {
           </HStack>
         </Flex>
       </HStack>
-      <HStack>
+      <SimpleGrid columns={4} gap={2}>
         {output?.results.map((res, i) => (
           <Button
             key={i}
             bg={selectedCase == i ? "gray.600" : ""}
+            // border={selectedCase == i ? "2px solid white" : ""}
             onClick={() => setSelectedCase(i)}
             disabled={res.isHidden}
           >
@@ -74,14 +75,21 @@ function NewConsole({ output }) {
               borderRadius={"50%"}
             ></Box>
             {res.isHidden && (
-              <Box mx={1}>
-                <FontAwesomeIcon icon={faLock as IconProp} />
-              </Box>
+              <>
+                <Box
+                  bg={res.isCorrect ? "green.300" : "red.400"}
+                  h={2}
+                  borderRadius={"50%"}
+                ></Box>
+                <Box mr={1}>
+                  <FontAwesomeIcon icon={faLock as IconProp} />
+                </Box>
+              </>
             )}
             Case {i + 1}
           </Button>
         ))}
-      </HStack>
+      </SimpleGrid>
       <Box overflow={"auto"}>
         <Box py={2}>
           <Text>Input: </Text>
