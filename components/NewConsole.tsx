@@ -1,10 +1,19 @@
-import { Box, Button, Flex, HStack, SimpleGrid, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  CloseButton,
+  Flex,
+  HStack,
+  IconButton,
+  SimpleGrid,
+  Text,
+} from "@chakra-ui/react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
-function NewConsole({ output }) {
+function NewConsole({ output, onClose }) {
   const [selectedCase, setSelectedCase] = useState(0);
   if (!output?.results) return null;
 
@@ -22,9 +31,16 @@ function NewConsole({ output }) {
   if (output.results?.some((r) => r.errorOccurred))
     return (
       <Box w={"100%"} p={5}>
-        <Text color={"red.400"} fontWeight="extrabold" fontSize={"xl"}>
-          Compilation Error
-        </Text>
+        <HStack justifyContent={"space-between"}>
+          <Text color={"red.400"} fontWeight="extrabold" fontSize={"xl"}>
+            Compilation Error
+          </Text>
+          <IconButton
+            aria-label="close"
+            icon={<CloseButton />}
+            onClick={onClose}
+          />
+        </HStack>
         <Box py={2}>
           <Text>Details: </Text>
           <Box bg={"#f1635f22"} p={3} borderRadius={10}>
@@ -33,7 +49,10 @@ function NewConsole({ output }) {
               w={"100%"}
               color={"red.400"}
               dangerouslySetInnerHTML={{
-                __html: output.results[0]?.errorMessage?.replace(/\n/g, "<br />"),
+                __html: output.results[0]?.errorMessage?.replace(
+                  /\n/g,
+                  "<br />"
+                ),
               }}
             ></Text>
           </Box>
@@ -55,6 +74,11 @@ function NewConsole({ output }) {
           <HStack>
             <Text fontSize={"md"}>Runtime: {cpuUsage.toFixed(1)} ms</Text>{" "}
             <Text fontSize={"md"}> Memory: {memoryUsage.toFixed(2)} MB</Text>
+            <IconButton
+              aria-label="close"
+              icon={<CloseButton />}
+              onClick={onClose}
+            />
           </HStack>
         </Flex>
       </HStack>

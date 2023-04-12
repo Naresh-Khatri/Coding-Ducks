@@ -310,7 +310,8 @@ function TakeTest() {
                   <Flex w={"full"}>
                     {showConsole && (
                       <Box overflow={"auto"} w={"full"}>
-                        <NewConsole output={output} />
+                        <NewConsole output={output } onClose={() =>{ setShowConsole(false)}} />
+
                       </Box>
                     )}
                   </Flex>
