@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://ducks.panipuri.tech",
+  baseURL: "https://ducks.ghostchat.live",
   // baseURL: "http://localhost:3333",
   transformRequest: [
     (data, headers) => {
