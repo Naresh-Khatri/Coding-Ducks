@@ -38,8 +38,7 @@ interface MainLayoutProps {
 //this fucntion takes examId to show the marks obtained in the exam
 function MainLayout({ children, examData }: MainLayoutProps) {
   const router = useRouter();
-  const { id: examId, slug: examSlug } = examData;
-  const title = examData ? examData?.data?.title : "Unknown test";
+  const { id: examId, title, slug: examSlug } = examData;
 
   const { data: submissionData } = useExamSubmissionsData(examId);
   const { totalMarks, marksObtained } = submissionData?.data || {
