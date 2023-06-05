@@ -126,7 +126,7 @@ console.log(Math.random());
     if (Object.keys(user).length === 0) return;
 
     // const socketInstance = io("ws://localhost:3333");
-    const socketInstance = io("wss://ducks.panipuri.tech");
+    const socketInstance = io("wss://api.codingducks.live");
     setSocket(socketInstance);
 
     socketInstance.on("connect success", (user) => {
