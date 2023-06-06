@@ -142,7 +142,7 @@ export default function EditUserProfile() {
                     />
                   ) : null}
                   <AvatarBadge
-                    disabled
+                    isDisabled
                     as={IconButton}
                     size="sm"
                     rounded="full"
@@ -154,7 +154,7 @@ export default function EditUserProfile() {
                 </Avatar>
               </Center>
               <Center w="full">
-                <Button w="full" disabled>
+                <Button w="full" isDisabled>
                   Change Photo
                 </Button>
               </Center>
@@ -190,7 +190,7 @@ export default function EditUserProfile() {
                 placeholder="your-email@example.com"
                 _placeholder={{ color: "gray.500" }}
                 type="email"
-                disabled
+                isDisabled
                 value={firebaseUser.email}
               />
             )}
@@ -212,7 +212,7 @@ export default function EditUserProfile() {
                 bg: "purple.500",
               }}
               onClick={handleSubmitClick}
-              disabled={!isUsernameValid}
+              isDisabled={!isUsernameValid}
             >
               Submit
             </Button>
