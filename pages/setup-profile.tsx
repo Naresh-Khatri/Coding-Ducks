@@ -33,12 +33,9 @@ export default function EditUserProfile() {
 
   const [fullname, setFullname] = useState("");
   const [username, setUsername] = useState("");
-  const [roll, setRoll] = useState("");
   const [isUsernameValid, setIsUsernameValid] = useState(false);
-  const [isRollValid, setIsRollValid] = useState(false);
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
-  const rollRegex = /^[0-9]{2}[a-zA-Z]{2}[0-9]{1}[a-zA-Z0-9]{5}$/;
 
   useEffect(() => {
     // if not loading, firebaseuser null and user null, redirect to login
@@ -62,7 +59,6 @@ export default function EditUserProfile() {
       const payload = {
         fullname,
         username,
-        roll,
         photoURL:
           firebaseUser.photoURL ||
           "https://ik.imagekit.io/couponluxury/coding_ducks/user-solid_ThAFc0bNo.svg",
@@ -80,15 +76,6 @@ export default function EditUserProfile() {
       loadUser();
       router.push("/home");
     } catch (error) {
-      if (error.response.data.code == 69)
-        toast({
-          title: "User already exists",
-          description: "Please try a different email/username/roll",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
-        });
-
       console.log(error);
     }
   };
@@ -107,15 +94,6 @@ export default function EditUserProfile() {
       setIsUsernameValid(true);
     } else {
       setIsUsernameValid(false);
-    }
-  };
-  const handleRollChange = (e) => {
-    const roll = e.target.value;
-    setRoll(roll);
-    if (rollRegex.test(roll) && roll.length == 10) {
-      setIsRollValid(true);
-    } else {
-      setIsRollValid(false);
     }
   };
 
@@ -205,20 +183,6 @@ export default function EditUserProfile() {
               onChange={(e) => handleUsernameChange(e)}
             />
           </FormControl>
-          <FormControl id="roll" isRequired>
-            {/* TODO: check username availability */}
-            <FormLabel>Roll No.</FormLabel>
-            <Input
-              placeholder="22FH1A0---"
-              _placeholder={{ color: "gray.500" }}
-              type="text"
-              errorBorderColor="crimson"
-              focusBorderColor={isRollValid ? "green.500" : "red.500"}
-              isInvalid={!isRollValid}
-              value={roll}
-              onChange={(e) => handleRollChange(e)}
-            />
-          </FormControl>
           <FormControl id="email" isRequired>
             <FormLabel>Email address</FormLabel>
             {firebaseUser.email && (
@@ -248,7 +212,7 @@ export default function EditUserProfile() {
                 bg: "purple.500",
               }}
               onClick={handleSubmitClick}
-              disabled={!isUsernameValid || !isRollValid}
+              disabled={!isUsernameValid}
             >
               Submit
             </Button>
