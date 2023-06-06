@@ -43,7 +43,7 @@ export default function EditUserProfile() {
       router.push("/");
 
     if (firebaseUser) {
-      setFullname(firebaseUser.displayName);
+      setFullname(firebaseUser.displayName || "");
     }
     // if (!loading && Object.keys(user) == 0) router.push("/login");
     // checking for googleUID in the user object to make sure used is in db
