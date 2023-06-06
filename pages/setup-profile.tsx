@@ -77,6 +77,13 @@ export default function EditUserProfile() {
       router.push("/home");
     } catch (error) {
       console.log(error);
+      toast({
+        title: "An error occurred.",
+        description: error.response.data.message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
     }
   };
 
