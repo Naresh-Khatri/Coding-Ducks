@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import {
   Avatar,
@@ -10,13 +10,6 @@ import {
   GridItem,
   HStack,
   Input,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTrigger,
   Select,
   Text,
   VStack,
@@ -41,7 +34,8 @@ import { User } from "../hooks/useSubmissionsData";
 import ChatMessage from "../components/ChatMessage";
 import dynamic from "next/dynamic";
 import { Cursor } from "../components/CustomAce";
-import Image from "next/image";
+import ConnectedUsers from "../components/multiplayer/ConnectedUsers";
+import LanguageSelector from "../components/multiplayer/LanguageSelector";
 
 interface message {
   userId: number;
@@ -62,6 +56,7 @@ interface Room {
     lang: string;
     owner: User;
     ownerId: number;
+    content: string;
   };
 }
 interface Result {
@@ -88,19 +83,7 @@ function TestPage() {
   const [socket, setSocket] = useState(null);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [room, setRoom] = useState<Room>(null);
-  const [code, setCode] = useState(`function getRandomInt(max) {
-   return Math.floor(Math.random() * max);
-}
-  
-console.log(getRandomInt(3));
-// Expected output: 0, 1 or 2
-  
-console.log(getRandomInt(1));
-// Expected output: 0
-  
-console.log(Math.random());
-// Expected output: a number from 0 to <1
-`);
+  const [code, setCode] = useState("");
   const [roomname, setRoomname] = useState("");
 
   const [msgsList, setMsgsList] = useState<message[]>([]);
@@ -108,8 +91,6 @@ console.log(Math.random());
 
   const [consoleInfo, setConsoleInfo] = useState<Result>(null);
   const [resultIsLoading, setResultIsLoading] = useState(false);
-  // for select option bg
-  const color = useColorModeValue("black", "white");
 
   const toast = useToast();
   const router = useRouter();
@@ -125,8 +106,8 @@ console.log(Math.random());
   useEffect(() => {
     if (Object.keys(user).length === 0) return;
 
-    // const socketInstance = io("ws://localhost:3333");
-    const socketInstance = io("wss://api.codingducks.live");
+    const socketInstance = io("ws://localhost:3333");
+    // const socketInstance = io("wss://api.codingducks.live");
     setSocket(socketInstance);
 
     socketInstance.on("connect success", (user) => {
@@ -174,6 +155,7 @@ console.log(Math.random());
       console.log(res);
       if (res.status === "success") {
         setRoom(res);
+        setCode(res.roomInfo.content);
         setMsgsList(res.msgsList);
         // set cursors
         const cursors = new Map();
@@ -420,32 +402,12 @@ console.log(Math.random());
                 />
               </GridItem>
             )}
-            <GridItem colSpan={3} height={"100%"}>
+            <GridItem colSpan={showChat ? 3 : 4} height={"100%"}>
               <HStack my={2} justify={"space-between"}>
-                <Select
-                  bg="purple.500"
-                  color="white"
-                  maxW={40}
-                  value={room?.roomInfo?.lang || "py"}
-                  onChange={handleLangChange}
-                  fontWeight="extrabold"
-                >
-                  <option style={{ color: color }} value="py">
-                    Python
-                  </option>
-                  <option style={{ color }} value="js">
-                    Javascript
-                  </option>
-                  <option style={{ color }} value="cpp">
-                    C++
-                  </option>
-                  <option style={{ color }} value="c">
-                    C
-                  </option>
-                  <option style={{ color }} value="java">
-                    Java
-                  </option>
-                </Select>
+                <LanguageSelector
+                  roomInfo={room?.roomInfo}
+                  handleLangChange={handleLangChange}
+                />
                 <Box>
                   <Button
                     colorScheme="green"
@@ -456,56 +418,7 @@ console.log(Math.random());
                     Run
                   </Button>
                 </Box>
-                <HStack>
-                  {Object.keys(room.clients).map((socketId, i) => (
-                    <HStack key={socketId}>
-                      <Popover>
-                        <PopoverTrigger>
-                          <Avatar
-                            key={i}
-                            name={room.clients[socketId].username}
-                            src={room.clients[socketId].photoURL}
-                            size="sm"
-                            colorScheme="green"
-                          >
-                            <AvatarBadge boxSize="1.25em" bg={"green.500"} />
-                          </Avatar>
-                        </PopoverTrigger>
-                        <PopoverContent>
-                          <PopoverArrow />
-                          <PopoverCloseButton />
-                          <PopoverHeader>User Info</PopoverHeader>
-                          <PopoverBody>
-                            <Grid templateColumns={"repeat(5, 1fr)"}>
-                              <GridItem colSpan={1}>
-                                <Image
-                                  width={100}
-                                  height={100}
-                                  src={room.clients[socketId].photoURL}
-                                  alt="profile photo"
-                                  style={{ borderRadius: "50%" }}
-                                />
-                              </GridItem>
-                              <GridItem colSpan={4} mx={2}>
-                                <HStack>
-                                  <Text>{room.clients[socketId].fullname}</Text>
-                                  {room.clients[socketId].id === user.id && (
-                                    <Text as="span" color="green.500">
-                                      (you)
-                                    </Text>
-                                  )}
-                                </HStack>
-                                <Text color={"gray.500"}>
-                                  @{room.clients[socketId].username}{" "}
-                                </Text>
-                              </GridItem>
-                            </Grid>
-                          </PopoverBody>
-                        </PopoverContent>
-                      </Popover>
-                    </HStack>
-                  ))}
-                </HStack>
+                <ConnectedUsers clients={room.clients} currentUser={user} />
               </HStack>
               <CustomAce
                 value={code}
