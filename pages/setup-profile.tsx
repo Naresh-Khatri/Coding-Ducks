@@ -13,6 +13,7 @@ import {
   IconButton,
   Center,
   useToast,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 
 import { SmallCloseIcon } from "@chakra-ui/icons";
@@ -167,7 +168,11 @@ export default function EditUserProfile() {
               </Center>
             </Stack>
           </FormControl>
-          <FormControl id="fullname" isRequired>
+          <FormControl
+            id="fullname"
+            isRequired
+            isInvalid={fullname.trim().length < 5}
+          >
             <FormLabel>Full name</FormLabel>
             <Input
               placeholder="Enter your fullname"
@@ -176,19 +181,22 @@ export default function EditUserProfile() {
               value={fullname}
               onChange={(e) => setFullname(e.target.value)}
             />
+            <FormErrorMessage>
+              Fullname must be atleast 5 characters long
+            </FormErrorMessage>
           </FormControl>
-          <FormControl id="userName" isRequired>
+          <FormControl id="userName" isRequired isInvalid={!isUsernameValid}>
             <FormLabel>Username</FormLabel>
             <Input
               placeholder="Enter your username"
-              errorBorderColor="crimson"
-              focusBorderColor={isUsernameValid ? "green.500" : "red.500"}
               _placeholder={{ color: "gray.500" }}
               type="text"
-              isInvalid={!isUsernameValid}
               value={username}
               onChange={(e) => handleUsernameChange(e)}
             />
+            {!isUsernameValid && (
+              <FormErrorMessage>Username is invalid</FormErrorMessage>
+            )}
           </FormControl>
           <FormControl id="email" isRequired>
             <FormLabel>Email address</FormLabel>
@@ -219,7 +227,7 @@ export default function EditUserProfile() {
                 bg: "purple.500",
               }}
               onClick={handleSubmitClick}
-              isDisabled={!isUsernameValid}
+              isDisabled={!isUsernameValid || fullname.trim().length < 5}
             >
               Submit
             </Button>
