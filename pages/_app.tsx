@@ -22,7 +22,7 @@ const colors = {
     800: "#1a3b5a",
   },
 };
-const theme = extendTheme({ colors });
+const theme = extendTheme({ colors, config: { initialColorMode: "dark" } });
 
 const client = new QueryClient();
 
