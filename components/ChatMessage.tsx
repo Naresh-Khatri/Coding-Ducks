@@ -85,9 +85,15 @@ const ChatMessage = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                   <HStack
                     key={i}
                     bg={user.id == msg.userId ? "green.700" : "gray.700"}
-                    borderRadius={"10px"}
+                    borderRadius={
+                      user.id == msg.userId
+                        ? "20px 20px 0px 20px"
+                        : "20px 20px 20px 0px"
+                    }
                     minW={"300px"}
-                    p={"1rem "}
+                    p={"1rem"}
+                    mr={user.id != msg.userId ? "10px" : "auto"}
+                    ml={user.id == msg.userId ? "10px" : "auto"}
                     justifyContent={"space-between"}
                   >
                     <HStack as="span" w={"100%"} align={"start"}>
