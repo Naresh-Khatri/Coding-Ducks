@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../utils/axios";
 
 export const useExamsData = () => {
-  return useQuery(["exams"], () => axiosInstance.get("/exams"));
+  return useQuery(["exams"], async () => {
+    const res = await axiosInstance.get("/exams");
+    return res.data;
+  });
 };
 
 export const useExamData = (examSlug: string) => {
@@ -15,7 +18,7 @@ export const useExamProblemsData = ({ examId }: { examId: number }) => {
   return useQuery(
     ["examProblems", examId],
     () => axiosInstance.get(`/problems/examProblems/${examId}`),
-    { refetchOnMount: false, enabled: !!examId}
+    { refetchOnMount: false, enabled: !!examId }
   );
 };
 export const useExamSubmissionsData = (examId: number) => {
