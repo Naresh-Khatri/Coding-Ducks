@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../utils/axios";
 
-export interface Exam {
+export interface IExam {
   id: number;
   slug: string;
   isBounded?: boolean;
@@ -15,7 +15,7 @@ export interface Exam {
   marks?: number;
   startTime?: string;
 }
-export interface Problem {
+export interface IExamProblem {
   id: number;
   order: number;
   difficulty: string;
@@ -23,26 +23,78 @@ export interface Problem {
   tags: string[];
   examId: number;
   title: string;
-  exam: Exam;
+  exam: IExam;
   testCases: any;
   starterCode?: string;
 }
 
+export interface IProblem extends IExamProblem {
+  slug?: string;
+  title: string;
+  description: string;
+  difficulty: "easy" | "medium" | "hard";
+  status?: "" | "attempted" | "solved";
+  acceptance?: number;
+  tags: string[];
+}
+
 const queryFn = async (): Promise<any> => {
   const res = await axiosInstance.get("/problems");
-  const problems: Problem[] = res.data;
-  const examsList: Exam[] = [];
+  const problems: IExamProblem[] = res.data;
+  const examsList: IExam[] = [];
   problems?.forEach((problem) => {
     if (!examsList.find((e) => e.id === problem.examId))
       examsList.push({
-        id: problem.examId,
-        title: problem.exam.title,
-        slug: problem.exam.slug,
+        id: problem?.examId,
+        title: problem.exam?.title,
+        slug: problem.exam?.slug,
       });
   });
-
-  return { problems, examsList } as { problems: Problem[]; examsList: Exam[] };
+  return { problems, examsList } as {
+    problems: IExamProblem[];
+    examsList: IExam[];
+  };
 };
-export const useProblemsData = () => {
+export const useExamProblemsData = () => {
   return useQuery({ queryKey: ["problems"], queryFn });
+};
+
+interface IProblemsQueryParams {
+  q?: string;
+  sortBy?: string;
+  orderBy?: "asc" | "desc";
+  skip: number;
+  limit: number;
+}
+
+export const useProblemsData = (params: IProblemsQueryParams) => {
+  return useQuery({
+    queryKey: ["pageProblems", params],
+    queryFn: async () => {
+      //we have nexted data objects
+      const {
+        data: { data },
+      } = await axiosInstance.get("/problems/page", { params });
+      const { problemsList, count } = data as {
+        problemsList: IProblem[];
+        count: number;
+      };
+      return { problemsList, count };
+    },
+  });
+};
+
+export interface IProblemTag {
+  id: number;
+  name: string;
+}
+export const useTagsData = () => {
+  return useQuery({
+    queryKey: ["tags"],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get("/problems/tags");
+      const tags = data.data as { tags: IProblemTag[]; count: number };
+      return tags;
+    },
+  });
 };
