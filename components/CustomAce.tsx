@@ -33,7 +33,6 @@ function CustomAce({
 }: CustomAceProps) {
   const editorRef = useRef(null);
 
-  const [marker, setMarker] = useState(null);
   const [markerIds, setMarkerIds] = useState<number[]>([]);
 
   useEffect(() => {
@@ -42,8 +41,7 @@ function CustomAce({
     if (windoww.ace === undefined) return;
     const editor = editorRef.current.editor;
 
-    if (markerIds.length > 0)
-      markerIds.forEach((id) => editor.session.removeMarker(id));
+    markerIds.forEach((id) => editor.session.removeMarker(id));
 
     let i = 0;
     cursors.forEach((cursor, userId) => {
@@ -58,8 +56,6 @@ function CustomAce({
         "text",
         true
       );
-      //add attribute to the marker
-      setMarker(nameMarker);
       // set data-name attribute to the marker
       const markerEl = document.querySelector(`.ace_cursor_color_${i}`);
       if (markerEl) markerEl.setAttribute("data-name", cursor.username);
@@ -76,7 +72,6 @@ function CustomAce({
         elem.classList.add("ace_bookmark_hide");
       }, 100);
     });
-
   }, [cursors, value]);
 
   return (
@@ -91,7 +86,6 @@ function CustomAce({
         name="my-editor"
         editorProps={{ $blockScrolling: true }}
         width="100%"
-        height="100%"
         style={{ borderRadius: "15px" }}
         onCursorChange={(e) => {
           handleOnCursorChange({ row: e.cursor.row, col: e.cursor.column });
