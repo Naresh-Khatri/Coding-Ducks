@@ -34,11 +34,11 @@ export default function HomePage() {
   const { user } = useContext(userContext);
 
   const currTime = new Date().getTime();
-  const availableExams = examsData?.data.filter(
+  const availableExams = examsData?.filter(
     (exam) =>
       exam.isBounded === false || new Date(exam.endTime).getTime() > currTime
   );
-  const upcomingExams = examsData?.data.filter(
+  const upcomingExams = examsData?.filter(
     (exam) =>
       exam.isBounded === true && new Date(exam.endTime).getTime() > currTime
   );
@@ -86,7 +86,7 @@ export default function HomePage() {
             {examsDataLoading &&
               [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}
             {examsData &&
-              examsData.data.map((exam) => (
+              examsData.map((exam) => (
                 <ExamCard key={exam.id} examData={exam} />
               ))}
           </SimpleGrid>
