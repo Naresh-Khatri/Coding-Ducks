@@ -1,61 +1,44 @@
 import {
-  Button,
+  Box,
+  chakra,
+  useColorModeValue,
+  VisuallyHidden,
+} from "@chakra-ui/react";
+import { ReactNode } from "react";
+import {
   ButtonGroup,
   Container,
-  Divider,
   IconButton,
-  Input,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import * as React from "react";
-// import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 import {
   faGithub,
   faLinkedin,
   faTwitter,
 } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Icon, IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 const Footer = () => (
-  <Container as="footer" role="contentinfo" maxW={"7xl"}>
-    <Stack
-      spacing="8"
+  <Box
+    mt={10}
+    bg={useColorModeValue("gray.50", "gray.900")}
+    color={useColorModeValue("gray.700", "gray.200")}
+    alignContent={"end"}
+    justifySelf={"end"}
+  >
+    <Container
+      as={Stack}
+      maxW={"6xl"}
+      py={4}
       direction={{ base: "column", md: "row" }}
-      justify="space-between"
-      py={{ base: "12", md: "16" }}
+      spacing={4}
+      justify={{ base: "center", md: "space-between" }}
+      align={{ base: "center", md: "center" }}
     >
-      <Stack spacing={{ base: "6", md: "8" }} align="start">
-        <Text
-          fontSize="3xl"
-          fontWeight="bold"
-          lineHeight={0}
-          color="purple.600"
-        >
-          Coding Ducks
-        </Text>
-        <Text color="muted" lineHeight={0}>
-          Learn to code remarkably fast.
-        </Text>
-      </Stack>
-      <Stack
-        direction={{ base: "column-reverse", md: "column", lg: "row" }}
-        spacing={{ base: "12", md: "8" }}
-      ></Stack>
-    </Stack>
-    <Divider />
-    <Stack
-      pt="8"
-      pb="12"
-      justify="space-between"
-      direction={{ base: "column-reverse", md: "row" }}
-      align="center"
-    >
-      <Text fontSize="sm" color="subtle">
-        &copy; {new Date().getFullYear()} Coding Ducks, Inc. All rights
-        reserved.
-      </Text>
+      <Text>© 2023 Coding ducks. All rights reserved</Text>
       <ButtonGroup variant="ghost">
         <IconButton
           as="a"
@@ -82,8 +65,40 @@ const Footer = () => (
           }
         />
       </ButtonGroup>
-    </Stack>
-  </Container>
+    </Container>
+  </Box>
 );
 
 export default Footer;
+
+const SocialButton = ({
+  children,
+  label,
+  href,
+}: {
+  children: ReactNode;
+  label: string;
+  href: string;
+}) => {
+  return (
+    <chakra.button
+      bg={useColorModeValue("blackAlpha.100", "whiteAlpha.100")}
+      rounded={"full"}
+      w={8}
+      h={8}
+      cursor={"pointer"}
+      as={"a"}
+      href={href}
+      display={"inline-flex"}
+      alignItems={"center"}
+      justifyContent={"center"}
+      transition={"background 0.3s ease"}
+      _hover={{
+        bg: useColorModeValue("blackAlpha.200", "whiteAlpha.200"),
+      }}
+    >
+      <VisuallyHidden>{label}</VisuallyHidden>
+      {children}
+    </chakra.button>
+  );
+};
