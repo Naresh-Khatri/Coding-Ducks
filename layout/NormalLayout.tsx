@@ -2,6 +2,7 @@ import React, { ReactNode, useContext, useEffect } from "react";
 import {
   Box,
   Button,
+  Container,
   Flex,
   Heading,
   HStack,
@@ -19,7 +20,7 @@ import { useRouter } from "next/router";
 function NormalLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <Flex direction={"column"} flex="1">
+      <Flex direction={"column"} justifyContent={'space-between'} flex="1" minH={"100vh"}>
         <NavBar />
         <Box as="main">{children}</Box>
         <Footer />
@@ -29,7 +30,7 @@ function NormalLayout({ children }: { children: ReactNode }) {
 }
 
 const links = [
-  { name: "Home", href: "/" },
+  { name: "Problems", href: "/problems" },
   { name: "Users", href: "/users" },
   { name: "Tests", href: "/home" },
   { name: "Playground", href: "/playground" },
@@ -40,17 +41,14 @@ function NavBar() {
   const { user, loading } = useContext(userContext);
 
   return (
-    <Box as="header">
+    <Container maxW="container.xl" as={"header"}>
       <Box as="nav">
-        <Flex
-          px={{ base: 0, md: 10 }}
-          py={2}
-          justifyContent="space-between"
-          align={"center"}
-        >
+        <Flex py={2} justifyContent="space-between" align={"center"}>
+          <Link href={'https://codingducks.live'}>
           <Heading>
-            <Text fontSize={"3xl"}>Coding ducks🦆</Text>
+            <Text fontSize={"2xl"}>Coding ducks🦆</Text>
           </Heading>
+          </Link>
           <HStack as={"nav"}>
             {links.map((link) => (
               <NavLink key={link.name} href={link.href}>
@@ -78,7 +76,7 @@ function NavBar() {
           </HStack>
         </Flex>
       </Box>
-    </Box>
+    </Container>
   );
 }
 
