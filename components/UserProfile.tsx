@@ -80,14 +80,14 @@ function UserProfile() {
         </IconButton>
         <Flex direction={"column"} alignItems="center">
           <Flex>
-            <Text fontWeight={"extrabold"}>{fullname}</Text>
+            {/* <Text fontWeight={"extrabold"}>{fullname}</Text> */}
             {isAdmin && (
               <Box color={"gold"}>
                 <FontAwesomeIcon icon={faCrown as IconProp} height={20} />
               </Box>
             )}
           </Flex>
-          <Text>{roll}</Text>
+          {/* <Text>{roll}</Text> */}
         </Flex>
       </HStack>
       <Modal isOpen={isOpen} onClose={onClose}>
