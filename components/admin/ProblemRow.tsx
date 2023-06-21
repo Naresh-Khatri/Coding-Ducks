@@ -1,20 +1,27 @@
-import { HStack, IconButton, Td, Tr, useDisclosure } from "@chakra-ui/react";
+import {
+  Badge,
+  HStack,
+  IconButton,
+  Td,
+  Tr,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import ProblemDeleteModal from "./ProblemDeleteModal";
 import ProblemEditor from "./ProblemEditor";
-import { Exam, Problem } from "../../hooks/useProblemsData";
+import { IExam, IProblem } from "../../hooks/useProblemsData";
 
 function ProblemRow({
   problem,
   fetchProblems,
   examsList,
 }: {
-  problem: Problem;
+  problem: IProblem;
   fetchProblems: () => void;
-  examsList: Exam[];
+  examsList: IExam[];
 }) {
   const { id, exam, examId, order, difficulty, title, description, tags } =
     problem;
@@ -33,9 +40,7 @@ function ProblemRow({
   return (
     <>
       <Td>{id}</Td>
-      <Td>
-        {examId}. {exam.title}
-      </Td>
+      <Td>{examId ? `${examId}. ${exam?.title}` : <Badge>Na</Badge>}</Td>
       <Td>{order}</Td>
       <Td>{difficulty}</Td>
       <Td>{title}</Td>
