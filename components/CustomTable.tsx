@@ -1,4 +1,4 @@
-import { CloseIcon } from '@chakra-ui/icons'
+import { CloseIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -18,20 +18,20 @@ import {
   Th,
   Thead,
   Tr,
-} from '@chakra-ui/react'
-import React from 'react'
-import { useTable, useFilters, useGlobalFilter, useSortBy } from 'react-table'
-import ProblemRow from './admin/ProblemRow'
-import { Exam, Problem } from '../hooks/useProblemsData'
-import ExamRow from './admin/ExamRow'
+} from "@chakra-ui/react";
+import React from "react";
+import { useTable, useFilters, useGlobalFilter, useSortBy } from "react-table";
+import ProblemRow from "./admin/ProblemRow";
+import { IExam, IExamProblem } from "../hooks/useProblemsData";
+import ExamRow from "./admin/ExamRow";
 
 interface CustomTableProps {
-  columns: object[]
-  data: Problem[] | Exam[]
-  refetchData: () => void
-  examsList?: Exam[]
-  hasSearchBar?: boolean
-  hasSort?: boolean
+  columns: object[];
+  data: IExamProblem[] | IExam[];
+  refetchData: () => void;
+  examsList?: IExam[];
+  hasSearchBar?: boolean;
+  hasSort?: boolean;
 }
 
 function CustomTable({
@@ -58,41 +58,41 @@ function CustomTable({
     useFilters, // useFilters!
     useGlobalFilter, // useGlobalFilter!
     useSortBy
-  )
+  );
 
-  const [searchTerm, setSearchTerm] = React.useState('')
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   const handleOnSearchChange = (e) => {
-    const search = e.target.value
-    setSearchTerm(search)
-    setGlobalFilter(search)
-  }
+    const search = e.target.value;
+    setSearchTerm(search);
+    setGlobalFilter(search);
+  };
   const handleOnFilterChange = (e) => {
-    const examId = e.target.value
-    console.log(examId)
-    console.log(data)
-    if (examId === 'all') {
-      setGlobalFilter('')
+    const examId = e.target.value;
+    console.log(examId);
+    console.log(data);
+    if (examId === "all") {
+      setGlobalFilter("");
     } else {
-      setFilter('examId', examId)
+      setFilter("examId", examId);
     }
-  }
+  };
 
   return (
     <>
       {hasSearchBar && (
-        <HStack w={'100%'} justify={'space-between'}>
+        <HStack w={"100%"} justify={"space-between"}>
           <Box>
-            <InputGroup size='md'>
+            <InputGroup size="md">
               <Input
-                pr='4.5rem'
-                placeholder='Search titles'
+                pr="4.5rem"
+                placeholder="Search titles"
                 value={searchTerm}
                 onChange={handleOnSearchChange}
               />
-              {searchTerm != '' && (
+              {searchTerm != "" && (
                 <InputRightElement>
-                  <Button size='sm' onClick={(e) => handleOnSearchChange(e)}>
+                  <Button size="sm" onClick={(e) => handleOnSearchChange(e)}>
                     <CloseIcon />
                   </Button>
                 </InputRightElement>
@@ -102,9 +102,9 @@ function CustomTable({
           <Flex>
             <Text> {data.length} Problem(s)</Text>
             <FormControl>
-              <FormLabel htmlFor='exam'>Filter by exam</FormLabel>
-              <Select id='exam' onChange={handleOnFilterChange}>
-                <option value='all'>All</option>
+              <FormLabel htmlFor="exam">Filter by exam</FormLabel>
+              <Select id="exam" onChange={handleOnFilterChange}>
+                <option value="all">All</option>
                 {examsList.map((exam) => (
                   <option key={exam.id} value={exam.id}>
                     {exam.title}
@@ -127,12 +127,12 @@ function CustomTable({
                       hasSort ? column.getSortByToggleProps() : {}
                     )}
                   >
-                    {column.render('Header')}
+                    {column.render("Header")}
                     {column.isSorted && (
                       <span
                         style={{
-                          transition: 'all .2s ease-in-out',
-                          rotate: column.isSortedDesc ? '0deg' : '180deg',
+                          transition: "all .2s ease-in-out",
+                          rotate: column.isSortedDesc ? "0deg" : "180deg",
                         }}
                       >
                         {column.isSortedDesc ? (
@@ -149,10 +149,10 @@ function CustomTable({
           </Thead>
           <Tbody {...getTableBodyProps()}>
             {rows.map((row, i: number) => {
-              prepareRow(row)
+              prepareRow(row);
               return (
                 <Tr key={i}>
-                  {row.original.hasOwnProperty('examId') ? (
+                  {row.original.hasOwnProperty("examId") ? (
                     <ProblemRow
                       problem={row.original}
                       fetchProblems={refetchData}
@@ -166,13 +166,13 @@ function CustomTable({
                     />
                   )}
                 </Tr>
-              )
+              );
             })}
           </Tbody>
         </Table>
       </TableContainer>
     </>
-  )
+  );
 }
 
-export default CustomTable
+export default CustomTable;
