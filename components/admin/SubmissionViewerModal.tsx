@@ -34,7 +34,7 @@ import {
 } from "../../hooks/useSubmissionsData";
 import Image from "next/image";
 import Link from "next/link";
-import { Exam, Problem } from "../../hooks/useProblemsData";
+import { IExam, IProblem } from "../../hooks/useProblemsData";
 
 interface SubmissionViewerModalProps {
   isOpen: boolean;
@@ -50,8 +50,8 @@ function SubmissionViewerModal({
 
   const submission = data?.data.submission as Submission;
   const user = data?.data.user as User;
-  const exam = data?.data.exam as Exam;
-  const problem = data?.data.problem as Problem;
+  const exam = data?.data.exam as IExam;
+  const problem = data?.data.problem as IProblem;
   console.log(data);
   return (
     <Modal
