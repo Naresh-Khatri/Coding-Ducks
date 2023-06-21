@@ -34,7 +34,7 @@ import "react-advanced-cropper/dist/style.css";
 import { useEffect, useState } from "react";
 import axios from "../../utils/axios";
 import TestCaseRow from "./TestCaseRow";
-import { Problem } from "../../hooks/useProblemsData";
+import { IProblem } from "../../hooks/useProblemsData";
 const AceEditor = dynamic(import("react-ace"), { ssr: false });
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
@@ -56,7 +56,7 @@ function ProblemEditor({
     order,
     testCases,
     starterCode,
-  } = problemData as Problem;
+  } = problemData as IProblem;
   const [newOrder, setNewOrder] = useState(order);
   const [newTitle, setNewTitle] = useState(title);
   const [newDifficulty, setNewDifficulty] = useState(difficulty);
