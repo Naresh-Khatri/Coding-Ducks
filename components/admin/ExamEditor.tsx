@@ -29,7 +29,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { Exam } from "../../hooks/useProblemsData";
+import { IExam } from "../../hooks/useProblemsData";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -57,7 +57,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     slug,
     active,
     marks,
-  }: Exam = examData;
+  }: IExam = examData;
 
   const [newTitle, setNewTitle] = useState(title);
   const [newSlug, setNewSlug] = useState(slug);
