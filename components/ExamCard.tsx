@@ -7,16 +7,15 @@ import {
   Stack,
   Text,
   useDisclosure,
-  VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import React, { useCallback, useEffect, useState } from "react";
 import { useColorModeValue } from "@chakra-ui/react";
 import ExamDetailsModel from "./ExamDetailsModel";
-import { Exam } from "../hooks/useProblemsData";
+import { IExam } from "../hooks/useProblemsData";
 
 function ExamCard({ examData }) {
-  const { title, description, startTime, endTime, isBounded, coverImg }: Exam =
+  const { title, description, startTime, endTime, isBounded, coverImg }: IExam =
     examData;
   const { isOpen, onOpen, onClose, onToggle } = useDisclosure();
 
@@ -127,7 +126,7 @@ function ExamCard({ examData }) {
         mb={4}
         mx={2}
         shadow={"2xl"}
-        disabled={isBounded && (hasEnded|| !hasStarted)}
+        disabled={isBounded && (hasEnded || !hasStarted)}
         onClick={onOpen}
       >
         {isBounded
