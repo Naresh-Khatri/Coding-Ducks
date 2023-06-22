@@ -2,9 +2,9 @@ import { Badge, Box, Text } from "@chakra-ui/react";
 import React from "react";
 
 import ExampleTestcase from "./ExampleTestcase";
-import { Problem } from "../hooks/useProblemsData";
+import { IProblem } from "../hooks/useProblemsData";
 
-function ProblemStaement({ problem }: { problem: Problem }) {
+function ProblemStaement({ problem }: { problem: IProblem }) {
   return (
     <Box p={5} overflowY="scroll">
       {/* {JSON.stringify(problem, null, 2)} */}
@@ -13,7 +13,11 @@ function ProblemStaement({ problem }: { problem: Problem }) {
           #{problem.order}. {problem.title}
         </Text>
 
-        <Badge colorScheme={`${problem.difficulty === 'easy'? 'green': 'yellow'}`}>{problem.difficulty}</Badge>
+        <Badge
+          colorScheme={`${problem.difficulty === "easy" ? "green" : "yellow"}`}
+        >
+          {problem.difficulty}
+        </Badge>
         <Box p={5}>
           <Text
             dangerouslySetInnerHTML={{ __html: problem.description }}
