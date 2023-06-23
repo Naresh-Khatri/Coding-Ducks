@@ -19,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useState } from "react";
-import axiosInstance from "../../utils/axios";
+import axiosInstance from "../../lib/axios";
 import { useRouter } from "next/router";
 import Link from "next/link";
 

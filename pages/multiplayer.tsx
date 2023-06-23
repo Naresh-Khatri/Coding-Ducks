@@ -29,7 +29,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { userContext } from "../contexts/userContext";
 import { AddIcon } from "@chakra-ui/icons";
 import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "../utils/axios";
+import axiosInstance from "../lib/axios";
 import { User } from "../hooks/useSubmissionsData";
 import ChatMessage from "../components/ChatMessage";
 import dynamic from "next/dynamic";

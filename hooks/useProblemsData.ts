@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "../utils/axios";
+import axiosInstance from "../lib/axios";
 
 export interface IExam {
   id: number;
@@ -31,6 +31,7 @@ export interface IExamProblem {
 export interface IProblem extends IExamProblem {
   slug?: string;
   title: string;
+  frontendProblemId?: number;
   description: string;
   difficulty: "easy" | "medium" | "hard";
   status?: "" | "attempted" | "solved";

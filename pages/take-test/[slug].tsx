@@ -3,7 +3,7 @@ import { Box, Flex, Skeleton, useDisclosure, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
 import Split from "react-split";
-import axios from "../../utils/axios";
+import axios from "../../lib/axios";
 
 import ToolBar from "../../components/ToolBar";
 import CodeEditor from "../../components/CodeEditor";

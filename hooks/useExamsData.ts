@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "../utils/axios";
+import axiosInstance from "../lib/axios";
 
 export const useExamsData = () => {
   return useQuery(["exams"], async () => {

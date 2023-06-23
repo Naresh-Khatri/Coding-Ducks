@@ -27,7 +27,7 @@ import { userContext } from "../contexts/userContext";
 
 import { createAspectRatio, Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
-import axios from "../utils/axios";
+import axios from "../lib/axios";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface ProfileUpdatePayload {

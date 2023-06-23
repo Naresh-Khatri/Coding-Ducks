@@ -24,7 +24,7 @@ import { userContext } from "../contexts/userContext";
 import ThemeToggler from "../components/ThemeToggler";
 import Image from "next/image";
 
-import axios from "../utils/axios";
+import axios from "../lib/axios";
 
 export default function EditUserProfile() {
   const toast = useToast();

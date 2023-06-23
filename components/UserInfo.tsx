@@ -13,7 +13,7 @@ import {
 import Image from "next/image";
 import { useContext, useEffect, useState } from "react";
 import { userContext } from "../contexts/userContext";
-import axios from "../utils/axios";
+import axios from "../lib/axios";
 import FollowDetailsModal from "./FollowDetailsModal";
 
 function UserInfo({ viewingUser }) {

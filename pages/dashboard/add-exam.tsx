@@ -23,7 +23,7 @@ import { useToast } from "@chakra-ui/react";
 
 import "react-quill/dist/quill.snow.css";
 
-import axios from "../../utils/axios";
+import axios from "../../lib/axios";
 import { useRouter } from "next/router";
 import { createAspectRatio, Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";

@@ -13,7 +13,7 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import axios from "../../utils/axios";
+import axios from "../../lib/axios";
 import React from "react";
 import ExamCard from "../ExamCard";
 

@@ -16,7 +16,7 @@ import {
   logInWithEmailAndPassword,
   sendPasswordReset,
 } from "../firebase/firebase";
-import axios from "../utils/axios";
+import axios from "../lib/axios";
 
 interface Follower {
   fullname: string;

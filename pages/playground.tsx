@@ -25,7 +25,7 @@ import { python } from "@codemirror/lang-python";
 import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
 import NormalLayout from "../layout/NormalLayout";
-import axios from "../utils/axios";
+import axios from "../lib/axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
 import ToolBar from "../components/ToolBar";

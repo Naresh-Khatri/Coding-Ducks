@@ -24,7 +24,7 @@ import { createAspectRatio, Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 
 import { useEffect, useRef, useState } from "react";
-import axios from "../../utils/axios";
+import axios from "../../lib/axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
