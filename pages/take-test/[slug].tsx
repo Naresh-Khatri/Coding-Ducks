@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Box, Flex, Skeleton, useDisclosure, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
@@ -254,9 +254,7 @@ function TakeTest() {
 
   if (!examData || problemsDataLoading) return <div>Loading...</div>;
   return (
-    <MainLayout
-      examData={examData?.data}
-    >
+    <MainLayout examData={examData?.data}>
       {examData?.data?.warnOnBlur && <WarnOnTabLeave />}
       <Flex w={"100vw"} direction="row">
         <Flex>
@@ -310,8 +308,12 @@ function TakeTest() {
                   <Flex w={"full"}>
                     {showConsole && (
                       <Box overflow={"auto"} w={"full"}>
-                        <NewConsole output={output } onClose={() =>{ setShowConsole(false)}} />
-
+                        <NewConsole
+                          output={output}
+                          onClose={() => {
+                            setShowConsole(false);
+                          }}
+                        />
                       </Box>
                     )}
                   </Flex>
