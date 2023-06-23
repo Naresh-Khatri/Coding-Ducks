@@ -7,8 +7,6 @@ import {
   FormControl,
   FormLabel,
   Input,
-  InputGroup,
-  FormHelperText,
   Text,
   HStack,
   RadioGroup,
@@ -24,6 +22,10 @@ import {
   Select,
   Checkbox,
   VStack,
+  SimpleGrid,
+  Tag,
+  TagLabel,
+  TagCloseButton,
 } from "@chakra-ui/react";
 
 import AdminLayout from "../../layout/AdminLayout";
@@ -36,6 +38,8 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import TestCaseRow from "../../components/admin/TestCaseRow";
 import axios from "../../utils/axios";
+import { IProblemTag, useTagsData } from "../../hooks/useProblemsData";
+import { useExamData, useExamsData } from "../../hooks/useExamsData";
 
 const AceEditor = dynamic(import("react-ace"), { ssr: false });
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
@@ -45,17 +49,25 @@ const QuillNoSSRWrapper = dynamic(import("react-quill"), {
 
 const AddExam = () => {
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
   const [desc, setDesc] = useState("");
   const [order, setOrder] = useState(0);
   const [hasStarterCode, setHasStarterCode] = useState(false);
+  const [hasExam, setHasExam] = useState(false);
   const [starterCode, setStartedCode] = useState("");
   const [diffLevel, setDiffLevel] = useState("easy");
-  const [examsList, setExamsList] = useState([]);
+  const {
+    data: tagsData,
+    error: tagsError,
+    isLoading: isTagsLoading,
+  } = useTagsData();
+  const { data: examsList } = useExamsData();
   const [testCases, setTestCases] = useState([
     { id: 0, input: "", output: "", explaination: "", isPublic: false },
   ]);
 
   const selectedExam = useRef(null);
+  const [selectedTags, setSelectedTags] = useState<IProblemTag[]>([]);
 
   const router = useRouter();
 
@@ -65,15 +77,16 @@ const AddExam = () => {
       title,
       description: desc,
       difficulty: diffLevel,
-      tags: "aksdfl",
       testCases,
+      tags: selectedTags.map((tag) => tag.id),
       order,
-      examId: +selectedExam.current.value,
       starterCode,
     };
+
+    if (hasExam) payload["examId"] = +selectedExam.current.value;
+
     try {
       const res = await axios.post("/problems", payload);
-      console.log(res);
       toast({
         title: "Problem created!",
         status: "success",
@@ -94,36 +107,20 @@ const AddExam = () => {
     }
   };
 
-  const fetchExams = async () => {
-    const res = await axios.get("/exams");
-    setExamsList(res.data);
-  };
-
-  useEffect(() => {
-    fetchExams();
-  }, []);
-
   return (
     <>
       <AdminLayout>
-        <Flex
-          direction={"column"}
-          p={10}
-          w={"100%"}
-          alignItems="center"
-          overflowY="scroll"
-        >
-          <Container maxW={"8xl"} overflowY="scroll">
+        <Container maxW={"8xl"} overflowY="scroll">
+          <Stack>
             <Heading
-              w="100%"
-              textAlign={"center"}
+              textAlign={"left"}
               fontWeight={"extrabold"}
               fontSize={"4xl"}
-              mb={20}
+              m={10}
             >
               Create a problem!
             </Heading>
-            <HStack my={3}>
+            <HStack>
               <FormControl mr="5%">
                 <FormLabel htmlFor="first-name" fontWeight={"normal"}>
                   Title
@@ -136,14 +133,14 @@ const AddExam = () => {
                 />
               </FormControl>
               <FormControl mr="5%">
-                <FormLabel htmlFor="order" fontWeight={"normal"}>
-                  order
+                <FormLabel htmlFor="slug" fontWeight={"normal"}>
+                  Slug
                 </FormLabel>
                 <Input
-                  id="order"
-                  placeholder="Order"
-                  value={order}
-                  onChange={(e) => setOrder(+e.target.value)}
+                  id="slug"
+                  placeholder="Slug"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
                 />
               </FormControl>
 
@@ -183,41 +180,112 @@ const AddExam = () => {
                 />
               </Box>
             </FormControl>
-            <FormControl mt={"2%"} display="flex" alignItems="center">
-              <Checkbox
-                isChecked={hasStarterCode}
-                onChange={() => setHasStarterCode((p) => !p)}
-              />
-              <FormLabel htmlFor="email-alerts" mb="0" ml={2}>
-                has a starter code?
-              </FormLabel>
-            </FormControl>
-            {hasStarterCode && (
-              <AceEditor
-                placeholder="starter code here"
-                width="100%"
-                mode="python"
-                theme="dracula"
-                fontSize={22}
-                showPrintMargin={true}
-                showGutter={true}
-                highlightActiveLine={true}
-                value={starterCode}
-                onChange={(newValue) => setStartedCode(newValue)}
-              />
-            )}
-            <FormControl mt="2%">
-              <FormLabel htmlFor="email" fontWeight={"normal"}>
-                Select Exam
-              </FormLabel>
-              <Select ref={selectedExam}>
-                {examsList.map((exam) => (
-                  <option key={exam.id} value={exam.id}>
-                    {`${exam.title} - /exams/${exam.slug}`}
-                  </option>
+            <SimpleGrid columns={2} spacing={10} mt={"2%"}>
+              <Box>
+                <FormControl mt={"2%"} display="flex" alignItems="center">
+                  <Checkbox
+                    id="has-starter-code"
+                    isChecked={hasStarterCode}
+                    onChange={() => setHasStarterCode((p) => !p)}
+                  />
+                  <FormLabel htmlFor="has-starter-code" mb="0" ml={2}>
+                    has a starter code?
+                  </FormLabel>
+                </FormControl>
+                {hasStarterCode && (
+                  <AceEditor
+                    placeholder="starter code here"
+                    width="100%"
+                    mode="python"
+                    theme="dracula"
+                    fontSize={22}
+                    showPrintMargin={true}
+                    showGutter={true}
+                    highlightActiveLine={true}
+                    value={starterCode}
+                    onChange={(newValue) => setStartedCode(newValue)}
+                  />
+                )}
+              </Box>
+              <Box>
+                <FormControl mt={"2%"} display="flex" alignItems="center">
+                  <Checkbox
+                    id="has-exam"
+                    isChecked={hasExam}
+                    onChange={() => setHasExam((p) => !p)}
+                  />
+                  <FormLabel htmlFor="has-exam" mb="0" ml={2}>
+                    belongs to an exam?
+                  </FormLabel>
+                </FormControl>
+                {hasExam && (
+                  <HStack>
+                    <FormControl mt="2%">
+                      <FormLabel htmlFor="email" fontWeight={"normal"}>
+                        Select Exam
+                      </FormLabel>
+                      <Select ref={selectedExam}>
+                        {examsList.map((exam) => (
+                          <option key={exam.id} value={exam.id}>
+                            {`${exam.title} - /exams/${exam.slug}`}
+                          </option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormControl mt="2%">
+                      <FormLabel htmlFor="order" fontWeight={"normal"}>
+                        order
+                      </FormLabel>
+                      <Input
+                        id="order"
+                        placeholder="Order"
+                        value={order}
+                        onChange={(e) => setOrder(+e.target.value)}
+                      />
+                    </FormControl>
+                  </HStack>
+                )}
+              </Box>
+            </SimpleGrid>
+            <Box>
+              <Text fontSize={"xl"}>Tags: </Text>
+              <Flex my={2}>
+                <Text>Selected: </Text>
+                <Text ml={2} fontWeight={"bold"}>
+                  {JSON.stringify(selectedTags.map((tag) => tag.name))}
+                </Text>
+              </Flex>
+              <Flex wrap={"wrap"} justifyContent={"space-between"}>
+                {tagsData?.tags.map((tag) => (
+                  <Tag
+                    m={1}
+                    key={tag.id}
+                    size={"lg"}
+                    borderRadius="full"
+                    onClick={() => {
+                      if (selectedTags.find((sTag) => sTag.id == tag.id)) {
+                        setSelectedTags((p) =>
+                          p.filter((t) => t.id !== tag.id)
+                        );
+                      } else {
+                        setSelectedTags((p) => [...p, tag]);
+                      }
+                    }}
+                    bg={
+                      selectedTags.find((sTag) => sTag.id === tag.id)
+                        ? "green"
+                        : "gray.900"
+                    }
+                    cursor={"pointer"}
+                  >
+                    <TagLabel>{tag.name}</TagLabel>
+                    {selectedTags.find((sTag) => sTag.id === tag.id) && (
+                      <TagCloseButton />
+                    )}
+                  </Tag>
                 ))}
-              </Select>
-            </FormControl>
+              </Flex>
+            </Box>
             <Flex mt={10}>
               <TableContainer w={"100%"}>
                 <Text>Test Cases: {testCases.length}</Text>
@@ -267,8 +335,8 @@ const AddExam = () => {
                 Create
               </Button>
             </FormControl>
-          </Container>
-        </Flex>
+          </Stack>
+        </Container>
       </AdminLayout>
     </>
   );
