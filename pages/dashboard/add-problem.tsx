@@ -122,11 +122,11 @@ const AddExam = () => {
             </Heading>
             <HStack>
               <FormControl mr="5%">
-                <FormLabel htmlFor="first-name" fontWeight={"normal"}>
+                <FormLabel htmlFor="title" fontWeight={"normal"}>
                   Title
                 </FormLabel>
                 <Input
-                  id="first-name"
+                  id="title"
                   placeholder="Title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -154,12 +154,13 @@ const AddExam = () => {
             </HStack>
 
             <FormControl mt="2%">
-              <FormLabel htmlFor="email" fontWeight={"normal"}>
+              <FormLabel htmlFor="description" fontWeight={"normal"}>
                 Description
               </FormLabel>
               <Box bg="white" color={"black"}>
                 <QuillNoSSRWrapper
                   theme="snow"
+                  id="description"
                   value={desc}
                   modules={{
                     toolbar: [
