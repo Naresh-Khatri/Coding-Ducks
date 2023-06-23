@@ -1,60 +1,93 @@
 import {
   Button,
   Container,
-  Flex,
-} from '@chakra-ui/react'
-import Link from 'next/link'
-import AdminLayout from '../../layout/AdminLayout'
-import { useProblemsData } from '../../hooks/useProblemsData'
-import CustomTable from '../../components/CustomTable'
-
-
+  HStack,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  useDisclosure,
+} from "@chakra-ui/react";
+import Link from "next/link";
+import AdminLayout from "../../layout/AdminLayout";
+import { useExamProblemsData } from "../../hooks/useProblemsData";
+import CustomTable from "../../components/CustomTable";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 const COLUMNS = [
   {
-    Header: 'ID',
-    accessor: 'id',
+    Header: "ID",
+    accessor: "id",
   },
   {
-    Header: 'Exam',
-    accessor: 'examId',
-    filter: 'equals',
+    Header: "Exam",
+    accessor: "examId",
+    filter: "equals",
   },
   {
-    Header: 'Order',
-    accessor: 'order',
+    Header: "Order",
+    accessor: "order",
   },
   {
-    Header: 'Difficulty',
-    accessor: 'difficulty',
+    Header: "Difficulty",
+    accessor: "difficulty",
   },
   {
-    Header: 'Title',
-    accessor: 'title',
+    Header: "Title",
+    accessor: "title",
   },
   {
-    Header: 'Actions',
+    Header: "Actions",
   },
-]
+];
 function ProblemPage() {
   const {
     data: problemsData,
     isLoading: problemsDataIsLoading,
     error: problemsDataError,
     refetch: fetchProblems,
-  } = useProblemsData()
-  console.log(problemsData, problemsDataIsLoading, problemsDataError)
+  } = useExamProblemsData();
 
-  if (problemsDataIsLoading || !problemsData) return <div>Loading...</div>
+  const { onOpen, onClose, isOpen } = useDisclosure();
+  // console.log(problemsData, problemsDataIsLoading, problemsDataError);
+  console.log(problemsData);
+
+  if (problemsDataIsLoading || !problemsData) return <div>Loading...</div>;
 
   return (
     <AdminLayout>
-      <Container maxW='container.xl' overflowY={'scroll'}>
-        <Flex m={10} justify='space-between'>
-          <Link href='/dashboard/add-problem'>
-            <Button bg='green.400'>Add Problem</Button>
+      <Container maxW="container.xl" overflowY={"scroll"}>
+        <HStack my={10} justify="space-between">
+          <Link href="/dashboard/add-problem">
+            <Button bg="green.400">Add Problem</Button>
           </Link>
-        </Flex>
+          <Button
+            onClick={onOpen}
+            leftIcon={<FontAwesomeIcon icon={faTags as IconProp} />}
+          >
+            Edit Tags
+          </Button>
+          <Modal isOpen={isOpen} onClose={onClose}>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Modal Title</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>ksdjl</ModalBody>
+
+              <ModalFooter>
+                <Button colorScheme="blue" mr={3} onClick={onClose}>
+                  Close
+                </Button>
+                <Button variant="ghost">Secondary Action</Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+        </HStack>
         <CustomTable
           columns={COLUMNS}
           data={problemsData.problems}
@@ -65,7 +98,7 @@ function ProblemPage() {
         />
       </Container>
     </AdminLayout>
-  )
+  );
 }
 
-export default ProblemPage
+export default ProblemPage;
