@@ -11,6 +11,7 @@ import { faCode, faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
 import { Lang, Theme } from "../types";
+import { EDITOR_LANGUAGES, EDITOR_THEMES } from "../data/Editor";
 
 interface ToolBarProps {
   isLoading?: boolean;
@@ -55,21 +56,11 @@ export default function ToolBar({
           }}
           fontWeight="extrabold"
         >
-          <option style={{ color: color }} value="py">
-            Python
-          </option>
-          <option style={{ color }} value="js">
-            Javascript
-          </option>
-          <option style={{ color }} value="cpp">
-            C++
-          </option>
-          {/* <option style={{ color }} value='c'>
-            C
-          </option> */}
-          <option style={{ color }} value="java">
-            Java
-          </option>
+          {EDITOR_LANGUAGES.map((lang) => (
+            <option key={lang.value} style={{ color }} value={lang.value}>
+              {lang.label}
+            </option>
+          ))}
         </Select>
       </Box>
       <HStack>
@@ -101,39 +92,11 @@ export default function ToolBar({
           color="white"
           fontWeight={"extrabold"}
         >
-          <option style={{ color }} value="dracula">
-            Dracula
-          </option>
-          <option style={{ color }} value="monokai">
-            Monokai
-          </option>
-          <option style={{ color }} value="github">
-            Github
-          </option>
-          <option style={{ color }} value="tomorrow">
-            Tomorrow
-          </option>
-          <option style={{ color }} value="kuroir">
-            Kuroir
-          </option>
-          <option style={{ color }} value="twilight">
-            Twilight
-          </option>
-          <option style={{ color }} value="xcode">
-            xcode
-          </option>
-          <option style={{ color }} value="textmate">
-            TextMate
-          </option>
-          <option style={{ color }} value="solarized dark">
-            Solarized Dark
-          </option>
-          <option style={{ color }} value="solarized light">
-            Solarized Light
-          </option>
-          <option style={{ color }} value="terminal">
-            Terminal
-          </option>
+          {EDITOR_THEMES.map((theme) => (
+            <option key={theme.value} style={{ color }} value={theme.value}>
+              {theme.label}
+            </option>
+          ))}
         </Select>
       </HStack>
     </HStack>
