@@ -41,7 +41,7 @@ export default function ToolBar({
     if (lang) {
       setLang(lang);
     }
-  }, []);
+  }, [setLang]);
 
   return (
     <HStack p={2} w={"full"} justifyContent="space-between">
