@@ -32,20 +32,3 @@ export const useUserProgress = (username: string) => {
     }
   );
 };
-export const useLastSubmissionData = (
-  problemId: number,
-  onSuccessFn: (data: any) => void
-) => {
-  return useQuery(
-    ["lastSubmission", problemId],
-    () => axios.get(`/problems/${problemId}/getLastSubmission/`),
-    {
-      onSuccess: onSuccessFn,
-      enabled: false,
-      refetchOnWindowFocus: false,
-      refetchIntervalInBackground: false,
-      retryOnMount: false,
-      refetchOnMount: false,
-    }
-  );
-};
