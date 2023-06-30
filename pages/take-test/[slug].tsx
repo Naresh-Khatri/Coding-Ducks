@@ -7,7 +7,7 @@ import axios from "../../lib/axios";
 
 import ToolBar from "../../components/ToolBar";
 import CodeEditor from "../../components/CodeEditor";
-import ProblemStatement from "../../components/ProblemStatement";
+import ProblemStatement from "../../components/ExamProblemStatement";
 import LeftProblemsList from "../../components/LeftProblemsList";
 import MainLayout from "../../layout/MainLayout";
 import SubmissionModal from "../../components/modals/Submission";
@@ -19,7 +19,7 @@ import {
   useExamProblemsData,
   useExamSubmissionsData,
 } from "../../hooks/useExamsData";
-import { useLastSubmissionData } from "../../hooks/useUsersData";
+import { useLastSubmissionData } from "../../hooks/useSubmissionsData";
 import WarnOnTabLeave from "../../components/WarnOnTabLeave";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 
