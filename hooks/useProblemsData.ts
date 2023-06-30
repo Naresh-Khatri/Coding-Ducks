@@ -1,63 +1,28 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
+import { IExam, IExamProblem, IProblem, IProblemTag } from "../types";
 
-export interface IExam {
-  id: number;
-  slug: string;
-  isBounded?: boolean;
-  warnOnBlur?: boolean;
-  title: string;
-  active?: boolean;
-  coverImg?: string;
-  description?: string;
-  durations?: number;
-  endTime?: string;
-  marks?: number;
-  startTime?: string;
-}
-export interface IExamProblem {
-  id: number;
-  order: number;
-  difficulty: string;
-  description: string;
-  tags: string[];
-  examId: number;
-  title: string;
-  exam: IExam;
-  testCases: any;
-  starterCode?: string;
-}
-
-export interface IProblem extends IExamProblem {
-  slug?: string;
-  title: string;
-  frontendProblemId?: number;
-  description: string;
-  difficulty: "easy" | "medium" | "hard";
-  status?: "" | "attempted" | "solved";
-  acceptance?: number;
-  tags: string[];
-}
-
-const queryFn = async (): Promise<any> => {
-  const res = await axiosInstance.get("/problems");
-  const problems: IExamProblem[] = res.data;
-  const examsList: IExam[] = [];
-  problems?.forEach((problem) => {
-    if (!examsList.find((e) => e.id === problem.examId))
-      examsList.push({
-        id: problem?.examId,
-        title: problem.exam?.title,
-        slug: problem.exam?.slug,
+export const useAllProblemsData = () => {
+  return useQuery({
+    queryKey: ["problems"],
+    queryFn: async (): Promise<any> => {
+      const res = await axiosInstance.get("/problems");
+      const problems: IExamProblem[] = res.data;
+      const examsList: IExam[] = [];
+      problems?.forEach((problem) => {
+        if (!examsList.find((e) => e.id === problem.examId))
+          examsList.push({
+            id: problem?.examId,
+            title: problem.exam?.title,
+            slug: problem.exam?.slug,
+          });
       });
+      return { problems, examsList } as {
+        problems: IExamProblem[];
+        examsList: IExam[];
+      };
+    },
   });
-  return { problems, examsList } as {
-    problems: IExamProblem[];
-    examsList: IExam[];
-  };
-};
-export const useExamProblemsData = () => {
-  return useQuery({ queryKey: ["problems"], queryFn });
 };
 
 interface IProblemsQueryParams {
@@ -85,10 +50,68 @@ export const useProblemsData = (params: IProblemsQueryParams) => {
   });
 };
 
-export interface IProblemTag {
+export const useProblemData = ({ slug }: { slug: string }) => {
+  return useQuery({
+    queryKey: ["problem", slug],
+    enabled: slug != undefined,
+    queryFn: async () => {
+      const { data } = await axiosInstance.get(`/problems/slug/${slug}`);
+      const problem = data.data as IProblem;
+      return problem;
+    },
+  });
+};
+
+export interface IRatingUser {
   id: number;
-  name: string;
+  username: string;
+  photoURL?: string;
 }
+export interface IRating {
+  rating: {
+    likes: IRatingUser[];
+    dislikes: IRatingUser[];
+  };
+  userRating: "like" | "dislike" | "none" | null;
+}
+export const useProblemRatingData = ({ problemId }: { problemId: number }) => {
+  return useQuery({
+    queryKey: ["ratings", problemId],
+    queryFn: async () => {
+      console.log("fetching ratings");
+      const { data } = await axiosInstance.get(
+        `/problems/${problemId}/ratings`
+      );
+      const ratings = data.data;
+      return ratings as IRating;
+    },
+  });
+};
+
+// use onSuccess to refetch the ratings
+export const useUpdateProblemRating = ({
+  problemId,
+  action,
+  onSuccess,
+}: {
+  problemId: number;
+  action: "like" | "dislike" | "remove";
+  onSuccess?: (data: any) => void;
+}) => {
+  return useMutation({
+    mutationKey: ["updateLikeDislike", problemId, action],
+    mutationFn: async () => {
+      const payload = { problemId, action };
+      const { data } = await axiosInstance.patch(
+        `/problems/${problemId}/ratings`,
+        payload
+      );
+      return data.data;
+    },
+    onSuccess,
+  });
+};
+
 export const useTagsData = () => {
   return useQuery({
     queryKey: ["tags"],
