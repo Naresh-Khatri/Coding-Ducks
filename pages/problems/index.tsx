@@ -2,7 +2,6 @@ import {
   Avatar,
   AvatarGroup,
   Box,
-  Button,
   Container,
   Flex,
   HStack,
@@ -21,7 +20,7 @@ import {
 } from "@chakra-ui/react";
 import NormalLayout from "../../layout/NormalLayout";
 import Link from "next/link";
-import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import { useProblemsData } from "../../hooks/useProblemsData";
 
@@ -52,12 +51,12 @@ function ProblemsPage() {
   return (
     <NormalLayout>
       <Container maxW="container.xl">
-        <Box
+        {/* <Box
           h={200}
           borderRadius={"20px"}
           my={10}
           border={"5px solid gray"}
-        ></Box>
+        ></Box> */}
         {isLoading ? (
           <Stack>
             {[1, 2, 3, 4, 5].map((key) => (
@@ -66,7 +65,7 @@ function ProblemsPage() {
           </Stack>
         ) : (
           <TableContainer>
-            <Table variant="striped" size={"sm"}>
+            <Table variant="striped" size={"md"}>
               <Thead>
                 <Tr>
                   <Th>Status</Th>
@@ -80,20 +79,20 @@ function ProblemsPage() {
                 {problemsList.map((problem) => (
                   <Tr key={problem.id}>
                     <Td>
-                      {problem.status === "attempted"
-                        ? "A"
-                        : problem.status === "solved"
-                        ? "S"
-                        : "X"}
+                      {problem.status === "attempted" ? (
+                        "A"
+                      ) : problem.status === "solved" ? (
+                        <CheckIcon color="green.500" />
+                      ) : null}
                     </Td>
                     <Td>
                       <Link href={`/problems/${problem.slug}`}>
                         <Text>
-                          {problem.id}. {problem.title}
+                          {problem.frontendProblemId}. {problem.title}
                         </Text>
                       </Link>
                     </Td>
-                    <Td>{problem.acceptance || "-"}</Td>
+                    <Td>{problem.accuracy || "-"}</Td>
                     <Td>
                       <Text
                         fontWeight={"bold"}
@@ -108,37 +107,27 @@ function ProblemsPage() {
                         {problem.difficulty}
                       </Text>
                     </Td>
-                    <Td>
-                      <AvatarGroup size="md" max={2}>
-                        <Avatar
-                          size={"xs"}
-                          name="Ryan Florence"
-                          src="https://bit.ly/ryan-florence"
-                        />
-                        <Avatar
-                          size={"xs"}
-                          name="Segun Adebayo"
-                          src="https://bit.ly/sage-adebayo"
-                        />
-                        <Avatar
-                          size={"xs"}
-                          name="Kent Dodds"
-                          src="https://bit.ly/kent-c-dodds"
-                        />
-                        <Avatar
-                          size={"xs"}
-                          name="Prosper Otemuyiwa"
-                          src="https://bit.ly/prosper-baba"
-                        />
-                        <Avatar
-                          size={"xs"}
-                          name="Christian Nwamba"
-                          src="https://bit.ly/code-beast"
-                        />
+                    <Td m={0} p={0} pl={5}>
+                      <AvatarGroup size="md" max={2} h={"50px"}>
+                        {problem.submissions.map((submission, idx) => (
+                          <Link
+                            key={idx}
+                            href={`/users/${submission.User.username}`}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              cursor: "pointer",
+                              zIndex: 1,
+                            }}
+                          >
+                            <Avatar
+                              size={"md"}
+                              name={submission.User.fullname}
+                              src={submission.User.photoURL}
+                            />
+                          </Link>
+                        ))}
                       </AvatarGroup>
-                      {/* <Link href={`/problems/${problem.slug}`}>
-                        <Button colorScheme="purple">solve</Button>
-                      </Link> */}
                     </Td>
                   </Tr>
                 ))}
