@@ -29,7 +29,7 @@ function UsersPage() {
           {isLoading &&
             [...Array(20)].map((_, num) => <LoadingUserCard key={num} />)}
           {data &&
-            data.data.map((user) => <UserCard key={user.id} user={user} />)}
+            data?.data?.map((user) => <UserCard key={user.id} user={user} />)}
         </SimpleGrid>
       </Container>
     </NormalLayout>
