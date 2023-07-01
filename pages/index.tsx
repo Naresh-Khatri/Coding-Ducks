@@ -7,11 +7,7 @@ import {
   Stack,
   Icon,
   useColorModeValue,
-  useColorMode,
   createIcon,
-  Flex,
-  HStack,
-  IconButton,
 } from "@chakra-ui/react";
 
 import NormalLayout from "../layout/NormalLayout";
