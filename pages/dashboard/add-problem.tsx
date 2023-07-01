@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -21,40 +21,71 @@ import {
   Container,
   Select,
   Checkbox,
-  VStack,
   SimpleGrid,
   Tag,
   TagLabel,
   TagCloseButton,
+  Tabs,
+  TabList,
+  TabPanels,
+  TabPanel,
+  Tab,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
 
 import AdminLayout from "../../layout/AdminLayout";
-
-import { useToast } from "@chakra-ui/react";
 
 import "react-quill/dist/quill.snow.css";
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import TestCaseRow from "../../components/admin/TestCaseRow";
-import axios from "../../utils/axios";
-import { IProblemTag, useTagsData } from "../../hooks/useProblemsData";
-import { useExamData, useExamsData } from "../../hooks/useExamsData";
+import axios from "../../lib/axios";
+import { useTagsData } from "../../hooks/useProblemsData";
+import { useExamsData } from "../../hooks/useExamsData";
+import { IProblemTag, IStarterCode } from "../../types";
+import { INITIAL_STARTER_CODES } from "../../data/starterCodeData";
 
-const AceEditor = dynamic(import("react-ace"), { ssr: false });
+const StarterCodeEditor = dynamic(
+  import("../../components/StarterCodeEditor"),
+  { ssr: false }
+);
+
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
 });
 
-const AddExam = () => {
+type IAction = { type: string; payload: IStarterCode };
+
+const starterCodesReducer = (
+  state: IStarterCode[],
+  action: IAction
+): IStarterCode[] => {
+  if (action.type === "INPUT") {
+    return state.map((starterCode) =>
+      starterCode.lang === action.payload.lang ? action.payload : starterCode
+    );
+  }
+  return state;
+};
+
+const AddProblemPage = () => {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [desc, setDesc] = useState("");
   const [order, setOrder] = useState(0);
-  const [hasStarterCode, setHasStarterCode] = useState(false);
+  const [frontendProblemId, setFrontendProblemId] = useState(0);
+  const [hasStarterCodes, setHasStarterCodes] = useState(true);
   const [hasExam, setHasExam] = useState(false);
-  const [starterCode, setStartedCode] = useState("");
+
+  const [starterCodes, dispatchStarterCodes] = useReducer(
+    starterCodesReducer,
+    INITIAL_STARTER_CODES
+  );
+
   const [diffLevel, setDiffLevel] = useState("easy");
   const {
     data: tagsData,
@@ -78,9 +109,11 @@ const AddExam = () => {
       description: desc,
       difficulty: diffLevel,
       testCases,
+      slug,
+      frontendProblemId,
       tags: selectedTags.map((tag) => tag.id),
       order,
-      starterCode,
+      starterCodes,
     };
 
     if (hasExam) payload["examId"] = +selectedExam.current.value;
@@ -94,7 +127,7 @@ const AddExam = () => {
         duration: 9000,
         isClosable: true,
       });
-      router.push("/dashboard/problems");
+      // router.push("/dashboard/problems");
     } catch (error) {
       toast({
         title: "Please check the fields!",
@@ -143,6 +176,19 @@ const AddExam = () => {
                   onChange={(e) => setSlug(e.target.value)}
                 />
               </FormControl>
+              {!hasExam && (
+                <FormControl mr="5%">
+                  <FormLabel htmlFor="problem-id" fontWeight={"normal"}>
+                    Frontend Problem ID
+                  </FormLabel>
+                  <Input
+                    id="problem-id"
+                    placeholder="problem id"
+                    value={frontendProblemId}
+                    onChange={(e) => setFrontendProblemId(+e.target.value)}
+                  />
+                </FormControl>
+              )}
 
               <RadioGroup onChange={setDiffLevel} value={diffLevel}>
                 <Stack direction="row">
@@ -181,34 +227,57 @@ const AddExam = () => {
                 />
               </Box>
             </FormControl>
-            <SimpleGrid columns={2} spacing={10} mt={"2%"}>
-              <Box>
+            <Grid templateColumns={"repeat(3, 1fr)"} mt={"2%"} w={"%"}>
+              <GridItem colSpan={2}>
                 <FormControl mt={"2%"} display="flex" alignItems="center">
                   <Checkbox
                     id="has-starter-code"
-                    isChecked={hasStarterCode}
-                    onChange={() => setHasStarterCode((p) => !p)}
+                    isChecked={hasStarterCodes}
+                    onChange={() => setHasStarterCodes((p) => !p)}
                   />
                   <FormLabel htmlFor="has-starter-code" mb="0" ml={2}>
                     has a starter code?
                   </FormLabel>
                 </FormControl>
-                {hasStarterCode && (
-                  <AceEditor
-                    placeholder="starter code here"
-                    width="100%"
-                    mode="python"
-                    theme="dracula"
-                    fontSize={22}
-                    showPrintMargin={true}
-                    showGutter={true}
-                    highlightActiveLine={true}
-                    value={starterCode}
-                    onChange={(newValue) => setStartedCode(newValue)}
-                  />
+                {hasStarterCodes && (
+                  <>
+                    <Tabs>
+                      <TabList>
+                        {INITIAL_STARTER_CODES.map((initCode) => (
+                          <Tab key={initCode.lang}>{initCode.langLabel}</Tab>
+                        ))}
+                      </TabList>
+                      <TabPanels>
+                        {INITIAL_STARTER_CODES.map((initCode) => (
+                          <TabPanel key={initCode.lang}>
+                            <StarterCodeEditor
+                              theme="dracula"
+                              fontSize={18}
+                              lang={initCode.lang}
+                              code={
+                                starterCodes.find(
+                                  (sc) => sc.lang === initCode.lang
+                                )?.code || ""
+                              }
+                              setCode={(newCode) => {
+                                dispatchStarterCodes({
+                                  type: "INPUT",
+                                  payload: {
+                                    langLabel: initCode.langLabel,
+                                    lang: initCode.lang,
+                                    code: newCode,
+                                  },
+                                });
+                              }}
+                            />
+                          </TabPanel>
+                        ))}
+                      </TabPanels>
+                    </Tabs>
+                  </>
                 )}
-              </Box>
-              <Box>
+              </GridItem>
+              <GridItem colSpan={1}>
                 <FormControl mt={"2%"} display="flex" alignItems="center">
                   <Checkbox
                     id="has-exam"
@@ -246,8 +315,8 @@ const AddExam = () => {
                     </FormControl>
                   </HStack>
                 )}
-              </Box>
-            </SimpleGrid>
+              </GridItem>
+            </Grid>
             <Box>
               <Text fontSize={"xl"}>Tags: </Text>
               <Flex my={2}>
@@ -343,4 +412,4 @@ const AddExam = () => {
   );
 };
 
-export default AddExam;
+export default AddProblemPage;
