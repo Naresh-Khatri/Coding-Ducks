@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import AdminLayout from "../../layout/AdminLayout";
-import { useExamProblemsData } from "../../hooks/useProblemsData";
+import { useAllProblemsData } from "../../hooks/useProblemsData";
 import CustomTable from "../../components/CustomTable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
@@ -25,6 +25,18 @@ const COLUMNS = [
     accessor: "id",
   },
   {
+    Header: "Frontend ID",
+    accessor: "frontendProblemId",
+  },
+  {
+    Header: "Title",
+    accessor: "title",
+  },
+  {
+    Header: "Difficulty",
+    accessor: "difficulty",
+  },
+  {
     Header: "Exam",
     accessor: "examId",
     filter: "equals",
@@ -32,14 +44,6 @@ const COLUMNS = [
   {
     Header: "Order",
     accessor: "order",
-  },
-  {
-    Header: "Difficulty",
-    accessor: "difficulty",
-  },
-  {
-    Header: "Title",
-    accessor: "title",
   },
   {
     Header: "Actions",
@@ -51,10 +55,9 @@ function ProblemPage() {
     isLoading: problemsDataIsLoading,
     error: problemsDataError,
     refetch: fetchProblems,
-  } = useExamProblemsData();
+  } = useAllProblemsData();
 
   const { onOpen, onClose, isOpen } = useDisclosure();
-  // console.log(problemsData, problemsDataIsLoading, problemsDataError);
   console.log(problemsData);
 
   if (problemsDataIsLoading || !problemsData) return <div>Loading...</div>;
@@ -77,7 +80,7 @@ function ProblemPage() {
             <ModalContent>
               <ModalHeader>Modal Title</ModalHeader>
               <ModalCloseButton />
-              <ModalBody>ksdjl</ModalBody>
+              <ModalBody></ModalBody>
 
               <ModalFooter>
                 <Button colorScheme="blue" mr={3} onClick={onClose}>
