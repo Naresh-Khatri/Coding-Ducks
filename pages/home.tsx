@@ -52,36 +52,7 @@ export default function HomePage() {
               Welcome Back {user.fullname}!
             </Text>
           </Heading>
-          {/* <Tabs m={10} variant="solid-rounded">
-            <TabList style={{ display: "flex", justifyContent: "center" }}>
-              <Tab>Available</Tab>
-              <Tab>Upcoming </Tab>
-            </TabList>
-            <TabPanels>
-              <TabPanel>
-                <SimpleGrid
-                  columns={[1, 2, 3]}
-                  spacing={10}
-                  placeItems="center"
-                >
-                  {examsDataLoading &&
-                    [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}
-                  {availableExams &&
-                    availableExams.map((exam) => (
-                      <ExamCard key={exam.id} examData={exam} />
-                    ))}
-                </SimpleGrid>
-              </TabPanel>
-              <TabPanel>
-                {examsDataLoading &&
-                  [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}
-                {upcomingExams &&
-                  upcomingExams.map((exam) => (
-                    <ExamCard key={exam.id} examData={exam} />
-                  ))}
-              </TabPanel>
-            </TabPanels>
-          </Tabs> */}
+       
           <SimpleGrid columns={[1, 2, 3]} spacing={10} placeItems="center">
             {examsDataLoading &&
               [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}
