@@ -19,11 +19,11 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import React from "react";
 import { useTable, useFilters, useGlobalFilter, useSortBy } from "react-table";
 import ProblemRow from "./admin/ProblemRow";
-import { IExam, IExamProblem } from "../hooks/useProblemsData";
+import { IExam, IExamProblem } from "../types";
 import ExamRow from "./admin/ExamRow";
+import { useState } from "react";
 
 interface CustomTableProps {
   columns: object[];
@@ -60,7 +60,7 @@ function CustomTable({
     useSortBy
   );
 
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleOnSearchChange = (e) => {
     const search = e.target.value;
