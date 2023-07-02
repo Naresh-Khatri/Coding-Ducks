@@ -1,34 +1,57 @@
-import { Badge, Box, Text } from "@chakra-ui/react";
+import { Box, Flex, HStack, Stack, Text, Tooltip } from "@chakra-ui/react";
 import React from "react";
 
 import ExampleTestcase from "./ExampleTestcase";
-import { IProblem } from "../hooks/useProblemsData";
+import DiffBadge from "./problem/DiffBadge";
+import LikeDislikeButtons from "./problem/LikeDislikeButtons";
+import { IProblem } from "../types";
+import { InfoIcon } from "@chakra-ui/icons";
 
-function ProblemStaement({ problem }: { problem: IProblem }) {
+function ProblemStatement({ problem }: { problem: IProblem }) {
   return (
-    <Box p={5} overflowY="scroll">
-      {/* {JSON.stringify(problem, null, 2)} */}
+    <Box p={5} overflowY="auto">
       <Box>
         <Text fontWeight={"extrabold"} fontSize="4xl">
-          #{problem.order}. {problem.title}
+          #{problem.frontendProblemId}. {problem.title}
         </Text>
-
-        <Badge
-          colorScheme={`${problem.difficulty === "easy" ? "green" : "yellow"}`}
-        >
-          {problem.difficulty}
-        </Badge>
+        <Flex justifyContent={"space-between"}>
+          <HStack>
+            <DiffBadge difficulty={problem.difficulty} size="lg" />
+            <LikeDislikeButtons problemId={problem.id} />
+          </HStack>
+          <Stack alignItems={"end"}>
+            <HStack>
+              <Text fontSize={"sm"}>Accuracy: </Text>
+              <Text fontWeight={"bold"} fontSize={"sm"}>
+                {problem.accuracy.toFixed(1)}%
+              </Text>
+              <Tooltip label="How many submissions were correct">
+                <InfoIcon />
+              </Tooltip>
+            </HStack>
+            <HStack align={"center"}>
+              <Text fontSize={"sm"}>Submissions:</Text>
+              <Text fontWeight={"bold"} fontSize={"sm"}>
+                {" "}
+                {problem.submissionCount}
+              </Text>
+              <Tooltip label="Number of submission for this problem">
+                <InfoIcon />
+              </Tooltip>
+            </HStack>
+          </Stack>
+        </Flex>
         <Box p={5}>
           <Text
             dangerouslySetInnerHTML={{ __html: problem.description }}
-            fontSize="xl"
+            fontSize="lg"
           ></Text>
         </Box>
         {problem.testCases.map((testCase, index) => (
           <Box key={index}>
             {testCase.isPublic && (
               <>
-                <Text fontSize={"30px"} mt={20}>
+                <Text fontSize={"2xl"} fontWeight={"extrabold"} mt={20}>
                   Test Case: {index + 1}
                 </Text>
                 <ExampleTestcase testCase={testCase} />
@@ -41,4 +64,4 @@ function ProblemStaement({ problem }: { problem: IProblem }) {
   );
 }
 
-export default ProblemStaement;
+export default ProblemStatement;
