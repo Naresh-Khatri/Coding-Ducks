@@ -38,10 +38,8 @@ export default function ToolBar({
   };
   useEffect(() => {
     const lang = localStorage.getItem("lang") as Lang;
-    if (lang) {
-      setLang(lang);
-    }
-  }, [setLang]);
+    if (lang) setLang(lang);
+  }, []);
 
   return (
     <HStack p={2} w={"full"} justifyContent="space-between">
