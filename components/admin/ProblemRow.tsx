@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import ProblemDeleteModal from "./ProblemDeleteModal";
 import ProblemEditor from "./ProblemEditor";
-import { IExam, IProblem } from "../../hooks/useProblemsData";
+import { IExam, IProblem } from "../../types";
 
 function ProblemRow({
   problem,
@@ -23,8 +23,17 @@ function ProblemRow({
   fetchProblems: () => void;
   examsList: IExam[];
 }) {
-  const { id, exam, examId, order, difficulty, title, description, tags } =
-    problem;
+  const {
+    id,
+    exam,
+    examId,
+    order,
+    frontendProblemId,
+    difficulty,
+    title,
+    description,
+    tags,
+  } = problem;
   const {
     onOpen: onEditOpen,
     onClose: onEditClose,
@@ -40,10 +49,11 @@ function ProblemRow({
   return (
     <>
       <Td>{id}</Td>
-      <Td>{examId ? `${examId}. ${exam?.title}` : <Badge>Na</Badge>}</Td>
-      <Td>{order}</Td>
-      <Td>{difficulty}</Td>
+      <Td w={"30px"}>{frontendProblemId}</Td>
       <Td>{title}</Td>
+      <Td w={"30px"}>{difficulty}</Td>
+      <Td>{examId ? `${examId}. ${exam?.title}` : <Badge>Na</Badge>}</Td>
+      <Td>{examId ? `${order}` : <Badge>Na</Badge>}</Td>
       <Td>
         <HStack>
           <IconButton
