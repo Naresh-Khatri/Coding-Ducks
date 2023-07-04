@@ -10,10 +10,10 @@ import { faEye } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Image from 'next/image'
 import React from 'react'
-import { Submission } from '../../hooks/useSubmissionsData'
 import SubmissionViewerModal from './SubmissionViewerModal'
+import { ISubmission } from '../../types'
 
-function SubmissionRow({ submission }: { submission: Submission }) {
+function SubmissionRow({ submission }: { submission: ISubmission }) {
   const dateTime = new Date(submission.timestamp).toLocaleString().split(',')
   const time = `${dateTime[1].split(':')[0]}:${dateTime[1].split(':')[1]}`
   const date = `${dateTime[0]}`
