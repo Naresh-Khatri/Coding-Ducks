@@ -117,3 +117,18 @@ code {
 .ace_cursor_color_4::before {
   background: #18b96e;
 }
+
+.ace-error-highlight {
+  background: rgba(255, 50, 50, 0.2);
+  position: absolute;
+  width: 100% !important;
+  left: 0 !important;
+}
+
+.ace-startercode-highlight {
+  /* background: rgba(255, 255, 255, 0.1); */
+  background: #8885;
+  position: absolute;
+  width: 100% !important;
+  left: 0 !important;
+}
