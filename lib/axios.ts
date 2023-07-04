@@ -12,7 +12,6 @@ const axiosInstance = axios.create({
     (response) => {
       const res = JSON.parse(response);
       if (res.code == 401 && typeof window !== "undefined") {
-        auth.signOut();
         window.location.href = "/login";
       }
       return res;
@@ -23,6 +22,10 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
+      // wait for 1 second if user is not found on reload
+      if (!auth?.currentUser) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
       const token = await auth?.currentUser?.getIdToken();
       if (token) config.headers["Authorization"] = `Bearer ${token}`;
       return config;
