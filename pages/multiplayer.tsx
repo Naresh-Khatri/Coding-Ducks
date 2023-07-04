@@ -1,8 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import {
-  Avatar,
-  AvatarBadge,
   Box,
   Button,
   Container,
@@ -30,45 +28,18 @@ import { userContext } from "../contexts/userContext";
 import { AddIcon } from "@chakra-ui/icons";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
-import { User } from "../hooks/useSubmissionsData";
 import ChatMessage from "../components/ChatMessage";
 import dynamic from "next/dynamic";
-import { Cursor } from "../components/CustomAce";
 import ConnectedUsers from "../components/multiplayer/ConnectedUsers";
 import LanguageSelector from "../components/multiplayer/LanguageSelector";
-
-interface message {
-  userId: number;
-  username: string;
-  text: string;
-  time?: string;
-  roomId: string;
-  photoURL: string;
-}
-interface Room {
-  clients: User[];
-  cursors: Cursor[];
-  msgsList: message[];
-  roomInfo: {
-    id: string;
-    isPublic: boolean;
-    name: string;
-    lang: string;
-    owner: User;
-    ownerId: number;
-    content: string;
-  };
-}
-interface Result {
-  stdout: string;
-  stderr: string;
-  code?: string;
-  exitCode: number;
-  memoryUsage: number;
-  cpuUsage: number;
-  signal: string;
-  errorType?: "compile-time" | "run-time" | "pre-compile-time" | "run-timeout";
-}
+import {
+  IChatMessage,
+  ICursor,
+  IDefaultResult,
+  IRoom,
+  IRoomInfo,
+  IUser,
+} from "../types";
 
 const CustomAce = dynamic(() => import("../components/CustomAce"), {
   ssr: false,
@@ -82,14 +53,14 @@ function TestPage() {
   const [showChat, setShowChat] = useState(true);
   const [socket, setSocket] = useState(null);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
-  const [room, setRoom] = useState<Room>(null);
+  const [room, setRoom] = useState<IRoom>(null);
   const [code, setCode] = useState("");
   const [roomname, setRoomname] = useState("");
 
-  const [msgsList, setMsgsList] = useState<message[]>([]);
-  const [cursors, setCursors] = useState<Map<string, Cursor>>(new Map());
+  const [msgsList, setMsgsList] = useState<IChatMessage[]>([]);
+  const [cursors, setCursors] = useState<Map<string, ICursor>>(new Map());
 
-  const [consoleInfo, setConsoleInfo] = useState<Result>(null);
+  const [consoleInfo, setConsoleInfo] = useState<IDefaultResult>(null);
   const [resultIsLoading, setResultIsLoading] = useState(false);
 
   const toast = useToast();
