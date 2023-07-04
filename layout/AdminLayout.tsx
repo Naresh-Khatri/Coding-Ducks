@@ -64,7 +64,9 @@ function AdminLayout({ children }) {
           width={"350px"}
           h="100%"
           bg={"gray.900"}
-          p={10}
+          py={10}
+          px={5}
+          w={"250px"}
         >
           <Link href={"/dashboard"}>
             <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
