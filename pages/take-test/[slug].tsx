@@ -22,28 +22,7 @@ import {
 import { useLastSubmissionData } from "../../hooks/useSubmissionsData";
 import WarnOnTabLeave from "../../components/WarnOnTabLeave";
 import ConfirmModal from "../../components/modals/ConfirmModal";
-
-interface Output {
-  isCorrect: boolean;
-  passedCount: number;
-  totalCount: number;
-  results: {
-    errorMessage?: string;
-    errorOccured?: boolean;
-    actualOutput?: string;
-    output?: string;
-    isCorrect?: boolean;
-    input?: string;
-    result?: {
-      cpuUsage: number;
-      memoryUsage: number;
-      exitCode: number;
-      signal: any;
-      stderr: string;
-      stdout: string;
-    };
-  };
-}
+import { Output } from "../../types";
 
 function TakeTest() {
   const router = useRouter();
