@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  CloseButton,
   Flex,
   HStack,
   IconButton,
@@ -12,8 +11,16 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
+import { Output } from "../types";
+import { CloseIcon } from "@chakra-ui/icons";
+import { errorType2Label } from "../lib/utils";
 
-function NewConsole({ output, onClose }) {
+interface NewConsoleProps {
+  output: Output;
+  onClose: () => void;
+}
+
+function NewConsole({ output, onClose }: NewConsoleProps) {
   const [selectedCase, setSelectedCase] = useState(0);
   if (!output?.results) return null;
 
@@ -33,11 +40,11 @@ function NewConsole({ output, onClose }) {
       <Box w={"100%"} p={5}>
         <HStack justifyContent={"space-between"}>
           <Text color={"red.400"} fontWeight="extrabold" fontSize={"xl"}>
-            Compilation Error
+            {errorType2Label[output.results[0].errorType]}
           </Text>
           <IconButton
             aria-label="close"
-            icon={<CloseButton />}
+            icon={<CloseIcon />}
             onClick={onClose}
           />
         </HStack>
@@ -69,14 +76,14 @@ function NewConsole({ output, onClose }) {
             fontWeight="extrabold"
             fontSize={"xl"}
           >
-            {output.isCorrect ? "Accepted!" : "Wrong Answer"}
+            {output.isCorrect ? "Accepted!" : "Wrong Output!"}
           </Text>
           <HStack>
             <Text fontSize={"md"}>Runtime: {cpuUsage.toFixed(1)} ms</Text>{" "}
             <Text fontSize={"md"}> Memory: {memoryUsage.toFixed(2)} MB</Text>
             <IconButton
               aria-label="close"
-              icon={<CloseButton />}
+              icon={<CloseIcon />}
               onClick={onClose}
             />
           </HStack>
@@ -89,7 +96,7 @@ function NewConsole({ output, onClose }) {
             bg={selectedCase == i ? "gray.600" : ""}
             // border={selectedCase == i ? "2px solid white" : ""}
             onClick={() => setSelectedCase(i)}
-            disabled={res.isHidden}
+            isDisabled={res.isPublic}
           >
             <Box
               bg={res.isCorrect ? "green.300" : "red.400"}
@@ -98,7 +105,7 @@ function NewConsole({ output, onClose }) {
               h={2}
               borderRadius={"50%"}
             ></Box>
-            {res.isHidden && (
+            {res.isPublic && (
               <>
                 <Box
                   bg={res.isCorrect ? "green.300" : "red.400"}
