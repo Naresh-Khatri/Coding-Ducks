@@ -152,3 +152,12 @@ export interface IStarterCode {
   langLabel: string;
   problemId?: number;
 }
+
+export interface IChatMessage {
+  userId: number;
+  username: string;
+  text: string;
+  time?: string;
+  roomId: string;
+  photoURL: string;
+}
