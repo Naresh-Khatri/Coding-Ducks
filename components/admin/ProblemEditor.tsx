@@ -18,8 +18,16 @@ import {
   RadioGroup,
   Select,
   Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
   Table,
   TableContainer,
+  Tabs,
+  Tag,
+  TagCloseButton,
+  TagLabel,
   Tbody,
   Text,
   Th,
@@ -29,17 +37,36 @@ import {
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import "react-advanced-cropper/dist/style.css";
 
-import { useEffect, useState } from "react";
-import axios from "../../utils/axios";
+import { useEffect, useReducer, useRef, useState } from "react";
+import axios from "../../lib/axios";
 import TestCaseRow from "./TestCaseRow";
-import { IProblem } from "../../hooks/useProblemsData";
-const AceEditor = dynamic(import("react-ace"), { ssr: false });
+import { useTagsData } from "../../hooks/useProblemsData";
+import { IProblem, IStarterCode } from "../../types";
+import { INITIAL_STARTER_CODES } from "../../data/starterCodeData";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
 });
+const StarterCodeEditor = dynamic(
+  import("../../components/StarterCodeEditor"),
+  { ssr: false }
+);
+type IAction = { type: string; payload: IStarterCode };
+
+const starterCodesReducer = (
+  state: IStarterCode[],
+  action: IAction
+): IStarterCode[] => {
+  if (action.type === "INPUT") {
+    return state.map((starterCode) =>
+      starterCode.lang === action.payload.lang
+        ? { ...starterCode, code: action.payload.code }
+        : starterCode
+    );
+  }
+  return state;
+};
 
 function ProblemEditor({
   isOpen,
@@ -56,39 +83,70 @@ function ProblemEditor({
     order,
     testCases,
     starterCode,
+    starterCodes,
+    slug,
+    frontendProblemId,
+    tags,
   } = problemData as IProblem;
-  const [newOrder, setNewOrder] = useState(order);
-  const [newTitle, setNewTitle] = useState(title);
-  const [newDifficulty, setNewDifficulty] = useState(difficulty);
-  const [newDescription, setNewDescription] = useState(
-    description.replace(/\\n/g, " ")
+  const [newOrder, setNewOrder] = useState<number>();
+  const [newTitle, setNewTitle] = useState<string>();
+  const [newSlug, setNewSlug] = useState<string>();
+  const [newFrontendProblemId, setNewFrontendProblemId] = useState<number>();
+  const [newHasExam, setNewHasExam] = useState<boolean>();
+  const [newDifficulty, setNewDifficulty] = useState<string>();
+  const [newDescription, setNewDescription] = useState<string>();
+  const [newTestCases, setNewTestCases] = useState<any>();
+  const [newHasStarterCode, setNewHasStarterCode] = useState<boolean>(
+    // starterCodes.length > 0
+    true
   );
-  const [newTestCases, setNewTestCases] = useState(testCases);
-  const [newHasStarterCode, setNewHasStarterCode] = useState(!!starterCode);
-  const [newStarterCode, setNewStartedCode] = useState(starterCode);
+  const [newStarterCodes, dispatchStarterCodes] = useReducer(
+    starterCodesReducer,
+    starterCodes
+  );
+  if (frontendProblemId === 6) {
+  }
 
-  const [selectedExam, setSelectedExam] = useState(examId);
+  // const [newStarterCode, setNewStartedCode] = useState(starterCode);
+  const [newSelectedTags, setNewSelectedTags] = useState([]);
+
+  const selectedExamRef = useRef(null);
+
   const toast = useToast();
+  const {
+    data: tagsData,
+    error: tagsError,
+    isLoading: isTagsLoading,
+  } = useTagsData();
 
   useEffect(() => {
     setNewOrder(order);
     setNewTitle(title);
+    setNewSlug(slug);
     setNewDifficulty(difficulty);
-    setNewDescription(description.replace(/\\n/g, " "));
+    setNewDescription(description.replace(/\\n/g, " ") || "");
     setNewTestCases(testCases);
-    setSelectedExam(examId);
+    setNewFrontendProblemId(frontendProblemId || -1);
+    setNewSelectedTags(tags);
+    setNewHasExam(!!examId);
+    setNewHasStarterCode(starterCodes.length > 0);
   }, [problemData]);
 
   const updateProblem = async () => {
     const payload = {
-      order: +newOrder,
       title: newTitle,
       description: newDescription,
       difficulty: newDifficulty,
       testCases: newTestCases,
-      starterCode: newStarterCode,
-      examId: selectedExam,
+      slug: newSlug,
+      frontendProblemId: newFrontendProblemId,
+      tags: newSelectedTags.map((tag) => tag.id),
+      order: +newOrder,
+      starterCodes: newStarterCodes,
     };
+    if (newHasExam) {
+      payload["examId"] = +selectedExamRef.current.value;
+    }
     try {
       const res = await axios.patch(`/problems/${problemData.id}`, payload);
       toast({
@@ -129,17 +187,26 @@ function ProblemEditor({
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="order">
-                Order (This helps sort the problems)
-              </FormLabel>
+              <FormLabel htmlFor="slug">Slug</FormLabel>
               <Input
-                id="order"
-                placeholder="order"
-                value={newOrder}
-                type="number"
-                onChange={(e) => setNewOrder(+e.target.value)}
+                id="slu"
+                placeholder="Slug"
+                value={newSlug}
+                onChange={(e) => setNewSlug(e.target.value)}
               />
             </FormControl>
+            {!newHasExam && (
+              <FormControl>
+                <FormLabel htmlFor="problem-id">Frontend Problem Id</FormLabel>
+                <Input
+                  id="problem-id"
+                  placeholder="frontend problem id"
+                  value={newFrontendProblemId}
+                  type="number"
+                  onChange={(e) => setNewFrontendProblemId(+e.target.value)}
+                />
+              </FormControl>
+            )}
             <RadioGroup onChange={setNewDifficulty} value={newDifficulty}>
               <Stack direction="row">
                 <Radio value="easy">Easy</Radio>
@@ -176,44 +243,131 @@ function ProblemEditor({
             </Box>
           </FormControl>
 
-          <FormControl display="flex" alignItems="center">
-            <FormLabel htmlFor="email-alerts" mb="0">
-              Has a starter code?
-            </FormLabel>
-            <Checkbox
-              isChecked={newHasStarterCode}
-              onChange={() => setNewHasStarterCode((p) => !p)}
-            />
-          </FormControl>
-          {newHasStarterCode && (
-            <AceEditor
-              width="100%"
-              placeholder="starter code here"
-              mode="python"
-              theme="dracula"
-              fontSize={22}
-              showPrintMargin={true}
-              showGutter={true}
-              highlightActiveLine={true}
-              value={newStarterCode}
-              onChange={(newValue) => setNewStartedCode(newValue)}
-            />
-          )}
-          <FormControl mt="2%">
-            <FormLabel htmlFor="email" fontWeight={"normal"}>
-              Select Exam
-            </FormLabel>
-            <Select
-              value={selectedExam}
-              onChange={(e) => setSelectedExam(+e.target.value)}
-            >
-              {examsList.map((exam) => (
-                <option key={exam.id} value={exam.id}>
-                  {`${exam.title} - /exmas/${exam.slug}`}
-                </option>
+          <Box>
+            <FormControl mt={"2%"} display="flex" alignItems="center">
+              <Checkbox
+                id="has-starter-code"
+                isChecked={newHasStarterCode}
+                onChange={() => setNewHasStarterCode((p) => !p)}
+              />
+              <FormLabel htmlFor="has-starter-code" mb="0" ml={2}>
+                has a starter code?
+              </FormLabel>
+            </FormControl>
+            {newHasStarterCode && (
+              <Tabs variant={"line"}>
+                <TabList>
+                  {newStarterCodes.map((sc) => (
+                    <Tab key={sc.lang}>{sc.lang}</Tab>
+                  ))}
+                </TabList>
+                <TabPanels>
+                  {newStarterCodes.map((sc) => (
+                    <TabPanel key={sc.lang}>
+                      <StarterCodeEditor
+                        theme="dracula"
+                        lang={sc.lang}
+                        fontSize={18}
+                        code={
+                          newStarterCodes.find((sc2) => sc2.lang === sc.lang)
+                            ?.code || ""
+                        }
+                        setCode={(newCode) => {
+                          dispatchStarterCodes({
+                            type: "INPUT",
+                            payload: {
+                              langLabel: sc.langLabel,
+                              lang: sc.lang,
+                              code: newCode,
+                            },
+                          });
+                        }}
+                      />
+                    </TabPanel>
+                  ))}
+                </TabPanels>
+              </Tabs>
+            )}
+          </Box>
+          <Box>
+            <FormControl mt={"2%"} display="flex" alignItems="center">
+              <Checkbox
+                id="has-exam"
+                isChecked={newHasExam}
+                onChange={() => setNewHasExam((p) => !p)}
+              />
+              <FormLabel htmlFor="has-exam" mb="0" ml={2}>
+                belongs to an exam?
+              </FormLabel>
+            </FormControl>
+            {newHasExam && (
+              <HStack>
+                <FormControl mt="2%">
+                  <FormLabel htmlFor="email" fontWeight={"normal"}>
+                    Select Exam
+                  </FormLabel>
+                  <Select ref={selectedExamRef}>
+                    {examsList.map((exam) => (
+                      <option key={exam.id} value={exam.id}>
+                        {`${exam.title} - /exams/${exam.slug}`}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl mt="2%">
+                  <FormLabel htmlFor="order" fontWeight={"normal"}>
+                    order
+                  </FormLabel>
+                  <Input
+                    id="order"
+                    placeholder="Order"
+                    value={newOrder}
+                    onChange={(e) => setNewOrder(+e.target.value)}
+                  />
+                </FormControl>
+              </HStack>
+            )}
+          </Box>
+          <Box>
+            <Text fontSize={"xl"}>Tags: </Text>
+            <Flex my={2}>
+              <Text>Selected: </Text>
+              <Text ml={2} fontWeight={"bold"}>
+                {JSON.stringify(newSelectedTags.map((tag) => tag.name))}
+              </Text>
+            </Flex>
+            <Flex wrap={"wrap"} justifyContent={"space-between"}>
+              {tagsData?.tags.map((tag) => (
+                <Tag
+                  m={1}
+                  key={tag.id}
+                  size={"lg"}
+                  borderRadius="full"
+                  onClick={() => {
+                    if (newSelectedTags.find((sTag) => sTag.id == tag.id)) {
+                      setNewSelectedTags((p) =>
+                        p.filter((t) => t.id !== tag.id)
+                      );
+                    } else {
+                      setNewSelectedTags((p) => [...p, tag]);
+                    }
+                  }}
+                  bg={
+                    newSelectedTags.find((sTag) => sTag.id === tag.id)
+                      ? "green"
+                      : "gray.900"
+                  }
+                  cursor={"pointer"}
+                >
+                  <TagLabel>{tag.name}</TagLabel>
+                  {newSelectedTags.find((sTag) => sTag.id === tag.id) && (
+                    <TagCloseButton />
+                  )}
+                </Tag>
               ))}
-            </Select>
-          </FormControl>
+            </Flex>
+          </Box>
+
           <Flex mt={10}>
             <TableContainer w={"100%"}>
               <Text>Test Cases: {testCases.length}</Text>
@@ -230,7 +384,7 @@ function ProblemEditor({
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {newTestCases.map((testCase, index) => (
+                  {newTestCases?.map((testCase, index) => (
                     <TestCaseRow
                       testCases={newTestCases}
                       key={index}
