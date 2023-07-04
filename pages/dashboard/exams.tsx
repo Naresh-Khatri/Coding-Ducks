@@ -56,7 +56,7 @@ function Exams() {
         </HStack>
         <CustomTable
           columns={COLUMNS}
-          data={examsData.data}
+          data={examsData}
           refetchData={refetchExamData}
           hasSort
         />
