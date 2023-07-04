@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
+import { IExam } from "../types";
 
 export const useExamsData = () => {
   return useQuery(["exams"], async () => {
     const res = await axiosInstance.get("/exams");
-    return res.data;
+    return res.data as IExam[];
   });
 };
 
