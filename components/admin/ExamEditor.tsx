@@ -29,7 +29,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { IExam } from "../../hooks/useProblemsData";
+import { IExam } from "../../types";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -45,7 +45,19 @@ const formatDate = (date) => {
   const second = String(d.getSeconds()).padStart(2, "0");
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 };
-function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
+interface ExamEditorProps {
+  isOpen: boolean;
+  onClose: () => void;
+  examData: IExam;
+  onEditSuccess: () => void;
+}
+
+function ExamEditor({
+  isOpen,
+  onClose,
+  examData,
+  onEditSuccess,
+}: ExamEditorProps) {
   const {
     title,
     description,
@@ -66,7 +78,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     description.replace(/\\n/g, " ")
   );
   const [newStartTime, setNewStartTime] = useState(formatDate(startTime));
-  const [newEndTime, setNewEndTime] = useState(formatDate(endTime))
+  const [newEndTime, setNewEndTime] = useState(formatDate(endTime));
   const [newMarks, setNewMarks] = useState(marks || 0);
   const [newIsBounded, setNewIsBounded] = useState(isBounded);
   const [newWarnOnBlur, setNewWarnOnBlur] = useState(warnOnBlur);
@@ -118,7 +130,7 @@ function ExamEditor({ isOpen, onClose, examData, onEditSuccess }) {
     formData.append("marks", String(newMarks));
     formData.append("startTime", new Date(newStartTime).toISOString());
     formData.append("endTime", new Date(newEndTime).toISOString());
-    
+
     if (newCoverImg) {
       const data = await convertCanvasToBlob(cropperRef.current.getCanvas());
       formData.append("coverImg", data);
