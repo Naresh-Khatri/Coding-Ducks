@@ -1,0 +1,157 @@
+import {
+  Button,
+  Flex,
+  ListItem,
+  Text,
+  Tooltip,
+  UnorderedList,
+} from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faThumbsDown, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FC } from "react";
+import {
+  IRatingUser,
+  useProblemRatingData,
+  useUpdateProblemRating,
+} from "../../hooks/useProblemsData";
+import Image from "next/image";
+import Link from "next/link";
+
+interface LikeDislikeButtonsProps {
+  problemId: number;
+}
+const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
+  const {
+    data: ratingData,
+    isLoading: ratingIsLoading,
+    refetch: refetchRating,
+  } = useProblemRatingData({ problemId });
+
+  const likeMutation = useUpdateProblemRating({
+    action: "like",
+    problemId,
+    onSuccess: refetchRating,
+  });
+
+  const dislikeMutation = useUpdateProblemRating({
+    action: "dislike",
+    problemId,
+    onSuccess: refetchRating,
+  });
+
+  const removeBothMutation = useUpdateProblemRating({
+    action: "remove",
+    problemId,
+    onSuccess: refetchRating,
+  });
+
+  const handleBtnPress = (action: "like" | "dislike") => {
+    if (ratingData?.userRating === action) {
+      removeBothMutation.mutate();
+    } else {
+      if (ratingData?.userRating) {
+        removeBothMutation.mutate();
+      }
+      if (action === "like") {
+        likeMutation.mutate();
+      } else {
+        dislikeMutation.mutate();
+      }
+    }
+  };
+
+  if (!ratingData?.rating) return null;
+  return (
+    <>
+      <Tooltip
+        hasArrow
+        borderRadius={10}
+        bg={"gray.700"}
+        label={
+          ratingData.rating.likes ? (
+            <UsersList users={ratingData.rating.likes} />
+          ) : null
+        }
+        openDelay={0}
+      >
+        <Button
+          aria-label="like problem"
+          variant={"solid"}
+          rounded={"full"}
+          colorScheme={ratingData?.userRating === "like" ? "purple" : "gray"}
+          isLoading={
+            ratingIsLoading ||
+            likeMutation.isLoading ||
+            removeBothMutation.isLoading
+          }
+          onClick={() => handleBtnPress("like")}
+          leftIcon={
+            <FontAwesomeIcon height={"1.2rem"} icon={faThumbsUp as IconProp} />
+          }
+        >
+          {ratingData?.rating?.likes?.length || "0"}
+        </Button>
+      </Tooltip>
+      <Tooltip
+        hasArrow
+        borderRadius={10}
+        bg={"gray.700"}
+        label={
+          ratingData.rating.dislikes ? (
+            <UsersList users={ratingData.rating.dislikes} />
+          ) : null
+        }
+        openDelay={0}
+      >
+        <Button
+          aria-label="dislike problem"
+          variant={"solid"}
+          rounded={"full"}
+          colorScheme={ratingData?.userRating === "dislike" ? "purple" : "gray"}
+          isLoading={
+            ratingIsLoading ||
+            dislikeMutation.isLoading ||
+            removeBothMutation.isLoading
+          }
+          onClick={() => handleBtnPress("dislike")}
+          leftIcon={
+            <FontAwesomeIcon
+              height={"1.2rem"}
+              icon={faThumbsDown as IconProp}
+            />
+          }
+        >
+          {ratingData?.rating?.dislikes?.length || "0"}
+        </Button>
+      </Tooltip>
+    </>
+  );
+};
+
+const UsersList: FC<{ users: IRatingUser[] }> = ({ users }) => {
+  return (
+    <UnorderedList>
+      {users.map((user) => (
+        <ListItem key={user.id} style={{ listStyle: "none" }}>
+          <Flex alignItems="center" justifyContent="space-between" p={1}>
+            <Image
+              src={user.photoURL}
+              alt="user profile"
+              width={40}
+              height={40}
+              style={{ borderRadius: "50%" }}
+            />
+            <Link href={`/users/${user.username}`}>
+              <Text ml={4} color={"gray.50"} fontWeight={"bold"}>
+                {user.username}
+              </Text>
+            </Link>
+          </Flex>
+        </ListItem>
+      ))}
+    </UnorderedList>
+  );
+};
+
+export default LikeDislikeButtons;
