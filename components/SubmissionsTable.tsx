@@ -23,10 +23,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useTable, useFilters, useGlobalFilter, useSortBy } from "react-table";
 import {
   ISubmissionsQuery,
-  Submission,
   useSubmissionsData,
 } from "../hooks/useSubmissionsData";
 import SubmissionRow from "./admin/SubmissionRow";
+import { ISubmission } from "../types";
 
 const COLUMNS = [
   {
@@ -136,7 +136,7 @@ const Tablee = ({
   query,
   setQuery,
 }: {
-  submissionsData: { submissions: Submission[]; count: number };
+  submissionsData: { submissions: ISubmission[]; count: number };
   query: ISubmissionsQuery;
   setQuery: any;
 }) => {
