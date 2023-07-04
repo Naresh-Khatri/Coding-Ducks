@@ -22,7 +22,6 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { Exam } from "../hooks/useProblemsData";
 import Image from "next/image";
 
 function Timer() {
@@ -37,7 +36,7 @@ function Timer() {
 
   const [timer, setTimer] = useState(null);
   const [timerText, setTimerText] = useState("Unbounded");
-  const { isBounded, endTime } = examData?.data as Exam;
+  const { isBounded, endTime } = examData?.data ;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [warningShown, setWarningShown] = useState(false);
 
