@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import axios from "../utils/axios";
+import axios from "../lib/axios";
 
 const exampleSections = [
   {

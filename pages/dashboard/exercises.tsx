@@ -14,9 +14,8 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import ProblemRow from "../../components/admin/ProblemRow";
 import AdminLayout from "../../layout/AdminLayout";
-import axios from "../../utils/axios";
+import axios from "../../lib/axios";
 
 function ExercisePage() {
   const [problems, setProblems] = useState([]);

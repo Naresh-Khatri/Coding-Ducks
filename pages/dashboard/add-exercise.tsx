@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -37,7 +37,7 @@ import "react-quill/dist/quill.snow.css";
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import axios from "../../utils/axios";
+import axios from "../../lib/axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
