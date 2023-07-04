@@ -4,15 +4,10 @@ import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-dracula";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { useEffect, useRef, useState } from "react";
+import { ICursor } from "../types";
 
 // import "../styles/ace-editor.css";
 
-export interface Cursor {
-  row: number;
-  col: number;
-  username: string;
-  color?: string;
-}
 interface CustomAceProps {
   value?: string;
   onChange?: (value: string) => void;
@@ -20,7 +15,7 @@ interface CustomAceProps {
   width?: number;
   fontSize?: number;
   theme?: string;
-  cursors?: Map<string, Cursor>;
+  cursors?: Map<string, ICursor>;
   handleOnCursorChange?: ({ row, col }: { row: number; col: number }) => void;
 }
 
