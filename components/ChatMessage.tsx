@@ -21,34 +21,26 @@ import {
 import Image from "next/image";
 import React, { useState } from "react";
 import { Socket } from "socket.io-client";
-import { User } from "../hooks/useSubmissionsData";
 import { CopyIcon, Icon, InfoIcon } from "@chakra-ui/icons";
+import { IChatMessage, IUser } from "../types";
 
-interface message {
-  userId: number;
-  username: string;
-  text: string;
-  time?: string;
-  roomId: string;
-  photoURL: string;
-}
 interface ChatCompProps {
   socket: Socket;
   user: any;
   roomInfo: any;
-  msgsList: message[];
+  msgsList: IChatMessage[];
 }
 const ChatMessage = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
   const [show, setShow] = useState(true);
   const [text, setText] = useState("");
   const sendMsg = () => {
-    const newMsg: message = {
+    const newMsg = {
       username: user.username,
       userId: user.id,
       roomId: roomInfo.id,
       text: text,
       photoURL: user.photoURL,
-    };
+    } as IChatMessage;
     socket.emit("message", { newMsg, roomInfo: { name: roomInfo.name } });
     setText("");
   };
@@ -128,7 +120,7 @@ interface roomInfo {
   id: number;
   name: string;
   isPublic: boolean;
-  owner: User;
+  owner: IUser;
   ownerId: number;
   created_at: string;
 }
