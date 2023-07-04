@@ -27,14 +27,9 @@ import {
   Table,
   Text,
 } from "@chakra-ui/react";
-import {
-  Submission,
-  User,
-  useSubmissionData,
-} from "../../hooks/useSubmissionsData";
+import { useSubmissionData } from "../../hooks/useSubmissionsData";
 import Image from "next/image";
 import Link from "next/link";
-import { IExam, IProblem } from "../../hooks/useProblemsData";
 
 interface SubmissionViewerModalProps {
   isOpen: boolean;
@@ -46,12 +41,10 @@ function SubmissionViewerModal({
   onClose,
   submissionId,
 }: SubmissionViewerModalProps) {
-  const { data, isLoading, error } = useSubmissionData(submissionId);
+  const { data, isLoading, error } = useSubmissionData(submissionId, isOpen);
 
-  const submission = data?.data.submission as Submission;
-  const user = data?.data.user as User;
-  const exam = data?.data.exam as IExam;
-  const problem = data?.data.problem as IProblem;
+  const submission = data?.data;
+  const { User: user, Exam: exam, Problem: problem } = submission;
   console.log(data);
   return (
     <Modal
@@ -142,7 +135,7 @@ function SubmissionViewerModal({
                   </Box>
                   <CodeMirror
                     autoFocus
-                    value={data.data.submission.code}
+                    value={submission.code}
                     height="67vh"
                     style={{ fontSize: "1.2rem", maxWidth: "60vw" }}
                     extensions={[supportedLangs[submission.lang]]}
