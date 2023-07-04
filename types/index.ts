@@ -68,6 +68,19 @@ export interface IProblemTag {
   name: string;
 }
 
+//this is from compile-run lib
+export interface IDefaultResult {
+  stdout: string;
+  stderr: string;
+  code?: string;
+  exitCode: number;
+  memoryUsage: number;
+  cpuUsage: number;
+  signal: string;
+  errorType?: "compile-time" | "run-time" | "pre-compile-time" | "run-timeout";
+}
+
+//this is my custom interface with some extra fields
 interface TestCaseResult {
   errorMessage?: string;
   errorOccurred?: boolean;
@@ -78,14 +91,7 @@ interface TestCaseResult {
   isCorrect?: boolean;
   input?: string;
   isPublic?: boolean;
-  result?: {
-    cpuUsage: number;
-    memoryUsage: number;
-    exitCode: number;
-    signal: any;
-    stderr: string;
-    stdout: string;
-  };
+  result?: IDefaultResult;
 }
 
 export interface Output {
@@ -153,6 +159,7 @@ export interface IStarterCode {
   problemId?: number;
 }
 
+// MOSTLY FOR DUCKLETS (Multiplayer)
 export interface IChatMessage {
   userId: number;
   username: string;
@@ -160,4 +167,27 @@ export interface IChatMessage {
   time?: string;
   roomId: string;
   photoURL: string;
+}
+
+export interface ICursor {
+  row: number;
+  col: number;
+  username: string;
+  color?: string;
+}
+export interface IRoomInfo {
+  id: string;
+  isPublic: boolean;
+  name: string;
+  lang: string;
+  owner: IUser;
+  ownerId: number;
+  content: string;
+}
+
+export interface IRoom {
+  clients: IUser[];
+  cursors: ICursor[];
+  msgsList: IChatMessage[];
+  roomInfo: IRoomInfo;
 }
