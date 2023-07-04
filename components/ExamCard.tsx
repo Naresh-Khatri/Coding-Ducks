@@ -12,10 +12,10 @@ import Image from "next/image";
 import React, { useCallback, useEffect, useState } from "react";
 import { useColorModeValue } from "@chakra-ui/react";
 import ExamDetailsModel from "./ExamDetailsModel";
-import { IExam } from "../hooks/useProblemsData";
+import { IExam } from "../types";
 
-function ExamCard({ examData }) {
-  const { title, description, startTime, endTime, isBounded, coverImg }: IExam =
+function ExamCard({ examData }: { examData: IExam }) {
+  const { title, description, startTime, endTime, isBounded, coverImg } =
     examData;
   const { isOpen, onOpen, onClose, onToggle } = useDisclosure();
 
