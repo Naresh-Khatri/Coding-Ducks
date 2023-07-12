@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Box, Flex, Skeleton, useDisclosure, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import dynamic from "next/dynamic";
 
 import Split from "react-split";
 import axios from "../../lib/axios";
@@ -13,22 +14,27 @@ import { useLastSubmissionDataV2 } from "../../hooks/useSubmissionsData";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useProblemData } from "../../hooks/useProblemsData";
 import ProblemLayout from "../../layout/ProblemLayout";
-import dynamic from "next/dynamic";
-import { Lang, Output, Theme } from "../../types";
+import { Output } from "../../types";
 import LeftTabsContainer from "../../components/problem/LeftTabsContainer";
 import ViewSubmissionModal from "../../components/problem/ViewSubmissionModal";
 import { SUBMISSION_TAB_INDEX } from "../../lib/utils";
+import EditorSettingsProvider, {
+  EditorSettingsContext,
+} from "../../contexts/editorSettingsContext";
+import UserUpgradeModal from "../../components/problem/UserUpgradeModal";
+import { userContext } from "../../contexts/userContext";
 
 const AceCodeEditor = dynamic(() => import("../../components/AceCodeEditor"), {
   ssr: false,
 });
 
 function ProblemPage() {
+  const { loadUser } = useContext(userContext);
+  const { settings, code, setCode } = useContext(EditorSettingsContext);
+  const { lang } = settings;
+
   const router = useRouter();
   const { slug } = router.query;
-  const [code, setCode] = useState("");
-  const [lang, setLang] = useState<Lang>("py");
-  const [theme, setTheme] = useState<Theme>("dracula");
   const [output, setOutput] = useState<Output>();
   const [isLoading, setIsLoading] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
@@ -52,10 +58,16 @@ function ProblemPage() {
   } = useDisclosure();
 
   const {
+    isOpen: isUserUpgradeModalOpen,
+    onOpen: onUserUpgradeModalOpen,
+    onClose: onUserUpgradeModalClose,
+  } = useDisclosure();
+  const {
     isOpen: isSubmissionModalOpen,
     onOpen: onSubmissionModalOpen,
     onClose: onSubmissionModalClose,
   } = useDisclosure();
+
   const {
     isOpen: isCodeRetrievalModalOpen,
     onOpen: onCodeRetrievalModalOpen,
@@ -65,6 +77,7 @@ function ProblemPage() {
   const onCodeRetrievalSuccess = async (lastSubmission) => {
     try {
       if (lastSubmission?.data?.code) setCode(lastSubmission?.data?.code);
+
       onCodeRetrievalModalClose();
       toast({
         title: "Code Retrieved",
@@ -92,7 +105,6 @@ function ProblemPage() {
   };
 
   const onCodeReset = () => {
-    console.log("resetting code");
     setCode(
       problemData.starterCodes.find((sc) => sc.lang === lang)?.code || ""
     );
@@ -118,11 +130,12 @@ function ProblemPage() {
     onCodeRetrievalError
   );
 
-  const handleOnCodeRetrive = async () => {
-    refetchLastSubmissionData();
-  };
+  // const handleOnCodeRetrive = async () => {
+  //   refetchLastSubmissionData();
+  // };
 
   const runCode = async (submit = false) => {
+    // onUserUpgradeModalOpen()
     setIsLoading(true);
     setShowConsole(true);
     const payload = {
@@ -133,12 +146,24 @@ function ProblemPage() {
     };
     try {
       const res = await axios.post("/runCode", payload);
+      console.log(res.data);
       if (submit) {
         setTabIndex(SUBMISSION_TAB_INDEX);
         setSubmittedSubId(res.data.submissionId);
         onSubmissionModalOpen();
 
-        if (res.data.isCorrect)
+        if (res?.data?.tutorialProblemsSolved === 10) {
+          toast({
+            title: "Congratulations!",
+            description: "You have solved all tutorial problems",
+            position: "top",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
+          onUserUpgradeModalOpen();
+          loadUser();
+        } else if (res.data.isCorrect)
           toast({
             title: "Code Accepted",
             description: "Your code has been accepted successfully",
@@ -206,10 +231,6 @@ function ProblemPage() {
                   <ToolBar
                     isLoading={isLoading}
                     runCode={runCode}
-                    lang={lang}
-                    theme={theme}
-                    setLang={setLang}
-                    setTheme={setTheme}
                     onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
                     onCodeReset={onCodeResetModalOpen}
                   />
@@ -222,13 +243,8 @@ function ProblemPage() {
                         problemData.starterCodes.find((sc) => sc.lang === lang)
                           ?.code
                       }
-                      code={code}
-                      setCode={setCode}
-                      lang={lang}
-                      theme={theme}
                       errorIndex={output?.results[0]?.errorIndex || 0}
                       runCode={() => runCode(false)}
-                      fontSize={19}
                     />
                   </Flex>
                   <Flex w={"full"}>
@@ -246,6 +262,7 @@ function ProblemPage() {
                 </Flex>
                 <Flex h={"50px"}>
                   <BottomActions
+                    isTutorialProblem={problemData.difficulty === "tutorial"}
                     showConsole={showConsole}
                     setShowConsole={setShowConsole}
                     runCode={runCode}
@@ -273,7 +290,7 @@ function ProblemPage() {
         <ConfirmModal
           onClose={onCodeRetrievalModalClose}
           isOpen={isCodeRetrievalModalOpen}
-          onConfirm={handleOnCodeRetrive}
+          onConfirm={refetchLastSubmissionData}
           isLoading={
             lastSubmissionIsLoading && lastSubmissionFetchStatus !== "idle"
           }
@@ -281,9 +298,24 @@ function ProblemPage() {
           This will replace your current code with the code from your last
           submission.
         </ConfirmModal>
+        {isUserUpgradeModalOpen && (
+          <UserUpgradeModal
+            isOpen={isUserUpgradeModalOpen}
+            onClose={onUserUpgradeModalClose}
+          />
+        )}
       </Flex>
     </ProblemLayout>
   );
 }
 
-export default ProblemPage;
+// We cant use context directly so this wrappers helps
+function ProblemPageWrapper() {
+  return (
+    <EditorSettingsProvider>
+      <ProblemPage />
+    </EditorSettingsProvider>
+  );
+}
+
+export default ProblemPageWrapper;
