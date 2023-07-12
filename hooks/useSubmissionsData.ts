@@ -108,6 +108,11 @@ export const useCurrentUserSubmissionDataForProblem = (problemId: number) => {
         return { data: null, status: 404 };
       }
     },
-    { enabled: !!problemId }
+    {
+      enabled: !!problemId,
+      retryOnMount: false,
+      refetchOnMount: false,
+      cacheTime: 0,
+    }
   );
 };
