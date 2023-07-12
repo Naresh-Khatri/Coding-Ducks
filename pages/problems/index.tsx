@@ -19,14 +19,17 @@ import {
   Tr,
 } from "@chakra-ui/react";
 import NormalLayout from "../../layout/NormalLayout";
-import Link from "next/link";
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useProblemsData } from "../../hooks/useProblemsData";
+import { userContext } from "../../contexts/userContext";
+import ProblemRow from "../../components/problem/ProblemRow";
 
 function ProblemsPage() {
+  const { user } = useContext(userContext);
+  console.log(user);
   const [skip, setSkip] = useState(0);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(20);
   const { data, isLoading, error } = useProblemsData({
     limit,
     skip,
@@ -64,7 +67,7 @@ function ProblemsPage() {
             ))}
           </Stack>
         ) : (
-          <TableContainer>
+          <TableContainer mt={24}>
             <Table variant="striped" size={"md"}>
               <Thead>
                 <Tr>
@@ -75,61 +78,14 @@ function ProblemsPage() {
                   <Th>Solved by</Th>
                 </Tr>
               </Thead>
-              <Tbody>
-                {problemsList.map((problem) => (
-                  <Tr key={problem.id}>
-                    <Td>
-                      {problem.status === "attempted" ? (
-                        "A"
-                      ) : problem.status === "solved" ? (
-                        <CheckIcon color="green.500" />
-                      ) : null}
-                    </Td>
-                    <Td>
-                      <Link href={`/problems/${problem.slug}`}>
-                        <Text>
-                          {problem.frontendProblemId}. {problem.title}
-                        </Text>
-                      </Link>
-                    </Td>
-                    <Td>{problem.accuracy || "-"}</Td>
-                    <Td>
-                      <Text
-                        fontWeight={"bold"}
-                        color={
-                          problem.difficulty === "easy"
-                            ? "green.300"
-                            : problem.difficulty === "medium"
-                            ? "orange.300"
-                            : "red.300"
-                        }
-                      >
-                        {problem.difficulty}
-                      </Text>
-                    </Td>
-                    <Td m={0} p={0} pl={5}>
-                      <AvatarGroup size="md" max={2} h={"50px"}>
-                        {problem.submissions.map((submission, idx) => (
-                          <Link
-                            key={idx}
-                            href={`/users/${submission.User.username}`}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              cursor: "pointer",
-                              zIndex: 1,
-                            }}
-                          >
-                            <Avatar
-                              size={"md"}
-                              name={submission.User.fullname}
-                              src={submission.User.photoURL}
-                            />
-                          </Link>
-                        ))}
-                      </AvatarGroup>
-                    </Td>
-                  </Tr>
+              <Tbody style={{ position: "relative" }}>
+                {problemsList.map((problem, idx) => (
+                  <ProblemRow
+                    key={idx}
+                    index={idx}
+                    problem={problem}
+                    isLocked={idx >= 10 && user?.isNoob}
+                  />
                 ))}
               </Tbody>
             </Table>
@@ -138,7 +94,7 @@ function ProblemsPage() {
         <Flex my={5} justifyContent="space-between" align="center">
           <HStack>
             <Select onChange={(e) => changeLimit(+e.target.value)}>
-              <option value={10}>10</option>
+              <option value={20}>20</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
             </Select>
