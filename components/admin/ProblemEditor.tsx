@@ -42,12 +42,13 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import axios from "../../lib/axios";
 import TestCaseRow from "./TestCaseRow";
 import { useTagsData } from "../../hooks/useProblemsData";
-import { IProblem, IStarterCode } from "../../types";
+import { IProblem, IStarterCode, Testcase } from "../../types";
 import { INITIAL_STARTER_CODES } from "../../data/starterCodeData";
-const QuillNoSSRWrapper = dynamic(import("react-quill"), {
-  ssr: false,
-  loading: () => <p>Loading ...</p>,
-});
+// const QuillNoSSRWrapper = dynamic(import("react-quill"), {
+//   ssr: false,
+//   loading: () => <p>Loading ...</p>,
+// });
+const Quill = dynamic(import("./QuillEditor"), { ssr: false });
 const StarterCodeEditor = dynamic(
   import("../../components/StarterCodeEditor"),
   { ssr: false }
@@ -82,7 +83,6 @@ function ProblemEditor({
     examId,
     order,
     testCases,
-    starterCode,
     starterCodes,
     slug,
     frontendProblemId,
@@ -95,14 +95,14 @@ function ProblemEditor({
   const [newHasExam, setNewHasExam] = useState<boolean>();
   const [newDifficulty, setNewDifficulty] = useState<string>();
   const [newDescription, setNewDescription] = useState<string>();
-  const [newTestCases, setNewTestCases] = useState<any>();
-  const [newHasStarterCode, setNewHasStarterCode] = useState<boolean>(
-    // starterCodes.length > 0
-    true
-  );
-  const [newStarterCodes, dispatchStarterCodes] = useReducer(
+  const [newTestCases, setNewTestCases] = useState<Testcase[]>();
+  const [newHasStarterCode, setNewHasStarterCode] = useState<boolean>();
+  const [newStarterCodes, dispatchStarterCodes]: [
+    IStarterCode[],
+    (action: IAction) => void
+  ] = useReducer(
     starterCodesReducer,
-    starterCodes
+    starterCodes.length > 0 ? starterCodes : INITIAL_STARTER_CODES
   );
   if (frontendProblemId === 6) {
   }
@@ -111,6 +111,7 @@ function ProblemEditor({
   const [newSelectedTags, setNewSelectedTags] = useState([]);
 
   const selectedExamRef = useRef(null);
+  const quillRef = useRef(null);
 
   const toast = useToast();
   const {
@@ -118,6 +119,10 @@ function ProblemEditor({
     error: tagsError,
     isLoading: isTagsLoading,
   } = useTagsData();
+
+  useEffect(() => {
+    console.log(quillRef.current);
+  }, []);
 
   useEffect(() => {
     setNewOrder(order);
@@ -130,7 +135,7 @@ function ProblemEditor({
     setNewSelectedTags(tags);
     setNewHasExam(!!examId);
     setNewHasStarterCode(starterCodes.length > 0);
-  }, [problemData]);
+  }, [description, difficulty, examId, frontendProblemId, order, problemData, slug, starterCodes.length, tags, testCases, title]);
 
   const updateProblem = async () => {
     const payload = {
@@ -140,7 +145,12 @@ function ProblemEditor({
       testCases: newTestCases,
       slug: newSlug,
       frontendProblemId: newFrontendProblemId,
-      tags: newSelectedTags.map((tag) => tag.id),
+      tags: newSelectedTags.map((tag) => {
+        return {
+          id: tag.id,
+          name: tag.name,
+        };
+      }),
       order: +newOrder,
       starterCodes: newStarterCodes,
     };
@@ -156,7 +166,7 @@ function ProblemEditor({
         duration: 9000,
         isClosable: true,
       });
-      onEditSuccess();
+      // onEditSuccess();
     } catch (error) {
       console.log(error);
       toast({
@@ -168,9 +178,10 @@ function ProblemEditor({
       });
     }
   };
-  if (!problemData || !examsList) return <Box> loading... </Box>;
+  if (!problemData || !examsList || !newTitle || !newDescription || !newSlug)
+    return <Box> loading... </Box>;
   return (
-    <Modal onClose={onClose} size={"4xl"} isOpen={isOpen}>
+    <Modal onClose={onClose} size={"6xl"} isOpen={isOpen}>
       <ModalOverlay backdropFilter="auto" backdropBlur="2px" />
       <ModalContent>
         <ModalHeader>Edit Problem</ModalHeader>
@@ -189,7 +200,7 @@ function ProblemEditor({
             <FormControl>
               <FormLabel htmlFor="slug">Slug</FormLabel>
               <Input
-                id="slu"
+                id="slug"
                 placeholder="Slug"
                 value={newSlug}
                 onChange={(e) => setNewSlug(e.target.value)}
@@ -207,21 +218,36 @@ function ProblemEditor({
                 />
               </FormControl>
             )}
-            <RadioGroup onChange={setNewDifficulty} value={newDifficulty}>
-              <Stack direction="row">
-                <Radio value="easy">Easy</Radio>
-                <Radio value="medium">Medium</Radio>
-                <Radio value="hard">hard</Radio>
-              </Stack>
-            </RadioGroup>
+            <FormControl>
+              <FormLabel htmlFor="difficulty">Difficulty</FormLabel>
+              <Select
+                id="difficulty"
+                defaultValue={newDifficulty}
+                onChange={(e) => setNewDifficulty(e.target.value)}
+              >
+                <option value="starter">Starter</option>
+                <option value="basic">Basic</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">hard</option>
+              </Select>
+            </FormControl>
           </HStack>
           <FormControl my={3}>
             <FormLabel htmlFor="desc">Description</FormLabel>
 
             <Box bg="white" color={"black"} borderRadius={10}>
-              <QuillNoSSRWrapper
+              <Quill
+                newDescription={newDescription}
+                setNewDescription={setNewDescription}
+              />
+              {/* <QuillNoSSRWrapper
                 style={{ borderRadius: 10 }}
                 theme="snow"
+                ref={(el) => {
+                  quillRef.current = el;
+                  console.log(el);
+                }}
                 modules={{
                   toolbar: [
                     [{ header: [1, 2, false] }],
@@ -239,7 +265,7 @@ function ProblemEditor({
                 }}
                 value={newDescription}
                 onChange={setNewDescription}
-              />
+              /> */}
             </Box>
           </FormControl>
 
@@ -328,6 +354,7 @@ function ProblemEditor({
               </HStack>
             )}
           </Box>
+          {/* ----------------TAGS SELECTION---------------- */}
           <Box>
             <Text fontSize={"xl"}>Tags: </Text>
             <Flex my={2}>
@@ -367,7 +394,7 @@ function ProblemEditor({
               ))}
             </Flex>
           </Box>
-
+          {/* ----------------TEST CASES ---------------- */}
           <Flex mt={10}>
             <TableContainer w={"100%"}>
               <Text>Test Cases: {testCases.length}</Text>
@@ -376,6 +403,7 @@ function ProblemEditor({
                 <Thead>
                   <Tr>
                     <Th>Id</Th>
+                    <Th>Frontend Input</Th>
                     <Th>Input</Th>
                     <Th>Output</Th>
                     <Th>explaination</Th>
