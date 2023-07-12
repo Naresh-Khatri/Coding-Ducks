@@ -17,32 +17,10 @@ import {
   sendPasswordReset,
 } from "../firebase/firebase";
 import axios from "../lib/axios";
+import { IUser } from "../types";
 
-interface Follower {
-  fullname: string;
-  id: number;
-  photoURL: string;
-  registeredAt: string;
-  username: string;
-}
-export interface MyUser {
-  id: number;
-  googleUID: string;
-  uid?: string;
-  fullname: string;
-  displayName?: string;
-  email: string;
-  photoURL: string;
-  roll: string;
-  username: string;
-  isAdmin: boolean;
-  registeredAt: string;
-  bio: string;
-  followedBy: Array<Follower>;
-  following: Array<Follower>;
-}
 interface userContextProps {
-  user: MyUser;
+  user: IUser;
   loading: boolean;
   error: any;
   firebaseUser: User;
@@ -58,15 +36,6 @@ interface userContextProps {
   loadUser: () => void;
 }
 export const userContext = createContext({} as userContextProps);
-
-const saveInCookie = (user) => {
-  //save user in cookie on client side
-  if (typeof window !== "undefined") {
-    document.cookie = `token=${user.accessToken}; path=/`;
-    // console.log("cookie", user.accessToken);
-    // console.log("cookie", document.cookie);
-  }
-};
 
 export function AuthUserProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -98,6 +67,7 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
       photoURL: user.photoURL,
       googleUID: user.uid || user.googleUID,
       isAdmin: user.isAdmin || false,
+      isNoob: user.isNoob,
       registeredAt: user.registeredAt,
       lastLoginAt: user.lastLoginAt,
     };
@@ -108,11 +78,11 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
       if (!loading) {
         // check if user is stored in db
         if (user) {
-          saveInCookie(user);
+          // console.log('firebase user', user)
           axios
             .get(`/users/${user.uid}`)
             .then((res) => {
-              console.log("user changed", res.data);
+              // console.log("user changed", res.data);
               if (res.data.length == 0) {
                 // if user doesnt exist, redirect to setup-profile
                 router.push("/setup-profile");
@@ -127,7 +97,7 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
             });
         } else {
           console.log("user is null");
-          if (router.pathname !== "/") router.push("/login");
+          // if (router.pathname !== "/") router.push("/login");
         }
       }
     } catch (err) {}
@@ -144,7 +114,7 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
   return (
     <userContext.Provider
       value={{
-        user: completeUser as MyUser,
+        user: completeUser as IUser,
         firebaseUser: user as any,
         loading,
         error,
