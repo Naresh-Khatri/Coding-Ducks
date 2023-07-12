@@ -22,10 +22,13 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
-      // wait for 1 second if user is not found on reload
-      if (!auth?.currentUser) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
+      await new Promise((res) => {
+        const unsub = auth.onAuthStateChanged((user) => {
+          unsub();
+          res(user);
+        });
+      });
+
       const token = await auth?.currentUser?.getIdToken();
       if (token) config.headers["Authorization"] = `Bearer ${token}`;
       return config;
