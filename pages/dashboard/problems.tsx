@@ -1,6 +1,9 @@
 import {
   Button,
   Container,
+  Flex,
+  FormControl,
+  FormLabel,
   HStack,
   Modal,
   ModalBody,
@@ -9,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Switch,
   useDisclosure,
 } from "@chakra-ui/react";
 import Link from "next/link";
@@ -18,6 +22,7 @@ import CustomTable from "../../components/CustomTable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { useState } from "react";
 
 const COLUMNS = [
   {
@@ -50,56 +55,67 @@ const COLUMNS = [
   },
 ];
 function ProblemPage() {
+  const [allowExams, setAllowExams] = useState(false);
   const {
     data: problemsData,
     isLoading: problemsDataIsLoading,
     error: problemsDataError,
     refetch: fetchProblems,
-  } = useAllProblemsData();
+  } = useAllProblemsData(allowExams);
 
   const { onOpen, onClose, isOpen } = useDisclosure();
-  console.log(problemsData);
 
   if (problemsDataIsLoading || !problemsData) return <div>Loading...</div>;
 
   return (
     <AdminLayout>
       <Container maxW="container.xl" overflowY={"scroll"}>
-        <HStack my={10} justify="space-between">
-          <Link href="/dashboard/add-problem">
-            <Button bg="green.400">Add Problem</Button>
-          </Link>
-          <Button
-            onClick={onOpen}
-            leftIcon={<FontAwesomeIcon icon={faTags as IconProp} />}
-          >
-            Edit Tags
-          </Button>
-          <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader>Modal Title</ModalHeader>
-              <ModalCloseButton />
-              <ModalBody></ModalBody>
-
-              <ModalFooter>
-                <Button colorScheme="blue" mr={3} onClick={onClose}>
-                  Close
-                </Button>
-                <Button variant="ghost">Secondary Action</Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
-        </HStack>
-        <CustomTable
-          columns={COLUMNS}
-          data={problemsData.problems}
-          examsList={problemsData.examsList}
-          refetchData={fetchProblems}
-          hasSearchBar={true}
-          hasSort={true}
-        />
+        <Flex direction={"column"} h={"100%"}>
+          <HStack my={10} justify="space-between">
+            <Link href="/dashboard/add-problem">
+              <Button bg="green.400">Add Problem</Button>
+            </Link>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="allow-exams" mb="0">
+                Show Exams Problems
+              </FormLabel>
+              <Switch
+                id="allow-exams"
+                isChecked={allowExams}
+                onChange={(e) => setAllowExams(e.target.checked)}
+              />
+            </FormControl>
+            <Button
+              onClick={onOpen}
+              leftIcon={<FontAwesomeIcon icon={faTags as IconProp} />}
+            >
+              Edit Tags
+            </Button>
+          </HStack>
+          <CustomTable
+            columns={COLUMNS}
+            data={problemsData.problems}
+            examsList={problemsData.examsList}
+            refetchData={fetchProblems}
+            hasSearchBar={true}
+            hasSort={true}
+          />
+        </Flex>
       </Container>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Modal Title</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody></ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
+              Close
+            </Button>
+            <Button variant="ghost">Secondary Action</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </AdminLayout>
   );
 }
