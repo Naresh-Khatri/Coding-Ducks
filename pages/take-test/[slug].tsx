@@ -266,10 +266,6 @@ function TakeTest() {
                   <ToolBar
                     isLoading={isLoading}
                     runCode={runCode}
-                    lang={lang}
-                    theme={theme}
-                    setLang={setLang}
-                    setTheme={setTheme}
                     onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
                     onCodeReset={onCodeResetModalOpen}
                   />
@@ -299,6 +295,7 @@ function TakeTest() {
                 </Flex>
                 <Flex h={"50px"}>
                   <BottomActions
+                    isTutorialProblem={true}
                     showConsole={showConsole}
                     setShowConsole={setShowConsole}
                     runCode={runCode}
