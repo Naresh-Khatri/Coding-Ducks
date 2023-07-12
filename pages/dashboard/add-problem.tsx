@@ -190,13 +190,20 @@ const AddProblemPage = () => {
                 </FormControl>
               )}
 
-              <RadioGroup onChange={setDiffLevel} value={diffLevel}>
-                <Stack direction="row">
-                  <Radio value="easy">Easy</Radio>
-                  <Radio value="medium">Medium</Radio>
-                  <Radio value="hard">hard</Radio>
-                </Stack>
-              </RadioGroup>
+              <FormControl>
+                <FormLabel htmlFor="difficulty">Difficulty</FormLabel>
+                <Select
+                  id="difficulty"
+                  defaultValue={"easy"}
+                  onChange={(e) => setDiffLevel(e.target.value)}
+                >
+                  <option value="tutorial">Tutorial</option>
+                  <option value="basic">Basic</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">hard</option>
+                </Select>
+              </FormControl>
             </HStack>
 
             <FormControl mt="2%">
