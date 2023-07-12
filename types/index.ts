@@ -1,5 +1,22 @@
+interface Follower {
+  fullname: string;
+  id: number;
+  photoURL: string;
+  registeredAt: string;
+  username: string;
+}
 export interface IUser {
-  id?: number;
+  id: number;
+  googleUID: string;
+  uid?: string;
+  displayName?: string;
+  email: string;
+  isAdmin: boolean;
+  isNoob: boolean
+  registeredAt: string;
+  bio: string;
+  followedBy: Array<Follower>;
+  following: Array<Follower>;
   fullname: string;
   username: string;
   photoURL: string;
@@ -24,7 +41,7 @@ export interface IExam {
 export interface IExamProblem {
   id: number;
   order: number;
-  difficulty: string;
+  difficulty: IDifficulty;
   description: string;
   tags: string[];
   examId: number;
@@ -50,8 +67,9 @@ export interface IProblem extends IExamProblem {
   slug?: string;
   title: string;
   frontendProblemId?: number;
+  isSolved?: boolean;
   description: string;
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: IDifficulty;
   status?: "" | "attempted" | "solved";
   accuracy?: number;
   submissions?: ISubmission[];
@@ -123,6 +141,7 @@ export interface Testcase {
   id: number;
   explaination?: string;
   input?: string;
+  frontendInput?: string;
   output?: string;
   isPublic: boolean;
 }
@@ -133,6 +152,8 @@ export interface IProblemSubmissionResult {
   totalCount: number;
   result: Testcase[];
 }
+
+export type IDifficulty = "tutorial" | "basic" | "easy" | "medium" | "hard";
 
 export type Lang = "js" | "py" | "cpp" | "c" | "java";
 export type Theme =
@@ -149,6 +170,7 @@ export type Theme =
   | "terminal";
 
 export type IAceModes = "python" | "javascript" | "java" | "c_cpp";
+export type IKeyBinds = "default" | "emacs" | "vim" | "vscode" | "sublime";
 
 export interface IStarterCode {
   id?: number;
