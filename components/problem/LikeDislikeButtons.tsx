@@ -1,6 +1,7 @@
 import {
   Button,
   Flex,
+  HStack,
   ListItem,
   Text,
   Tooltip,
@@ -63,7 +64,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
 
   if (!ratingData?.rating) return null;
   return (
-    <>
+    <HStack>
       <Tooltip
         hasArrow
         borderRadius={10}
@@ -125,7 +126,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
           {ratingData?.rating?.dislikes?.length || "0"}
         </Button>
       </Tooltip>
-    </>
+    </HStack>
   );
 };
 
@@ -138,8 +139,8 @@ const UsersList: FC<{ users: IRatingUser[] }> = ({ users }) => {
             <Image
               src={user.photoURL}
               alt="user profile"
-              width={40}
-              height={40}
+              width={30}
+              height={30}
               style={{ borderRadius: "50%" }}
             />
             <Link href={`/users/${user.username}`}>
