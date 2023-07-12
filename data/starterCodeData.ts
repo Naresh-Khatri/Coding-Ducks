@@ -16,28 +16,26 @@ export const INITIAL_STARTER_CODES = [
 
 
 class Solution:
-    def evenlyDivides (self, N):
+    def <fun_name> (self, N):
         # code here
 
 
-#{ 
+#{ 🦆
  # Driver Code Starts
 #Initial Template for Python 3
 
 if __name__ == '__main__': 
-    t = int (input ())
-    for _ in range (t):
-        N = int(input())
+    N = int(input())
        
 
-        ob = Solution()
-        print(ob.evenlyDivides(N))
-# } Driver Code Ends`,
+    ob = Solution()
+    print(ob.<fun_nam>(N))
+# } Driver Code Ends🦆`,
   },
   {
     langLabel: "JavaScript",
     lang: "js",
-    code: `//{ Driver Code Starts
+    code: `//{ Driver Code Starts🦆
 //Initial Template for javascript
 
 'use strict';
@@ -72,12 +70,12 @@ function main() {
         let n = parseInt(readLine());
         let arr = readLine().trim().split(" ").map((x) => parseInt(x));
         let obj = new Solution();
-        let res=obj.find_median(arr);
+        let res=obj.<fun_name>(arr);
         console.log(res);
     }
 }
 
-// } Driver Code Ends
+// } Driver Code Ends 🦆
 
 
 //User function Template for javascript
@@ -89,7 +87,7 @@ function main() {
 
 class Solution {
 
-    find_median(arr){
+    <fun_name>(arr){
         //code here
     }
 }`,
@@ -97,38 +95,33 @@ class Solution {
   {
     langLabel: "C++",
     lang: "cpp",
-    code: `//{ Driver Code Starts
+    code: `//{ Driver Code Starts🦆
 #include<bits/stdc++.h> 
 using namespace std;
 
-// } Driver Code Ends
+// } Driver Code Ends🦆
 class Solution{
 public:
-    int evenlyDivides(int N){
+    int <fun_name>(int N){
         //code here
     }
 };
 
-//{ Driver Code Starts.
+//{ Driver Code Starts.🦆
 int main() 
 { 
-    int t;
-    cin>>t;
-    while(t--)
-    {
-        int N;
-        cin>>N;
-        Solution ob;
-        cout << ob.evenlyDivides(N) << endl;
-    }
+    int N;
+    cin>>N;
+    Solution ob;
+    cout << ob.<fun_name>(N) << endl;
     return 0; 
 }
-// } Driver Code Ends`,
+// } Driver Code Ends🦆`,
   },
   {
     langLabel: "Java",
     lang: "java",
-    code: `//{ Driver Code Starts
+    code: `//{ Driver Code Starts🦆
 //Initial Template for Java
 
 
@@ -140,23 +133,19 @@ class CodingDucks
     public static void main(String args[])throws IOException
     {
         BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
-        int t = Integer.parseInt(read.readLine());
-        while(t-- > 0)
-        {
-            int N = Integer.parseInt(read.readLine());
-            Solution ob = new Solution();
-            System.out.println(ob.evenlyDivides(N));
-        }
+        int N = Integer.parseInt(read.readLine());
+        Solution ob = new Solution();
+        System.out.println(ob.<fun_name>(N));
     }
 }
-// } Driver Code Ends
+// } Driver Code Ends🦆
 
 
 //User function Template for Java
 
 
 class Solution{
-    static int evenlyDivides(int N){
+    static int fun_name(int N){
         // code here
     }
 }`,
