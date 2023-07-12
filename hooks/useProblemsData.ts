@@ -2,11 +2,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { IExam, IExamProblem, IProblem, IProblemTag } from "../types";
 
-export const useAllProblemsData = () => {
+export const useAllProblemsData = (allowExams = false) => {
   return useQuery({
-    queryKey: ["problems"],
+    queryKey: ["problems", allowExams],
     queryFn: async (): Promise<any> => {
-      const res = await axiosInstance.get("/problems");
+      const res = await axiosInstance.get(
+        `/problems${allowExams ? "?allowExams=true" : ""}`
+      );
       const problems: IExamProblem[] = res.data;
       const examsList: IExam[] = [];
       problems?.forEach((problem) => {
@@ -22,6 +24,7 @@ export const useAllProblemsData = () => {
         examsList: IExam[];
       };
     },
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -78,7 +81,6 @@ export const useProblemRatingData = ({ problemId }: { problemId: number }) => {
   return useQuery({
     queryKey: ["ratings", problemId],
     queryFn: async () => {
-      console.log("fetching ratings");
       const { data } = await axiosInstance.get(
         `/problems/${problemId}/ratings`
       );
@@ -120,5 +122,6 @@ export const useTagsData = () => {
       const tags = data.data as { tags: IProblemTag[]; count: number };
       return tags;
     },
+    refetchOnWindowFocus: false,
   });
 };
