@@ -1,7 +1,11 @@
 import { Box, Text } from "@chakra-ui/react";
 import React from "react";
+import { Testcase } from "../types";
 
-function ExampleTestcase({ testCase }) {
+interface ExampleTestcaseProps {
+  testCase: Testcase;
+}
+function ExampleTestcase({ testCase }: ExampleTestcaseProps) {
   const styles = {
     minHeight: "100px",
     minWidth: "400px",
@@ -44,20 +48,29 @@ function ExampleTestcase({ testCase }) {
               stroke="#1AAB29"
             ></circle>
           </svg>
-          <Text display="inline">Input:</Text>
-          <br />
+          <Text mr={4} display="inline" fontWeight={"extrabold"}>
+            Input:
+          </Text>
+          {!testCase.frontendInput && <br />}
           <Text
             as="span"
-            style={testCase.input.includes("<br>") ? { display: "block" } : {}}
+            style={
+              !testCase.frontendInput && testCase.input.includes("<br>")
+                ? { display: "block" }
+                : {}
+            }
             dangerouslySetInnerHTML={{
-              __html: testCase.input.replaceAll("\n", "<br>"),
+              __html: testCase.frontendInput
+                ? testCase.frontendInput
+                : testCase.input.replaceAll("\n", "<br>"),
             }}
           ></Text>
         </Box>
       )}
-      <Box display="inline">
-        Output:
-        <br />
+      <Box>
+        <Text mr={4} display="inline" fontWeight={"extrabold"}>
+          Output:
+        </Text>
         <Text
           display="inline"
           dangerouslySetInnerHTML={{
@@ -67,9 +80,10 @@ function ExampleTestcase({ testCase }) {
       </Box>
       {testCase.explaination && (
         <Box>
-          <br />
-          <Text>Explaination:</Text>
-          <Text pl={5}>{testCase.explaination}</Text>
+          <Text mr={4} display="inline" fontWeight={"extrabold"}>
+            Explaination:
+          </Text>
+          <Text>{testCase.explaination}</Text>
         </Box>
       )}
     </Box>
