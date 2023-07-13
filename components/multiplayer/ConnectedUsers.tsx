@@ -15,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import type { FC } from "react";
-import { MyUser } from "../../contexts/userContext";
+import { IUser } from "../../types";
 
 interface Client {
   id: string;
@@ -23,7 +23,7 @@ interface Client {
 }
 interface ConnectedUsersProps {
   clients: any[];
-  currentUser: MyUser;
+  currentUser: IUser;
 }
 
 const ConnectedUsers: FC<ConnectedUsersProps> = ({ clients, currentUser }) => {
