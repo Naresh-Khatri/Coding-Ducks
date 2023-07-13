@@ -12,7 +12,7 @@ export interface IUser {
   displayName?: string;
   email: string;
   isAdmin: boolean;
-  isNoob: boolean
+  isNoob: boolean;
   registeredAt: string;
   bio: string;
   followedBy: Array<Follower>;
@@ -67,10 +67,9 @@ export interface IProblem extends IExamProblem {
   slug?: string;
   title: string;
   frontendProblemId?: number;
-  isSolved?: boolean;
   description: string;
   difficulty: IDifficulty;
-  status?: "" | "attempted" | "solved";
+  status?: "unsolved" | "tried" | "solved";
   accuracy?: number;
   submissions?: ISubmission[];
   submissionCount?: number;
