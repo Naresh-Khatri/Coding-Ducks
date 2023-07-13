@@ -13,7 +13,12 @@ function SubmissionsTab({ problemId }: SubmissionsTabProps) {
   if (!subData || isLoading) return <p> loading submissions</p>;
 
   return (
-    <UnorderedList spacing={4} overflow={"auto"} height={"80vh"}>
+    <UnorderedList
+      spacing={4}
+      overflow={"auto"}
+      height={"80vh"}
+      style={{ padding: 0, margin: 0 }}
+    >
       {subData.data?.map((sub) => {
         return <SubmissionListItem submission={sub} key={sub.id} />;
       })}
