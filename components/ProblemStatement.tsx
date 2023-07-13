@@ -14,11 +14,9 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
         <Text fontWeight={"extrabold"} fontSize="4xl">
           #{problem.frontendProblemId}. {problem.title}
         </Text>
-        <Flex justifyContent={"space-between"}>
-          <HStack>
-            <DiffBadge difficulty={problem.difficulty} size="lg" />
-            <LikeDislikeButtons problemId={problem.id} />
-          </HStack>
+        <Flex justifyContent={"space-between"} w={"100%"}>
+          <LikeDislikeButtons problemId={problem.id} />
+          <DiffBadge difficulty={problem.difficulty} size="md" />
           <Stack alignItems={"end"}>
             <HStack>
               <Text fontSize={"sm"}>Accuracy: </Text>
@@ -32,7 +30,6 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
             <HStack align={"center"}>
               <Text fontSize={"sm"}>Submissions:</Text>
               <Text fontWeight={"bold"} fontSize={"sm"}>
-                {" "}
                 {problem.submissionCount}
               </Text>
               <Tooltip label="Number of submission for this problem">
@@ -41,12 +38,11 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
             </HStack>
           </Stack>
         </Flex>
-        <Box p={5}>
-          <Text
-            dangerouslySetInnerHTML={{ __html: problem.description }}
-            fontSize="lg"
-          ></Text>
-        </Box>
+        <Box
+          dangerouslySetInnerHTML={{ __html: problem.description }}
+          fontSize="lg"
+          mt={5}
+        ></Box>
         {problem.testCases.map((testCase, index) => (
           <Box key={index}>
             {testCase.isPublic && (
