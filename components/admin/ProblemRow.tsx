@@ -1,8 +1,11 @@
 import {
   Badge,
+  Box,
+  Flex,
   HStack,
   IconButton,
   Td,
+  Text,
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -50,8 +53,10 @@ function ProblemRow({
     <>
       <Td>{id}</Td>
       <Td w={"30px"}>{frontendProblemId}</Td>
-      <Td>{title}</Td>
-      <Td w={"30px"}>{difficulty}</Td>
+      <Td>
+        <Text>{title}</Text>
+      </Td>
+      <Td>{difficulty}</Td>
       <Td>{examId ? `${examId}. ${exam?.title}` : <Badge>Na</Badge>}</Td>
       <Td>{examId ? `${order}` : <Badge>Na</Badge>}</Td>
       <Td>
@@ -61,16 +66,18 @@ function ProblemRow({
             icon={<FontAwesomeIcon icon={faEdit as IconProp} />}
             onClick={onEditOpen}
           />
-          <ProblemEditor
-            problemData={problem}
-            examsList={examsList}
-            isOpen={isEditOpen}
-            onClose={onEditClose}
-            onEditSuccess={() => {
-              fetchProblems();
-              onEditClose();
-            }}
-          />
+          {isEditOpen && (
+            <ProblemEditor
+              problemData={problem}
+              examsList={examsList}
+              isOpen={isEditOpen}
+              onClose={onEditClose}
+              onEditSuccess={() => {
+                fetchProblems();
+                onEditClose();
+              }}
+            />
+          )}
           <IconButton
             aria-label="Delete Problem"
             bg="red.500"
