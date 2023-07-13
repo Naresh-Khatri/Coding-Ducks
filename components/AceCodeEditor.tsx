@@ -1,4 +1,8 @@
+import { useContext, useEffect, useRef } from "react";
+
 import AceEditor from "react-ace";
+import { Range } from "ace-builds";
+import { IAceEditor } from "react-ace/lib/types";
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
@@ -18,22 +22,17 @@ import "ace-builds/src-noconflict/theme-solarized_light";
 import "ace-builds/src-noconflict/theme-terminal";
 
 import "ace-builds/src-noconflict/ext-language_tools";
+import "ace-builds/src-noconflict/keybinding-emacs";
+import "ace-builds/src-noconflict/keybinding-sublime";
+import "ace-builds/src-noconflict/keybinding-vscode";
 
 import { Flex } from "@chakra-ui/react";
 
 import WindowHeader from "./WindowHeader";
-import { Lang, Theme } from "../types";
-import { useEffect, useRef } from "react";
-import { IAceEditor } from "react-ace/lib/types";
-import { Range } from "ace-builds";
 import { langToAceModes } from "../lib/utils";
+import { EditorSettingsContext } from "../contexts/editorSettingsContext";
 
 interface AceCodeEditorProps {
-  code: string;
-  fontSize: number;
-  setCode: (value: string) => void;
-  theme: Theme;
-  lang: Lang;
   problemId: number;
   starterCode?: string;
   runCode?: () => void;
@@ -41,29 +40,53 @@ interface AceCodeEditorProps {
 }
 
 function AceCodeEditor({
-  code,
-  setCode,
-  lang,
-  theme,
-  fontSize,
   starterCode,
   errorIndex,
   problemId,
 }: AceCodeEditorProps) {
   const editorRef = useRef<AceEditor>(null);
+  const { settings, code, setCode } = useContext(EditorSettingsContext);
+  const { lang, theme, keyBindings, allowAutoComplete, fontSize, tabSize } =
+    settings;
 
+  // set keybindings
+  useEffect(() => {
+    if (keyBindings === "default")
+      editorRef.current?.editor.setKeyboardHandler(null);
+    else if (keyBindings === "vim")
+      import("ace-builds/src-noconflict/keybinding-vim").then((module) => {
+        editorRef.current?.editor.setKeyboardHandler(module.handler);
+      });
+    else if (keyBindings === "emacs")
+      import("ace-builds/src-noconflict/keybinding-emacs").then((module) => {
+        editorRef.current?.editor.setKeyboardHandler(module.handler);
+      });
+    else if (keyBindings === "sublime")
+      import("ace-builds/src-noconflict/keybinding-sublime").then((module) => {
+        editorRef.current?.editor.setKeyboardHandler(module.handler);
+      });
+    else if (keyBindings === "vscode")
+      import("ace-builds/src-noconflict/keybinding-vscode").then((module) => {
+        editorRef.current?.editor.setKeyboardHandler(module.handler);
+      });
+  }, [keyBindings]);
+
+  // set lang
   useEffect(() => {
     const ccode =
       localStorage.getItem(`code-${problemId}-${lang}`) || starterCode || "";
+
     setCode(ccode);
     setTimeout(() => {
       foldStarterCode(editorRef.current.editor);
     }, 10);
   }, [lang]);
 
+  // set code
   useEffect(() => {
     handleOnChange(code);
   }, [code]);
+
   const foldStarterCode = (editor: IAceEditor) => {
     // get the lines with 🦆 and make pairs
     const lines = editorRef.current.editor.session.getDocument()[
@@ -100,9 +123,9 @@ function AceCodeEditor({
   //TODO: optimize these pieces of shit codes
   const handleOnChange = (newCode: string) => {
     if (newCode.trim() === "") return;
-    foldStarterCode(editorRef.current.editor);
-    setCode(newCode);
     localStorage.setItem(`code-${problemId}-${lang}`, newCode);
+    setCode(newCode);
+    foldStarterCode(editorRef.current.editor);
   };
   const placeErrorMarker = () => {
     if (!editorRef.current) return;
@@ -122,6 +145,7 @@ function AceCodeEditor({
       editorRef.current.editor.scrollToLine(errorIndex, true, true, () => {});
     }
   };
+
   placeErrorMarker();
   return (
     <Flex
@@ -136,22 +160,25 @@ function AceCodeEditor({
       <WindowHeader title={"editor.exe"} status={"none"} />
       <AceEditor
         mode={langToAceModes[lang]}
+        // mode={'java'}
         value={code}
-        onChange={(value) => setCode(value)}
+        // onChange={(value) => updateSettings({ code: value })}
+        onChange={(value) => handleOnChange(value)}
         theme={theme}
         editorProps={{
           $blockScrolling: false,
         }}
         ref={editorRef}
-        fontSize={fontSize}
         width="100%"
         height="100%"
+        keyboardHandler="vim"
         setOptions={{
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: true,
+          enableBasicAutocompletion: allowAutoComplete,
+          enableLiveAutocompletion: allowAutoComplete,
           enableSnippets: true,
           showLineNumbers: true,
-          tabSize: 2,
+          fontSize: fontSize,
+          tabSize: tabSize,
         }}
       />
     </Flex>
