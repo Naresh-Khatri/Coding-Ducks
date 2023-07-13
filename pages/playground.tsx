@@ -154,10 +154,6 @@ function Playground() {
             <ToolBar
               runCode={runCode}
               isLoading={isLoading}
-              lang={lang}
-              setLang={setLang}
-              theme={theme}
-              setTheme={setTheme}
             />
             {/*
             <HStack spacing={4}>
