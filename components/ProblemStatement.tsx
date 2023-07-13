@@ -6,6 +6,9 @@ import DiffBadge from "./problem/DiffBadge";
 import LikeDislikeButtons from "./problem/LikeDislikeButtons";
 import { IProblem } from "../types";
 import { InfoIcon } from "@chakra-ui/icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faFlask } from "@fortawesome/free-solid-svg-icons";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 function ProblemStatement({ problem }: { problem: IProblem }) {
   return (
@@ -15,7 +18,27 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
           #{problem.frontendProblemId}. {problem.title}
         </Text>
         <Flex justifyContent={"space-between"} w={"100%"}>
-          <LikeDislikeButtons problemId={problem.id} />
+          <HStack>
+            {problem.status === "solved" && (
+              <Tooltip label="You've solved this problem">
+                <FontAwesomeIcon
+                  icon={faCheck as IconProp}
+                  color="lightgreen"
+                  size="2x"
+                />
+              </Tooltip>
+            )}
+            {problem.status === "tried" && (
+              <Tooltip label="You've attempted">
+                <FontAwesomeIcon
+                  icon={faFlask as IconProp}
+                  color="lightgreen"
+                  size="2x"
+                />
+              </Tooltip>
+            )}
+            <LikeDislikeButtons problemId={problem.id} />
+          </HStack>
           <DiffBadge difficulty={problem.difficulty} size="md" />
           <Stack alignItems={"end"}>
             <HStack>
