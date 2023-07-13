@@ -65,7 +65,7 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
         onClick={() => console.log("clicked")}
       >
         <Td h={"50px"}>
-          {isLocked ? null : problem.status === "attempted" ? (
+          {isLocked ? null : problem.status === "tried" ? (
             "A"
           ) : problem.status === "solved" ? (
             <CheckIcon color="green.500" />
