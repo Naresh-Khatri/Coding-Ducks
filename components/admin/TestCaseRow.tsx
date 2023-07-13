@@ -12,11 +12,29 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import { Testcase } from "../../types";
 
-function TestCaseRow({ testCases, index, setTestCases }) {
+interface TestCaseRowProps {
+  testCases: Testcase[];
+  index: number;
+  setTestCases: React.Dispatch<React.SetStateAction<Testcase[]>>;
+}
+function TestCaseRow({ testCases, index, setTestCases }: TestCaseRowProps) {
   return (
     <Tr key={index}>
       <Td>{index + 1}</Td>
+      <Td m={0} py={4} px={2}>
+        <Textarea
+          isDisabled={!testCases[index].isPublic}
+          placeholder="Frontend Input"
+          value={testCases[index].frontendInput}
+          onChange={(e) => {
+            const newTestCases = [...testCases];
+            newTestCases[index].frontendInput = e.target.value;
+            setTestCases(newTestCases);
+          }}
+        />
+      </Td>
       <Td m={0} py={4} px={2}>
         <Textarea
           placeholder="Input"
@@ -71,7 +89,7 @@ function TestCaseRow({ testCases, index, setTestCases }) {
       <Td m={0} py={4} px={2}>
         <Flex justifyContent="center">
           <IconButton
-          aria-label="Delete test case"
+            aria-label="Delete test case"
             bg={"red.500"}
             icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
             onClick={() => {
