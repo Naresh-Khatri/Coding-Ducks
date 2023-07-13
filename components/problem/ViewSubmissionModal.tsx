@@ -39,10 +39,7 @@ function ViewSubmissionModal({
 }: ViewSubmissionModalProps) {
   const { data, isLoading, error } = useSubmissionData(submissionId, isOpen);
   const submissionData = data?.data;
-  console.log(data);
 
-  // const { isAccepted, lang, code, User, timestamp, Problem, tests } =
-  //   submissionData;
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={"4xl"}>
       <ModalOverlay />
