@@ -16,11 +16,18 @@ import ThemeToggler from "../components/ThemeToggler";
 import { userContext } from "../contexts/userContext";
 import UserProfile from "../components/UserProfile";
 import { useRouter } from "next/router";
+import { auth } from "../firebase/firebase";
+import Image from "next/image";
 
 function NormalLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <Flex direction={"column"} justifyContent={'space-between'} flex="1" minH={"100vh"}>
+      <Flex
+        direction={"column"}
+        justifyContent={"space-between"}
+        flex="1"
+        minH={"100vh"}
+      >
         <NavBar />
         <Box as="main">{children}</Box>
         <Footer />
@@ -40,14 +47,30 @@ const links = [
 function NavBar() {
   const { user, loading } = useContext(userContext);
 
+  useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log(user);
+      } else {
+        console.log("no user");
+      }
+    });
+  }, []);
+
   return (
     <Container maxW="container.xl" as={"header"}>
       <Box as="nav">
         <Flex py={2} justifyContent="space-between" align={"center"}>
-          <Link href={'https://codingducks.live'}>
-          <Heading>
-            <Text fontSize={"2xl"}>Coding ducks🦆</Text>
-          </Heading>
+          <Link href={"https://codingducks.live"}>
+            <Image
+              src={"/assets/badges/logo.png"}
+              width={175}
+              height={175}
+              alt={"logo"}
+            />
+            {/* <Heading>
+              <Text fontSize={"2xl"}>Coding ducks🦆</Text>
+            </Heading> */}
           </Link>
           <HStack as={"nav"}>
             {links.map((link) => (
