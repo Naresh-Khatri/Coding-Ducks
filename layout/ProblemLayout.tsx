@@ -1,19 +1,8 @@
 import {
-  Box,
-  Button,
   Flex,
   HStack,
   IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Spacer,
-  Text,
-  useDisclosure,
 } from "@chakra-ui/react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faHome, faLeftLong } from "@fortawesome/free-solid-svg-icons";
@@ -71,6 +60,7 @@ function ProblemLayout({ children }: ProblemLayoutProps) {
         </HStack>
       </Flex>
       <Flex w={"100vw"} flexGrow={1} overflowY="hidden">
+        {/* <EditorSettingsProvider>{children}</EditorSettingsProvider> */}
         {children}
       </Flex>
     </Flex>
