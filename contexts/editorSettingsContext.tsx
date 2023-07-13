@@ -16,7 +16,7 @@ interface IEditorSettings {
 const initialState: IEditorSettings = {
   lang: "py",
   theme: "dracula",
-  fontSize: 14,
+  fontSize: 18,
   tabSize: 4,
   keyBindings: "default",
   showDriverCode: false,
