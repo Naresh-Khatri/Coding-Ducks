@@ -33,11 +33,11 @@ function BottomActions({
   const toast = useToast();
 
   const notLoggedIn = !user?.username;
-  const { isNoob } = user;
+  const { isNoob } = user || { isNoob: false };
 
   return (
     <Box pos="relative" w={"100%"}>
-      {!isTutorialProblem && (notLoggedIn || isNoob) && (
+      {(notLoggedIn || (!isTutorialProblem && isNoob)) && (
         <Center
           pos={"absolute"}
           w={"100%"}
@@ -51,7 +51,9 @@ function BottomActions({
           onClick={() => {
             toast({
               title: "Locked",
-              description: "Solve above questions to unlock",
+              description: notLoggedIn
+                ? "Please login first!"
+                : "Solve above questions to unlock",
               status: "error",
               duration: 9000,
               isClosable: true,
@@ -68,10 +70,7 @@ function BottomActions({
             </Text>
           )}
           {isNoob && (
-            <Text fontWeight={"bold"}>
-              {" "}
-              Solve starting 10 problem to unlock
-            </Text>
+            <Text fontWeight={"bold"}>Solve starting 10 problem to unlock</Text>
           )}
         </Center>
       )}
