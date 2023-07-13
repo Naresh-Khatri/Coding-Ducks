@@ -94,9 +94,8 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
           <Button
             key={i}
             bg={selectedCase == i ? "gray.600" : ""}
-            // border={selectedCase == i ? "2px solid white" : ""}
             onClick={() => setSelectedCase(i)}
-            isDisabled={res.isPublic}
+            isDisabled={!res.isPublic}
           >
             <Box
               bg={res.isCorrect ? "green.300" : "red.400"}
@@ -105,7 +104,7 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
               h={2}
               borderRadius={"50%"}
             ></Box>
-            {res.isPublic && (
+            {!res.isPublic && (
               <>
                 <Box
                   bg={res.isCorrect ? "green.300" : "red.400"}
@@ -151,7 +150,7 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
               w={"100%"}
               maxH={200}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase].actualOutput.replace(
+                __html: output?.results[selectedCase]?.actualOutput?.replace(
                   /\n/g,
                   "<br />"
                 ),
