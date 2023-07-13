@@ -47,16 +47,6 @@ const links = [
 function NavBar() {
   const { user, loading } = useContext(userContext);
 
-  useEffect(() => {
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        console.log(user);
-      } else {
-        console.log("no user");
-      }
-    });
-  }, []);
-
   return (
     <Container maxW="container.xl" as={"header"}>
       <Box as="nav">
