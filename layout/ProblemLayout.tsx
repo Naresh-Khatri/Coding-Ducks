@@ -60,7 +60,6 @@ function ProblemLayout({ children }: ProblemLayoutProps) {
         </HStack>
       </Flex>
       <Flex w={"100vw"} flexGrow={1} overflowY="hidden">
-        {/* <EditorSettingsProvider>{children}</EditorSettingsProvider> */}
         {children}
       </Flex>
     </Flex>
