@@ -14,7 +14,7 @@ function LeftTabsContainer({
   setTabIndex,
 }: LeftTabsContainerProps) {
   return (
-    <Box>
+    <Box h={"100%"} overflow={"auto"}>
       <Tabs
         variant="line"
         colorScheme="purple"
@@ -38,7 +38,7 @@ function LeftTabsContainer({
             <p>Discussions coming soon...</p>
           </TabPanel>
           <TabPanel>
-            <SubmissionsTab problemId={problemData.id} />
+            {tabIndex === 3 && <SubmissionsTab problemId={problemData.id} />}
           </TabPanel>
         </TabPanels>
       </Tabs>
