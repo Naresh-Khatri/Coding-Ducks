@@ -80,97 +80,107 @@ function CustomTable({
 
   return (
     <>
-      {hasSearchBar && (
-        <HStack w={"100%"} justify={"space-between"}>
-          <Box>
-            <InputGroup size="md">
-              <Input
-                pr="4.5rem"
-                placeholder="Search titles"
-                value={searchTerm}
-                onChange={handleOnSearchChange}
-              />
-              {searchTerm != "" && (
-                <InputRightElement>
-                  <Button size="sm" onClick={(e) => handleOnSearchChange(e)}>
-                    <CloseIcon />
-                  </Button>
-                </InputRightElement>
-              )}
-            </InputGroup>
-          </Box>
-          <Flex>
-            <Text> {data.length} Problem(s)</Text>
-            <FormControl>
-              <FormLabel htmlFor="exam">Filter by exam</FormLabel>
-              <Select id="exam" onChange={handleOnFilterChange}>
-                <option value="all">All</option>
-                {examsList.map((exam) => (
-                  <option key={exam.id} value={exam.id}>
-                    {exam.title}
-                  </option>
-                ))}
-              </Select>
-            </FormControl>
-          </Flex>
-        </HStack>
-      )}
-      <TableContainer>
-        <Table {...getTableProps()}>
-          <Thead>
-            {headerGroups.map((headerGroup, i: number) => (
-              <Tr key={i} {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column, j: number) => (
-                  <Th
-                    key={j}
-                    {...column.getHeaderProps(
-                      hasSort ? column.getSortByToggleProps() : {}
-                    )}
-                  >
-                    {column.render("Header")}
-                    {column.isSorted && (
-                      <span
-                        style={{
-                          transition: "all .2s ease-in-out",
-                          rotate: column.isSortedDesc ? "0deg" : "180deg",
-                        }}
+      <Flex direction={"column"} flex={1} mb={5}>
+        <Flex>
+          {hasSearchBar && (
+            <HStack w={"100%"} justify={"space-between"}>
+              <Box>
+                <InputGroup size="md">
+                  <Input
+                    pr="4.5rem"
+                    placeholder="Search titles"
+                    value={searchTerm}
+                    onChange={handleOnSearchChange}
+                  />
+                  {searchTerm != "" && (
+                    <InputRightElement>
+                      <Button
+                        size="sm"
+                        onClick={(e) => handleOnSearchChange(e)}
                       >
-                        {column.isSortedDesc ? (
-                          <span>&#x25BC;</span>
-                        ) : (
-                          <span>&#x25B2;</span>
-                        )}
-                      </span>
-                    )}
-                  </Th>
-                ))}
-              </Tr>
-            ))}
-          </Thead>
-          <Tbody {...getTableBodyProps()}>
-            {rows.map((row, i: number) => {
-              prepareRow(row);
-              return (
-                <Tr key={i}>
-                  {row.original.hasOwnProperty("examId") ? (
-                    <ProblemRow
-                      problem={row.original}
-                      fetchProblems={refetchData}
-                      examsList={examsList}
-                    />
-                  ) : (
-                    <ExamRow
-                      key={i}
-                      exam={row.original}
-                      fetchExams={refetchData}
-                    />
+                        <CloseIcon />
+                      </Button>
+                    </InputRightElement>
                   )}
-                </Tr>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </TableContainer>
+                </InputGroup>
+              </Box>
+              <Flex>
+                <Text> {data.length} Problem(s)</Text>
+                <FormControl>
+                  <FormLabel htmlFor="exam">Filter by exam</FormLabel>
+                  <Select id="exam" onChange={handleOnFilterChange}>
+                    <option value="all">All</option>
+                    {examsList.map((exam) => (
+                      <option key={exam.id} value={exam.id}>
+                        {exam.title}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Flex>
+            </HStack>
+          )}
+        </Flex>
+        <Flex overflowY={"scroll"}>
+          {/* <Box bg={"cyan"} flex={1} flexGrow={1} w={"100%"}></Box> */}
+          <TableContainer w={"100%"}>
+            <Table {...getTableProps()} w={"60vw"}>
+              <Thead>
+                {headerGroups.map((headerGroup, i: number) => (
+                  <Tr key={i} {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column, j: number) => (
+                      <Th
+                        key={j}
+                        {...column.getHeaderProps(
+                          hasSort ? column.getSortByToggleProps() : {}
+                        )}
+                      >
+                        {column.render("Header")}
+                        {column.isSorted && (
+                          <span
+                            style={{
+                              transition: "all .2s ease-in-out",
+                              rotate: column.isSortedDesc ? "0deg" : "180deg",
+                            }}
+                          >
+                            {column.isSortedDesc ? (
+                              <span>&#x25BC;</span>
+                            ) : (
+                              <span>&#x25B2;</span>
+                            )}
+                          </span>
+                        )}
+                      </Th>
+                    ))}
+                  </Tr>
+                ))}
+              </Thead>
+              <Tbody {...getTableBodyProps()} w={"100%"}>
+                {rows.map((row, i: number) => {
+                  prepareRow(row);
+                  return (
+                    <Tr key={i}>
+                      {row.original.hasOwnProperty("examId") ? (
+                        <ProblemRow
+                          problem={row.original}
+                          fetchProblems={refetchData}
+                          examsList={examsList}
+                        />
+                      ) : (
+                        <ExamRow
+                          key={i}
+                          exam={row.original}
+                          fetchExams={refetchData}
+                        />
+                      )}
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        </Flex>
+      </Flex>
     </>
   );
 }
