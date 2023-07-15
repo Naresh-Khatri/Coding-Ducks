@@ -12,7 +12,7 @@ interface DiffBadgeProps {
 
 const diff = {
   tutorial: {
-    label: "Tutorial",
+    label: "Basic",
     starCount: 0,
   },
   easy: {
