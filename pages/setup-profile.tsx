@@ -75,7 +75,7 @@ export default function EditUserProfile() {
         isClosable: true,
       });
       loadUser();
-      router.push("/home");
+      router.push("/problems");
     } catch (error) {
       console.log(error);
       toast({
