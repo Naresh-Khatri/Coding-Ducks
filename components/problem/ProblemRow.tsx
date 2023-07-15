@@ -1,15 +1,6 @@
 import React from "react";
 import { IProblem } from "../../types";
-import {
-  Avatar,
-  AvatarGroup,
-  Box,
-  Center,
-  Td,
-  Text,
-  Tr,
-  useToast,
-} from "@chakra-ui/react";
+import { Avatar, AvatarGroup, Td, Text, Tr, useToast } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -54,16 +45,7 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
           </Text>
         </Tr>
       )}
-      <Tr
-        key={problem.id}
-        style={
-          {
-            //   opacity: isLocked ? 0.3 : 1,
-            //   border: isLocked ? "2px solid #333" : "",
-          }
-        }
-        onClick={() => console.log("clicked")}
-      >
+      <Tr key={problem.id} onClick={() => console.log("clicked")}>
         <Td h={"50px"}>
           {isLocked ? null : problem.status === "tried" ? (
             "A"
@@ -84,7 +66,7 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
             fontWeight={"bold"}
             color={DIFFICULTY_TO_COLOR[problem.difficulty].color}
           >
-            {problem.difficulty}
+            {DIFFICULTY_TO_COLOR[problem.difficulty].label}
           </Text>
         </Td>
         <Td m={0} p={0} pl={5}>
