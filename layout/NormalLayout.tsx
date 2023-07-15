@@ -53,7 +53,10 @@ function NavBar() {
         <Flex py={2} justifyContent="space-between" align={"center"}>
           <Link href={"https://codingducks.live"}>
             <Image
-              src={"/assets/badges/logo.png"}
+              // src={"/assets/badges/logo.png"}
+              src={
+                "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
+              }
               width={175}
               height={175}
               alt={"logo"}
