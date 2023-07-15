@@ -1,7 +1,4 @@
 import {
-  Avatar,
-  AvatarGroup,
-  Box,
   Container,
   Flex,
   HStack,
@@ -12,14 +9,13 @@ import {
   Table,
   TableContainer,
   Tbody,
-  Td,
   Text,
   Th,
   Thead,
   Tr,
 } from "@chakra-ui/react";
 import NormalLayout from "../../layout/NormalLayout";
-import { CheckIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { useContext, useState } from "react";
 import { useProblemsData } from "../../hooks/useProblemsData";
 import { userContext } from "../../contexts/userContext";
