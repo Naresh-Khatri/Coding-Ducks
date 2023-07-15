@@ -26,9 +26,9 @@ export const DIFFICULTIES = [
   },
 ];
 export const DIFFICULTY_TO_COLOR = {
-  tutorial: { color: "cyan", colorScheme: "cyan" },
-  basic: { color: "teal", colorScheme: "teal" },
-  easy: { color: "lightgreen", colorScheme: "green" },
-  medium: { color: "orange", colorScheme: "orange" },
-  hard: { color: "red", colorScheme: "red" },
+  tutorial: { color: "cyan", colorScheme: "cyan", label: "Basic" },
+  basic: { color: "teal", colorScheme: "teal", label: "Basic" },
+  easy: { color: "lightgreen", colorScheme: "green", label: "Easy" },
+  medium: { color: "orange", colorScheme: "orange", label: "Medium" },
+  hard: { color: "red", colorScheme: "red", label: "Hard" },
 };
