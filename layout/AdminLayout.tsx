@@ -29,7 +29,7 @@ function AdminLayout({ children }) {
         duration: 5000,
         isClosable: true,
       });
-      router.push("/home");
+      router.push("/problems");
     }
   });
 
