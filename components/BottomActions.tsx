@@ -51,6 +51,7 @@ function BottomActions({
           onClick={() => {
             toast({
               title: "Locked",
+              icon: <FontAwesomeIcon icon={faLock as IconProp} />,
               description: notLoggedIn
                 ? "Please login first!"
                 : "Solve above questions to unlock",
