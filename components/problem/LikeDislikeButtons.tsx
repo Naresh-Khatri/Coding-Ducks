@@ -62,7 +62,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
     }
   };
 
-  if (!ratingData?.rating) return null;
+  console.log(ratingData);
   return (
     <HStack>
       <Tooltip
@@ -70,7 +70,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
         borderRadius={10}
         bg={"gray.700"}
         label={
-          ratingData.rating.likes ? (
+          ratingData?.rating?.likes ? (
             <UsersList users={ratingData.rating.likes} />
           ) : null
         }
@@ -99,7 +99,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
         borderRadius={10}
         bg={"gray.700"}
         label={
-          ratingData.rating.dislikes ? (
+          ratingData?.rating?.dislikes ? (
             <UsersList users={ratingData.rating.dislikes} />
           ) : null
         }
