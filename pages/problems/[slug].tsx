@@ -1,15 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Flex, Skeleton, useDisclosure, useToast } from "@chakra-ui/react";
+import {
+  Flex,
+  Skeleton,
+  useDisclosure,
+  useMediaQuery,
+  useToast,
+} from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import dynamic from "next/dynamic";
 
 import Split from "react-split";
 import axios from "../../lib/axios";
 
-import ToolBar from "../../components/ToolBar";
-
-import BottomActions from "../../components/BottomActions";
-import NewConsole from "../../components/NewConsole";
 import { useLastSubmissionDataV2 } from "../../hooks/useSubmissionsData";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useProblemData } from "../../hooks/useProblemsData";
@@ -23,10 +24,10 @@ import EditorSettingsProvider, {
 } from "../../contexts/editorSettingsContext";
 import UserUpgradeModal from "../../components/problem/UserUpgradeModal";
 import { userContext } from "../../contexts/userContext";
-
-const AceCodeEditor = dynamic(() => import("../../components/AceCodeEditor"), {
-  ssr: false,
-});
+import {
+  BottomEditorContainer,
+  RightEditorContainer,
+} from "../../components/problem/EditorContainer";
 
 function ProblemPage() {
   const { loadUser } = useContext(userContext);
@@ -43,6 +44,11 @@ function ProblemPage() {
   const [tabIndex, setTabIndex] = useState(0);
 
   const toast = useToast();
+
+  const [isLessThan800] = useMediaQuery("(max-width: 800px)", {
+    ssr: true,
+    fallback: false, // return false on the server, and re-evaluate on the client side
+  });
 
   const {
     data: problemData,
@@ -130,10 +136,6 @@ function ProblemPage() {
     onCodeRetrievalError
   );
 
-  // const handleOnCodeRetrive = async () => {
-  //   refetchLastSubmissionData();
-  // };
-
   const runCode = async (submit = false) => {
     // onUserUpgradeModalOpen()
     setIsLoading(true);
@@ -209,7 +211,7 @@ function ProblemPage() {
       <Flex w={"100vw"} direction="row">
         {problemDataLoading ? (
           <Skeleton height="100vh" />
-        ) : (
+        ) : !isLessThan800 ? (
           <Flex flexGrow={1}>
             <Split
               className="split-h"
@@ -221,56 +223,37 @@ function ProblemPage() {
                 tabIndex={tabIndex}
                 setTabIndex={setTabIndex}
               />
-              <Flex
-                direction={"column"}
-                justify="space-between"
-                width="100%"
-                px={2}
-              >
-                <Flex justify={"end"}>
-                  <ToolBar
-                    isLoading={isLoading}
-                    runCode={runCode}
-                    onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
-                    onCodeReset={onCodeResetModalOpen}
-                  />
-                </Flex>
-                <Flex flexGrow={1} direction="column" h={"45"}>
-                  <Flex flexGrow={1} overflow="auto">
-                    <AceCodeEditor
-                      problemId={problemData.id}
-                      starterCode={
-                        problemData.starterCodes.find((sc) => sc.lang === lang)
-                          ?.code
-                      }
-                      errorIndex={output?.results[0]?.errorIndex || 0}
-                      runCode={() => runCode(false)}
-                    />
-                  </Flex>
-                  <Flex w={"full"}>
-                    {showConsole && (
-                      <Box overflow={"auto"} w={"full"}>
-                        <NewConsole
-                          output={output}
-                          onClose={() => {
-                            setShowConsole(false);
-                          }}
-                        />
-                      </Box>
-                    )}
-                  </Flex>
-                </Flex>
-                <Flex h={"50px"}>
-                  <BottomActions
-                    isTutorialProblem={problemData.difficulty === "tutorial"}
-                    showConsole={showConsole}
-                    setShowConsole={setShowConsole}
-                    runCode={runCode}
-                    isLoading={isLoading}
-                  />
-                </Flex>
-              </Flex>
+              <RightEditorContainer
+                isLoading={isLoading}
+                runCode={runCode}
+                problemData={problemData}
+                onCodeResetModalOpen={onCodeResetModalOpen}
+                onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
+                output={output}
+                showConsole={showConsole}
+                setShowConsole={setShowConsole}
+                lang={lang}
+              />
             </Split>
+          </Flex>
+        ) : (
+          <Flex direction={"column"} w={"100%"} position={'relative'}>
+            <LeftTabsContainer
+              problemData={problemData}
+              tabIndex={tabIndex}
+              setTabIndex={setTabIndex}
+            />
+            <BottomEditorContainer
+              isLoading={isLoading}
+              runCode={runCode}
+              problemData={problemData}
+              onCodeResetModalOpen={onCodeResetModalOpen}
+              onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
+              output={output}
+              showConsole={showConsole}
+              setShowConsole={setShowConsole}
+              lang={lang}
+            />
           </Flex>
         )}
         {isSubmissionModalOpen && (
