@@ -37,12 +37,14 @@ interface AceCodeEditorProps {
   starterCode?: string;
   runCode?: () => void;
   errorIndex?: number;
+  hideHeader?: boolean;
 }
 
 function AceCodeEditor({
   starterCode,
   errorIndex,
   problemId,
+  hideHeader,
 }: AceCodeEditorProps) {
   const editorRef = useRef<AceEditor>(null);
   const { settings, code, setCode } = useContext(EditorSettingsContext);
@@ -78,7 +80,7 @@ function AceCodeEditor({
 
     setCode(ccode);
     setTimeout(() => {
-      foldStarterCode(editorRef.current.editor);
+      if (editorRef.current?.editor) foldStarterCode(editorRef.current.editor);
     }, 10);
   }, [lang]);
 
@@ -157,7 +159,7 @@ function AceCodeEditor({
         borderRadius: "10px",
       }}
     >
-      <WindowHeader title={"editor.exe"} status={"none"} />
+      {!hideHeader && <WindowHeader title={"editor.exe"} status={"none"} />}
       <AceEditor
         mode={langToAceModes[lang]}
         // mode={'java'}
