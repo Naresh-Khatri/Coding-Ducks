@@ -1,13 +1,11 @@
 import { useState } from "react";
 import {
-  Avatar,
   Box,
   Button,
   Center,
   Divider,
   Flex,
   HStack,
-  Icon,
   IconButton,
   Modal,
   ModalBody,
@@ -17,7 +15,6 @@ import {
   Spacer,
   Text,
   useDisclosure,
-  useToast,
   VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
@@ -38,7 +35,7 @@ import FollowDetailsModal from "./FollowDetailsModal";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 function UserProfile() {
-  const { user, logout } = useContext(userContext);
+  const { user, loading, logout } = useContext(userContext);
   const { fullname, email, roll, photoURL, isAdmin, username } = user;
 
   const [maskedEmail, setMaskedEmail] = useState("");
@@ -65,7 +62,15 @@ function UserProfile() {
   const profileEdited = () => {
     //TODO: add update profile logic
   };
-  if (!photoURL) return <>Loading...</>;
+  if (loading) return <>Loading...</>;
+  if (!loading && !user?.email)
+    return (
+      <Link href="/login">
+        <Button color={"white"} bg="purple.600" _hover={{ bg: "purple.500" }}>
+          Sign In
+        </Button>
+      </Link>
+    );
   return (
     <Box>
       <HStack onClick={onOpen} cursor="pointer">
@@ -78,16 +83,12 @@ function UserProfile() {
             style={{ borderRadius: "50%", width: "50px", height: "50px" }}
           />
         </IconButton>
-        <Flex direction={"column"} alignItems="center">
-          <Flex>
-            {/* <Text fontWeight={"extrabold"}>{fullname}</Text> */}
-            {isAdmin && (
-              <Box color={"gold"}>
-                <FontAwesomeIcon icon={faCrown as IconProp} height={20} />
-              </Box>
-            )}
-          </Flex>
-          {/* <Text>{roll}</Text> */}
+        <Flex>
+          {isAdmin && (
+            <Box color={"gold"}>
+              <FontAwesomeIcon icon={faCrown as IconProp} height={20} />
+            </Box>
+          )}
         </Flex>
       </HStack>
       <Modal isOpen={isOpen} onClose={onClose}>
