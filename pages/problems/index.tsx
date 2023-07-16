@@ -1,4 +1,5 @@
 import {
+  Box,
   Container,
   Flex,
   HStack,
@@ -49,7 +50,7 @@ function ProblemsPage() {
 
   return (
     <NormalLayout>
-      <Container maxW="container.xl">
+      <Container maxW="container.xl" px={{ base: 0, md: 4 }}>
         {/* <Box
           h={200}
           borderRadius={"20px"}
@@ -63,15 +64,15 @@ function ProblemsPage() {
             ))}
           </Stack>
         ) : (
-          <TableContainer mt={24}>
+          <TableContainer mt={{ base: 16, md: 24 }}>
             <Table variant="striped" size={"md"}>
               <Thead>
                 <Tr>
-                  <Th>Status</Th>
-                  <Th>Title</Th>
-                  <Th>Acceptance</Th>
-                  <Th>Difficulty</Th>
-                  <Th>Solved by</Th>
+                  <Th px={{ base: 1, md: 3 }}>Status</Th>
+                  <Th px={{ base: 1, md: 3 }}>Title</Th>
+                  <Th px={{ base: 1, md: 3 }}>Acceptance</Th>
+                  <Th px={{ base: 1, md: 3 }}>Difficulty</Th>
+                  <Th px={{ base: 1, md: 3 }}>Solved by</Th>
                 </Tr>
               </Thead>
               <Tbody style={{ position: "relative" }}>
@@ -87,7 +88,12 @@ function ProblemsPage() {
             </Table>
           </TableContainer>
         )}
-        <Flex my={5} justifyContent="space-between" align="center">
+        <Flex
+          my={5}
+          direction={{ base: "column", md: "row" }}
+          justifyContent="space-between"
+          align="center"
+        >
           <HStack>
             <Select onChange={(e) => changeLimit(+e.target.value)}>
               <option value={20}>20</option>
@@ -97,24 +103,30 @@ function ProblemsPage() {
             <Text> /page</Text>
           </HStack>
 
-          <Stack direction={"row"} spacing={4} alignItems={"center"}>
+          <Flex
+            mt={{ base: 5, md: 0 }}
+            direction={{ base: "column", md: "row" }}
+            alignItems={"center"}
+          >
             <Text>
               Showing {skip + 1} to {Math.min(count, skip + limit)} of {count}{" "}
               Problems
             </Text>
-            <IconButton
-              isDisabled={skip === 0}
-              onClick={() => changeSkip("left")}
-              aria-label="previous page"
-              icon={<ChevronLeftIcon />}
-            />
-            <IconButton
-              isDisabled={skip + limit > count}
-              onClick={() => changeSkip("right")}
-              aria-label="next page"
-              icon={<ChevronRightIcon />}
-            />
-          </Stack>
+            <HStack spacing={4} mt={{ base: 3, md: 0 }}>
+              <IconButton
+                isDisabled={skip === 0}
+                onClick={() => changeSkip("left")}
+                aria-label="previous page"
+                icon={<ChevronLeftIcon />}
+              />
+              <IconButton
+                isDisabled={skip + limit > count}
+                onClick={() => changeSkip("right")}
+                aria-label="next page"
+                icon={<ChevronRightIcon />}
+              />
+            </HStack>
+          </Flex>
         </Flex>
       </Container>
     </NormalLayout>
