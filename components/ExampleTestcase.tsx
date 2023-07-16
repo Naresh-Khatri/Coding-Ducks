@@ -8,9 +8,8 @@ interface ExampleTestcaseProps {
 function ExampleTestcase({ testCase }: ExampleTestcaseProps) {
   const styles = {
     minHeight: "100px",
-    minWidth: "400px",
     width: "fit-content",
-    maxWidth: "800px",
+    maxWidth: "100%",
     color: "white",
     fontSize: "18px",
     padding: "20px",
