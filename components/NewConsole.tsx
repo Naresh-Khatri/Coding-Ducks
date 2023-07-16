@@ -79,8 +79,12 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
             {output.isCorrect ? "Accepted!" : "Wrong Output!"}
           </Text>
           <HStack>
-            <Text fontSize={"md"}>Runtime: {cpuUsage.toFixed(1)} ms</Text>{" "}
-            <Text fontSize={"md"}> Memory: {memoryUsage.toFixed(2)} MB</Text>
+            <Text display={{ base: "none", md: "block" }} fontSize={"md"}>
+              Runtime: {cpuUsage.toFixed(1)} ms
+            </Text>{" "}
+            <Text display={{ base: "none", md: "block" }} fontSize={"md"}>
+              Memory: {memoryUsage.toFixed(2)} MB
+            </Text>
             <IconButton
               aria-label="close"
               icon={<CloseIcon />}
@@ -89,13 +93,14 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
           </HStack>
         </Flex>
       </HStack>
-      <SimpleGrid columns={4} gap={2}>
+      <SimpleGrid columns={{ base: 3, md: 4 }} gap={2}>
         {output?.results.map((res, i) => (
           <Button
             key={i}
             bg={selectedCase == i ? "gray.600" : ""}
             onClick={() => setSelectedCase(i)}
             isDisabled={!res.isPublic}
+            minW={"fit-content"}
           >
             <Box
               bg={res.isCorrect ? "green.300" : "red.400"}
@@ -103,7 +108,9 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
               w={2}
               h={2}
               borderRadius={"50%"}
-            ></Box>
+            >
+              {/* {res.isCorrect ? "T" : "F"} */}{" "}
+            </Box>
             {!res.isPublic && (
               <>
                 <Box
