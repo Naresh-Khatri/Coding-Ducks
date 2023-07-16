@@ -21,14 +21,14 @@ function LeftTabsContainer({
         index={tabIndex}
         onChange={(idx) => setTabIndex(idx)}
       >
-        <TabList mb="1em">
+        <TabList mb="1em" overflowX={"auto"} overflowY={"hidden"}>
           <Tab fontWeight={"bold"}>Description</Tab>
           <Tab fontWeight={"bold"}>Editorial</Tab>
           <Tab fontWeight={"bold"}>Discussions</Tab>
           <Tab fontWeight={"bold"}>Submissions</Tab>
         </TabList>
         <TabPanels>
-          <TabPanel m={0} p={0}>
+          <TabPanel mb={{ base: 20, md: 0 }} p={3}>
             <ProblemStatementTab problem={problemData} />
           </TabPanel>
           <TabPanel>
