@@ -62,7 +62,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
     }
   };
 
-  console.log(ratingData);
+  // console.log(ratingData);
   return (
     <HStack>
       <Tooltip
