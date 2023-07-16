@@ -2,22 +2,25 @@ import React, { ReactNode, useContext, useEffect } from "react";
 import {
   Box,
   Button,
+  Collapse,
   Container,
   Flex,
-  Heading,
   HStack,
+  IconButton,
+  Stack,
   Text,
+  VStack,
   useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
 
 import Footer from "./components/Footer";
 import Link from "next/link";
 import ThemeToggler from "../components/ThemeToggler";
-import { userContext } from "../contexts/userContext";
 import UserProfile from "../components/UserProfile";
 import { useRouter } from "next/router";
-import { auth } from "../firebase/firebase";
 import Image from "next/image";
+import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";
 
 function NormalLayout({ children }: { children: ReactNode }) {
   return (
@@ -28,63 +31,74 @@ function NormalLayout({ children }: { children: ReactNode }) {
         flex="1"
         minH={"100vh"}
       >
-        <NavBar />
-        <Box as="main">{children}</Box>
-        <Footer />
+        <Container maxW="container.xl" as={"header"}>
+          <Box as="nav">
+            <Flex display={{ base: "none", md: "flex" }}>
+              <DesktopNavBar />
+            </Flex>
+            <Flex direction={"column"} display={{ base: "flex", md: "none" }}>
+              <MobileNavBar />
+            </Flex>
+            <Box as="main">{children}</Box>
+            <Footer />
+          </Box>
+        </Container>
       </Flex>
     </>
   );
 }
 
 const links = [
-  { name: "Problems", href: "/problems" },
-  { name: "Users", href: "/users" },
-  { name: "Tests", href: "/home" },
-  { name: "Playground", href: "/playground" },
-  { name: "Multiplayer", href: "/multiplayer" },
+  { label: "Problems", href: "/problems" },
+  { label: "Users", href: "/users" },
+  { label: "Tests", href: "/home" },
+  { label: "Playground", href: "/playground" },
+  { label: "Multiplayer", href: "/multiplayer" },
 ];
 
-function NavBar() {
-  const { user, loading } = useContext(userContext);
-
+function MobileNavBar() {
+  const { isOpen, onToggle } = useDisclosure();
   return (
-    <Container maxW="container.xl" as={"header"}>
-      <Box as="nav">
-        <Flex py={2} justifyContent="space-between" align={"center"}>
-          <Link href={"https://codingducks.live"}>
-            <Image
-              // src={"/assets/badges/logo.png"}
-              src={
-                "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
-              }
-              width={175}
-              height={175}
-              alt={"logo"}
-            />
-            {/* <Heading>
-              <Text fontSize={"2xl"}>Coding ducks🦆</Text>
-            </Heading> */}
-          </Link>
-          <HStack as={"nav"}>
-            {links.map((link) => (
-              <NavLink key={link.name} href={link.href}>
-                {link.name}
-              </NavLink>
-            ))}
-          </HStack>
-          <HStack>
-            <ThemeToggler />
-            <UserProfile />
-          </HStack>
+    <>
+      <Flex w={"100%"} justifyContent="space-between" align={"center"}>
+        <IconButton
+          onClick={onToggle}
+          icon={
+            isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
+          }
+          variant={"ghost"}
+          aria-label={"Toggle Navigation"}
+        />
+        <Link href={"https://codingducks.live"}>
+          <Image
+            src={
+              "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
+            }
+            width={175}
+            height={175}
+            alt={"logo"}
+          />
+        </Link>
+        <UserProfile />
+      </Flex>
+
+      <Collapse in={isOpen} animateOpacity>
+        <Flex direction={"column"} alignItems={"center"} my={5}>
+          {links.map((link) => (
+            <MobileNavItem key={link.label} {...link} />
+          ))}
+          <ThemeToggler />
         </Flex>
-      </Box>
-    </Container>
+      </Collapse>
+    </>
   );
 }
-
-const NavLink = ({ children, href }) => {
+interface NavItem {
+  label: string;
+  href?: string;
+}
+const MobileNavItem = ({ label, href }: NavItem) => {
   const router = useRouter();
-  console.log();
   return (
     <Link href={href} style={{ margin: "0 .5em" }}>
       <Button
@@ -98,7 +112,54 @@ const NavLink = ({ children, href }) => {
         }}
         colorScheme="purple"
       >
-        {children}
+        {label}
+      </Button>
+    </Link>
+  );
+};
+
+function DesktopNavBar() {
+  return (
+    <Flex w={"100%"} justifyContent="space-between" align={"center"}>
+      <Link href={"https://codingducks.live"}>
+        <Image
+          src={
+            "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
+          }
+          width={175}
+          height={175}
+          alt={"logo"}
+        />
+      </Link>
+      <HStack as={"nav"}>
+        {links.map((link) => (
+          <NavLink key={link.label} label={link.label} href={link.href} />
+        ))}
+      </HStack>
+      <HStack>
+        <ThemeToggler />
+        <UserProfile />
+      </HStack>
+    </Flex>
+  );
+}
+
+const NavLink = ({ label, href }) => {
+  const router = useRouter();
+  return (
+    <Link href={href} style={{ margin: "0 .5em" }}>
+      <Button
+        px={2}
+        py={1}
+        rounded={"md"}
+        variant={router.pathname === href ? "solid" : "ghost"}
+        _hover={{
+          textDecoration: "none",
+          bg: useColorModeValue("gray.200", "gray.700"),
+        }}
+        colorScheme="purple"
+      >
+        {label}
       </Button>
     </Link>
   );
