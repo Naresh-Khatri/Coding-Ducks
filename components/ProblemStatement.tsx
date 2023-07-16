@@ -12,9 +12,13 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 function ProblemStatement({ problem }: { problem: IProblem }) {
   return (
-    <Box p={5} overflowY="auto">
+    <Box p={{ base: 0, md: 5 }} overflowY="auto">
       <Box>
-        <Text fontWeight={"extrabold"} fontSize="4xl">
+        <Text
+          fontWeight={"extrabold"}
+          mb={5}
+          fontSize={{ base: "2xl", lg: "4xl" }}
+        >
           #{problem.frontendProblemId}. {problem.title}
         </Text>
         <Flex justifyContent={"space-between"} w={"100%"}>
@@ -40,7 +44,7 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
             <LikeDislikeButtons problemId={problem.id} />
           </HStack>
           <DiffBadge difficulty={problem.difficulty} size="md" />
-          <Stack alignItems={"end"}>
+          <Stack alignItems={"end"} display={{ base: "none", md: "flex" }}>
             <HStack>
               <Text fontSize={"sm"}>Accuracy: </Text>
               <Text fontWeight={"bold"} fontSize={"sm"}>
@@ -64,7 +68,7 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
         <Box
           dangerouslySetInnerHTML={{ __html: problem.description }}
           fontSize="lg"
-          mt={5}
+          mt={10}
         ></Box>
         {problem.testCases.map((testCase, index) => (
           <Box key={index}>
