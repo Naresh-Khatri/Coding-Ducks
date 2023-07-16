@@ -9,12 +9,13 @@ import {
 } from "@chakra-ui/react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
+  faClose,
   faDownload,
   faGear,
   faRefresh,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { Lang, Theme } from "../types";
 import { EDITOR_LANGUAGES, EDITOR_THEMES } from "../data/Editor";
 import ToolbarSettings from "./modals/ToolbarSettings";
@@ -31,7 +32,9 @@ export default function ToolBar({
   onCodeRetrievalModalOpen,
   onCodeReset,
 }: ToolBarProps) {
-  const { settings, updateSettings } = useContext(EditorSettingsContext);
+  const { settings, updateSettings, setBottomSheetIsOpen } = useContext(
+    EditorSettingsContext
+  );
   const { theme, lang } = settings;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -86,6 +89,7 @@ export default function ToolBar({
             value={theme}
             color="white"
             fontWeight={"extrabold"}
+            display={{ base: "none", md: "block" }}
           >
             {EDITOR_THEMES.map((theme) => (
               <option key={theme.value} style={{ color }} value={theme.value}>
@@ -93,6 +97,7 @@ export default function ToolBar({
               </option>
             ))}
           </Select>
+
           <Tooltip label="Customize your editor">
             <IconButton
               aria-label="customize your editor"
@@ -100,6 +105,13 @@ export default function ToolBar({
               onClick={onOpen}
             />
           </Tooltip>
+          <IconButton
+            display={{ base: "flex", md: "none" }}
+            aria-label="close"
+            colorScheme="red"
+            icon={<FontAwesomeIcon icon={faClose as IconProp} />}
+            onClick={() => setBottomSheetIsOpen(false)}
+          />
         </HStack>
       </HStack>
       <ToolbarSettings isOpen={isOpen} onClose={onClose} />
