@@ -30,17 +30,22 @@ interface IEditorSettingsContext {
   code: string;
   setCode: (code: string) => void;
   updateSettings: (newSettings: IEditorSettings) => void;
+  bottomSheetIsOpen?: boolean;
+  setBottomSheetIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 export const EditorSettingsContext = createContext({
   settings: initialState,
   code: "",
   setCode: (code: string) => {},
   updateSettings: (newSettings: IEditorSettings) => {},
+  bottomSheetIsOpen: false,
+  setBottomSheetIsOpen: (isOpen: boolean) => {},
 } as IEditorSettingsContext);
 
 const EditorSettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(initialState);
   const [code, setCode] = useState("");
+  const [bottomSheetIsOpen, setBottomSheetIsOpen] = useState(false);
 
   useEffect(() => {
     const storedSettings = JSON.parse(localStorage.getItem("editorSettings"));
@@ -58,7 +63,14 @@ const EditorSettingsProvider = ({ children }) => {
 
   return (
     <EditorSettingsContext.Provider
-      value={{ settings, updateSettings, code, setCode }}
+      value={{
+        settings,
+        updateSettings,
+        code,
+        setCode,
+        bottomSheetIsOpen,
+        setBottomSheetIsOpen,
+      }}
     >
       {children}
     </EditorSettingsContext.Provider>
