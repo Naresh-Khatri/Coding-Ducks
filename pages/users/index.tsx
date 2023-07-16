@@ -25,7 +25,7 @@ function UsersPage() {
         <Text fontSize="4xl" fontWeight="bold" mb={10}>
           Users ({data?.data.length})
         </Text>
-        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={10}>
+        <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={10}>
           {isLoading &&
             [...Array(20)].map((_, num) => <LoadingUserCard key={num} />)}
           {data &&
@@ -79,8 +79,9 @@ const UserCard = ({ user }) => {
   };
   return (
     <Link href={`/users/${user.username}`}>
-      <Box
+      <Flex
         w={"full"}
+        justifyContent={"center"}
         h={200}
         position="relative"
         bg={useColorModeValue("white", "#111928bf")}
@@ -92,12 +93,12 @@ const UserCard = ({ user }) => {
       >
         <Box
           position="absolute"
-          top={-10}
-          left={"25%"}
+          top={{base: -5, md: -10}}
+          // left={"25%"}
           _hover={{ top: -55 }}
           transition="all .1s ease-in-out"
         >
-          <Box position={"relative"}>
+          <Box position={"relative"} w={{ base: 70, md: 120 }}>
             <Image
               src={user.photoURL}
               alt="Picture of the author"
@@ -107,7 +108,7 @@ const UserCard = ({ user }) => {
             />
             {user.rank <= 3 && (
               <Box position={"absolute"} top={0} right={0}>
-                <Box>
+                <Box w={{base: '7px', md: '20px'}}>
                   <FontAwesomeIcon
                     icon={faStar as IconProp}
                     size={"3x"}
@@ -129,11 +130,10 @@ const UserCard = ({ user }) => {
           </Text>
           <Text color={"gray"}>@{user.username}</Text>
           <Text color={rankColor(user.rank)} fontSize="xl">
-            {" "}
             #{user.rank}
           </Text>
         </Flex>
-      </Box>
+      </Flex>
     </Link>
   );
 };
