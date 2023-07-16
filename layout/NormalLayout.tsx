@@ -74,21 +74,7 @@ function NavBar() {
           </HStack>
           <HStack>
             <ThemeToggler />
-            {loading ? (
-              <Text>Loading...</Text>
-            ) : Object.keys(user).length > 0 ? (
-              <UserProfile />
-            ) : (
-              <Link href="/login">
-                <Button
-                  color={"white"}
-                  bg="purple.600"
-                  _hover={{ bg: "purple.500" }}
-                >
-                  Sign In
-                </Button>
-              </Link>
-            )}
+            <UserProfile />
           </HStack>
         </Flex>
       </Box>
