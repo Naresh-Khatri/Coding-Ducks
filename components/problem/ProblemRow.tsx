@@ -46,22 +46,22 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
         </Tr>
       )}
       <Tr key={problem.id} onClick={() => console.log("clicked")}>
-        <Td h={"50px"}>
+        <Td px={{ base: 3, md: 3 }} h={"50px"}>
           {isLocked ? null : problem.status === "tried" ? (
             "A"
           ) : problem.status === "solved" ? (
             <CheckIcon color="green.500" />
           ) : null}
         </Td>
-        <Td>
+        <Td px={{ base: 1, md: 3 }}>
           <Link href={`/problems/${problem.slug}`}>
             <Text>
               {problem.frontendProblemId}. {problem.title}
             </Text>
           </Link>
         </Td>
-        <Td>{problem.accuracy || "-"}</Td>
-        <Td>
+        <Td px={{ base: 1, md: 3 }}>{problem.accuracy || "-"}</Td>
+        <Td px={{ base: 1, md: 3 }}>
           <Text
             fontWeight={"bold"}
             color={DIFFICULTY_TO_COLOR[problem.difficulty].color}
@@ -69,7 +69,7 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
             {DIFFICULTY_TO_COLOR[problem.difficulty].label}
           </Text>
         </Td>
-        <Td m={0} p={0} pl={5}>
+        <Td m={0} p={0} pl={5} px={{ base: 1, md: 3 }}>
           <AvatarGroup size="md" max={2} h={"50px"}>
             {problem.submissions.map((submission, idx) => (
               <Avatar
