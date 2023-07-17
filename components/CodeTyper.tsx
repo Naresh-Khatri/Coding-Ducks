@@ -192,22 +192,23 @@ function CodeTyper() {
         <Flex px={"20px"} h={"150px"}>
           <Text fontSize={{ base: "1xl", md: "2xl" }} as={"span"}>
             <TypewriterComponent
+              options={{ loop: true }}
               onInit={(typewriter) => {
                 typewriter
                   .typeString(
                     `<pre style='display: inline'><span role="presentation" style="padding-right: 0.1px;"><span style="color: #9fca56;">print</span>(<span style="color: #55b5db;">"hello world"</span>)</span></pre>`
                   )
-                  // .pauseFor(1000)
+                  .pauseFor(1000)
                   .deleteChars(13)
                   .typeString(
                     `<pre style='display: inline'><span style="color: #55b5db;">Welcome to<br> Coding Ducks!"</span></span>)</span></pre>`
                   )
-                  // .pauseFor(1000)
+                  .pauseFor(1000)
                   .deleteChars(26)
                   .typeString(
                     `<pre style='display: inline'><span style="color: #55b5db;">The best place to<br> start coding!"</span></span>)</span></pre>`
                   )
-                  .pauseFor(500)
+                  .pauseFor(1000)
                   .start();
               }}
             />
