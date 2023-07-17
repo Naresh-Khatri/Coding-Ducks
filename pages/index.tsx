@@ -8,33 +8,71 @@ import {
   Icon,
   useColorModeValue,
   createIcon,
+  Flex,
+  keyframes,
 } from "@chakra-ui/react";
 
 import NormalLayout from "../layout/NormalLayout";
 import Link from "next/link";
+import CodeTyper from "../components/CodeTyper";
+
+const gradientAnimation = keyframes`
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+`;
 
 export default function CallToActionWithAnnotation() {
   return (
     <>
       <NormalLayout>
-        <Container maxW={"3xl"}>
+        <Flex
+          w={"100%"}
+          flexDirection={{ base: "column", md: "row-reverse" }}
+          justifyContent={"space-between"}
+          alignItems={"center"}
+        >
+          <Flex
+            justifyContent={"center"}
+            flex={1}
+            h={"100%"}
+            mt={{ base: "150px", md: 0 }}
+            mb={{ base: 0, md: 48 }}
+          >
+            <CodeTyper />
+          </Flex>
           <Stack
-            as={Box}
-            textAlign={"center"}
             mb={10}
             py={{ base: 20, md: 36 }}
+            w={{ base: "100%", md: "510px" }}
           >
             <Heading
               fontWeight={600}
-              fontSize={{ base: "3xl", sm: "3xl", md: "3xl" }}
+              fontSize={{ base: "6xl", md: "7xl" }}
+              textAlign={"left"}
+              as={"h1"}
+              lineHeight={1}
+              css={{
+                background: `linear-gradient(to right,#7953cd 20%,#00affa 30%,#0190cd 70%,#764ada 80%    )`,
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                WebkitBackgroundClip: "text",
+                backgroundSize: "500% auto",
+                animation: `${gradientAnimation} 10s ease-in-out infinite alternate`,
+              }}
             >
-              Welcome to <br />
-              <Text as={"span"} fontSize={"7xl"} color={"purple.400"}>
-                Coding Ducks
-              </Text>
+              Code. <br /> Connect. <br /> Conquer.
             </Heading>
-            <Text color={"gray.500"} h={20}>
-              Dare to code!
+            <Text color={"gray.500"} fontSize={"xl"} textAlign={"left"} mb={10}>
+              Welcome to Coding Ducks. Simplifying coding with interactive
+              challenges and a supportive community. Join us to unleash your
+              coding potential today!
             </Text>
             <Stack
               direction={"column"}
@@ -57,9 +95,9 @@ export default function CallToActionWithAnnotation() {
                   Get Started
                 </Button>
               </Link>
-              <Button variant={"link"} colorScheme={"blue"} size={"sm"}>
+              {/* <Button variant={"link"} colorScheme={"blue"} size={"sm"}>
                 Learn more
-              </Button>
+              </Button> */}
               <Box>
                 <Icon
                   as={Arrow}
@@ -82,7 +120,7 @@ export default function CallToActionWithAnnotation() {
               </Box>
             </Stack>
           </Stack>
-        </Container>
+        </Flex>
       </NormalLayout>
     </>
   );
