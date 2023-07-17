@@ -16,15 +16,6 @@ import Image from "next/image";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
 
-// const gradientAnimation = keyframes`
-//   0% {
-//         background-position: 0% 50%;
-//     }
-//     100% {
-//         background-position: 100% 50%;
-//     }
-// }
-// `;
 const gradientAnimation = keyframes`
   0% {
     background-position: 0% 50%;
