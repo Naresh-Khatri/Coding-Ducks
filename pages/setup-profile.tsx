@@ -48,7 +48,7 @@ export default function EditUserProfile() {
     }
     // if (!loading && Object.keys(user) == 0) router.push("/login");
     // checking for googleUID in the user object to make sure used is in db
-    if (user.googleUID) router.push("/home");
+    if (user.googleUID) router.push("/");
   }, [user, firebaseUser, router, loading]);
   const handleCancelClick = () => {
     router.push("/");
