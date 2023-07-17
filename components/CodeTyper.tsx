@@ -50,8 +50,8 @@ function CodeTyper() {
       });
 
       cardRef.current.style.transform = `perspective(500px) rotateX( ${
-        acl.x * 2
-      }deg) rotateY(${acl.y * 2}deg)`;
+        acl.y * 2
+      }deg) rotateY(${acl.x * 2}deg)`;
     });
     acl.start();
   }, [isLargerThan800]);
