@@ -59,7 +59,7 @@ function MainLayout({ children, examData }: MainLayoutProps) {
         h={"70px"}
       >
         <HStack alignItems={"center"} h={"70px"}>
-          <Link href={"/home"}>
+          <Link href={"/"}>
             <IconButton
               aria-label="Go back"
               bg={"transparent"}
