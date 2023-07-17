@@ -59,7 +59,13 @@ export default function CallToActionWithAnnotation() {
               as={"h1"}
               lineHeight={1}
               css={{
-                background: `linear-gradient(to right,#7953cd 20%,#00affa 30%,#0190cd 70%,#764ada 80%    )`,
+                background: `linear-gradient(
+        to right,
+        #7953cd 20%,
+        #00affa 30%,
+        #0190cd 70%,
+        #764ada 80%
+    )`,
                 backgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 WebkitBackgroundClip: "text",
