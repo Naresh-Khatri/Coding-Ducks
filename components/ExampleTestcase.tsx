@@ -2,24 +2,24 @@ import { Box, Text } from "@chakra-ui/react";
 import React from "react";
 import { Testcase } from "../types";
 
+const styles = {
+  minHeight: "100px",
+  width: "fit-content",
+  maxWidth: "100%",
+  color: "white",
+  fontSize: "18px",
+  padding: "20px",
+  fontFamily: "Consolas,Courier New,monospace",
+  backdropFilter: "blur(4px) saturate(180%)",
+  WebkitBackdropFilter: "blur(16px) saturate(180%)",
+  backgroundColor: "#111928bf",
+  borderRadius: "12px",
+  border: "1px solid rgba(255,255,255,.125)",
+};
 interface ExampleTestcaseProps {
   testCase: Testcase;
 }
 function ExampleTestcase({ testCase }: ExampleTestcaseProps) {
-  const styles = {
-    minHeight: "100px",
-    width: "fit-content",
-    maxWidth: "100%",
-    color: "white",
-    fontSize: "18px",
-    padding: "20px",
-    fontFamily: "Consolas,Courier New,monospace",
-    backdropFilter: "blur(4px) saturate(180%)",
-    WebkitBackdropFilter: "blur(16px) saturate(180%)",
-    backgroundColor: "#111928bf",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,.125)",
-  };
   return (
     <Box style={styles}>
       {testCase.input && (
