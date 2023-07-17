@@ -31,6 +31,7 @@ import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
 import ToolBar from "../components/ToolBar";
 import { useRouter } from "next/router";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import SetMeta from "../components/SEO/SetMeta";
 
 interface OutputType {
   stdout?: string;
@@ -148,13 +149,16 @@ function Playground() {
   };
   return (
     <NormalLayout>
+      <SetMeta
+        title="Playground - Coding Ducks"
+        description="Practice coding in real-time with our interactive coding playground on Coding Ducks. Experiment, test, and refine your code in Python, JavaScript, C++, and Java."
+        keywords="interactive coding playground, code testing, coding experimentation, Python, JavaScript, C++, Java"
+        url="https://www.codingducks.live/playground"
+      />
       <Container maxW={"5xl"} minH={"100vh"}>
         <Box w={"100%"}>
           <Box w={"100%"} h={100}>
-            <ToolBar
-              runCode={runCode}
-              isLoading={isLoading}
-            />
+            <ToolBar runCode={runCode} isLoading={isLoading} />
             {/*
             <HStack spacing={4}>
                <Box>

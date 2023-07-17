@@ -16,11 +16,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useUsersData } from "../../hooks/useUsersData";
 import NormalLayout from "../../layout/NormalLayout";
+import SetMeta from "../../components/SEO/SetMeta";
 
 function UsersPage() {
   const { data, isLoading } = useUsersData();
   return (
     <NormalLayout>
+      <SetMeta
+        title="Coding Ducks - Explore Coders and Users"
+        description="Discover a vibrant community of coders and users on Coding Ducks. Explore user profiles, coding achievements, and contributions to the coding community."
+        keywords="coders, users, user profiles, coding achievements, coding community, programming enthusiasts"
+        url="https://www.codingducks.live/users"
+      />
       <Container mt={70} maxW={"6xl"} minH={"100vh"}>
         <Text fontSize="4xl" fontWeight="bold" mb={10}>
           Users ({data?.data.length})
@@ -93,7 +100,7 @@ const UserCard = ({ user }) => {
       >
         <Box
           position="absolute"
-          top={{base: -5, md: -10}}
+          top={{ base: -5, md: -10 }}
           // left={"25%"}
           _hover={{ top: -55 }}
           transition="all .1s ease-in-out"
@@ -108,7 +115,7 @@ const UserCard = ({ user }) => {
             />
             {user.rank <= 3 && (
               <Box position={"absolute"} top={0} right={0}>
-                <Box w={{base: '7px', md: '20px'}}>
+                <Box w={{ base: "7px", md: "20px" }}>
                   <FontAwesomeIcon
                     icon={faStar as IconProp}
                     size={"3x"}

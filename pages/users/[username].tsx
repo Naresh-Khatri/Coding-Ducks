@@ -8,6 +8,7 @@ import NormalLayout from "../../layout/NormalLayout";
 import SubsActivityCalendar from "../../components/SubsActivityCalendar";
 
 import { useUserData, useUserProgress } from "../../hooks/useUsersData";
+import SetMeta from "../../components/SEO/SetMeta";
 
 function UsersPage() {
   const router = useRouter();
@@ -43,9 +44,17 @@ function UsersPage() {
   }, [router.query, router.isReady, errorOnUserFetch, errorOnProgressFetch]);
 
   if (errorOnProgressFetch || errorOnUserFetch) return null;
+  if (!userData) return <p>Loading...</p>;
 
   return (
     <NormalLayout>
+      <SetMeta
+        title={`${userData.data.username} - User Profile and Achievements`}
+        description={`bio - ${userData?.data?.bio}`}
+        keywords={`${userData.data?.fullname}, user profile, coding achievements, coding solutions, community contributions`}
+        image={userData.data?.photoURL}
+        url={`https://www.codingducks.live/users/${userData.data?.username}`}
+      />
       <Container maxW={"8xl"} minH={"100vh"}>
         <Flex align="center" justify={"center"} w={"100%"} h={"100%"} mt={100}>
           <Flex>

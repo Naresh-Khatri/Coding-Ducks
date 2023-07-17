@@ -28,8 +28,9 @@ import { userContext } from "../contexts/userContext";
 import { useExamsData } from "../hooks/useExamsData";
 
 import NormalLayout from "../layout/NormalLayout";
+import SetMeta from "../components/SEO/SetMeta";
 
-export default function HomePage() {
+export default function ExamPage() {
   const { data: examsData, isLoading: examsDataLoading } = useExamsData();
   const { user } = useContext(userContext);
 
@@ -45,6 +46,11 @@ export default function HomePage() {
 
   return (
     <>
+      <SetMeta
+        title="Exams - Coding Ducks"
+        description="Take coding exams and assessments on Coding Ducks to assess your programming proficiency. Prepare for interviews and showcase your coding abilities in Python, JavaScript, C++, and Java."
+        url=""
+      />
       <NormalLayout>
         <Container maxW={"6xl"}>
           <Heading my={10}>
@@ -52,7 +58,7 @@ export default function HomePage() {
               Welcome Back {user.fullname}!
             </Text>
           </Heading>
-       
+
           <SimpleGrid columns={[1, 2, 3]} spacing={10} placeItems="center">
             {examsDataLoading &&
               [...Array(3)].map((_, i) => <ExamCardLoading key={i} />)}

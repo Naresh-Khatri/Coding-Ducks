@@ -22,6 +22,7 @@ import { useState } from "react";
 import axiosInstance from "../../lib/axios";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import SetMeta from "../../components/SEO/SetMeta";
 
 type Rating = null | 1 | 2 | 3 | 4 | 5;
 interface Ratings {
@@ -90,6 +91,11 @@ function FeedbackPage() {
       justifyContent={"center"}
       alignItems={"center"}
     >
+      <SetMeta
+        title="Coding Ducks - Feedback and Suggestions"
+        description="Provide your valuable feedback and suggestions to help us improve Coding Ducks. We value your input and strive to enhance your coding experience on our platform."
+        keywords="feedback, suggestions, user input, coding experience, platform improvement"
+      />
       <Stack
         spacing={10}
         maxW={"800px"}

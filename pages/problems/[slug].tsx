@@ -28,6 +28,7 @@ import {
   BottomEditorContainer,
   RightEditorContainer,
 } from "../../components/problem/EditorContainer";
+import SetMeta from "../../components/SEO/SetMeta";
 
 function ProblemPage() {
   const { loadUser } = useContext(userContext);
@@ -208,6 +209,12 @@ function ProblemPage() {
   if (problemDataLoading || !problemData?.title) return <div>Loading...</div>;
   return (
     <ProblemLayout>
+      <SetMeta
+        title={` ${problemData.title} - Coding Ducks `}
+        description={`Get the solution for the ${problemData.title} coding problem on Coding Ducks. Solve the challenge using Python, JavaScript, C++, or Java and improve your coding skills.`}
+        keywords={`${problemData.title}, coding problem, solution, Python, JavaScript, C++, Java`}
+        url={`https://www.codingducks.live/problems/${problemData.slug}`}
+      />
       <Flex w={"100vw"} direction="row">
         {problemDataLoading ? (
           <Skeleton height="100vh" />
@@ -237,7 +244,7 @@ function ProblemPage() {
             </Split>
           </Flex>
         ) : (
-          <Flex direction={"column"} w={"100%"} position={'relative'}>
+          <Flex direction={"column"} w={"100%"} position={"relative"}>
             <LeftTabsContainer
               problemData={problemData}
               tabIndex={tabIndex}

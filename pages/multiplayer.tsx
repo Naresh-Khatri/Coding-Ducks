@@ -32,19 +32,13 @@ import ChatMessage from "../components/ChatMessage";
 import dynamic from "next/dynamic";
 import ConnectedUsers from "../components/multiplayer/ConnectedUsers";
 import LanguageSelector from "../components/multiplayer/LanguageSelector";
-import {
-  IChatMessage,
-  ICursor,
-  IDefaultResult,
-  IRoom,
-  IRoomInfo,
-  IUser,
-} from "../types";
+import { IChatMessage, ICursor, IDefaultResult, IRoom } from "../types";
+import SetMeta from "../components/SEO/SetMeta";
 
 const CustomAce = dynamic(() => import("../components/CustomAce"), {
   ssr: false,
 });
-function TestPage() {
+function MultiplayerPage() {
   const { user } = useContext(userContext);
   const { data: roomsData, isLoading: roomsLoading } = useQuery(["rooms"], () =>
     axiosInstance("/playground/rooms")
@@ -294,6 +288,12 @@ function TestPage() {
 
   return (
     <NormalLayout>
+      <SetMeta
+        title="Coding Ducks - Collaborative Real-Time Coding with Friends"
+        description="Code collaboratively in real-time with your friends on Coding Ducks. Engage in multiplayer coding challenges, work together on problem-solving, and strengthen your coding skills as a team."
+        keywords="multiplayer coding challenges, collaborative coding, real-time coding, coding with friends, teamwork, problem-solving, programming collaboration"
+        url="https://codingducks.live/multiplayer"
+      />
       <Container maxW={{ base: "100vw", md: "90vw" }} minH={"100vh"}>
         <HStack justifyContent={"space-between"}>
           {room && showChat && (
@@ -430,4 +430,4 @@ function TestPage() {
   );
 }
 
-export default TestPage;
+export default MultiplayerPage;

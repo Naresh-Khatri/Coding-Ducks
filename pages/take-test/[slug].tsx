@@ -23,6 +23,7 @@ import { useLastSubmissionData } from "../../hooks/useSubmissionsData";
 import WarnOnTabLeave from "../../components/WarnOnTabLeave";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Output } from "../../types";
+import SetMeta from "../../components/SEO/SetMeta";
 
 function TakeTest() {
   const router = useRouter();
@@ -131,7 +132,7 @@ function TakeTest() {
         duration: 5000,
         isClosable: true,
       });
-      router.push("/home");
+      router.push("/exams");
     }
   }, [problemsData, problemsDataIsError, router, toast]);
 
@@ -151,7 +152,7 @@ function TakeTest() {
         duration: 5000,
         isClosable: true,
       });
-      router.push("/home");
+      router.push("/exams");
     } else {
     }
   }, [examData, router, toast]);
@@ -234,6 +235,12 @@ function TakeTest() {
   if (!examData || problemsDataLoading) return <div>Loading...</div>;
   return (
     <MainLayout examData={examData?.data}>
+      <SetMeta
+        title={`Coding Ducks - ${examData?.data?.title} - Coding Exam Solutions`}
+        description={`Access the solutions for the ${examData?.data?.title} coding exam on Coding Ducks. Review the problem statements and improve your coding techniques in Python, JavaScript, C++, or Java.`}
+        keywords={`${examData?.data?.title}, coding exam, solution, Python, JavaScript, C++, Java`}
+        url={`https://codingducks.live/${examData?.data?.slug}`}
+      />
       {examData?.data?.warnOnBlur && <WarnOnTabLeave />}
       <Flex w={"100vw"} direction="row">
         <Flex>

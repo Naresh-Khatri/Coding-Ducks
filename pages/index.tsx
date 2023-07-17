@@ -15,6 +15,7 @@ import {
 import NormalLayout from "../layout/NormalLayout";
 import Link from "next/link";
 import CodeTyper from "../components/CodeTyper";
+import SetMeta from "../components/SEO/SetMeta";
 
 const gradientAnimation = keyframes`
   0% {
@@ -28,9 +29,15 @@ const gradientAnimation = keyframes`
   }
 `;
 
-export default function CallToActionWithAnnotation() {
+export default function HomePage() {
   return (
     <>
+      <SetMeta
+        title="Coding Ducks - Enhance Your Coding Skills with Fun Challenges"
+        description="Join Coding Ducks and take your coding skills to new heights. Solve coding challenges, practice programming in Python, JavaScript, C++, and Java, and level up your coding expertise."
+        keywords="coding challenges, programming practice, Python, JavaScript, C++, Java, coding skills, coding platform, algorithmic problem solving"
+        url="https://www.codingducks.live/"
+      />
       <NormalLayout>
         <Flex
           w={"100%"}
@@ -87,7 +94,7 @@ export default function CallToActionWithAnnotation() {
               alignSelf={"center"}
               position={"relative"}
             >
-              <Link href={"/home"}>
+              <Link href={"/problems"}>
                 <Button
                   colorScheme={"purple"}
                   bg={"purple.400"}
