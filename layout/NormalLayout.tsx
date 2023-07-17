@@ -60,7 +60,7 @@ function NormalLayout({ children }: { children: ReactNode }) {
 const links = [
   { label: "Problems", href: "/problems" },
   { label: "Users", href: "/users" },
-  { label: "Tests", href: "/home" },
+  { label: "Tests", href: "/exams" },
   { label: "Playground", href: "/playground" },
   { label: "Multiplayer", href: "/multiplayer" },
 ];
