@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect } from "react";
+import React, { ReactNode } from "react";
 import {
   Box,
   Button,
@@ -7,9 +7,6 @@ import {
   Flex,
   HStack,
   IconButton,
-  Stack,
-  Text,
-  VStack,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -29,19 +26,31 @@ function NormalLayout({ children }: { children: ReactNode }) {
         direction={"column"}
         justifyContent={"space-between"}
         flex="1"
-        minH={"100vh"}
+        h={"100vh"}
       >
-        <Container maxW="container.xl" as={"header"}>
-          <Box as="nav">
-            <Flex display={{ base: "none", md: "flex" }}>
+        <Container
+          maxW="container.xl"
+          h={"100%"}
+          as={"header"}
+          display={"flex"}
+          flexDirection={"column"}
+        >
+          <Flex as="nav" w={"100%"}>
+            <Flex w={"100%"} display={{ base: "none", md: "flex" }}>
               <DesktopNavBar />
             </Flex>
-            <Flex direction={"column"} display={{ base: "flex", md: "none" }}>
+            <Flex
+              w={"100%"}
+              direction={"column"}
+              display={{ base: "flex", md: "none" }}
+            >
               <MobileNavBar />
             </Flex>
-            <Box as="main">{children}</Box>
-            <Footer />
-          </Box>
+          </Flex>
+          <Flex as="main" flex={1}>
+            {children}
+          </Flex>
+          <Footer />
         </Container>
       </Flex>
     </>
