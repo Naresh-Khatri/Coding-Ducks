@@ -70,7 +70,7 @@ function CodeTyper() {
         boxRef?.current?.removeEventListener("mouseleave", resetEffect);
       }
     };
-  }, []);
+  }, [isLargerThan800]);
   const resetEffect = (e: any) => {
     setIsMouseOver(false);
     setTimeout(function () {
@@ -80,9 +80,6 @@ function CodeTyper() {
           "perspective(1000px) rotateX(0deg) rotateY(0deg)";
       }
     }, 300);
-    // console.log("res");
-    // cardRef.current.style.transform =
-    //   "perspective(1000px) rotateX(0deg) rotateY(0deg)";
   };
   const parallax3DEffect = (e: any) => {
     if (!isMouseOver) {
