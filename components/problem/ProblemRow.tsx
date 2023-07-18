@@ -39,7 +39,7 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
             });
           }}
         >
-          <FontAwesomeIcon icon={faLock as IconProp} />
+          <FontAwesomeIcon icon={faLock as IconProp} height={"1.2rem"} />
           <Text ml={4} fontWeight={"bold"}>
             Solve above questions to unlock
           </Text>
