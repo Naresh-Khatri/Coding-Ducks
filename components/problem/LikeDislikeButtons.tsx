@@ -7,9 +7,7 @@ import {
   Tooltip,
   UnorderedList,
 } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faThumbsDown, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FC } from "react";
 import {
   IRatingUser,
@@ -18,6 +16,7 @@ import {
 } from "../../hooks/useProblemsData";
 import Image from "next/image";
 import Link from "next/link";
+import FAIcon from "../FAIcon";
 
 interface LikeDislikeButtonsProps {
   problemId: number;
@@ -87,9 +86,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
             removeBothMutation.isLoading
           }
           onClick={() => handleBtnPress("like")}
-          leftIcon={
-            <FontAwesomeIcon height={"1.2rem"} icon={faThumbsUp as IconProp} />
-          }
+          leftIcon={<FAIcon icon={faThumbsUp} />}
         >
           {ratingData?.rating?.likes?.length || "0"}
         </Button>
@@ -116,12 +113,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
             removeBothMutation.isLoading
           }
           onClick={() => handleBtnPress("dislike")}
-          leftIcon={
-            <FontAwesomeIcon
-              height={"1.2rem"}
-              icon={faThumbsDown as IconProp}
-            />
-          }
+          leftIcon={<FAIcon icon={faThumbsDown} />}
         >
           {ratingData?.rating?.dislikes?.length || "0"}
         </Button>

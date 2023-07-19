@@ -26,12 +26,11 @@ import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
 import NormalLayout from "../layout/NormalLayout";
 import axios from "../lib/axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
 import ToolBar from "../components/ToolBar";
 import { useRouter } from "next/router";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import SetMeta from "../components/SEO/SetMeta";
+import FAIcon from "../components/FAIcon";
 
 interface OutputType {
   stdout?: string;
@@ -185,8 +184,7 @@ function Playground() {
             <CodeMirror
               autoFocus
               value={code}
-              height="60vh"
-              style={{ fontSize: "1rem" }}
+              style={{ fontSize: "1rem", height: 600 }}
               theme={supportedThemes[theme]}
               extensions={[keymap.of(shortcuts as any), supportedLangs[lang]]}
               onChange={(value) => setCode(value)}
@@ -197,13 +195,13 @@ function Playground() {
                   colorScheme={"green"}
                   isLoading={isLoading}
                   onClick={runCode}
-                  leftIcon={<FontAwesomeIcon icon={faPlay as IconProp} />}
+                  leftIcon={<FAIcon icon={faPlay} />}
                 >
                   Run
                 </Button>
                 <Button
                   onClick={shareCode}
-                  leftIcon={<FontAwesomeIcon icon={faShare as IconProp} />}
+                  leftIcon={<FAIcon icon={faShare} />}
                 >
                   Share
                 </Button>

@@ -1,22 +1,15 @@
-import {
-  HStack,
-  IconButton,
-  Td,
-  Text,
-  useDisclosure,
-} from '@chakra-ui/react'
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
-import { faEye } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Image from 'next/image'
-import React from 'react'
-import SubmissionViewerModal from './SubmissionViewerModal'
-import { ISubmission } from '../../types'
+import { HStack, IconButton, Td, Text, useDisclosure } from "@chakra-ui/react";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
+import Image from "next/image";
+import React from "react";
+import SubmissionViewerModal from "./SubmissionViewerModal";
+import { ISubmission } from "../../types";
+import FAIcon from "../FAIcon";
 
 function SubmissionRow({ submission }: { submission: ISubmission }) {
-  const dateTime = new Date(submission.timestamp).toLocaleString().split(',')
-  const time = `${dateTime[1].split(':')[0]}:${dateTime[1].split(':')[1]}`
-  const date = `${dateTime[0]}`
+  const dateTime = new Date(submission.timestamp).toLocaleString().split(",");
+  const time = `${dateTime[1].split(":")[0]}:${dateTime[1].split(":")[1]}`;
+  const date = `${dateTime[0]}`;
   const {
     User,
     code,
@@ -29,8 +22,8 @@ function SubmissionRow({ submission }: { submission: ISubmission }) {
     timestamp,
     total_tests,
     userId,
-  } = submission
-  const { onOpen, onClose, isOpen } = useDisclosure()
+  } = submission;
+  const { onOpen, onClose, isOpen } = useDisclosure();
 
   return (
     <>
@@ -39,17 +32,17 @@ function SubmissionRow({ submission }: { submission: ISubmission }) {
       <Td>
         <Image
           src={User.photoURL}
-          alt='profile picture'
+          alt="profile picture"
           width={50}
           height={50}
-          style={{ borderRadius: '50%' }}
+          style={{ borderRadius: "50%" }}
         />
       </Td>
       <Td>{User.fullname}</Td>
       <Td>{lang}</Td>
       <Td>{marks}</Td>
       <Td>
-        <Text align={'center'}>
+        <Text align={"center"}>
           {time}
           <br />
           {date}
@@ -62,8 +55,8 @@ function SubmissionRow({ submission }: { submission: ISubmission }) {
       <Td>
         <HStack>
           <IconButton
-            aria-label='Edit Problem'
-            icon={<FontAwesomeIcon icon={faEye as IconProp} />}
+            aria-label="Edit Problem"
+            icon={<FAIcon icon={faEye} />}
             onClick={onOpen}
           />
           {isOpen && (
@@ -76,7 +69,7 @@ function SubmissionRow({ submission }: { submission: ISubmission }) {
         </HStack>
       </Td>
     </>
-  )
+  );
 }
 
-export default SubmissionRow
+export default SubmissionRow;

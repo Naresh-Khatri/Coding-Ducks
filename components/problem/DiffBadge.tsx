@@ -2,8 +2,8 @@ import { Badge, Box, Flex, HStack, Text } from "@chakra-ui/react";
 import React from "react";
 import { IDifficulty } from "../../types";
 import { DIFFICULTY_TO_COLOR } from "../../data/problems";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
+import FAIcon from "../FAIcon";
 
 interface DiffBadgeProps {
   difficulty: IDifficulty;
@@ -35,7 +35,7 @@ function DiffBadge({ difficulty, size }: DiffBadgeProps) {
       {difficulty !== "tutorial" && (
         <HStack>
           {[1, 2, 3].map((i) => (
-            <FontAwesomeIcon
+            <FAIcon
               key={i}
               icon={faStar}
               color={

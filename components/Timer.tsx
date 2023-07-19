@@ -19,10 +19,9 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import Image from "next/image";
+import FAIcon from "./FAIcon";
 
 function Timer() {
   const router = useRouter();
@@ -36,7 +35,7 @@ function Timer() {
 
   const [timer, setTimer] = useState(null);
   const [timerText, setTimerText] = useState("Unbounded");
-  const { isBounded, endTime } = examData?.data ;
+  const { isBounded, endTime } = examData?.data;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [warningShown, setWarningShown] = useState(false);
 
@@ -114,7 +113,7 @@ function Timer() {
   return (
     <>
       <HStack justifyContent={"center"} alignContent={"center"}>
-        <FontAwesomeIcon height={"1.2rem"} icon={faClock as IconProp} />
+        <FAIcon icon={faClock} />
         <Text fontWeight={"extrabold"}>
           {isBounded ? timerText : "Unbounded"}
         </Text>

@@ -6,9 +6,8 @@ import DiffBadge from "./problem/DiffBadge";
 import LikeDislikeButtons from "./problem/LikeDislikeButtons";
 import { IProblem } from "../types";
 import { InfoIcon } from "@chakra-ui/icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faFlask } from "@fortawesome/free-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "./FAIcon";
 
 function ProblemStatement({ problem }: { problem: IProblem }) {
   return (
@@ -25,20 +24,12 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
           <HStack>
             {problem.status === "solved" && (
               <Tooltip label="You've solved this problem">
-                <FontAwesomeIcon
-                  icon={faCheck as IconProp}
-                  color="lightgreen"
-                  size="2x"
-                />
+                <FAIcon icon={faCheck} color="lightgreen" />
               </Tooltip>
             )}
             {problem.status === "tried" && (
               <Tooltip label="You've attempted">
-                <FontAwesomeIcon
-                  icon={faFlask as IconProp}
-                  color="lightgreen"
-                  size="2x"
-                />
+                <FAIcon icon={faFlask} color="lightgreen" />
               </Tooltip>
             )}
             <LikeDislikeButtons problemId={problem.id} />

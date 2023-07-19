@@ -38,9 +38,8 @@ import "react-quill/dist/quill.snow.css";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import axios from "../../lib/axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "../../components/FAIcon";
 
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
@@ -259,7 +258,7 @@ const AddExam = () => {
 
                   <IconButton
                     aria-label="Add section"
-                    icon={<FontAwesomeIcon icon={faAdd as IconProp} />}
+                    icon={<FAIcon icon={faAdd} />}
                     onClick={addSectionHandler}
                   />
                 </TabList>

@@ -19,7 +19,6 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCrown,
   faEdit,
@@ -32,7 +31,7 @@ import { userContext } from "../contexts/userContext";
 import EditProfileInModel from "./EditProfileInModel";
 import Link from "next/link";
 import FollowDetailsModal from "./FollowDetailsModal";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "./FAIcon";
 
 function UserProfile() {
   const { user, loading, logout } = useContext(userContext);
@@ -86,7 +85,7 @@ function UserProfile() {
         <Flex>
           {isAdmin && (
             <Box color={"gold"}>
-              <FontAwesomeIcon icon={faCrown as IconProp} height={20} />
+              <FAIcon icon={faCrown} />
             </Box>
           )}
         </Flex>
@@ -133,7 +132,7 @@ function UserProfile() {
                 bg="transparent"
                 color="white"
                 variant={"outline"}
-                leftIcon={<FontAwesomeIcon icon={faSignOut as IconProp} />}
+                leftIcon={<FAIcon icon={faSignOut} />}
               >
                 Dashboard
               </Button>
@@ -162,9 +161,7 @@ function UserProfile() {
                         aria-label="unmask email"
                         variant="outline"
                         icon={
-                          <FontAwesomeIcon
-                            icon={isEmailMasked ? faEye : faEyeSlash}
-                          />
+                          <FAIcon icon={isEmailMasked ? faEye : faEyeSlash} />
                         }
                         size="sm"
                         onClick={() => setIsEmailMasked((p) => !p)}
@@ -241,10 +238,7 @@ function UserProfile() {
             {!isEditing && (
               <Flex m={2} justify="space-between">
                 <Button colorScheme="red" variant="outline" onClick={logout}>
-                  <FontAwesomeIcon
-                    icon={faSignOut as IconProp}
-                    height={"1.3rem"}
-                  />
+                  <FAIcon icon={faSignOut} height={"1.3rem"} />
                   Logout
                 </Button>
 
@@ -255,10 +249,7 @@ function UserProfile() {
                   color="white"
                   onClick={() => setIsEditing((p) => !p)}
                 >
-                  <FontAwesomeIcon
-                    icon={faEdit as IconProp}
-                    height={"1.3rem"}
-                  />
+                  <FAIcon icon={faEdit} height={"1.3rem"} />
                   Edit
                 </Button>
               </Flex>

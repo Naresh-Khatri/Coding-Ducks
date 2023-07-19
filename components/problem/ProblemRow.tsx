@@ -3,10 +3,9 @@ import { IProblem } from "../../types";
 import { Avatar, AvatarGroup, Td, Text, Tr, useToast } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import Link from "next/link";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { DIFFICULTY_TO_COLOR } from "../../data/problems";
+import FAIcon from "../FAIcon";
 
 interface ProblemRowProps {
   isLocked: boolean;
@@ -39,7 +38,7 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
             });
           }}
         >
-          <FontAwesomeIcon icon={faLock as IconProp} height={"1.2rem"} />
+          <FAIcon icon={faLock} />
           <Text ml={4} fontWeight={"bold"}>
             Solve above questions to unlock
           </Text>

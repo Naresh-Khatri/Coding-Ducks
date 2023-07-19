@@ -7,13 +7,12 @@ import {
   SimpleGrid,
   Text,
 } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { Output } from "../types";
 import { CloseIcon } from "@chakra-ui/icons";
 import { errorType2Label } from "../lib/utils";
+import FAIcon from "./FAIcon";
 
 interface NewConsoleProps {
   output: Output;
@@ -119,7 +118,7 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
                   borderRadius={"50%"}
                 ></Box>
                 <Box mr={1}>
-                  <FontAwesomeIcon icon={faLock as IconProp} />
+                  <FAIcon icon={faLock} />
                 </Box>
               </>
             )}

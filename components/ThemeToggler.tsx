@@ -1,7 +1,6 @@
 import { IconButton, useColorMode, useToast } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faLightbulb, faMoon } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import FAIcon from "./FAIcon";
 
 function ThemeToggler() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -9,12 +8,7 @@ function ThemeToggler() {
   return (
     <IconButton
       aria-label="Toggle theme"
-      icon={
-        <FontAwesomeIcon
-          icon={colorMode === "light" ? faMoon : (faLightbulb as IconProp)}
-          height={"1.2rem"}
-        />
-      }
+      icon={<FAIcon icon={colorMode === "light" ? faMoon : faLightbulb} />}
       onClick={() => {
         if (colorMode === "dark")
           toast({

@@ -19,10 +19,9 @@ import Link from "next/link";
 import AdminLayout from "../../layout/AdminLayout";
 import { useAllProblemsData } from "../../hooks/useProblemsData";
 import CustomTable from "../../components/CustomTable";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useState } from "react";
+import FAIcon from "../../components/FAIcon";
 
 const COLUMNS = [
   {
@@ -85,10 +84,7 @@ function ProblemPage() {
                 onChange={(e) => setAllowExams(e.target.checked)}
               />
             </FormControl>
-            <Button
-              onClick={onOpen}
-              leftIcon={<FontAwesomeIcon icon={faTags as IconProp} />}
-            >
+            <Button onClick={onOpen} leftIcon={<FAIcon icon={faTags} />}>
               Edit Tags
             </Button>
           </HStack>

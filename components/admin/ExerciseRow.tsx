@@ -1,17 +1,14 @@
 import {
   Box,
-  HStack,
   IconButton,
   Input,
   Td,
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import FAIcon from "../FAIcon";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -105,7 +102,7 @@ function ExerciseRow({ probIdx, secIdx, setSections }) {
           aria-label="Remove Problem"
           onClick={handleOnProblemRemoved}
           colorScheme={"red"}
-          icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
+          icon={<FAIcon icon={faTrash} />}
         />
       </Td>
     </Tr>

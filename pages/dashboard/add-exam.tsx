@@ -1,8 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
-  Progress,
   Box,
-  ButtonGroup,
   Button,
   Heading,
   Flex,
@@ -29,9 +27,8 @@ import { createAspectRatio, Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 
 import dynamic from "next/dynamic";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "../../components/FAIcon";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -43,7 +40,7 @@ const AddExam = () => {
   const [slug, setSlug] = useState("");
   const [startTime, setStartTime] = useState("");
   const [active, setActive] = useState(false);
-  const [isBounded, setIsBounded] = useState(false)
+  const [isBounded, setIsBounded] = useState(false);
   const [totalMarks, setTotalMarks] = useState(100);
   const [coverImg, setCoverImg] = useState(null);
 
@@ -242,7 +239,7 @@ const AddExam = () => {
                         zIndex={1}
                         top={-5}
                         right={-5}
-                        icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
+                        icon={<FAIcon icon={faTrash} />}
                         bg="red.300"
                         color="white"
                         onClick={() => setCoverImg("")}

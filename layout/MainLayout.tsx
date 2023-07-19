@@ -15,15 +15,14 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faHome, faLeftLong } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
 import { useExamSubmissionsData } from "../hooks/useExamsData";
 import Timer from "../components/Timer";
 import { useRouter } from "next/router";
+import FAIcon from "../components/FAIcon";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -63,21 +62,14 @@ function MainLayout({ children, examData }: MainLayoutProps) {
             <IconButton
               aria-label="Go back"
               bg={"transparent"}
-              icon={
-                <FontAwesomeIcon
-                  height={"1.2rem"}
-                  icon={faLeftLong as IconProp}
-                />
-              }
+              icon={<FAIcon icon={faLeftLong} />}
             />
           </Link>
           <Link href={"/"}>
             <IconButton
               aria-label="Go home"
               bg={"transparent"}
-              icon={
-                <FontAwesomeIcon height={"1.2rem"} icon={faHome as IconProp} />
-              }
+              icon={<FAIcon icon={faHome} />}
             />
           </Link>
           <Text fontSize="20px" fontWeight={"extrabold"} noOfLines={1}>

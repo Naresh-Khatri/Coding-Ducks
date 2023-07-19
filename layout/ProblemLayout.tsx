@@ -1,12 +1,11 @@
 import { Button, Flex, HStack, IconButton, Spacer } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faBars, faCode, faLeftLong } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
 import { useContext } from "react";
 import { EditorSettingsContext } from "../contexts/editorSettingsContext";
+import FAIcon from "../components/FAIcon";
 
 interface ProblemLayoutProps {
   children: React.ReactNode;
@@ -21,20 +20,13 @@ function ProblemLayout({ children }: ProblemLayoutProps) {
             <IconButton
               aria-label="Go back"
               bg={"transparent"}
-              icon={
-                <FontAwesomeIcon
-                  height={"1.2rem"}
-                  icon={faLeftLong as IconProp}
-                />
-              }
+              icon={<FAIcon icon={faLeftLong} />}
             />
           </Link>
         </HStack>
         <Spacer />
         <Link href={"/problems"}>
-          <Button leftIcon={<FontAwesomeIcon icon={faBars as IconProp} />}>
-            Problems
-          </Button>
+          <Button leftIcon={<FAIcon icon={faBars} />}>Problems</Button>
         </Link>
         <Spacer />
         <HStack>
@@ -52,7 +44,7 @@ function ProblemLayout({ children }: ProblemLayoutProps) {
           w={"100%"}
           zIndex={0}
           colorScheme="purple"
-          leftIcon={<FontAwesomeIcon icon={faCode as IconProp} />}
+          leftIcon={<FAIcon icon={faCode} />}
           onClick={() => setBottomSheetIsOpen(true)}
         >
           Open Editor

@@ -8,11 +8,10 @@ import {
   Textarea,
   Tr,
 } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Testcase } from "../../types";
+import FAIcon from "../FAIcon";
 
 interface TestCaseRowProps {
   testCases: Testcase[];
@@ -91,7 +90,7 @@ function TestCaseRow({ testCases, index, setTestCases }: TestCaseRowProps) {
           <IconButton
             aria-label="Delete test case"
             bg={"red.500"}
-            icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
+            icon={<FAIcon icon={faTrash} />}
             onClick={() => {
               const newTestCases = [...testCases];
               newTestCases.splice(index, 1);

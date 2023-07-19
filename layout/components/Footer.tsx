@@ -18,8 +18,7 @@ import {
   faLinkedin,
   faTwitter,
 } from "@fortawesome/free-brands-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "../../components/FAIcon";
 
 const Footer = () => (
   <Box
@@ -44,25 +43,19 @@ const Footer = () => (
           as="a"
           href="https://www.linkedin.com/naresh-khatri"
           aria-label="LinkedIn"
-          icon={
-            <FontAwesomeIcon height={"1.2rem"} icon={faLinkedin as IconProp} />
-          }
+          icon={<FAIcon icon={faLinkedin} />}
         />
         <IconButton
           as="a"
           href="https://www.github.com/naresh-khatri"
           aria-label="GitHub"
-          icon={
-            <FontAwesomeIcon height={"1.2rem"} icon={faGithub as IconProp} />
-          }
+          icon={<FAIcon icon={faGithub} />}
         />
         <IconButton
           as="a"
           href="https://www.twitter.com/naresh-khatri"
           aria-label="Twitter"
-          icon={
-            <FontAwesomeIcon height={"1.2rem"} icon={faTwitter as IconProp} />
-          }
+          icon={<FAIcon icon={faTwitter} />}
         />
       </ButtonGroup>
     </Container>

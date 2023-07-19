@@ -20,15 +20,13 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Image from "next/image";
 import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../contexts/userContext";
 
 import { createAspectRatio, Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 import axios from "../lib/axios";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "./FAIcon";
 
 interface ProfileUpdatePayload {
   fullname?: string;
@@ -236,7 +234,7 @@ function EditProfileInModel({ onCancel, onSubmit }: EditProfileInModelProps) {
                   zIndex={1}
                   top={-5}
                   right={-5}
-                  icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
+                  icon={<FAIcon icon={faTrash} />}
                   bg="red.300"
                   color="white"
                   onClick={() => setNewProfilePicture("")}

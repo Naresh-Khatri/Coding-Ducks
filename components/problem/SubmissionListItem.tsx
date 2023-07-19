@@ -1,7 +1,5 @@
 import React from "react";
 import { ISubmission } from "../../types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 import {
   Badge,
@@ -15,6 +13,7 @@ import {
 import { formatDate } from "../../lib/formatDate";
 import ViewSubmissionModal from "./ViewSubmissionModal";
 import { lang2Label } from "../../lib/utils";
+import FAIcon from "../FAIcon";
 
 interface SubmissionListItemProps {
   submission: ISubmission;
@@ -53,7 +52,7 @@ function SubmissionListItem({ submission }: SubmissionListItemProps) {
           <IconButton
             onClick={onOpen}
             aria-label="view-submission"
-            icon={<FontAwesomeIcon icon={faEye as IconProp} />}
+            icon={<FAIcon icon={faEye} />}
           />
         </Box>
       </Flex>

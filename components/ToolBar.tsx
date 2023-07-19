@@ -7,19 +7,18 @@ import {
   Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faClose,
   faDownload,
   faGear,
   faRefresh,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext } from "react";
 import { Lang, Theme } from "../types";
 import { EDITOR_LANGUAGES, EDITOR_THEMES } from "../data/Editor";
 import ToolbarSettings from "./modals/ToolbarSettings";
 import { EditorSettingsContext } from "../contexts/editorSettingsContext";
+import FAIcon from "./FAIcon";
 
 interface ToolBarProps {
   isLoading?: boolean;
@@ -66,7 +65,7 @@ export default function ToolBar({
             <Tooltip label="Reset code to initial state">
               <IconButton
                 aria-label="Reset code to initial state"
-                icon={<FontAwesomeIcon icon={faRefresh as IconProp} />}
+                icon={<FAIcon icon={faRefresh} />}
                 onClick={onCodeReset}
               />
             </Tooltip>
@@ -75,7 +74,7 @@ export default function ToolBar({
             <Tooltip label="Retrieve last submitted code">
               <IconButton
                 aria-label="retrieve last submitted code"
-                icon={<FontAwesomeIcon icon={faDownload as IconProp} />}
+                icon={<FAIcon icon={faDownload} />}
                 onClick={onCodeRetrievalModalOpen}
               />
             </Tooltip>
@@ -101,7 +100,7 @@ export default function ToolBar({
           <Tooltip label="Customize your editor">
             <IconButton
               aria-label="customize your editor"
-              icon={<FontAwesomeIcon icon={faGear as IconProp} />}
+              icon={<FAIcon icon={faGear} />}
               onClick={onOpen}
             />
           </Tooltip>
@@ -109,7 +108,7 @@ export default function ToolBar({
             display={{ base: "flex", md: "none" }}
             aria-label="close"
             colorScheme="red"
-            icon={<FontAwesomeIcon icon={faClose as IconProp} />}
+            icon={<FAIcon icon={faClose} />}
             onClick={() => setBottomSheetIsOpen(false)}
           />
         </HStack>

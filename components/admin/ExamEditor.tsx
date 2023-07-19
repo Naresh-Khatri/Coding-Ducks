@@ -25,11 +25,10 @@ import "react-advanced-cropper/dist/style.css";
 
 import { useEffect, useRef, useState } from "react";
 import axios from "../../lib/axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { IExam } from "../../types";
+import FAIcon from "../FAIcon";
 const QuillNoSSRWrapper = dynamic(import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
@@ -281,7 +280,7 @@ function ExamEditor({
                   zIndex={1}
                   top={-5}
                   right={-5}
-                  icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
+                  icon={<FAIcon icon={faTrash} />}
                   bg="red.300"
                   color="white"
                   onClick={() => setOldCoverImg("")}
@@ -306,7 +305,7 @@ function ExamEditor({
                   zIndex={1}
                   top={-5}
                   right={-5}
-                  icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
+                  icon={<FAIcon icon={faTrash} />}
                   bg="red.300"
                   color="white"
                   onClick={() => setNewCoverImg("")}

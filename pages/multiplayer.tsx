@@ -16,14 +16,12 @@ import {
 } from "@chakra-ui/react";
 
 import NormalLayout from "../layout/NormalLayout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faLeftLong,
   faMessage,
   faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/router";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { userContext } from "../contexts/userContext";
 import { AddIcon } from "@chakra-ui/icons";
 import { useQuery } from "@tanstack/react-query";
@@ -34,6 +32,7 @@ import ConnectedUsers from "../components/multiplayer/ConnectedUsers";
 import LanguageSelector from "../components/multiplayer/LanguageSelector";
 import { IChatMessage, ICursor, IDefaultResult, IRoom } from "../types";
 import SetMeta from "../components/SEO/SetMeta";
+import FAIcon from "../components/FAIcon";
 
 const CustomAce = dynamic(() => import("../components/CustomAce"), {
   ssr: false,
@@ -300,7 +299,7 @@ function MultiplayerPage() {
             <Button
               colorScheme="blue"
               onClick={() => setShowChat(false)}
-              leftIcon={<FontAwesomeIcon icon={faLeftLong as IconProp} />}
+              leftIcon={<FAIcon icon={faLeftLong} />}
             >
               Hide Chat
             </Button>
@@ -309,7 +308,7 @@ function MultiplayerPage() {
             <Button
               colorScheme="blue"
               onClick={() => setShowChat(true)}
-              rightIcon={<FontAwesomeIcon icon={faMessage as IconProp} />}
+              rightIcon={<FAIcon icon={faMessage} />}
             >
               Show Chat
             </Button>
@@ -382,7 +381,7 @@ function MultiplayerPage() {
                 <Box>
                   <Button
                     colorScheme="green"
-                    rightIcon={<FontAwesomeIcon icon={faPlay as IconProp} />}
+                    rightIcon={<FAIcon icon={faPlay} />}
                     onClick={handleRunCode}
                     isLoading={resultIsLoading}
                   >

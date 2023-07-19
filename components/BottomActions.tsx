@@ -8,12 +8,11 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faReact } from "@fortawesome/free-brands-svg-icons";
 import { faLock, faPlay } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useContext } from "react";
 import { userContext } from "../contexts/userContext";
+import FAIcon from "./FAIcon";
 
 interface BottomActionsProps {
   setShowConsole: React.Dispatch<React.SetStateAction<boolean>>;
@@ -51,7 +50,7 @@ function BottomActions({
           onClick={() => {
             toast({
               title: "Locked",
-              icon: <FontAwesomeIcon icon={faLock as IconProp} />,
+              icon: <FAIcon icon={faLock} />,
               description: notLoggedIn
                 ? "Please login first!"
                 : "Solve above questions to unlock",
@@ -61,10 +60,7 @@ function BottomActions({
             });
           }}
         >
-          <FontAwesomeIcon
-            style={{ marginRight: "10px" }}
-            icon={faLock as IconProp}
-          />
+          <FAIcon style={{ marginRight: "10px" }} icon={faLock} />
           {notLoggedIn && (
             <Text fontWeight={"bold"}>
               You need to be a member to run code.
@@ -88,7 +84,7 @@ function BottomActions({
             loadingText="Running..."
             isLoading={isLoading}
             bg="purple.600"
-            leftIcon={<FontAwesomeIcon icon={faReact as IconProp} />}
+            leftIcon={<FAIcon icon={faReact} />}
             color="white"
             onClick={() => runCode(false)}
           >
@@ -98,7 +94,7 @@ function BottomActions({
             loadingText="Running..."
             isLoading={isLoading}
             bg="green.400"
-            leftIcon={<FontAwesomeIcon icon={faPlay as IconProp} />}
+            leftIcon={<FAIcon icon={faPlay} />}
             color="white"
             onClick={() => runCode(true)}
           >
