@@ -1,19 +1,11 @@
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
-import {
-  CloseButton,
-  HStack,
-  IconButton,
-  Td,
-  Tr,
-  useDisclosure,
-} from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { HStack, IconButton, Td, useDisclosure } from "@chakra-ui/react";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import React from "react";
 import ExamDeleteModal from "./ExamDeleteModal";
 import ExamEditor from "./ExamEditor";
+import FAIcon from "../FAIcon";
 
 function ExamRow({ exam, fetchExams }) {
   const { id, coverImg, title, description, endTime, startTime, active } = exam;
@@ -54,7 +46,7 @@ function ExamRow({ exam, fetchExams }) {
         <HStack>
           <IconButton
             aria-label="Edit Exam"
-            icon={<FontAwesomeIcon icon={faEdit as IconProp} />}
+            icon={<FAIcon icon={faEdit} />}
             onClick={onEditOpen}
           />
           <ExamEditor
@@ -69,7 +61,7 @@ function ExamRow({ exam, fetchExams }) {
           <IconButton
             aria-label="Delete Exam"
             bg="red.300"
-            icon={<FontAwesomeIcon icon={faTrash as IconProp} />}
+            icon={<FAIcon icon={faTrash} />}
             onClick={onDeleteOpen}
           />
           <ExamDeleteModal
