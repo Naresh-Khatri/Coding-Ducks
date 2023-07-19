@@ -9,17 +9,21 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import Link from "next/link";
 import { useUsersData } from "../../hooks/useUsersData";
 import NormalLayout from "../../layout/NormalLayout";
 import SetMeta from "../../components/SEO/SetMeta";
+import { IUser } from "../../types";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { baseURL } from "../../lib/axios";
+import FAIcon from "../../components/FAIcon";
 
-function UsersPage() {
-  const { data, isLoading } = useUsersData();
+function UsersPage({
+  users,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const { data, isLoading } = useUsersData({ initialUsers: users });
   return (
     <NormalLayout>
       <SetMeta
@@ -30,13 +34,14 @@ function UsersPage() {
       />
       <Container mt={70} maxW={"6xl"} minH={"100vh"}>
         <Text fontSize="4xl" fontWeight="bold" mb={10}>
-          Users ({data?.data.length})
+          Users ({users.length})
         </Text>
         <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={10}>
           {isLoading &&
             [...Array(20)].map((_, num) => <LoadingUserCard key={num} />)}
-          {data &&
-            data?.data?.map((user) => <UserCard key={user.id} user={user} />)}
+          {data?.map((user) => (
+            <UserCard key={user.id} user={user} />
+          ))}
         </SimpleGrid>
       </Container>
     </NormalLayout>
@@ -116,8 +121,8 @@ const UserCard = ({ user }) => {
             {user.rank <= 3 && (
               <Box position={"absolute"} top={0} right={0}>
                 <Box w={{ base: "7px", md: "20px" }}>
-                  <FontAwesomeIcon
-                    icon={faStar as IconProp}
+                  <FAIcon
+                    icon={faStar}
                     size={"3x"}
                     color={rankColor(user.rank)}
                   />
@@ -145,25 +150,25 @@ const UserCard = ({ user }) => {
   );
 };
 
-// export const getServerSideProps = async () => {
-//   try {
-//     // const { data } = await axios.get("/users");
-//     const res = await fetch("/users");
-//     const data = await res.json();
-//     console.log(data);
-//     return {
-//       props: {
-//         users: data,
-//       },
-//     };
-//   } catch (err) {
-//     console.log(err);
-//     return {
-//       props: {
-//         users: [],
-//       },
-//     };
-//   }
-// };
+export const getServerSideProps: GetServerSideProps<{
+  users: IUser[];
+}> = async () => {
+  try {
+    const res = await fetch(baseURL + "/users");
+    const { data: users } = (await res.json()) as { data: IUser[] };
+    return {
+      props: {
+        users: users,
+      },
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      props: {
+        users: [],
+      },
+    };
+  }
+};
 
 export default UsersPage;
