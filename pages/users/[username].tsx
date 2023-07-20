@@ -1,16 +1,37 @@
-import { Box, Container, Flex, Text, useToast } from "@chakra-ui/react";
+import {
+  Container,
+  Divider,
+  Flex,
+  Grid,
+  GridItem,
+  HStack,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import UserInfo from "../../components/UserInfo";
-import UserStats from "../../components/UserStats";
 
 import NormalLayout from "../../layout/NormalLayout";
-import SubsActivityCalendar from "../../components/SubsActivityCalendar";
 
-import { useUserData, useUserProgress } from "../../hooks/useUsersData";
+import {
+  IUserStatsResponse,
+  useUserData,
+  useUserStats,
+} from "../../hooks/useUsersData";
 import SetMeta from "../../components/SEO/SetMeta";
+import { baseURL } from "../../lib/axios";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { IUser } from "../../types";
+import OverallStatsCard from "../../components/profile/OverallStatsCard";
+import BadgesCard from "../../components/profile/BadgesCard";
+import UserInfo from "../../components/profile/UserInfo";
+import ExamStatsCard from "../../components/profile/ExamStatsCard";
+import SubmissionsCalenderCard from "../../components/profile/SubmissionsCalenderCard";
 
-function UsersPage() {
+function UsersPage({
+  user,
+  stats,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
   const { username } = router.query;
   const toast = useToast();
@@ -19,19 +40,22 @@ function UsersPage() {
     isError: errorOnUserFetch,
     refetch: refetchUserData,
     isLoading: userDataLoading,
-  } = useUserData(username as string);
+  } = useUserData({ username: "" + username, initalUserData: user });
   const {
-    data: progressData,
-    isError: errorOnProgressFetch,
-    refetch: refetchProgressData,
-    isLoading: progressDataLoading,
-  } = useUserProgress(username as string);
+    data: statsData,
+    isError: errorOnStatsFetch,
+    refetch: refetchStatsData,
+    isLoading: statsDataLoading,
+  } = useUserStats({
+    username: "" + username,
+    initalUserStats: stats,
+  });
 
   useEffect(() => {
     if (!router.isReady || userDataLoading) return;
     refetchUserData();
-    refetchProgressData();
-    if (!userData || errorOnUserFetch || errorOnProgressFetch) {
+    refetchStatsData();
+    if (!userData || errorOnUserFetch || errorOnStatsFetch) {
       toast({
         title: "User not found",
         description: "The user you are looking for does not exist",
@@ -41,51 +65,89 @@ function UsersPage() {
       });
       router.push("/users");
     }
-  }, [router.query, router.isReady, errorOnUserFetch, errorOnProgressFetch]);
+  }, [router.query, router.isReady, errorOnUserFetch, errorOnStatsFetch]);
 
-  if (errorOnProgressFetch || errorOnUserFetch) return null;
+  // if (errorOnProgressFetch || errorOnUserFetch) return null;
   if (!userData) return <p>Loading...</p>;
 
   return (
     <NormalLayout>
       <SetMeta
-        title={`${userData.data.username} - User Profile and Achievements`}
-        description={`bio - ${userData?.data?.bio}`}
-        keywords={`${userData.data?.fullname}, user profile, coding achievements, coding solutions, community contributions`}
-        image={userData.data?.photoURL}
-        url={`https://www.codingducks.live/users/${userData.data?.username}`}
+        title={`${userData.username} - User Profile and Achievements`}
+        description={`bio - ${userData?.bio}`}
+        keywords={`${userData?.fullname}, user profile, coding achievements, coding solutions, community contributions`}
+        image={userData?.photoURL}
+        url={`https://www.codingducks.live/users/${userData?.username}`}
       />
       <Container maxW={"8xl"} minH={"100vh"}>
-        <Flex align="center" justify={"center"} w={"100%"} h={"100%"} mt={100}>
-          <Flex>
-            {userData && Object.keys(userData.data).length && (
-              <UserInfo viewingUser={userData.data} />
-            )}
-          </Flex>
-          <Flex flexGrow={1} ml={40}>
-            {progressData &&
-            Object.keys(progressData.data.byExamId).length > 0 ? (
-              <UserStats progress={progressData.data.byExamId} />
-            ) : (
-              <Text fontSize={"2xl"}>No progress yet</Text>
-            )}
-          </Flex>
+        <Flex
+          display={{ base: "flex", md: "none" }}
+          align={{ base: "center", md: "flex-start" }}
+          justify={"center"}
+          w={"100%"}
+          h={"100%"}
+          mt={[0, 0, 40]}
+          flexBasis={"100%"}
+          direction={{ base: "column", md: "row" }}
+        >
+          <UserInfo viewingUser={userData} viewingUserStats={statsData} />
+          <OverallStatsCard statsData={statsData} />
+          <BadgesCard userData={userData} />
+          <ExamStatsCard examSubs={statsData.byExamId} />
+          <SubmissionsCalenderCard
+            subsData={statsData.dailySubmissions}
+            isLoading={statsDataLoading}
+          />
         </Flex>
-        {progressData && Object.keys(progressData.data).length > 0 && (
-          <Flex justify={"center"}>
-            <Box w={"900px"} mt={20}>
-              <Text fontSize={"xl"} fontWeight={"extrabold"} mb={5}>
-                Submission history
-              </Text>
-              <SubsActivityCalendar
-                subsData={progressData.data.dailySubmissions}
-                isLoading={progressDataLoading}
-              />
-            </Box>
-          </Flex>
-        )}
+        <Grid
+          h="200px"
+          templateRows="repeat(2, 1fr)"
+          templateColumns="repeat(3, 1fr)"
+          gap={4}
+          mt={20}
+          display={{ base: "none", md: "grid" }}
+        >
+          <GridItem rowSpan={2} colSpan={1}>
+            <UserInfo viewingUser={userData} viewingUserStats={statsData} />
+          </GridItem>
+          <GridItem colSpan={2}>
+            <HStack>
+              <OverallStatsCard statsData={statsData} />
+              <BadgesCard userData={userData} />
+            </HStack>
+          </GridItem>
+          <GridItem colSpan={2}>
+            <SubmissionsCalenderCard
+              subsData={statsData.dailySubmissions}
+              isLoading={statsDataLoading}
+            />
+            <ExamStatsCard examSubs={statsData.byExamId} />
+          </GridItem>
+          <GridItem colSpan={4} bg="tomato" />
+        </Grid>
+        <Grid templateColumns={"repeat(3, 1fr"}>
+          <GridItem colSpan={1}></GridItem>
+          <GridItem colSpan={2}></GridItem>
+        </Grid>
       </Container>
     </NormalLayout>
   );
 }
 export default UsersPage;
+
+export const getServerSideProps: GetServerSideProps<{
+  user: IUser;
+  stats: IUserStatsResponse;
+}> = async ({ params }) => {
+  const { username } = params;
+  const res = await fetch(`${baseURL}/users/username/${username}`);
+  const { data } = await res.json();
+  const res2 = await fetch(`${baseURL}/users/username/${username}/stats`);
+  const { data: data2 } = await res2.json();
+  return {
+    props: {
+      user: data,
+      stats: data2,
+    },
+  };
+};
