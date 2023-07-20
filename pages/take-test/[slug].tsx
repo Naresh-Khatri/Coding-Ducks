@@ -52,7 +52,7 @@ function TakeTest() {
     isLoading: problemsDataLoading,
     isError: problemsDataIsError,
     error: problemsDataError,
-  } = useExamProblemsData({ examId: examData?.data?.id as number });
+  } = useExamProblemsData({ examId: examData?.id as number });
 
   const {
     isOpen: isSubmissionModalOpen,
@@ -121,7 +121,7 @@ function TakeTest() {
   );
 
   const { data: submissionData, refetch: refetchSubmissionData } =
-    useExamSubmissionsData(examData?.data?.id as number);
+    useExamSubmissionsData(examData?.id as number);
   const redirectIfDontHaveAccess = useCallback(() => {
     if (!problemsData && problemsDataIsError) {
       toast({
@@ -137,9 +137,8 @@ function TakeTest() {
   }, [problemsData, problemsDataIsError, router, toast]);
 
   const redirectIfExamNotStarted = useCallback(() => {
-    if (!examData?.data) return;
-    const { data } = examData;
-    const { isBounded, startTime } = data;
+    if (!examData) return;
+    const { isBounded, startTime } = examData;
     const sTime = new Date(startTime);
     const curr = new Date();
 
@@ -179,21 +178,21 @@ function TakeTest() {
   useEffect(() => {
     if (!problemsData) return;
     setCode(
-      localStorage.getItem(`code ${examData?.data?.id} ${currentProblemIdx}`) ||
+      localStorage.getItem(`code ${examData?.id} ${currentProblemIdx}`) ||
         problemsData?.data[currentProblemIdx - 1]?.starterCode ||
         ""
     );
     setShowConsole(false);
     setOutput(null);
-  }, [currentProblemIdx, examData?.data?.id, problemsData]);
+  }, [currentProblemIdx, examData?.id, problemsData]);
 
   useEffect(() => {
     if (code.trim().length === 0) return;
     localStorage.setItem(
-      `code ${examData?.data?.id} ${currentProblemIdx}`,
+      `code ${examData?.id} ${currentProblemIdx}`,
       code
     );
-  }, [code, examData?.data, currentProblemIdx]);
+  }, [code, examData, currentProblemIdx]);
 
   const handleOnCodeRetrive = async () => {
     refrechLastSubmission();
@@ -207,7 +206,7 @@ function TakeTest() {
       lang,
       submit,
       problemId: problemsData.data[currentProblemIdx - 1].id,
-      examId: examData?.data.id,
+      examId: examData.id,
     };
     try {
       const res = await axios.post("/runCode", payload);
@@ -234,18 +233,18 @@ function TakeTest() {
 
   if (!examData || problemsDataLoading) return <div>Loading...</div>;
   return (
-    <MainLayout examData={examData?.data}>
+    <MainLayout examData={examData}>
       <SetMeta
-        title={`Coding Ducks - ${examData?.data?.title} - Coding Exam Solutions`}
-        description={`Access the solutions for the ${examData?.data?.title} coding exam on Coding Ducks. Review the problem statements and improve your coding techniques in Python, JavaScript, C++, or Java.`}
-        keywords={`${examData?.data?.title}, coding exam, solution, Python, JavaScript, C++, Java`}
-        url={`https://codingducks.live/${examData?.data?.slug}`}
+        title={`Coding Ducks - ${examData?.title} - Coding Exam Solutions`}
+        description={`Access the solutions for the ${examData?.title} coding exam on Coding Ducks. Review the problem statements and improve your coding techniques in Python, JavaScript, C++, or Java.`}
+        keywords={`${examData?.title}, coding exam, solution, Python, JavaScript, C++, Java`}
+        url={`https://codingducks.live/${examData?.slug}`}
       />
-      {examData?.data?.warnOnBlur && <WarnOnTabLeave />}
+      {examData?.warnOnBlur && <WarnOnTabLeave />}
       <Flex w={"100vw"} direction="row">
         <Flex>
           <LeftProblemsList
-            examId={examData?.data.id}
+            examId={examData.id}
             problems={problemsData?.data}
             currentProblemIdx={currentProblemIdx}
             setCurrentProblemIdx={setCurrentProblemIdx}
