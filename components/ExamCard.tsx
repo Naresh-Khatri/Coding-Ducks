@@ -114,9 +114,10 @@ function ExamCard({ examData }: { examData: IExam }) {
           {title}
         </Heading>
         <Text
+          as={"div"}
           color={"gray.500"}
           noOfLines={4}
-          dangerouslySetInnerHTML={{ __html: description }}
+          dangerouslySetInnerHTML={{ __html: description || "exam" }}
         ></Text>
       </Stack>
       <Spacer />
