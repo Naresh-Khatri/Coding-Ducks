@@ -73,7 +73,6 @@ function FollowDetailsModal({ onClose, isOpen, followData }) {
   );
 }
 const UserList = ({ user, onClose }) => {
-  console.log(user);
   const router = useRouter();
   const visitUser = () => {
     router.push("/users/" + user.username);
