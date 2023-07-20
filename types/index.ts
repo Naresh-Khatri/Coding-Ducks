@@ -21,6 +21,7 @@ export interface IUser {
   username: string;
   photoURL: string;
   roll?: string;
+  rank?: number;
 }
 
 export interface IExam {
@@ -196,6 +197,7 @@ export interface ICursor {
   username: string;
   color?: string;
 }
+
 export interface IRoomInfo {
   id: string;
   isPublic: boolean;
@@ -212,3 +214,21 @@ export interface IRoom {
   msgsList: IChatMessage[];
   roomInfo: IRoomInfo;
 }
+
+export type ILeague =
+  | "noob"
+  | "beginner"
+  | "intermediate"
+  | "advance"
+  | "expert"
+  | "master"
+  | "grandmaster";
+
+export type ILeagueLabel =
+  | "Noob"
+  | "Beginner"
+  | "Intermediate"
+  | "Advance"
+  | "Expert"
+  | "Master"
+  | "Grand Master";
