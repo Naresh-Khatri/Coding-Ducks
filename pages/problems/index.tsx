@@ -1,5 +1,4 @@
 import {
-  Box,
   Container,
   Flex,
   HStack,
@@ -25,7 +24,6 @@ import SetMeta from "../../components/SEO/SetMeta";
 
 function ProblemsPage() {
   const { user } = useContext(userContext);
-  console.log(user);
   const [skip, setSkip] = useState(0);
   const [limit, setLimit] = useState(20);
   const { data, isLoading, error } = useProblemsData({
