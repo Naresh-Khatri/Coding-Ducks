@@ -1,18 +1,12 @@
 import {
-  Box,
-  Button,
   Card,
   Center,
   CircularProgress,
   CircularProgressLabel,
-  Divider,
   Flex,
   Grid,
   GridItem,
-  HStack,
-  Spacer,
   Text,
-  useDisclosure,
   VStack,
 } from "@chakra-ui/react";
 import Link from "next/link";
@@ -20,7 +14,7 @@ import Link from "next/link";
 function ExamStatsCard({ examSubs }) {
   return (
     <Card w={"100%"} bg={"whiteAlpha.100"} borderRadius={10} p={5} mb={5}>
-      <Text fontWeight={"extrabold"} fontSize={"xl"}>
+      <Text fontWeight={"extrabold"} fontSize={"xl"} mb={2}>
         Exam Stats
       </Text>
       <VStack>
@@ -52,7 +46,7 @@ const ExamCard = ({ submissions }) => {
           <Center h={"100%"}>
             <CircularProgress
               value={submissions.length * 10}
-              size={[50, 50, 70]}
+              size={59}
               color={submissions.length === 10 ? "green.600" : "purple.600"}
             >
               <CircularProgressLabel>
