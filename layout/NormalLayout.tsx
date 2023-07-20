@@ -30,12 +30,11 @@ function NormalLayout({ children }: { children: ReactNode }) {
       >
         <Container
           maxW="container.xl"
-          h={"100%"}
-          as={"header"}
+          height={'fit-content'}
           display={"flex"}
           flexDirection={"column"}
         >
-          <Flex as="nav" w={"100%"}>
+          <Flex w={"100%"}>
             <Flex w={"100%"} display={{ base: "none", md: "flex" }}>
               <DesktopNavBar />
             </Flex>
@@ -50,8 +49,8 @@ function NormalLayout({ children }: { children: ReactNode }) {
           <Flex as="main" flex={1}>
             {children}
           </Flex>
-          <Footer />
         </Container>
+        <Footer />
       </Flex>
     </>
   );
@@ -140,7 +139,7 @@ function DesktopNavBar() {
           alt={"logo"}
         />
       </Link>
-      <HStack as={"nav"}>
+      <HStack>
         {links.map((link) => (
           <NavLink key={link.label} label={link.label} href={link.href} />
         ))}
@@ -156,7 +155,7 @@ function DesktopNavBar() {
 const NavLink = ({ label, href }) => {
   const router = useRouter();
   return (
-    <Link href={href} style={{ margin: "0 .5em" }}>
+    <Link href={href} style={{ margin: "0 .5em" }} shallow>
       <Button
         px={2}
         py={1}
