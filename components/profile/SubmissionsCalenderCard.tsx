@@ -1,6 +1,6 @@
 import { Box, Card, Flex, Text } from "@chakra-ui/react";
 
-import ActivityCalender from "react-activity-calendar";
+import ActivityCalender, { CalendarData} from "react-activity-calendar";
 import React from "react";
 
 type levels = 0 | 1 | 2 | 3 | 4;
@@ -46,7 +46,7 @@ function SubmissionsCalenderCard({
       <Flex justify={"center"} h={"100%"} overflowX={"scroll"}>
         <Box w={{ base: "100%", md: "900px" }}>
           <ActivityCalender
-            data={data}
+            data={data as CalendarData}
             style={{ width: "900px" }}
             loading={isLoading}
             dateFormat=""
