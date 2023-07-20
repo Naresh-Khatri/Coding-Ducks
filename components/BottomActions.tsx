@@ -8,8 +8,7 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { faReact } from "@fortawesome/free-brands-svg-icons";
-import { faLock, faPlay } from "@fortawesome/free-solid-svg-icons";
+import { faFlask, faLock, faPlay } from "@fortawesome/free-solid-svg-icons";
 import React, { useContext } from "react";
 import { userContext } from "../contexts/userContext";
 import FAIcon from "./FAIcon";
@@ -84,7 +83,7 @@ function BottomActions({
             loadingText="Running..."
             isLoading={isLoading}
             bg="purple.600"
-            leftIcon={<FAIcon icon={faReact} />}
+            leftIcon={<FAIcon icon={faFlask} />}
             color="white"
             onClick={() => runCode(false)}
           >
