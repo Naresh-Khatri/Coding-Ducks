@@ -154,7 +154,7 @@ function Playground() {
         keywords="interactive coding playground, code testing, coding experimentation, Python, JavaScript, C++, Java"
         url="https://www.codingducks.live/playground"
       />
-      <Container maxW={"5xl"} minH={"100vh"}>
+      <Container maxW={"5xl"}>
         <Box w={"100%"}>
           <Box w={"100%"} h={100}>
             <ToolBar runCode={runCode} isLoading={isLoading} />
