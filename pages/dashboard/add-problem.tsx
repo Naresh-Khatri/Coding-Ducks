@@ -92,7 +92,7 @@ const AddProblemPage = () => {
     error: tagsError,
     isLoading: isTagsLoading,
   } = useTagsData();
-  const { data: examsList } = useExamsData();
+  const { data: examsList } = useExamsData({});
   const [testCases, setTestCases] = useState([
     { id: 0, input: "", output: "", explaination: "", isPublic: false },
   ]);
