@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Container,
   Flex,
@@ -82,7 +83,7 @@ const LoadingUserCard = () => {
     </Box>
   );
 };
-const UserCard = ({ user }) => {
+const UserCard = ({ user }: { user: IUser }) => {
   const rankColor = (rank: number) => {
     if (rank === 1) return "gold";
     if (rank === 2) return "silver";
@@ -93,8 +94,9 @@ const UserCard = ({ user }) => {
     <Link href={`/users/${user.username}`}>
       <Flex
         w={"full"}
+        my={1}
         justifyContent={"center"}
-        h={200}
+        h={{ base: 150, md: 200 }}
         position="relative"
         bg={useColorModeValue("white", "#111928bf")}
         boxShadow="2xl"
@@ -106,18 +108,26 @@ const UserCard = ({ user }) => {
         <Box
           position="absolute"
           top={{ base: -5, md: -10 }}
-          // left={"25%"}
           _hover={{ top: -55 }}
           transition="all .1s ease-in-out"
         >
           <Box position={"relative"} w={{ base: 70, md: 120 }}>
-            <Image
-              src={user.photoURL}
-              alt="Picture of the author"
-              width={130}
-              height={130}
-              style={{ borderRadius: "50%" }}
-            />
+            {user.photoURL ? (
+              <Image
+                src={user.photoURL}
+                alt="Picture of the author"
+                width={130}
+                height={130}
+                style={{ borderRadius: "50%" }}
+              />
+            ) : (
+              <Avatar
+                size={{ base: "lg", md: "2xl" }}
+                name={user.fullname}
+                color={"white"}
+              />
+            )}
+
             {user.rank <= 3 && (
               <Box position={"absolute"} top={0} right={0}>
                 <Box w={{ base: "7px", md: "20px" }}>
@@ -131,7 +141,7 @@ const UserCard = ({ user }) => {
             )}
           </Box>
         </Box>
-        <Flex mt={100} align="center" direction={"column"}>
+        <Flex mt={{ base: 50, md: 100 }} align="center" direction={"column"}>
           <Text
             fontWeight={"extrabold"}
             fontSize={"xl"}
