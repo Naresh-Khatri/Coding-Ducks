@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.11",
-    "@chakra-ui/react": "^2.3.5",
+    "@chakra-ui/react": "^2.7.0",
     "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/lang-cpp": "^6.0.1",
     "@codemirror/lang-java": "^6.0.0",
