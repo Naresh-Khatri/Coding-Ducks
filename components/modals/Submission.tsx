@@ -17,7 +17,6 @@ import Image from "next/image";
 import React, { useEffect } from "react";
 
 import confetti from "canvas-confetti";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { StarIcon } from "@chakra-ui/icons";
 
 const positiveImgs = [
