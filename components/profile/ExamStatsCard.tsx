@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Card,
   Center,
   CircularProgress,
   CircularProgressLabel,
@@ -16,28 +17,42 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 
-function UserStats({ progress }) {
-  // console.log(progress);
+function ExamStatsCard({ examSubs }) {
   return (
-    <Box w="100%" p={5}>
-      <Text>Progress</Text>
-      {Object.entries(progress).map((entry) => (
-        <ExamCard key={entry[0]} submissions={entry[1]} />
-      ))}
-    </Box>
+    <Card w={"100%"} bg={"whiteAlpha.100"} borderRadius={10} p={5} mb={5}>
+      <Text fontWeight={"extrabold"} fontSize={"xl"}>
+        Exam Stats
+      </Text>
+      <VStack>
+        {Object.entries(examSubs).length > 0 ? (
+          Object.entries(examSubs).map((entry) => (
+            <ExamCard key={entry[0]} submissions={entry[1]} />
+          ))
+        ) : (
+          <Text mt={10} color={"whiteAlpha.400"} textAlign={"center"}>
+            Not appeared in any exams
+          </Text>
+        )}
+      </VStack>
+    </Card>
   );
 }
 
 const ExamCard = ({ submissions }) => {
   // console.log(submissions)
   return (
-    <Link href={`/take-test/${submissions[0].Exam.slug}`}>
-      <Grid h={100} w={"100%"} templateColumns="repeat(5, 1fr)" m={2}>
+    <Link href={`/take-test/${submissions[0].slug}`} style={{ width: "100%" }}>
+      <Grid
+        style={{ margin: "10px 0" }}
+        h={{ base: 30, md: 50 }}
+        w={"100%"}
+        templateColumns="repeat(5, 1fr)"
+      >
         <GridItem colSpan={1}>
           <Center h={"100%"}>
             <CircularProgress
               value={submissions.length * 10}
-              size="100px"
+              size={[50, 50, 70]}
               color={submissions.length === 10 ? "green.600" : "purple.600"}
             >
               <CircularProgressLabel>
@@ -48,12 +63,12 @@ const ExamCard = ({ submissions }) => {
         </GridItem>
         <GridItem
           colSpan={4}
-          borderRadius={20}
+          borderRadius={[10, 10, 20]}
           bg={submissions.length === 10 ? "green.600" : "purple.600"}
         >
           <Flex align={"center"} h={"100%"} pl={10}>
-            <Text fontSize={["lg", "xl", "3xl"]} fontWeight={"extrabold"}>
-              {submissions[0].Exam.title}
+            <Text fontSize={["lg", "xl"]} fontWeight={"extrabold"}>
+              {submissions[0].title}
             </Text>
           </Flex>
         </GridItem>
@@ -62,4 +77,4 @@ const ExamCard = ({ submissions }) => {
   );
 };
 
-export default UserStats;
+export default ExamStatsCard;
