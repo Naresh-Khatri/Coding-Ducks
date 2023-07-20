@@ -30,7 +30,7 @@ export default function ExamPage({
   exams,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { data: examsData, isLoading: examsDataLoading } = useExamsData({
-    initalExamData: exams,
+    initialExamData: exams,
   });
   const { user } = useContext(userContext);
 
