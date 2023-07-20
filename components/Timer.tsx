@@ -35,14 +35,14 @@ function Timer() {
 
   const [timer, setTimer] = useState(null);
   const [timerText, setTimerText] = useState("Unbounded");
-  const { isBounded, endTime } = examData?.data;
+  const { isBounded, endTime } = examData;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [warningShown, setWarningShown] = useState(false);
 
   const toast = useToast();
 
   useEffect(() => {
-    if (!examData || !examData.data.endTime) return;
+    if (!examData || !examData.endTime) return;
     if (!isBounded) return;
 
     const s = setInterval(startTimer, 1000);
