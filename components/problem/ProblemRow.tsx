@@ -1,6 +1,15 @@
 import React from "react";
 import { IProblem } from "../../types";
-import { Avatar, AvatarGroup, Td, Text, Tr, useToast } from "@chakra-ui/react";
+import {
+  Avatar,
+  AvatarGroup,
+  Box,
+  Flex,
+  Td,
+  Text,
+  Tr,
+  useToast,
+} from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import Link from "next/link";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
@@ -38,10 +47,14 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
             });
           }}
         >
-          <FAIcon icon={faLock} />
-          <Text ml={4} fontWeight={"bold"}>
-            Solve above questions to unlock
-          </Text>
+          <Td m={0} p={0}>
+            <Flex alignItems={"center"} background={"gray.900"}>
+              <FAIcon icon={faLock} />
+              <Text ml={4} fontWeight={"bold"}>
+                Solve above questions to unlock
+              </Text>
+            </Flex>
+          </Td>
         </Tr>
       )}
       <Tr key={problem.id} onClick={() => console.log("clicked")}>
