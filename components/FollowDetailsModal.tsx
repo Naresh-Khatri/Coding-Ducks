@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Button,
   Flex,
@@ -20,40 +21,6 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React from "react";
-
-const UserList = ({ user, onClose }) => {
-  const router = useRouter();
-  const visitUser = () => {
-    router.push("/users/" + user.username);
-    onClose();
-  };
-  return (
-    <Link>
-      <Flex
-        justify={"space-between"}
-        alignItems="center"
-        my={2}
-        onClick={visitUser}
-      >
-        <Image
-          src={user.photoURL}
-          width={50}
-          height={50}
-          alt={user.fullname}
-          style={{ borderRadius: "50%" }}
-        />
-        <Text fontSize={"lg"} fontWeight={"extrabold"}>
-          {user.fullname}
-        </Text>
-        <Box></Box>
-      </Flex>
-    </Link>
-  );
-};
-
-const No = ({ text }) => {
-  return <Text> This user has no {text}</Text>;
-};
 
 function FollowDetailsModal({ onClose, isOpen, followData }) {
   const { followedBy, following } = followData;
@@ -105,5 +72,43 @@ function FollowDetailsModal({ onClose, isOpen, followData }) {
     </Modal>
   );
 }
+const UserList = ({ user, onClose }) => {
+  console.log(user);
+  const router = useRouter();
+  const visitUser = () => {
+    router.push("/users/" + user.username);
+    onClose();
+  };
+  return (
+    <Link>
+      <Flex
+        justify={"space-between"}
+        alignItems="center"
+        my={2}
+        onClick={visitUser}
+      >
+        {user.photoURL ? (
+          <Image
+            src={user.photoURL}
+            width={50}
+            height={50}
+            alt={user.fullname}
+            style={{ borderRadius: "50%" }}
+          />
+        ) : (
+          <Avatar name={user.fullname} />
+        )}
+        <Text fontSize={"lg"} fontWeight={"extrabold"}>
+          {user.fullname}
+        </Text>
+        <Box></Box>
+      </Flex>
+    </Link>
+  );
+};
+
+const No = ({ text }) => {
+  return <Text> This user has no {text}</Text>;
+};
 
 export default FollowDetailsModal;
