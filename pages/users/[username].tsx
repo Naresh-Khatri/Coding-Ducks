@@ -6,6 +6,7 @@ import {
   GridItem,
   HStack,
   Text,
+  useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
@@ -32,6 +33,7 @@ function UsersPage({
   user,
   stats,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const [isMobile] = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
   const { username } = router.query;
   const toast = useToast();
@@ -80,55 +82,54 @@ function UsersPage({
         url={`https://www.codingducks.live/users/${userData?.username}`}
       />
       <Container maxW={"8xl"} minH={"100vh"}>
-        <Flex
-          display={{ base: "flex", md: "none" }}
-          align={{ base: "center", md: "flex-start" }}
-          justify={"center"}
-          w={"100%"}
-          h={"100%"}
-          mt={[0, 0, 40]}
-          flexBasis={"100%"}
-          direction={{ base: "column", md: "row" }}
-        >
-          <UserInfo viewingUser={userData} viewingUserStats={statsData} />
-          <OverallStatsCard statsData={statsData} />
-          <BadgesCard userData={userData} />
-          <ExamStatsCard examSubs={statsData.byExamId} />
-          <SubmissionsCalenderCard
-            subsData={statsData.dailySubmissions}
-            isLoading={statsDataLoading}
-          />
-        </Flex>
-        <Grid
-          h="200px"
-          templateRows="repeat(2, 1fr)"
-          templateColumns="repeat(3, 1fr)"
-          gap={4}
-          mt={20}
-          display={{ base: "none", md: "grid" }}
-        >
-          <GridItem rowSpan={2} colSpan={1}>
+        {isMobile ? (
+          <Flex
+            display={{ base: "flex", md: "none" }}
+            align={{ base: "center", md: "flex-start" }}
+            justify={"center"}
+            w={"100%"}
+            h={"100%"}
+            mt={[0, 0, 40]}
+            flexBasis={"100%"}
+            direction={{ base: "column", md: "row" }}
+          >
             <UserInfo viewingUser={userData} viewingUserStats={statsData} />
-          </GridItem>
-          <GridItem colSpan={2}>
-            <HStack>
-              <OverallStatsCard statsData={statsData} />
-              <BadgesCard userData={userData} />
-            </HStack>
-          </GridItem>
-          <GridItem colSpan={2}>
+            <OverallStatsCard statsData={statsData} />
+            <BadgesCard userData={userData} />
+            <ExamStatsCard examSubs={statsData.byExamId} />
             <SubmissionsCalenderCard
               subsData={statsData.dailySubmissions}
               isLoading={statsDataLoading}
             />
-            <ExamStatsCard examSubs={statsData.byExamId} />
-          </GridItem>
-          <GridItem colSpan={4} bg="tomato" />
-        </Grid>
-        <Grid templateColumns={"repeat(3, 1fr"}>
-          <GridItem colSpan={1}></GridItem>
-          <GridItem colSpan={2}></GridItem>
-        </Grid>
+          </Flex>
+        ) : (
+          <Grid
+            h="200px"
+            templateRows="repeat(2, 1fr)"
+            templateColumns="repeat(3, 1fr)"
+            gap={4}
+            mt={20}
+            // display={{ base: "none", md: "grid" }}
+          >
+            <GridItem rowSpan={2} colSpan={1}>
+              <UserInfo viewingUser={userData} viewingUserStats={statsData} />
+            </GridItem>
+            <GridItem colSpan={2}>
+              <HStack>
+                <OverallStatsCard statsData={statsData} />
+                <BadgesCard userData={userData} />
+              </HStack>
+            </GridItem>
+            <GridItem colSpan={2}>
+              <SubmissionsCalenderCard
+                subsData={statsData.dailySubmissions}
+                isLoading={statsDataLoading}
+              />
+              <ExamStatsCard examSubs={statsData.byExamId} />
+            </GridItem>
+            <GridItem colSpan={4} bg="tomato" />
+          </Grid>
+        )}
       </Container>
     </NormalLayout>
   );
