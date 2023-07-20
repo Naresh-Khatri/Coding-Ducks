@@ -1,22 +1,46 @@
 import {
+  Avatar,
+  AvatarBadge,
   Box,
   Button,
   Center,
   Divider,
   Flex,
   HStack,
+  keyframes,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverTrigger,
+  Portal,
   Spacer,
   Text,
+  Tooltip,
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useContext, useEffect, useState } from "react";
-import { userContext } from "../contexts/userContext";
-import axios from "../lib/axios";
-import FollowDetailsModal from "./FollowDetailsModal";
+import { LEAGUES } from "../../data/leagues";
+import { userContext } from "../../contexts/userContext";
+import axiosInstance from "../../lib/axios";
+import FollowDetailsModal from "../FollowDetailsModal";
 
-function UserInfo({ viewingUser }) {
+const gradentKeyframs = keyframes` 
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+`;
+
+function UserInfoCard({ viewingUser, viewingUserStats }) {
   const { user: loggedInUser } = useContext(userContext);
   const [viewingUserState, setViewingUserState] = useState(viewingUser);
 
@@ -34,38 +58,42 @@ function UserInfo({ viewingUser }) {
   const handleFollowBtnClick = async () => {
     if (isFollowing) {
       setIsFollowing(false);
-      await axios.post("/users/unfollow", {
+      await axiosInstance.post("/users/unfollow", {
         fromUser: loggedInUser.id,
         toUser: viewingUser.id,
       });
     } else {
       setIsFollowing(true);
-      await axios.post("/users/follow", {
+      await axiosInstance.post("/users/follow", {
         fromUser: loggedInUser.id,
         toUser: viewingUser.id,
       });
     }
-    const { data } = await axios.get(
+    const { data } = await axiosInstance.get(
       `/users/username/${viewingUserState.username}`
     );
-    setViewingUserState(data);
+    setViewingUserState(data.data);
   };
 
+  if (!viewingUserState) return null;
+
   return (
-    <Box w={"500px"}>
+    <Box w={{ base: "100vw", md: "100%" }} mb={10}>
       <Box
         borderRadius="5px"
-        bg="purple.500"
-        h={"150px"}
+        bg="linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);"
+        h={"fit-content"}
         alignItems="center"
         mb={"90px"}
+        backgroundSize={"400% 400%"}
+        animation={`${gradentKeyframs} 15s ease infinite`}
       >
-        <Flex justify="center">
+        <Flex justify="center" display={{ base: "none", md: "flex" }}>
           <Text
             bgGradient={[
-              "linear(to-tr, teal.300, yellow.400)",
-              "linear(to-t, blue.200, teal.500)",
-              "linear(to-b, orange.100, purple.400)",
+              // "linear(to-tr, teal.300, yellow.400)",
+              "linear(to-r, blue.200, teal.500)",
+              // "linear(to-b, orange.100, purple.400)",
             ]}
             noOfLines={1}
             bgClip="text"
@@ -73,45 +101,77 @@ function UserInfo({ viewingUser }) {
             fontWeight="extrabold"
             position="absolute"
           >
-            {viewingUserState.fullname}
+            {/* {viewingUserState.fullname} */}
           </Text>
         </Flex>
 
         <Center position="relative" h={150} w={"100%"}>
-          <Image
-            referrerPolicy="no-referrer"
+          <Avatar
             style={{ borderRadius: "50%", position: "absolute", top: 75 }}
+            size="2xl"
             src={viewingUserState.photoURL}
-            width={150}
-            height={150}
-            alt="profile"
-          />
+            name={viewingUserState.fullname}
+          >
+            <AvatarBadge
+              bgSize={"contain"}
+              bgGradient={LEAGUES[viewingUserStats.league].bgGradient}
+              backgroundSize={"200%"}
+              animation={`${gradentKeyframs} 5s ease infinite`}
+              px={2}
+              py={1}
+              borderWidth="6px"
+              cursor={"pointer"}
+            >
+              <Popover size={"xl"}>
+                <PopoverTrigger>
+                  <Text fontSize="sm" fontWeight="bold">
+                    {LEAGUES[viewingUserStats.league].label}
+                  </Text>
+                </PopoverTrigger>
+                <Portal>
+                  <PopoverContent w={"220px"}>
+                    <PopoverArrow />
+                    <PopoverCloseButton />
+                    <PopoverBody>
+                      This user is on
+                      <Text as={"span"} fontWeight={"bold"}>
+                        {" "}
+                        level 7
+                      </Text>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Portal>
+              </Popover>
+            </AvatarBadge>
+          </Avatar>
         </Center>
       </Box>
 
       <HStack spacing={4}>
         <VStack spacing={4} w="100%">
-          <HStack spacing={4}>
-            <Text fontSize="lg" fontWeight="semibold">
-              {viewingUserState.fullname}
-            </Text>
-            <Text fontSize="sm" color="gray.500">
-              @{viewingUserState.username}
-            </Text>
-          </HStack>
-          <HStack>
-            <Button
-              disabled={!loggedInUser.id}
-              bg={isFollowing ? "gray.700" : "purple.600"}
-              color="white"
-              onClick={handleFollowBtnClick}
-            >
-              {isFollowing ? "Unfollow" : "Follow"}
-            </Button>
+          <HStack w={"100%"} justifyContent={"space-around"}>
+            <VStack>
+              <Text fontSize="lg" fontWeight="semibold">
+                {viewingUserState.fullname}
+              </Text>
+              <Text fontSize="sm" color="gray.500">
+                @{viewingUserState.username}
+              </Text>
+            </VStack>
+            <HStack>
+              <Button
+                disabled={!loggedInUser.id}
+                bg={isFollowing ? "gray.700" : "purple.600"}
+                color="white"
+                onClick={handleFollowBtnClick}
+              >
+                {isFollowing ? "Unfollow" : "Follow"}
+              </Button>
+            </HStack>
           </HStack>
 
-          <Divider />
           <HStack
+            mt={5}
             w="100%"
             justify="center"
             h={10}
@@ -158,10 +218,11 @@ function UserInfo({ viewingUser }) {
               </Box>
             </Flex>
           </HStack>
+          <Divider />
         </VStack>
       </HStack>
     </Box>
   );
 }
 
-export default UserInfo;
+export default UserInfoCard;
