@@ -1,7 +1,7 @@
 import axios from "axios";
 import { auth } from "../firebase/firebase";
 
-const baseURL =
+export const baseURL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3333"
     : "https://api.codingducks.live";
