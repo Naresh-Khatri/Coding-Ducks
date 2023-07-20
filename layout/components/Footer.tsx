@@ -43,19 +43,19 @@ const Footer = () => (
           as="a"
           href="https://www.linkedin.com/naresh-khatri"
           aria-label="LinkedIn"
-          icon={<FAIcon icon={faLinkedin} />}
+          // icon={<FAIcon icon={faLinkedin} />}
         />
         <IconButton
           as="a"
           href="https://www.github.com/naresh-khatri"
           aria-label="GitHub"
-          icon={<FAIcon icon={faGithub} />}
+          // icon={<FAIcon icon={faGithub} />}
         />
         <IconButton
           as="a"
           href="https://www.twitter.com/naresh-khatri"
           aria-label="Twitter"
-          icon={<FAIcon icon={faTwitter} />}
+          // icon={<FAIcon icon={faTwitter} />}
         />
       </ButtonGroup>
     </Container>
