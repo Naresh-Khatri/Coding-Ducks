@@ -29,8 +29,8 @@ interface MainLayoutProps {
   examData: {
     id: number;
     title: string;
-    isBounded: boolean;
-    endTime: string;
+    isBounded?: boolean;
+    endTime?: string;
     slug: string;
   };
 }
