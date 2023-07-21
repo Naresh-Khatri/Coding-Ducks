@@ -28,7 +28,7 @@ function SetMeta({
     `coding problems, coding challenges, programming practice, Python, JavaScript, C++, Java, coding website, programming exercises, algorithmic problem solving`;
   image =
     image ||
-    "https://ik.imagekit.io/couponluxury/coding_ducks/logo_E_BOxGUcc.png";
+    "https://ik.imagekit.io/couponluxury/coding_ducks/og_logo_jpRQg8f-Z.png";
   url = url || "https://www.codingducks.live/";
 
   const scripts = extractScriptContents(schema);
