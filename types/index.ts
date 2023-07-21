@@ -22,6 +22,8 @@ export interface IUser {
   photoURL: string;
   roll?: string;
   rank?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IExam {
@@ -37,6 +39,8 @@ export interface IExam {
   endTime?: string;
   marks?: number;
   startTime?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IExamProblem {
@@ -50,6 +54,8 @@ export interface IExamProblem {
   exam: IExam;
   testCases: any;
   starterCode?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface IComment {
@@ -62,6 +68,8 @@ interface IComment {
   time: string;
   upvotes: IUser[];
   downvotes: IUser[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IProblem extends IExamProblem {
@@ -79,6 +87,7 @@ export interface IProblem extends IExamProblem {
   dislikes: IUser[];
   comments: IComment[];
   starterCodes: IStarterCode[];
+  updatedAt?: string;
 }
 
 export interface IProblemTag {
