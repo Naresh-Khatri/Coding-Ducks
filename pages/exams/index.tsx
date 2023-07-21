@@ -16,15 +16,15 @@ import {
   Skeleton,
 } from "@chakra-ui/react";
 import { useContext } from "react";
-import ExamCard from "../components/ExamCard";
-import { userContext } from "../contexts/userContext";
-import { useExamsData } from "../hooks/useExamsData";
+import ExamCard from "../../components/ExamCard";
+import { userContext } from "../../contexts/userContext";
+import { useExamsData } from "../../hooks/useExamsData";
 
-import NormalLayout from "../layout/NormalLayout";
-import SetMeta from "../components/SEO/SetMeta";
+import NormalLayout from "../../layout/NormalLayout";
+import SetMeta from "../../components/SEO/SetMeta";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { IExam } from "../types";
-import { baseURL } from "../lib/axios";
+import { IExam } from "../../types";
+import { baseURL } from "../../lib/axios";
 
 export default function ExamPage({
   exams,
