@@ -60,9 +60,7 @@ export default function EditUserProfile() {
       const payload = {
         fullname,
         username,
-        photoURL:
-          firebaseUser.photoURL ||
-          "https://ik.imagekit.io/couponluxury/coding_ducks/user-solid_ThAFc0bNo.svg",
+        photoURL: firebaseUser.photoURL || "",
         googleUID: firebaseUser.uid,
         email: firebaseUser.email,
       };
