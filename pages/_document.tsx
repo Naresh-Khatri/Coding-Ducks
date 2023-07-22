@@ -11,21 +11,18 @@ export default function Document() {
           rel="stylesheet"
         />
       </Head>
-
       <body>
         <Script
-          strategy="lazyOnload"
-          src={`https://www.googletagmanager.com/gtag/js?id=G-VX8GFPR8MZ`}
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=G-LNDQQ0RCC5`}
         />
 
-        <Script id="google-analytics-script" strategy="lazyOnload">
+        <Script id="google-analytics-script" strategy="afterInteractive">
           {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'G-VX8GFPR8MZ', {
-          page_path: window.location.pathname,
-          });
+          gtag('config', 'G-LNDQQ0RCC5');
     `}
         </Script>
         <Main />
