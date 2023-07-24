@@ -366,7 +366,7 @@ export const LoginPage = () => {
                 <Button
                   key={name}
                   width="full"
-                  disabled={name === "Twitter" || name === "GitHub"}
+                  isDisabled={name === "Twitter" || name === "GitHub"}
                   onClick={handleSignInWithGoogle}
                 >
                   <VisuallyHidden>Sign in with {name}</VisuallyHidden>
