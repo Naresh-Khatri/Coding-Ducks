@@ -241,3 +241,10 @@ export type ILeagueLabel =
   | "Expert"
   | "Master"
   | "Grand Master";
+
+export interface IBadge {
+  id?: number;
+  name: string;
+  description: string;
+  image: string;
+}
