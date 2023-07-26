@@ -11,6 +11,7 @@ export default function Document() {
           rel="stylesheet"
         />
       </Head>
+      <meta name="referrer" content="no-referrer" />
       <body>
         <Script
           strategy="afterInteractive"
