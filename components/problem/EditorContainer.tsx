@@ -107,7 +107,6 @@ function BottomEditorContainer({
   const { bottomSheetIsOpen, setBottomSheetIsOpen } = useContext(
     EditorSettingsContext
   );
-  console.log(bottomSheetIsOpen);
   const ref = useRef<SheetRef>();
   const snapTo = (i: number) => ref.current?.snapTo(i);
   return (
@@ -118,9 +117,6 @@ function BottomEditorContainer({
         onClose={() => setBottomSheetIsOpen(false)}
         snapPoints={[700, 400, 100, 0]}
         initialSnap={0}
-        onSnap={(snapIndex) =>
-          console.log("> Current snap point index:", snapIndex)
-        }
         tabIndex={1}
         style={{ zIndex: 0 }}
       >
