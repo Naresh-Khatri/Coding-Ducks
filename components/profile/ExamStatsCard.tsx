@@ -17,7 +17,7 @@ function ExamStatsCard({ examSubs }) {
       <Text fontWeight={"extrabold"} fontSize={"xl"} mb={2}>
         Exam Stats
       </Text>
-      <VStack>
+      <VStack gap={{ base: 4, md: 0 }}>
         {Object.entries(examSubs).length > 0 ? (
           Object.entries(examSubs).map((entry) => (
             <ExamCard key={entry[0]} submissions={entry[1]} />
@@ -60,7 +60,7 @@ const ExamCard = ({ submissions }) => {
           borderRadius={[10, 10, 20]}
           bg={submissions.length === 10 ? "green.600" : "purple.600"}
         >
-          <Flex align={"center"} h={"100%"} pl={10}>
+          <Flex align={"center"} h={"100%"} pl={{ base: 5, md: 10 }}>
             <Text fontSize={["lg", "xl"]} fontWeight={"extrabold"}>
               {submissions[0].title}
             </Text>
