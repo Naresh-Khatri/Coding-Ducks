@@ -1,11 +1,15 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { extendTheme } from "@chakra-ui/react";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import LoadingOverlay from "../components/LoadingOverlay";
 import LoadingContext from "../contexts/loadingContext";
 import { AuthUserProvider } from "../contexts/userContext";
 
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import {
+  QueryClientProvider,
+  QueryClient,
+  Hydrate,
+} from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
@@ -24,19 +28,21 @@ const colors = {
 };
 const theme = extendTheme({ colors, config: { initialColorMode: "dark" } });
 
-const client = new QueryClient();
-
 function MyApp({ Component, pageProps }) {
   const { isLoading } = useContext(LoadingContext);
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <ChakraProvider theme={theme}>
-      <QueryClientProvider client={client}>
-        <AuthUserProvider>
-          {isLoading && <LoadingOverlay />}
-          <LoadingOverlay />
-          <Component {...pageProps} />
-        </AuthUserProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
+      <QueryClientProvider client={queryClient}>
+        <Hydrate state={pageProps.dehydratedState}>
+          <AuthUserProvider>
+            {isLoading && <LoadingOverlay />}
+            <LoadingOverlay />
+            <Component {...pageProps} />
+          </AuthUserProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </Hydrate>
       </QueryClientProvider>
     </ChakraProvider>
   );
