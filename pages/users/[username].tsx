@@ -33,7 +33,9 @@ function UsersPage({
   user,
   stats,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const [isMobile] = useMediaQuery("(max-width: 768px)");
+  const [isMobile] = useMediaQuery("(max-width: 768px)", {
+    fallback: true,
+  });
   const router = useRouter();
   const { username } = router.query;
   const toast = useToast();
@@ -81,7 +83,7 @@ function UsersPage({
         image={userData?.photoURL}
         url={`https://www.codingducks.live/users/${userData?.username}`}
       />
-      <Container maxW={"8xl"} minH={"100vh"}>
+      <Container maxW={"8xl"} h={"fit-content"}>
         {isMobile ? (
           <Flex
             display={{ base: "flex", md: "none" }}
@@ -96,11 +98,11 @@ function UsersPage({
             <UserInfo viewingUser={userData} viewingUserStats={statsData} />
             <OverallStatsCard statsData={statsData} />
             <BadgesCard userData={userData} />
-            <ExamStatsCard examSubs={statsData.byExamId} />
             <SubmissionsCalenderCard
               subsData={statsData.dailySubmissions}
               isLoading={statsDataLoading}
             />
+            <ExamStatsCard examSubs={statsData.byExamId} />
           </Flex>
         ) : (
           <Grid
@@ -127,7 +129,6 @@ function UsersPage({
               />
               <ExamStatsCard examSubs={statsData.byExamId} />
             </GridItem>
-            <GridItem colSpan={4} bg="tomato" />
           </Grid>
         )}
       </Container>
