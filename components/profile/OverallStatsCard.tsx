@@ -8,7 +8,7 @@ import { faFire } from "@fortawesome/free-solid-svg-icons";
 function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
   return (
     <Card w={"100%"} bg={"whiteAlpha.100"} borderRadius={10} mb={5} p={5}>
-      <Text fontWeight={"bold"} >Stats</Text>
+      <Text fontWeight={"bold"}>Stats</Text>
       <Flex h={"100%"} w={"100%"} alignItems={"center"} mb={5}>
         <Flex
           w={"50%"}
@@ -17,15 +17,11 @@ function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
           justify={"space-between"}
           align={"center"}
         >
-          <HStack flex={1}>
-            <FAIcon
-              height={"2rem"}
-              icon={LEAGUES[statsData.league].icon}
-              color={LEAGUES[statsData.league].color}
-            />
-          </HStack>
+          <Text fontWeight={"bold"} fontSize={"4xl"}>
+            {statsData.rank}
+          </Text>
           <Text fontSize={"sm"} fontWeight={"bold"}>
-            {LEAGUES[statsData.league].label}
+            Rank
           </Text>
         </Flex>
         <Divider orientation="vertical" height={20} />
@@ -36,19 +32,13 @@ function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
           justify={"space-between"}
           align={"center"}
         >
-          <HStack flex={1}>
-            <FAIcon height={"2rem"} icon={faFire} />
-            <Text fontSize={"4xl"} fontWeight={"bold"}>
-              {statsData.longestStreak.length > 0
-                ? statsData.longestStreak.length
-                : 0}
-            </Text>
-            <Text fontSize={"xl"} alignSelf={"end"} mb={2}>
-              days
-            </Text>
-          </HStack>
-          <Text fontSize={"sm"} fontWeight={"bold"}>
-            Longest Streak{" "}
+          <FAIcon
+            height={"2rem"}
+            icon={LEAGUES[statsData.league].icon}
+            color={LEAGUES[statsData.league].color}
+          />
+          <Text fontSize={"sm"} fontWeight={"bold"} mt={3}>
+            {LEAGUES[statsData.league].label}
           </Text>
         </Flex>
       </Flex>
@@ -73,23 +63,29 @@ function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
           justify={"center"}
           align={"center"}
         >
-          <Text fontSize={"2xl"} fontWeight={"bold"}>
-            {statsData.points}
-          </Text>
-          <Text fontSize={"sm"}> Points </Text>
+          <HStack>
+            {/* <FAIcon height={"1.4rem"} icon={faFire} /> */}
+            <Text fontSize={"3xl"} fontWeight={"bold"} lineHeight={1.2}>
+              {statsData.longestStreak || 0}
+            </Text>
+            <Text fontSize={"md"} alignSelf={"end"} color={"whiteAlpha.600"}>
+              days
+            </Text>
+          </HStack>
+          <Text fontSize={"sm"}>Longest Streak </Text>
         </Flex>
         <Divider orientation="vertical" height={10} />
         <Flex
           w={"50%"}
           h={"100%"}
           direction={"column"}
-          justify={"center"}
+          justify={"space-between"}
           align={"center"}
         >
           <Text fontSize={"2xl"} fontWeight={"bold"}>
-            {statsData.accuracy}%
+            {statsData.points}
           </Text>
-          <Text fontSize={"sm"}> success rate </Text>
+          <Text fontSize={"sm"}> Points </Text>
         </Flex>
       </Flex>
     </Card>
