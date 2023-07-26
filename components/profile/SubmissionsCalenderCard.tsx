@@ -1,87 +1,75 @@
-import { Box, Card, Flex, Text } from "@chakra-ui/react";
-
-import ActivityCalender, { CalendarData} from "react-activity-calendar";
 import React from "react";
 
+import { Box, Card, Flex, Text } from "@chakra-ui/react";
+import { Activity, ThemeInput } from "react-activity-calendar";
+import ActivityCalendar from "react-activity-calendar";
+
+import { Tooltip as ReactTooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css";
 type levels = 0 | 1 | 2 | 3 | 4;
-interface SubsData {
-  date: string;
-  count: number;
-  level?: levels;
-}
 interface SubmissionCalenderCardProps {
-  subsData: SubsData[];
+  subsData: Activity[];
   isLoading: boolean;
 }
+const explicitTheme: ThemeInput = {
+  dark: ["#3a3a3a", "#1f6f46", "#28a745", "#48e06f", "#64e36e"],
+};
 function SubmissionsCalenderCard({
   subsData,
   isLoading,
 }: SubmissionCalenderCardProps) {
-  const maxCount = subsData.reduce(
-    (acc: number, curr: { date: string; count: number }) => {
-      if (curr.count > acc) return curr.count;
-      return acc;
-    },
-    0
-  );
-  const data: SubsData[] = subsData.map(
-    (submission: { date: string; count: number }): SubsData => {
+  console.log(subsData);
+  const maxCount = Math.max(...subsData.map((sub) => sub.count));
+  const data: Activity[] = subsData.map(
+    (submission: { date: string; count: number }): Activity => {
       return {
         count: submission.count,
         date: submission.date,
-        level: Math.floor((submission.count / maxCount) * 4) as levels,
+        level: Math.ceil((submission.count / maxCount) * 4) as levels,
       };
     }
   );
+  const d = new Date();
+  const lastYearDate = `${d.getFullYear() - 1}-${
+    (d.getMonth() + 1 < 10 ? "0" : "") + (d.getMonth() + 1)
+  }-${(d.getDate() < 10 ? "0" : "") + d.getDate()}`;
+  const thisYearDate = `${d.getFullYear()}-${
+    (d.getMonth() + 1 < 10 ? "0" : "") + (d.getMonth() + 1)
+  }-${(d.getDate() < 10 ? "0" : "") + d.getDate()}`;
+
   data.unshift({
     level: 0,
-    date: "2022-01-01",
+    date: lastYearDate,
     count: 0,
   });
+  data.push({
+    level: 0,
+    date: thisYearDate,
+    count: 0,
+  });
+  console.log(new Date().toISOString().split("T")[0]);
+
   return (
     <Card w={"100%"} bg={"whiteAlpha.100"} borderRadius={10} p={5} mb={5}>
       <Text fontWeight={"extrabold"} fontSize={"xl"} mb={2}>
         Submission history
       </Text>
-      <Flex justify={"center"} h={"100%"} overflowX={"scroll"}>
-        <Box w={{ base: "100%", md: "900px" }}>
-          <ActivityCalender
-            data={data as CalendarData}
-            style={{ width: "900px" }}
-            loading={isLoading}
-            dateFormat=""
-            theme={{
-              level0: "#ffffff",
-              level1: "#c6e48b",
-              level2: "#7bc96f",
-              level3: "#239a3b",
-              level4: "#196127",
-            }}
-            labels={{
-              legend: {
-                less: "Less",
-                more: "More",
-              },
-              months: [
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "May",
-                "Jun",
-                "Jul",
-                "Aug",
-                "Sep",
-                "Oct",
-                "Nov",
-                "Dec",
-              ],
-              tooltip: "<strong>{{count}} Submissions /strong> on {{date}}",
-              totalCount: "{{count}} Submissions in {{year}}",
-              weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-            }}
+      <Flex justify={"end"} h={"100%"}>
+        <Flex w={{ base: "100%", md: "700px" }} overflowX={"auto"}>
+          <ActivityCalendar
+            style={{ width: "800px" }}
+            data={data}
+            theme={explicitTheme}
+            showWeekdayLabels
+            renderBlock={(block, activity) =>
+              React.cloneElement(block, {
+                "data-tooltip-id": "react-tooltip",
+                "data-tooltip-html": `${activity.count} activities on ${activity.date}`,
+              })
+            }
           />
-        </Box>
+          <ReactTooltip id="react-tooltip" />
+        </Flex>
       </Flex>
     </Card>
   );
