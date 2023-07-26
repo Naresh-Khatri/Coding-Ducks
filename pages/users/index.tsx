@@ -13,18 +13,15 @@ import {
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import Link from "next/link";
-import { useUsersData } from "../../hooks/useUsersData";
+import { getUsers, useUsersData } from "../../hooks/useUsersData";
 import NormalLayout from "../../layout/NormalLayout";
 import SetMeta from "../../components/SEO/SetMeta";
 import { IUser } from "../../types";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { baseURL } from "../../lib/axios";
 import FAIcon from "../../components/FAIcon";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
 
-function UsersPage({
-  users,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { data, isLoading } = useUsersData({ initialUsers: users });
+function UsersPage() {
+  const { data: users, isLoading } = useUsersData({ initialUsers: {} });
   return (
     <NormalLayout>
       <SetMeta
@@ -40,7 +37,7 @@ function UsersPage({
         <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={10}>
           {isLoading &&
             [...Array(20)].map((_, num) => <LoadingUserCard key={num} />)}
-          {data?.map((user) => (
+          {users?.map((user) => (
             <UserCard key={user.id} user={user} />
           ))}
         </SimpleGrid>
@@ -160,15 +157,14 @@ const UserCard = ({ user }: { user: IUser }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<{
-  users: IUser[];
-}> = async () => {
+export const getStaticProps = async () => {
   try {
-    const res = await fetch(baseURL + "/users");
-    const { data: users } = (await res.json()) as { data: IUser[] };
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(["users"], getUsers);
+    console.log("hello");
     return {
       props: {
-        users: users,
+        dehydratedState: dehydrate(queryClient),
       },
     };
   } catch (err) {
