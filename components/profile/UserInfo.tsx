@@ -21,7 +21,6 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
-import Image from "next/image";
 import { useContext, useEffect, useState } from "react";
 import { LEAGUES } from "../../data/leagues";
 import { userContext } from "../../contexts/userContext";
@@ -111,6 +110,7 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
             size="2xl"
             src={viewingUserState.photoURL}
             name={viewingUserState.fullname}
+            referrerPolicy="no-referrer"
           >
             <AvatarBadge
               bgSize={"contain"}
@@ -129,15 +129,16 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
                   </Text>
                 </PopoverTrigger>
                 <Portal>
-                  <PopoverContent w={"220px"}>
+                  <PopoverContent w={"250px"}>
                     <PopoverArrow />
                     <PopoverCloseButton />
                     <PopoverBody>
                       This user is on
                       <Text as={"span"} fontWeight={"bold"}>
                         {" "}
-                        level 7
+                        {LEAGUES[viewingUserStats.league].label}
                       </Text>
+                      {" league."}
                     </PopoverBody>
                   </PopoverContent>
                 </Portal>
@@ -205,7 +206,7 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
                   </Text>
                 </VStack>
               </Box>
-              <Spacer />
+              {/* <Spacer />
               <Box>
                 <VStack>
                   <Text fontSize="md" fontWeight="extrabold">
@@ -215,7 +216,7 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
                     pulihora
                   </Text>
                 </VStack>
-              </Box>
+              </Box> */}
             </Flex>
           </HStack>
           <Divider />
