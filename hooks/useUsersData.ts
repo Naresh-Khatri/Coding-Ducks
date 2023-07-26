@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "../lib/axios";
 import { ILeague, IUser } from "../types";
+import { Activity } from "react-activity-calendar";
 
 interface User {
   id: number;
@@ -12,49 +13,47 @@ interface User {
   username: string;
 }
 
-export const useUsersData = ({ initialUsers }) => {
-  return useQuery(
-    ["users"],
-    async () => {
-      const {
-        data: { data: users },
-      } = await axios.get("/users");
-      return users as User[];
-    },
-    { initialData: initialUsers }
-  );
+export const getUsers = async () => {
+  const {
+    data: { data: users },
+  } = await axios.get("/users");
+  return users as User[];
+};
+export const getUser = async (username: string) => {
+  const { data } = await axios.get(`/users/username/${username}`);
+  return data.data as IUser;
 };
 
-export const useUserData = ({
-  username,
-  initalUserData,
-}: {
+export const useUsersData = ({ initialUsers }) => {
+  return useQuery(["users"], getUsers, {
+    initialData: initialUsers,
+    cacheTime: 20000,
+  });
+};
+
+interface useUserDataProps {
   username: string;
   initalUserData: IUser;
-}) => {
-  return useQuery(
-    ["user"],
-    async () => {
-      const { data } = await axios.get(`/users/username/${username}`);
-      return data.data as IUser;
-    },
-    {
-      refetchOnMount: false,
-      cacheTime: 0,
-      enabled: !!username,
-      initialData: initalUserData,
-    }
-  );
+}
+export const useUserData = ({ username, initalUserData }: useUserDataProps) => {
+  return useQuery(["user"], () => getUser(username), {
+    refetchOnMount: false,
+    cacheTime: 0,
+    enabled: !!username,
+    initialData: initalUserData,
+  });
 };
 export interface IUserStatsResponse {
   totalProblemsSolved: number;
   totalSubCount: number;
+  rank: number;
   league: ILeague;
   points: number;
   accuracy: number;
-  dailySubmissions: { date: string; count: number }[];
-  streaks: { date: string; count: number }[];
-  longestStreak: { date: string; count: number }[];
+  dailySubmissions: Activity[];
+  streaks: { date: string; count: number }[][];
+  longestStreak: number;
+  streakActive: boolean;
   byExamId: any;
 }
 export const useUserStats = ({
