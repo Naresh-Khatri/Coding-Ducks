@@ -17,19 +17,22 @@ import {
 import NormalLayout from "../../layout/NormalLayout";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { useContext, useState } from "react";
-import { useProblemsData } from "../../hooks/useProblemsData";
+import { getProblems } from "../../hooks/useProblemsData";
 import { userContext } from "../../contexts/userContext";
 import ProblemRow from "../../components/problem/ProblemRow";
 import SetMeta from "../../components/SEO/SetMeta";
+import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 
 function ProblemsPage() {
   const { user } = useContext(userContext);
   const [skip, setSkip] = useState(0);
   const [limit, setLimit] = useState(20);
-  const { data, isLoading, error } = useProblemsData({
-    limit,
-    skip,
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["problems", { limit, skip }],
+    queryFn: () => getProblems({ params: { limit, skip } }),
+    refetchOnMount: false,
   });
+
   const problemsList = data?.problemsList || [];
   const count = data?.count || 0;
 
@@ -56,12 +59,6 @@ function ProblemsPage() {
         url="https://www.codingducks.live/problems"
       />
       <Container maxW="container.xl" px={{ base: 0, md: 4 }}>
-        {/* <Box
-          h={200}
-          borderRadius={"20px"}
-          my={10}
-          border={"5px solid gray"}
-        ></Box> */}
         {isLoading ? (
           <Stack>
             {[1, 2, 3, 4, 5].map((key) => (
@@ -137,5 +134,25 @@ function ProblemsPage() {
     </NormalLayout>
   );
 }
+
+export const getStaticProps = async () => {
+  try {
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(["problems", { limit: 20, skip: 0 }], () =>
+      getProblems({ params: { limit: 20, skip: 0 } })
+    );
+    console.log(queryClient.getQueryData(["problems"]));
+    return {
+      props: {
+        dehydratedState: dehydrate(queryClient),
+      },
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      props: {},
+    };
+  }
+};
 
 export default ProblemsPage;

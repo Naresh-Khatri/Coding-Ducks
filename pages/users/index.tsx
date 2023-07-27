@@ -13,15 +13,20 @@ import {
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import Link from "next/link";
-import { getUsers, useUsersData } from "../../hooks/useUsersData";
+import { getUsers } from "../../hooks/useUsersData";
 import NormalLayout from "../../layout/NormalLayout";
 import SetMeta from "../../components/SEO/SetMeta";
 import { IUser } from "../../types";
 import FAIcon from "../../components/FAIcon";
-import { dehydrate, QueryClient } from "@tanstack/react-query";
+import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
 
 function UsersPage() {
-  const { data: users, isLoading } = useUsersData({ initialUsers: {} });
+  const { data: users, isLoading }: { data: IUser[]; isLoading: boolean } =
+    useQuery({
+      queryKey: ["users"],
+      queryFn: getUsers,
+      refetchOnMount: false,
+    });
   return (
     <NormalLayout>
       <SetMeta
@@ -161,7 +166,6 @@ export const getStaticProps = async () => {
   try {
     const queryClient = new QueryClient();
     await queryClient.prefetchQuery(["users"], getUsers);
-    console.log("hello");
     return {
       props: {
         dehydratedState: dehydrate(queryClient),
@@ -170,9 +174,7 @@ export const getStaticProps = async () => {
   } catch (err) {
     console.log(err);
     return {
-      props: {
-        users: [],
-      },
+      props: {},
     };
   }
 };

@@ -5,10 +5,7 @@ import {
   Text,
   Button,
   Stack,
-  Icon,
   useColorModeValue,
-  useColorMode,
-  createIcon,
   Flex,
   SimpleGrid,
   SkeletonText,
@@ -18,31 +15,29 @@ import {
 import { useContext } from "react";
 import ExamCard from "../../components/ExamCard";
 import { userContext } from "../../contexts/userContext";
-import { useExamsData } from "../../hooks/useExamsData";
+import { getExams } from "../../hooks/useExamsData";
 
 import NormalLayout from "../../layout/NormalLayout";
 import SetMeta from "../../components/SEO/SetMeta";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { IExam } from "../../types";
-import { baseURL } from "../../lib/axios";
+import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 
-export default function ExamPage({
-  exams,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { data: examsData, isLoading: examsDataLoading } = useExamsData({
-    initialExamData: exams,
+export default function ExamPage() {
+  const { data: exams } = useQuery({
+    queryKey: ["exams"],
+    queryFn: getExams,
+    refetchOnMount: false,
   });
   const { user } = useContext(userContext);
 
-  const currTime = new Date().getTime();
-  const availableExams = exams?.filter(
-    (exam) =>
-      exam.isBounded === false || new Date(exam.endTime).getTime() > currTime
-  );
-  const upcomingExams = exams?.filter(
-    (exam) =>
-      exam.isBounded === true && new Date(exam.endTime).getTime() > currTime
-  );
+  // const currTime = new Date().getTime();
+  // const availableExams = exams?.filter(
+  //   (exam) =>
+  //     exam.isBounded === false || new Date(exam.endTime).getTime() > currTime
+  // );
+  // const upcomingExams = exams?.filter(
+  //   (exam) =>
+  //     exam.isBounded === true && new Date(exam.endTime).getTime() > currTime
+  // );
 
   return (
     <>
@@ -118,16 +113,13 @@ const ExamCardLoading = () => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<{
-  exams: IExam[];
-}> = async () => {
-  try {
-    const res = await fetch(baseURL + "/exams");
-    const exams = await res.json();
-    // console.log(exams)
-    return { props: { exams } };
-  } catch (err) {
-    console.log(err);
-    return { props: { exams: [] } };
-  }
+export const getServerSideProps = async () => {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(["exams"], getExams);
+
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
+  };
 };
