@@ -1,65 +1,49 @@
 import {
   Container,
-  Divider,
   Flex,
   Grid,
   GridItem,
   HStack,
-  Text,
+  VStack,
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
 
 import NormalLayout from "../../layout/NormalLayout";
 
-import {
-  IUserStatsResponse,
-  useUserData,
-  useUserStats,
-} from "../../hooks/useUsersData";
+import { getUser, getUserStats } from "../../hooks/useUsersData";
 import SetMeta from "../../components/SEO/SetMeta";
-import { baseURL } from "../../lib/axios";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { IUser } from "../../types";
 import OverallStatsCard from "../../components/profile/OverallStatsCard";
 import BadgesCard from "../../components/profile/BadgesCard";
 import UserInfo from "../../components/profile/UserInfo";
 import ExamStatsCard from "../../components/profile/ExamStatsCard";
 import SubmissionsCalenderCard from "../../components/profile/SubmissionsCalenderCard";
+import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
-function UsersPage({
-  user,
-  stats,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function UsersPage() {
   const [isMobile] = useMediaQuery("(max-width: 768px)", {
     fallback: true,
   });
   const router = useRouter();
   const { username } = router.query;
   const toast = useToast();
-  const {
-    data: userData,
-    isError: errorOnUserFetch,
-    refetch: refetchUserData,
-    isLoading: userDataLoading,
-  } = useUserData({ username: "" + username, initalUserData: user });
-  const {
-    data: statsData,
-    isError: errorOnStatsFetch,
-    refetch: refetchStatsData,
-    isLoading: statsDataLoading,
-  } = useUserStats({
-    username: "" + username,
-    initalUserStats: stats,
+
+  const { data: userData } = useQuery({
+    queryKey: ["user", username],
+    queryFn: () => getUser(username as string),
+    refetchOnMount: false,
   });
 
+  const { data: statsData } = useQuery({
+    queryKey: ["userStats", username],
+    queryFn: () => getUserStats(username as string),
+    refetchOnMount: false,
+  });
+  console.log(statsData);
   useEffect(() => {
-    if (!router.isReady || userDataLoading) return;
-    refetchUserData();
-    refetchStatsData();
-    if (!userData || errorOnUserFetch || errorOnStatsFetch) {
+    if (!userData || !statsData) {
       toast({
         title: "User not found",
         description: "The user you are looking for does not exist",
@@ -69,10 +53,8 @@ function UsersPage({
       });
       router.push("/users");
     }
-  }, [router.query, router.isReady, errorOnUserFetch, errorOnStatsFetch]);
-
-  // if (errorOnProgressFetch || errorOnUserFetch) return null;
-  if (!userData) return <p>Loading...</p>;
+  }, [router, toast, userData, statsData]);
+  if (!userData) return <p> Loading... </p>;
 
   return (
     <NormalLayout>
@@ -83,36 +65,17 @@ function UsersPage({
         image={userData?.photoURL}
         url={`https://www.codingducks.live/users/${userData?.username}`}
       />
-      <Container maxW={"8xl"} h={"fit-content"}>
+      <Container maxW={"8xl"}>
         {isMobile ? (
-          <Flex
-            display={{ base: "flex", md: "none" }}
-            align={{ base: "center", md: "flex-start" }}
-            justify={"center"}
-            w={"100%"}
-            h={"100%"}
-            mt={[0, 0, 40]}
-            flexBasis={"100%"}
-            direction={{ base: "column", md: "row" }}
-          >
+          <VStack>
             <UserInfo viewingUser={userData} viewingUserStats={statsData} />
             <OverallStatsCard statsData={statsData} />
             <BadgesCard userData={userData} />
-            <SubmissionsCalenderCard
-              subsData={statsData.dailySubmissions}
-              isLoading={statsDataLoading}
-            />
+            <SubmissionsCalenderCard subsData={statsData.dailySubmissions} />
             <ExamStatsCard examSubs={statsData.byExamId} />
-          </Flex>
+          </VStack>
         ) : (
-          <Grid
-            h="200px"
-            templateRows="repeat(2, 1fr)"
-            templateColumns="repeat(3, 1fr)"
-            gap={4}
-            mt={20}
-            // display={{ base: "none", md: "grid" }}
-          >
+          <Grid templateColumns="repeat(3, 1fr)" gap={4} mt={20}>
             <GridItem rowSpan={2} colSpan={1}>
               <UserInfo viewingUser={userData} viewingUserStats={statsData} />
             </GridItem>
@@ -123,10 +86,7 @@ function UsersPage({
               </HStack>
             </GridItem>
             <GridItem colSpan={2}>
-              <SubmissionsCalenderCard
-                subsData={statsData.dailySubmissions}
-                isLoading={statsDataLoading}
-              />
+              <SubmissionsCalenderCard subsData={statsData.dailySubmissions} />
               <ExamStatsCard examSubs={statsData.byExamId} />
             </GridItem>
           </Grid>
@@ -137,19 +97,19 @@ function UsersPage({
 }
 export default UsersPage;
 
-export const getServerSideProps: GetServerSideProps<{
-  user: IUser;
-  stats: IUserStatsResponse;
-}> = async ({ params }) => {
+export const getServerSideProps = async ({ params }) => {
   const { username } = params;
-  const res = await fetch(`${baseURL}/users/username/${username}`);
-  const { data } = await res.json();
-  const res2 = await fetch(`${baseURL}/users/username/${username}/stats`);
-  const { data: data2 } = await res2.json();
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(["userStats", username], () =>
+    getUserStats(username as string)
+  );
+  await queryClient.prefetchQuery(["user", username], () =>
+    getUser(username as string)
+  );
+
   return {
     props: {
-      user: data,
-      stats: data2,
+      dehydratedState: dehydrate(queryClient),
     },
   };
 };
