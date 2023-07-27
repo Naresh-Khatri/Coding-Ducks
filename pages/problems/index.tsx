@@ -30,7 +30,6 @@ function ProblemsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["problems", { limit, skip }],
     queryFn: () => getProblems({ params: { limit, skip } }),
-    refetchOnMount: false,
   });
 
   const problemsList = data?.problemsList || [];
@@ -72,7 +71,7 @@ function ProblemsPage() {
                 <Tr>
                   <Th px={{ base: 1, md: 3 }}>Status</Th>
                   <Th px={{ base: 1, md: 3 }}>Title</Th>
-                  <Th px={{ base: 1, md: 3 }}>Acceptance</Th>
+                  {/* <Th px={{ base: 1, md: 3 }}>Acceptance</Th> */}
                   <Th px={{ base: 1, md: 3 }}>Difficulty</Th>
                   <Th px={{ base: 1, md: 3 }}>Solved by</Th>
                 </Tr>
@@ -141,7 +140,6 @@ export const getStaticProps = async () => {
     await queryClient.prefetchQuery(["problems", { limit: 20, skip: 0 }], () =>
       getProblems({ params: { limit: 20, skip: 0 } })
     );
-    console.log(queryClient.getQueryData(["problems"]));
     return {
       props: {
         dehydratedState: dehydrate(queryClient),
