@@ -39,9 +39,7 @@ export const useExamProblemsData = ({ examId }: { examId: number }) => {
 export const useExamSubmissionsData = (examId: number) => {
   return useQuery(
     ["userSubmissions", examId],
-    () => {
-      getExamSubmissions(examId);
-    },
+    () => getExamSubmissions(examId),
     { enabled: !!examId }
   );
 };
