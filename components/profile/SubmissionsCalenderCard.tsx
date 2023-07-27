@@ -12,19 +12,19 @@ const explicitTheme: ThemeInput = {
   // dark: ["#3a3a3a", "#1f6f46", "#28a745", "#48e06f", "#64e36e"],
   dark: ["#3a3a3a", "#6B46C1", "#805AD5", "#9F7AEA", "#B794F4"],
 };
-function SubmissionsCalenderCard({
-  subsData,
-}: SubmissionCalenderCardProps) {
+function SubmissionsCalenderCard({ subsData }: SubmissionCalenderCardProps) {
   const maxCount = Math.max(...subsData.map((sub) => sub.count));
-  const data: Activity[] = subsData.map(
-    (submission: { date: string; count: number }): Activity => {
+  const data: Activity[] = subsData
+    .map((submission: { date: string; count: number }): Activity => {
+      console.log(submission.date);
       return {
         count: submission.count,
         date: submission.date,
         level: Math.ceil((submission.count / maxCount) * 4) as levels,
       };
-    }
-  );
+    })
+    .reverse(); // dont forget to reverse since the calendar starts from the bottom
+
   const d = new Date();
   const lastYearDate = `${d.getFullYear() - 1}-${
     (d.getMonth() + 1 < 10 ? "0" : "") + (d.getMonth() + 1)
@@ -33,16 +33,18 @@ function SubmissionsCalenderCard({
     (d.getMonth() + 1 < 10 ? "0" : "") + (d.getMonth() + 1)
   }-${(d.getDate() < 10 ? "0" : "") + d.getDate()}`;
 
-  data.unshift({
-    level: 0,
-    date: lastYearDate,
-    count: 0,
-  });
-  data.push({
-    level: 0,
-    date: thisYearDate,
-    count: 0,
-  });
+  if (data[0].date !== lastYearDate)
+    data.unshift({
+      level: 0,
+      date: lastYearDate,
+      count: 0,
+    });
+  if (data.at(-1).date !== thisYearDate)
+    data.push({
+      level: 0,
+      date: thisYearDate,
+      count: 0,
+    });
 
   return (
     <Card w={"100%"} bg={"whiteAlpha.100"} borderRadius={10} p={5} mb={5}>
