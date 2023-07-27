@@ -6,6 +6,7 @@ import {
   Text,
   Tooltip,
   UnorderedList,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import { faThumbsDown, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
@@ -22,6 +23,9 @@ interface LikeDislikeButtonsProps {
   problemId: number;
 }
 const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
+  const [isMobile] = useMediaQuery("(max-width: 768px)", {
+    fallback: true,
+  });
   const {
     data: ratingData,
     isLoading: ratingIsLoading,
@@ -69,7 +73,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
         borderRadius={10}
         bg={"gray.700"}
         label={
-          ratingData?.rating?.likes ? (
+          ratingData?.rating?.likes && !isMobile ? (
             <UsersList users={ratingData.rating.likes} />
           ) : null
         }
@@ -96,7 +100,7 @@ const LikeDislikeButtons: FC<LikeDislikeButtonsProps> = ({ problemId }) => {
         borderRadius={10}
         bg={"gray.700"}
         label={
-          ratingData?.rating?.dislikes ? (
+          ratingData?.rating?.dislikes && !isMobile ? (
             <UsersList users={ratingData.rating.dislikes} />
           ) : null
         }
