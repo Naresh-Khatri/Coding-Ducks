@@ -1,15 +1,12 @@
-import React from "react";
-
-import { Box, Card, Flex, Text } from "@chakra-ui/react";
+import { Card, Flex, Text } from "@chakra-ui/react";
+import { cloneElement } from "react";
 import { Activity, ThemeInput } from "react-activity-calendar";
 import ActivityCalendar from "react-activity-calendar";
 
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import "react-tooltip/dist/react-tooltip.css";
 type levels = 0 | 1 | 2 | 3 | 4;
 interface SubmissionCalenderCardProps {
   subsData: Activity[];
-  isLoading: boolean;
 }
 const explicitTheme: ThemeInput = {
   // dark: ["#3a3a3a", "#1f6f46", "#28a745", "#48e06f", "#64e36e"],
@@ -17,9 +14,7 @@ const explicitTheme: ThemeInput = {
 };
 function SubmissionsCalenderCard({
   subsData,
-  isLoading,
 }: SubmissionCalenderCardProps) {
-  console.log(subsData);
   const maxCount = Math.max(...subsData.map((sub) => sub.count));
   const data: Activity[] = subsData.map(
     (submission: { date: string; count: number }): Activity => {
@@ -55,14 +50,13 @@ function SubmissionsCalenderCard({
         Submission history
       </Text>
       <Flex justify={"end"} h={"100%"}>
-        <Flex w={{ base: "100%", md: "700px" }} overflowX={"auto"}>
+        <Flex w={"100%"} overflowX={"auto"}>
           <ActivityCalendar
-            style={{ width: "800px" }}
             data={data}
             theme={explicitTheme}
             showWeekdayLabels
             renderBlock={(block, activity) =>
-              React.cloneElement(block, {
+              cloneElement(block, {
                 "data-tooltip-id": "react-tooltip",
                 "data-tooltip-html": `${activity.count} activities on ${activity.date}`,
               })
