@@ -1,48 +1,71 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
-import { ISubmission } from "../types";
-import { auth } from "../firebase/firebase";
+import { ISubmission, ISubmissionsQuery, Lang } from "../types";
 
-export interface ISubmissionsQuery {
-  skip: number;
-  take: number;
-  searchTerm: string;
-  orderBy: string;
-  asc: boolean;
-}
-
-export const useSubmissionsData = ({
+// ------------- Fetch functions------------
+export const getSubmissions = async ({
   skip,
   take,
   searchTerm,
   orderBy,
   asc,
 }: ISubmissionsQuery) => {
-  return useQuery(
-    ["submissions", { skip, take, searchTerm, orderBy, asc }],
-    () =>
-      axiosInstance.get(`/submissions`, {
-        params: {
-          skip,
-          take,
-          searchTerm,
-          orderBy,
-          asc,
-        },
-      })
+  return axiosInstance.get(`/submissions`, {
+    params: {
+      skip,
+      take,
+      searchTerm,
+      orderBy,
+      asc,
+    },
+  });
+};
+
+export const getSubmission = async (
+  submissionId: number,
+  canFetch: boolean
+) => {
+  const result = await axiosInstance.get(`/submissions/${submissionId}`);
+  return { data: result.data?.data, status: result.status } as {
+    data: ISubmission;
+    status: number;
+  };
+};
+
+export const getLastSubmission = async (problemId: number) => {
+  return axiosInstance.get(`/problems/${problemId}/getLastSubmission/`);
+};
+
+export const getLastSubmissionV2 = async (problemId: number, lang: Lang) => {
+  const res = await axiosInstance.get(
+    `/submissions/last?problemId=${problemId}&lang=${lang}`
   );
+  return { data: res.data?.data, status: res.status };
+};
+
+export const getCurrentUserSubmissionForProblem = async (problemId: number) => {
+  try {
+    const res = await axiosInstance.get(
+      `/submissions/current-user/${problemId}`
+    );
+    return { data: res.data?.data, status: res.status } as {
+      data: ISubmission[] | null;
+      status: number;
+    };
+  } catch (err) {
+    return { data: null, status: 404 };
+  }
+};
+
+// ------------- RQ hooks ------------
+export const useSubmissionsData = (q: ISubmissionsQuery) => {
+  return useQuery(["submissions", q], () => getSubmissions(q));
 };
 
 export const useSubmissionData = (submissionId: number, canFetch) => {
   return useQuery(
     ["submission", submissionId],
-    async () => {
-      const result = await axiosInstance.get(`/submissions/${submissionId}`);
-      return { data: result.data?.data, status: result.status } as {
-        data: ISubmission;
-        status: number;
-      };
-    },
+    () => getSubmission(submissionId, canFetch),
     { enabled: canFetch, retryOnMount: false, refetchOnMount: false }
   );
 };
@@ -53,7 +76,7 @@ export const useLastSubmissionData = (
 ) => {
   return useQuery(
     ["lastSubmission", problemId],
-    () => axiosInstance.get(`/problems/${problemId}/getLastSubmission/`),
+    () => getLastSubmission(problemId),
     {
       onSuccess: onSuccessFn,
       enabled: false,
@@ -67,18 +90,13 @@ export const useLastSubmissionData = (
 
 export const useLastSubmissionDataV2 = (
   problemId: number,
-  lang: string,
+  lang: Lang,
   onSuccessFn: (data: any) => void,
   onErrorFn: (data: any) => void
 ) => {
   return useQuery(
     ["lastSubmission", problemId, lang],
-    async () => {
-      const res = await axiosInstance.get(
-        `/submissions/last?problemId=${problemId}&lang=${lang}`
-      );
-      return { data: res.data?.data, status: res.status };
-    },
+    () => getLastSubmissionV2(problemId, lang),
     {
       onSuccess: onSuccessFn,
       retry: false,
@@ -95,19 +113,7 @@ export const useLastSubmissionDataV2 = (
 export const useCurrentUserSubmissionDataForProblem = (problemId: number) => {
   return useQuery(
     ["submission", problemId],
-    async () => {
-      try {
-        const res = await axiosInstance.get(
-          `/submissions/current-user/${problemId}`
-        );
-        return { data: res.data?.data, status: res.status } as {
-          data: ISubmission[] | null;
-          status: number;
-        };
-      } catch (err) {
-        return { data: null, status: 404 };
-      }
-    },
+    () => getCurrentUserSubmissionForProblem(problemId),
     {
       enabled: !!problemId,
       retryOnMount: false,
