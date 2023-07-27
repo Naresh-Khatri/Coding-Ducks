@@ -21,12 +21,9 @@ import {
 } from "@chakra-ui/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTable, useFilters, useGlobalFilter, useSortBy } from "react-table";
-import {
-  ISubmissionsQuery,
-  useSubmissionsData,
-} from "../hooks/useSubmissionsData";
+import { useSubmissionsData } from "../hooks/useSubmissionsData";
 import SubmissionRow from "./admin/SubmissionRow";
-import { ISubmission } from "../types";
+import { ISubmission, ISubmissionsQuery } from "../types";
 
 const COLUMNS = [
   {
