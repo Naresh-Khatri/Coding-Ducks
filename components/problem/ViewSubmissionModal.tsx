@@ -43,7 +43,7 @@ function ViewSubmissionModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={"4xl"}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mx={2}>
         <ModalHeader>Submission Details</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
@@ -71,12 +71,12 @@ function ViewSubmissionModal({
                   user={submissionData.User}
                   timestamp={submissionData.timestamp}
                 />
-                <Box>
+                <Stack direction={{ base: "column", md: "row" }}>
                   <Badge
                     colorScheme={submissionData.isAccepted ? "green" : "red"}
                     p={1}
                     px={2}
-                    mr={10}
+                    mr={{ base: 0, md: 10 }}
                     borderRadius={15}
                   >
                     {submissionData.isAccepted ? "Accepted" : "Rejected"}
@@ -85,12 +85,13 @@ function ViewSubmissionModal({
                     colorScheme={"blue"}
                     p={1}
                     px={2}
-                    mr={10}
+                    mr={{ base: 0, md: 10 }}
                     borderRadius={15}
+                    textAlign={"center"}
                   >
                     {lang2Label[submissionData.lang]}
                   </Badge>
-                </Box>
+                </Stack>
               </HStack>
               <Flex justifyContent={"center"} mt={"2rem"}>
                 <AceEditor
