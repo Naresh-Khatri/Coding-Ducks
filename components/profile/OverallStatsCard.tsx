@@ -1,9 +1,8 @@
 import { Card, Divider, Flex, HStack, Text } from "@chakra-ui/react";
 import React from "react";
 import FAIcon from "../FAIcon";
-import { IUserStatsResponse } from "../../hooks/useUsersData";
 import { LEAGUES } from "../../data/leagues";
-import { faFire } from "@fortawesome/free-solid-svg-icons";
+import { IUserStatsResponse } from "../../types";
 
 function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
   return (

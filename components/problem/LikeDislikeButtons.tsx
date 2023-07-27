@@ -10,13 +10,13 @@ import {
 import { faThumbsDown, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import {
-  IRatingUser,
   useProblemRatingData,
   useUpdateProblemRating,
 } from "../../hooks/useProblemsData";
 import Image from "next/image";
 import Link from "next/link";
 import FAIcon from "../FAIcon";
+import { IRatingUser } from "../../types";
 
 interface LikeDislikeButtonsProps {
   problemId: number;
