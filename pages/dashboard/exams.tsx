@@ -38,7 +38,7 @@ function Exams() {
     isLoading: examsDataIsLoading,
     error: examsDataError,
     refetch: refetchExamData,
-  } = useExamsData({});
+  } = useExamsData();
   console.log(examsData);
 
   if (examsDataIsLoading || !examsData) return <div>Loading...</div>;
