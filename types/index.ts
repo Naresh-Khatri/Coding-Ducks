@@ -1,3 +1,5 @@
+import { Activity } from "react-activity-calendar";
+
 interface Follower {
   fullname: string;
   id: number;
@@ -24,6 +26,19 @@ export interface IUser {
   rank?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+export interface IUserStatsResponse {
+  totalProblemsSolved: number;
+  totalSubCount: number;
+  rank: number;
+  league: ILeague;
+  points: number;
+  accuracy: number;
+  dailySubmissions: Activity[];
+  streaks: { date: string; count: number }[][];
+  longestStreak: number;
+  streakActive: boolean;
+  byExamId: any;
 }
 
 export interface IExam {
@@ -247,4 +262,28 @@ export interface IBadge {
   name: string;
   description: string;
   image: string;
+}
+
+// PROBLEMS
+export interface IRatingUser {
+  id: number;
+  username: string;
+  photoURL?: string;
+}
+export interface IRating {
+  rating: {
+    likes: IRatingUser[];
+    dislikes: IRatingUser[];
+  };
+  userRating: "like" | "dislike" | "none" | null;
+}
+
+// ADMIN DASHBOARD
+
+export interface ISubmissionsQuery {
+  skip: number;
+  take: number;
+  searchTerm: string;
+  orderBy: string;
+  asc: boolean;
 }
