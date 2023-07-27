@@ -12,7 +12,8 @@ interface SubmissionCalenderCardProps {
   isLoading: boolean;
 }
 const explicitTheme: ThemeInput = {
-  dark: ["#3a3a3a", "#1f6f46", "#28a745", "#48e06f", "#64e36e"],
+  // dark: ["#3a3a3a", "#1f6f46", "#28a745", "#48e06f", "#64e36e"],
+  dark: ["#3a3a3a", "#6B46C1", "#805AD5", "#9F7AEA", "#B794F4"],
 };
 function SubmissionsCalenderCard({
   subsData,
@@ -47,7 +48,6 @@ function SubmissionsCalenderCard({
     date: thisYearDate,
     count: 0,
   });
-  console.log(new Date().toISOString().split("T")[0]);
 
   return (
     <Card w={"100%"} bg={"whiteAlpha.100"} borderRadius={10} p={5} mb={5}>
