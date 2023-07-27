@@ -4,11 +4,13 @@ import {
   Avatar,
   AvatarGroup,
   Box,
+  Center,
   Flex,
   Td,
   Text,
   Tr,
   useToast,
+  Link as ChakraLink,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import Link from "next/link";
@@ -59,20 +61,22 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
       )}
       <Tr key={problem.id} onClick={() => console.log("clicked")}>
         <Td px={{ base: 3, md: 3 }} h={"50px"}>
-          {isLocked ? null : problem.status === "tried" ? (
-            "A"
-          ) : problem.status === "solved" ? (
-            <CheckIcon color="green.500" />
-          ) : null}
+          <Center>
+            {isLocked ? null : problem.status === "tried" ? (
+              "A"
+            ) : problem.status === "solved" ? (
+              <CheckIcon color="green.500" />
+            ) : null}
+          </Center>
         </Td>
         <Td px={{ base: 1, md: 3 }}>
           <Link href={`/problems/${problem.slug}`}>
-            <Text>
+            <ChakraLink>
               {problem.frontendProblemId}. {problem.title}
-            </Text>
+            </ChakraLink>
           </Link>
         </Td>
-        <Td px={{ base: 1, md: 3 }}>{problem.accuracy || "-"}</Td>
+        {/* <Td px={{ base: 1, md: 3 }}>{problem.accuracy || "-"}</Td> */}
         <Td px={{ base: 1, md: 3 }}>
           <Text
             fontWeight={"bold"}
