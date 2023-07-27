@@ -44,6 +44,8 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
   const [viewingUserState, setViewingUserState] = useState(viewingUser);
 
   const { onOpen, onClose, isOpen } = useDisclosure();
+  const [isLoading, setIsLoading] = useState(true);
+
   const [isFollowing, setIsFollowing] = useState<boolean>(
     !!loggedInUser?.following?.find((user) => user.id === viewingUser.id)
   );
@@ -52,9 +54,11 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
       !!loggedInUser.following?.find((user) => user.id === viewingUser.id)
     );
     setViewingUserState(viewingUser);
+    setIsLoading(false)
   }, [loggedInUser.following, viewingUser, viewingUser.id]);
 
   const handleFollowBtnClick = async () => {
+    setIsLoading(true);
     if (isFollowing) {
       setIsFollowing(false);
       await axiosInstance.post("/users/unfollow", {
@@ -72,6 +76,7 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
       `/users/username/${viewingUserState.username}`
     );
     setViewingUserState(data.data);
+    setIsLoading(false);
   };
 
   if (!viewingUserState) return null;
@@ -165,6 +170,7 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
                 bg={isFollowing ? "gray.700" : "purple.600"}
                 color="white"
                 onClick={handleFollowBtnClick}
+                isLoading={isLoading}
               >
                 {isFollowing ? "Unfollow" : "Follow"}
               </Button>
