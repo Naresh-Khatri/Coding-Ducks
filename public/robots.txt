@@ -1,2 +1,3 @@
 User-agent: *
 Disallow: /dashboard
+SiteMap: https://www.codingducks.live/sitemap.xml
