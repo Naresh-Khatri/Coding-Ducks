@@ -70,11 +70,9 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
           </Center>
         </Td>
         <Td px={{ base: 1, md: 3 }}>
-          <Link href={`/problems/${problem.slug}`}>
-            <ChakraLink>
-              {problem.frontendProblemId}. {problem.title}
-            </ChakraLink>
-          </Link>
+          <ChakraLink as={Link} href={`/problems/${problem.slug}`}>
+            {problem.frontendProblemId}. {problem.title}
+          </ChakraLink>
         </Td>
         {/* <Td px={{ base: 1, md: 3 }}>{problem.accuracy || "-"}</Td> */}
         <Td px={{ base: 1, md: 3 }}>
