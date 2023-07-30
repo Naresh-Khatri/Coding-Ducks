@@ -21,6 +21,7 @@ interface NewConsoleProps {
 
 function NewConsole({ output, onClose }: NewConsoleProps) {
   const [selectedCase, setSelectedCase] = useState(0);
+  console.log(output);
   if (!output?.results) return null;
 
   const memoryUsage =
@@ -34,12 +35,15 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
     }, 0) /
     (1000 * output.results.length);
 
-  if (output.results?.some((r) => r.errorOccurred))
+  if (output.results?.some((r) => r.errorOccurred)) {
+    // get the testcase with error
+    const errorTestCase = output.results.find((r) => r.errorOccurred === true);
+    console.log(errorTestCase);
     return (
       <Box w={"100%"} p={5}>
         <HStack justifyContent={"space-between"}>
           <Text color={"red.400"} fontWeight="extrabold" fontSize={"xl"}>
-            {errorType2Label[output.results[0].errorType]}
+            {errorType2Label[errorTestCase.errorType]}
           </Text>
           <IconButton
             aria-label="close"
@@ -55,16 +59,14 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
               w={"100%"}
               color={"red.400"}
               dangerouslySetInnerHTML={{
-                __html: output.results[0]?.errorMessage?.replace(
-                  /\n/g,
-                  "<br />"
-                ),
+                __html: errorTestCase?.errorMessage?.replace(/\n/g, "<br />"),
               }}
             ></Text>
           </Box>
         </Box>
       </Box>
     );
+  }
 
   return (
     <Box w={"100%"} p={5} overflowY={"auto"} maxH={400}>
