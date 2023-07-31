@@ -24,7 +24,9 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
           <HStack>
             {problem.status === "solved" && (
               <Tooltip label="You've solved this problem">
-                <FAIcon icon={faCheck} color="lightgreen" />
+                <Box>
+                  <FAIcon icon={faCheck} color="lightgreen" />
+                </Box>
               </Tooltip>
             )}
             {problem.status === "tried" && (
