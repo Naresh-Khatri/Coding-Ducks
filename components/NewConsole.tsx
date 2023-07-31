@@ -135,6 +135,7 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
             <Text
               as="code"
               w={"100%"}
+              p={0}
               dangerouslySetInnerHTML={{
                 __html: output?.results[selectedCase]?.input.replace(
                   /\n/g,
