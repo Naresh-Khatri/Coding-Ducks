@@ -24,6 +24,8 @@ import Image from "next/image";
 import { formatDate, formatTime } from "../../lib/formatDate";
 import { errorType2Label, lang2Label, langToAceModes } from "../../lib/utils";
 import dynamic from "next/dynamic";
+import { ChevronRightIcon } from "@chakra-ui/icons";
+import Link from "next/link";
 
 const AceEditor = dynamic(import("react-ace"), { ssr: false });
 
@@ -103,6 +105,7 @@ function ViewSubmissionModal({
                   }}
                   style={{ borderRadius: "10px" }}
                   width="100%"
+                  height="20rem"
                   focus={false}
                   theme="dracula"
                   name="blah2"
@@ -147,9 +150,28 @@ function ViewSubmissionModal({
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={onClose}>
+          <Button
+            colorScheme="purple"
+            mr={3}
+            variant={"ghost"}
+            onClick={onClose}
+          >
             Close
           </Button>
+          {!isLoading &&
+            submissionData?.isAccepted &&
+            submissionData?.nextProblem && (
+              <a href={`/problems/${submissionData.nextProblem.slug}`}>
+                <Button
+                  colorScheme="purple"
+                  mr={3}
+                  rightIcon={<ChevronRightIcon />}
+                  onClick={onClose}
+                >
+                  Next
+                </Button>
+              </a>
+            )}
         </ModalFooter>
       </ModalContent>
     </Modal>
