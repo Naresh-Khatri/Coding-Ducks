@@ -1,8 +1,10 @@
 import {
   Avatar,
+  AvatarBadge,
   Box,
   Container,
   Flex,
+  keyframes,
   SimpleGrid,
   Skeleton,
   SkeletonCircle,
@@ -19,6 +21,8 @@ import SetMeta from "../../components/SEO/SetMeta";
 import { IUser } from "../../types";
 import FAIcon from "../../components/FAIcon";
 import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
+import { pointsToLeague } from "../../lib/utils";
+import { LEAGUES } from "../../data/leagues";
 
 function UsersPage() {
   const { data: users, isLoading }: { data: IUser[]; isLoading: boolean } =
@@ -37,7 +41,7 @@ function UsersPage() {
       />
       <Container mt={70} maxW={"6xl"} minH={"100vh"}>
         <Text fontSize="4xl" fontWeight="bold" mb={10}>
-          Users ({users.length})
+          Users ({users?.length})
         </Text>
         <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={10}>
           {isLoading &&
@@ -85,11 +89,23 @@ const LoadingUserCard = () => {
     </Box>
   );
 };
+
+const gradentKeyframs = keyframes` 
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+`;
 const UserCard = ({ user }: { user: IUser }) => {
   const rankColor = (rank: number) => {
     if (rank === 1) return "gold";
     if (rank === 2) return "silver";
-    if (rank === 3) return "bronze";
+    if (rank === 3) return "darkorange";
     return "gray";
   };
   return (
@@ -114,22 +130,27 @@ const UserCard = ({ user }: { user: IUser }) => {
           transition="all .1s ease-in-out"
         >
           <Box position={"relative"} w={{ base: 70, md: 120 }}>
-            {user.photoURL ? (
-              <Image
-                src={user.photoURL}
-                alt="Picture of the author"
-                width={130}
-                height={130}
-                style={{ borderRadius: "50%" }}
-              />
-            ) : (
-              <Avatar
-                size={{ base: "lg", md: "2xl" }}
-                name={user.fullname}
-                color={"white"}
-              />
-            )}
-
+            <Avatar
+              src={user.photoURL}
+              size={{ base: "lg", md: "2xl" }}
+              name={user.fullname}
+              color={"white"}
+            >
+              <AvatarBadge
+                bgSize={"contain"}
+                bgGradient={LEAGUES[pointsToLeague(user.points).id].bgGradient}
+                backgroundSize={"200%"}
+                animation={`${gradentKeyframs} 5s ease infinite`}
+                px={2}
+                py={1}
+                borderWidth="6px"
+              >
+                {/* <FAIcon icon={LEAGUES[pointsToLeague(user.points).id].icon} /> */}
+                <Text fontSize={"sm"} fontWeight={"bold"}>
+                  {LEAGUES[pointsToLeague(user.points).id].label}
+                </Text>
+              </AvatarBadge>
+            </Avatar>
             {user.rank <= 3 && (
               <Box position={"absolute"} top={0} right={0}>
                 <Box w={{ base: "7px", md: "20px" }}>
@@ -153,7 +174,11 @@ const UserCard = ({ user }: { user: IUser }) => {
             {user.fullname}
           </Text>
           <Text color={"gray"}>@{user.username}</Text>
-          <Text color={rankColor(user.rank)} fontSize="xl">
+          <Text
+            color={rankColor(user.rank)}
+            fontSize="xl"
+            fontWeight={rankColor(user.rank) !== "gray" ? "bold" : "normal"}
+          >
             #{user.rank}
           </Text>
         </Flex>
