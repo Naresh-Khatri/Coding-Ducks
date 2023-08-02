@@ -1,10 +1,12 @@
 import {
   Box,
   Button,
+  Center,
   Flex,
   HStack,
   IconButton,
   SimpleGrid,
+  Spinner,
   Text,
 } from "@chakra-ui/react";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
@@ -16,13 +18,25 @@ import FAIcon from "./FAIcon";
 
 interface NewConsoleProps {
   output: Output;
+  isLoading: boolean;
   onClose: () => void;
 }
 
-function NewConsole({ output, onClose }: NewConsoleProps) {
+function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
   const [selectedCase, setSelectedCase] = useState(0);
-  console.log(output);
-  if (!output?.results) return null;
+  if (!output?.results)
+    return (
+      <Center p={4} w={"100%"} h={"100%"}>
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <Text textAlign={"center"} color={"whiteAlpha.400"} fontSize={"3xl"}>
+            No output yet!
+            <br /> Try running your code!
+          </Text>
+        )}
+      </Center>
+    );
 
   const memoryUsage =
     output.results?.reduce((acc, res) => {
@@ -38,9 +52,8 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
   if (output.results?.some((r) => r.errorOccurred)) {
     // get the testcase with error
     const errorTestCase = output.results.find((r) => r.errorOccurred === true);
-    console.log(errorTestCase);
     return (
-      <Box w={"100%"} p={5}>
+      <Box w={"100%"} p={5} overflowY={"auto"}>
         <HStack justifyContent={"space-between"}>
           <Text color={"red.400"} fontWeight="extrabold" fontSize={"xl"}>
             {errorType2Label[errorTestCase.errorType]}
@@ -48,6 +61,8 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
           <IconButton
             aria-label="close"
             icon={<CloseIcon />}
+            size={"sm"}
+            colorScheme="red"
             onClick={onClose}
           />
         </HStack>
@@ -55,9 +70,11 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
           <Text>Details: </Text>
           <Box bg={"#f1635f22"} p={3} borderRadius={10}>
             <Text
-              as="code"
               w={"100%"}
+              as={"code"}
               color={"red.400"}
+              p={0}
+              fontWeight={"semibold"}
               dangerouslySetInnerHTML={{
                 __html: errorTestCase?.errorMessage?.replace(/\n/g, "<br />"),
               }}
@@ -69,7 +86,7 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
   }
 
   return (
-    <Box w={"100%"} p={5} overflowY={"auto"} maxH={400}>
+    <Box w={"100%"} p={5} overflowY={"auto"}>
       <HStack>
         <Flex justify={"space-between"} mb={5} w="100%">
           <Text
@@ -89,6 +106,8 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
             <IconButton
               aria-label="close"
               icon={<CloseIcon />}
+              size={"sm"}
+              colorScheme="red"
               onClick={onClose}
             />
           </HStack>
@@ -147,17 +166,10 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
         </Box>
         <Box py={2}>
           <Text>Output: </Text>
-          <Box
-            bg={"gray.700"}
-            p={3}
-            borderRadius={10}
-            maxH={200}
-            overflowY={"auto"}
-          >
+          <Box bg={"gray.700"} p={3} borderRadius={10} overflowY={"auto"}>
             <Text
               as="code"
               w={"100%"}
-              maxH={200}
               dangerouslySetInnerHTML={{
                 __html: output?.results[selectedCase]?.actualOutput?.replace(
                   /\n/g,
@@ -169,13 +181,7 @@ function NewConsole({ output, onClose }: NewConsoleProps) {
         </Box>
         <Box py={2}>
           <Text>Expected: </Text>
-          <Box
-            bg={"gray.700"}
-            p={3}
-            borderRadius={10}
-            maxH={200}
-            overflowY={"auto"}
-          >
+          <Box bg={"gray.700"} p={3} borderRadius={10} overflowY={"auto"}>
             <Text
               as="code"
               w={"100%"}
