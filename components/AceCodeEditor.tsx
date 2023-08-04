@@ -77,12 +77,11 @@ function AceCodeEditor({
   useEffect(() => {
     const ccode =
       localStorage.getItem(`code-${problemId}-${lang}`) || starterCode || "";
-
     setCode(ccode);
     setTimeout(() => {
       if (editorRef.current?.editor) foldStarterCode(editorRef.current.editor);
     }, 10);
-  }, [lang]);
+  }, [lang, problemId]);
 
   // set code
   useEffect(() => {
@@ -162,9 +161,7 @@ function AceCodeEditor({
       {!hideHeader && <WindowHeader title={"editor.exe"} status={"none"} />}
       <AceEditor
         mode={langToAceModes[lang]}
-        // mode={'java'}
         value={code}
-        // onChange={(value) => updateSettings({ code: value })}
         onChange={(value) => handleOnChange(value)}
         theme={theme}
         editorProps={{
