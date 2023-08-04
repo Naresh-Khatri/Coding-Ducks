@@ -74,6 +74,7 @@ function BottomActions({
         <Button
           onClick={() => setShowConsole((p) => !p)}
           bg={showConsole ? "gray.600" : ""}
+          variant={"outline"}
           rightIcon={showConsole ? <ChevronDownIcon /> : <ChevronUpIcon />}
         >
           Console
