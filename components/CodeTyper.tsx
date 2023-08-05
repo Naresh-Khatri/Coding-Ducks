@@ -74,7 +74,7 @@ function CodeTyper() {
   const resetEffect = (e: any) => {
     setIsMouseOver(false);
     setTimeout(function () {
-      if (!isMouseOver) {
+      if (!isMouseOver && cardRef.current) {
         cardRef.current.style.transition = "transform 1s";
         cardRef.current.style.transform =
           "perspective(1000px) rotateX(0deg) rotateY(0deg)";
@@ -82,6 +82,7 @@ function CodeTyper() {
     }, 300);
   };
   const parallax3DEffect = (e: any) => {
+    if (!cardRef.current) return;
     if (!isMouseOver) {
       cardRef.current.style.transition = "none";
     } else {
@@ -112,7 +113,7 @@ function CodeTyper() {
           border: "none",
           outline: "none",
           color: "#fff",
-          background: "#111",
+          background: "#444",
           position: "relative",
           zIndex: "0",
           borderRadius: "10px",
@@ -141,7 +142,7 @@ function CodeTyper() {
           position: "absolute",
           width: "100%",
           height: "100%",
-          background: "#111",
+          background: "#222222fa",
           left: "0",
           top: "0",
           borderRadius: "10px",
