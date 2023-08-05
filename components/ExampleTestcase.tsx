@@ -7,7 +7,7 @@ const styles = {
   width: "fit-content",
   maxWidth: "100%",
   color: "white",
-  fontSize: "18px",
+  fontSize: "16px",
   padding: "20px",
   fontFamily: "Consolas,Courier New,monospace",
   backdropFilter: "blur(4px) saturate(180%)",
@@ -50,26 +50,27 @@ function ExampleTestcase({ testCase }: ExampleTestcaseProps) {
           <Text mr={4} display="inline" fontWeight={"extrabold"}>
             Input:
           </Text>
-          {!testCase.frontendInput && <br />}
+          {testCase?.frontendInput?.includes("\n") && <br />}
           <Text
             as="span"
             style={
-              !testCase.frontendInput && testCase.input.includes("<br>")
+              !testCase.frontendInput && testCase.input.includes("\n")
                 ? { display: "block" }
                 : {}
             }
             dangerouslySetInnerHTML={{
               __html: testCase.frontendInput
-                ? testCase.frontendInput
+                ? testCase.frontendInput.replaceAll("\n", "<br>")
                 : testCase.input.replaceAll("\n", "<br>"),
             }}
           ></Text>
         </Box>
       )}
       <Box>
-        <Text mr={4} display="inline" fontWeight={"extrabold"}>
+        <Text mr={4} display="inline  " fontWeight={"extrabold"}>
           Output:
         </Text>
+        {testCase.frontendInput?.includes("\n") && <br />}
         <Text
           display="inline"
           dangerouslySetInnerHTML={{
