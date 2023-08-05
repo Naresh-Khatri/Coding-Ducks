@@ -121,7 +121,7 @@ function CustomTable({
             </HStack>
           )}
         </Flex>
-        <Flex overflowY={"scroll"}>
+        <Flex>
           {/* <Box bg={"cyan"} flex={1} flexGrow={1} w={"100%"}></Box> */}
           <TableContainer w={"100%"}>
             <Table {...getTableProps()} w={"60vw"}>
