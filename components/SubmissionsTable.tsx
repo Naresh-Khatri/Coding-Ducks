@@ -19,9 +19,8 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTable, useFilters, useGlobalFilter, useSortBy } from "react-table";
-import { useSubmissionsData } from "../hooks/useSubmissionsData";
 import SubmissionRow from "./admin/SubmissionRow";
 import { ISubmission, ISubmissionsQuery } from "../types";
 
@@ -66,21 +65,16 @@ const COLUMNS = [
   },
 ];
 
-function SubmissionsTable() {
-  const [query, setQuery] = useState<ISubmissionsQuery>({
-    skip: 0,
-    take: 10,
-    searchTerm: "",
-    orderBy: "id",
-    asc: false,
-  });
-
-  const {
-    data: submissionData,
-    isLoading: submissionsDataIsLoading,
-    error: submissionsDataError,
-    refetch: fetchSubmissions,
-  } = useSubmissionsData(query);
+interface SubmissionsTableProps {
+  subsData: { submissions: ISubmission[]; count: number };
+  query: ISubmissionsQuery;
+  setQuery: any;
+}
+function SubmissionsTable({
+  subsData,
+  query,
+  setQuery,
+}: SubmissionsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const handleOnSearchChange = (e) => {
     const search = e.target.value;
@@ -115,15 +109,7 @@ function SubmissionsTable() {
           )}
         </InputGroup>
       </Box>
-      {submissionsDataIsLoading || !submissionData ? (
-        <Text>Loading...</Text>
-      ) : (
-        <Tablee
-          submissionsData={submissionData.data}
-          query={query}
-          setQuery={setQuery}
-        />
-      )}
+      <Tablee submissionsData={subsData} query={query} setQuery={setQuery} />
     </>
   );
 }
