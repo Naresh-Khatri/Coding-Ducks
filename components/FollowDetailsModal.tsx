@@ -20,7 +20,9 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import NextLink from "next/link";
 import React from "react";
+import { IUser } from "../types";
 
 function FollowDetailsModal({ onClose, isOpen, followData }) {
   const { followedBy, following } = followData;
@@ -72,20 +74,16 @@ function FollowDetailsModal({ onClose, isOpen, followData }) {
     </Modal>
   );
 }
-const UserList = ({ user, onClose }) => {
+interface UserListProps {
+  user: IUser;
+  caption?: string;
+  onClose: () => void;
+}
+export const UserList = ({ user, caption, onClose }: UserListProps) => {
   const router = useRouter();
-  const visitUser = () => {
-    router.push("/users/" + user.username);
-    onClose();
-  };
   return (
-    <Link>
-      <Flex
-        justify={"space-between"}
-        alignItems="center"
-        my={2}
-        onClick={visitUser}
-      >
+    <Link as={NextLink} href={`/users/${user.username}`} onClick={onClose}>
+      <Flex justify={"space-between"} alignItems="center" my={2}>
         {user.photoURL ? (
           <Image
             src={user.photoURL}
@@ -97,10 +95,12 @@ const UserList = ({ user, onClose }) => {
         ) : (
           <Avatar name={user.fullname} />
         )}
-        <Text fontSize={"lg"} fontWeight={"extrabold"}>
+        <Text fontSize={"md"} fontWeight={"extrabold"}>
           {user.fullname}
         </Text>
-        <Box></Box>
+        <Text fontSize={"sm"} color={"whiteAlpha.500"}>
+          {caption}
+        </Text>
       </Flex>
     </Link>
   );
