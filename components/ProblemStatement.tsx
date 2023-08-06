@@ -15,8 +15,8 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
       <Box>
         <Text
           fontWeight={"extrabold"}
-          mb={5}
-          fontSize={{ base: "2xl", lg: "4xl" }}
+          mb={"1rem"}
+          fontSize={{ base: "2xl", lg: "2xl" }}
         >
           #{problem.frontendProblemId}. {problem.title}
         </Text>
