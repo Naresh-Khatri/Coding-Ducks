@@ -41,10 +41,9 @@ export default function ToolBar({
 
   return (
     <>
-      <HStack p={2} w={"full"} justifyContent="space-between">
+      <HStack py={2} w={"full"} justifyContent="space-between">
         <Box>
           <Select
-            bg="purple.500"
             color="white"
             maxW={40}
             value={lang}
@@ -84,7 +83,6 @@ export default function ToolBar({
             onChange={(e) => {
               updateSettings({ theme: e.target.value as Theme });
             }}
-            bg="purple.500"
             value={theme}
             color="white"
             fontWeight={"extrabold"}
