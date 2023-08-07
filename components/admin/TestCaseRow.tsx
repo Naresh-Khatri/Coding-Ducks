@@ -58,6 +58,7 @@ function TestCaseRow({ testCases, index, setTestCases }: TestCaseRowProps) {
       </Td>
       <Td m={0} py={4} px={2}>
         <Textarea
+          isDisabled={!testCases[index].isPublic}
           placeholder="Exlaination"
           value={testCases[index].explaination}
           onChange={(e) => {
