@@ -1,4 +1,11 @@
-import { HStack, IconButton, Td, Text, useDisclosure } from "@chakra-ui/react";
+import {
+  Avatar,
+  HStack,
+  IconButton,
+  Td,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import React from "react";
@@ -30,9 +37,9 @@ function SubmissionRow({ submission }: { submission: ISubmission }) {
       <Td>{id}</Td>
       <Td>{examId}</Td>
       <Td>
-        <Image
+        <Avatar
           src={User.photoURL}
-          alt="profile picture"
+          name="profile picture"
           width={50}
           height={50}
           style={{ borderRadius: "50%" }}
