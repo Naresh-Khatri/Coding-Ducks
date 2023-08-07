@@ -14,10 +14,9 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Radio,
-  RadioGroup,
   Select,
-  Stack,
+  Spinner,
+  Switch,
   Tab,
   TabList,
   TabPanel,
@@ -44,10 +43,7 @@ import TestCaseRow from "./TestCaseRow";
 import { useTagsData } from "../../hooks/useProblemsData";
 import { IProblem, IStarterCode, Testcase } from "../../types";
 import { INITIAL_STARTER_CODES } from "../../data/starterCodeData";
-// const QuillNoSSRWrapper = dynamic(import("react-quill"), {
-//   ssr: false,
-//   loading: () => <p>Loading ...</p>,
-// });
+
 const Quill = dynamic(import("./QuillEditor"), { ssr: false });
 const StarterCodeEditor = dynamic(
   import("../../components/StarterCodeEditor"),
@@ -80,6 +76,7 @@ function ProblemEditor({
     title,
     description,
     difficulty,
+    isActive,
     examId,
     order,
     testCases,
@@ -88,11 +85,15 @@ function ProblemEditor({
     frontendProblemId,
     tags,
   } = problemData as IProblem;
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const [newOrder, setNewOrder] = useState<number>();
   const [newTitle, setNewTitle] = useState<string>();
   const [newSlug, setNewSlug] = useState<string>();
   const [newFrontendProblemId, setNewFrontendProblemId] = useState<number>();
   const [newHasExam, setNewHasExam] = useState<boolean>();
+  const [newIsActive, setNewIsActive] = useState<boolean>();
   const [newDifficulty, setNewDifficulty] = useState<string>();
   const [newDescription, setNewDescription] = useState<string>();
   const [newTestCases, setNewTestCases] = useState<Testcase[]>();
@@ -128,6 +129,7 @@ function ProblemEditor({
     setNewOrder(order);
     setNewTitle(title);
     setNewSlug(slug);
+    setNewIsActive(isActive);
     setNewDifficulty(difficulty);
     setNewDescription(description.replace(/\\n/g, " ") || "");
     setNewTestCases(testCases);
@@ -135,9 +137,23 @@ function ProblemEditor({
     setNewSelectedTags(tags);
     setNewHasExam(!!examId);
     setNewHasStarterCode(starterCodes.length > 0);
-  }, [description, difficulty, examId, frontendProblemId, order, problemData, slug, starterCodes.length, tags, testCases, title]);
+  }, [
+    description,
+    difficulty,
+    examId,
+    frontendProblemId,
+    isActive,
+    order,
+    problemData,
+    slug,
+    starterCodes.length,
+    tags,
+    testCases,
+    title,
+  ]);
 
   const updateProblem = async () => {
+    setIsLoading(true);
     const payload = {
       title: newTitle,
       description: newDescription,
@@ -145,6 +161,7 @@ function ProblemEditor({
       testCases: newTestCases,
       slug: newSlug,
       frontendProblemId: newFrontendProblemId,
+      isActive: newIsActive,
       tags: newSelectedTags.map((tag) => {
         return {
           id: tag.id,
@@ -159,6 +176,7 @@ function ProblemEditor({
     }
     try {
       const res = await axios.patch(`/problems/${problemData.id}`, payload);
+      setIsLoading(false);
       toast({
         title: "Problem updated!",
         status: "success",
@@ -166,9 +184,10 @@ function ProblemEditor({
         duration: 9000,
         isClosable: true,
       });
-      // onEditSuccess();
+      onEditSuccess();
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
       toast({
         title: "Error",
         status: "error",
@@ -179,7 +198,11 @@ function ProblemEditor({
     }
   };
   if (!problemData || !examsList || !newTitle || !newDescription || !newSlug)
-    return <Box> loading... </Box>;
+    return (
+      <Box>
+        <Spinner />
+      </Box>
+    );
   return (
     <Modal onClose={onClose} size={"6xl"} isOpen={isOpen}>
       <ModalOverlay backdropFilter="auto" backdropBlur="2px" />
@@ -227,10 +250,20 @@ function ProblemEditor({
               >
                 <option value="starter">Starter</option>
                 <option value="basic">Basic</option>
+                <option value="veryEasy">Very Easy</option>
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">hard</option>
               </Select>
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="is-active">Active</FormLabel>
+              <Switch
+                id="is-active"
+                colorScheme="purple"
+                isChecked={newIsActive}
+                onChange={(e) => setNewIsActive(e.target.checked)}
+              />
             </FormControl>
           </HStack>
           <FormControl my={3}>
@@ -446,7 +479,11 @@ function ProblemEditor({
             <Button variant={"outline"} onClick={onClose}>
               Close
             </Button>
-            <Button bg="purple.500" onClick={updateProblem}>
+            <Button
+              bg="purple.500"
+              onClick={updateProblem}
+              isLoading={isLoading}
+            >
               Update
             </Button>
           </HStack>
