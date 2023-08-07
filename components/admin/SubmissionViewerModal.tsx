@@ -12,6 +12,7 @@ const supportedLangs = {
   java: java(),
 };
 import {
+  Avatar,
   Box,
   Button,
   HStack,
@@ -23,12 +24,12 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
+  Spinner,
   Stack,
   Table,
   Text,
 } from "@chakra-ui/react";
 import { useSubmissionData } from "../../hooks/useSubmissionsData";
-import Image from "next/image";
 import Link from "next/link";
 
 interface SubmissionViewerModalProps {
@@ -44,8 +45,8 @@ function SubmissionViewerModal({
   const { data, isLoading, error } = useSubmissionData(submissionId, isOpen);
 
   const submission = data?.data;
+  if (isLoading) return <Spinner />;
   const { User: user, Exam: exam, Problem: problem } = submission;
-  console.log(data);
   return (
     <Modal
       onClose={onClose}
@@ -65,19 +66,16 @@ function SubmissionViewerModal({
               <SimpleGrid columns={2} spacing={10}>
                 <Stack>
                   <Box>
-                    <HStack>
-                      <Box>
-                        <Image
-                          src={user?.photoURL}
-                          alt={"profile picture"}
-                          width={150}
-                          height={150}
-                        />
-                      </Box>
+                    <HStack gap={10}>
+                      <Avatar
+                        src={user?.photoURL}
+                        name={user.fullname}
+                        size={"xl"}
+                      />
                       <Box fontWeight="bold">
                         <Box>Name: {user?.fullname}</Box>
                         <Box>Username: {user?.username}</Box>
-                        <Box>roll: {user?.roll}</Box>
+                        <Box>roll: {user?.roll || "N/A"}</Box>
                       </Box>
                     </HStack>
                   </Box>
@@ -99,18 +97,17 @@ function SubmissionViewerModal({
                             {submission.tests_passed}/{submission.total_tests}
                           </Text>
                         </HStack>
-                        <Text>
-                          Exam: {exam.id}. {exam.title}
-                        </Text>
                       </Box>
-                      <Box as="span" fontWeight="bold">
-                        <Text>
-                          Exam: {exam.id}. {exam.title}
-                        </Text>
-                        <Link href={`/exams/${exam.slug}`}>
-                          <Button>Open Exam</Button>
-                        </Link>
-                      </Box>
+                      {exam && (
+                        <Box as="span" fontWeight="bold">
+                          <Text>
+                            Exam: {exam?.id}. {exam?.title}
+                          </Text>
+                          <Link href={`/exams/${exam?.slug}`}>
+                            <Button>Open Exam</Button>
+                          </Link>
+                        </Box>
+                      )}
                     </SimpleGrid>
                   </Box>
                   <Box>
