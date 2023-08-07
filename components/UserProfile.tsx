@@ -79,7 +79,7 @@ function UserProfile() {
             alt="Profile Picture"
             width={40}
             height={40}
-            style={{ borderRadius: "50%", width: "50px", height: "50px" }}
+            style={{ borderRadius: "50%", width: "auto", height: "2.5rem" }}
           />
         </IconButton>
         <Flex>
