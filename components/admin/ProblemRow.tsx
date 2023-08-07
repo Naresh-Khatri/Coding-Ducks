@@ -15,6 +15,7 @@ import ProblemDeleteModal from "./ProblemDeleteModal";
 import ProblemEditor from "./ProblemEditor";
 import { IExam, IProblem } from "../../types";
 import FAIcon from "../FAIcon";
+import { CheckCircleIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
 
 function ProblemRow({
   problem,
@@ -29,6 +30,7 @@ function ProblemRow({
     id,
     exam,
     examId,
+    isActive,
     order,
     frontendProblemId,
     difficulty,
@@ -58,6 +60,13 @@ function ProblemRow({
       <Td>{difficulty}</Td>
       <Td>{examId ? `${examId}. ${exam?.title}` : <Badge>Na</Badge>}</Td>
       <Td>{examId ? `${order}` : <Badge>Na</Badge>}</Td>
+      <Td>
+        {isActive ? (
+          <CheckIcon color={"green.400"} />
+        ) : (
+          <CloseIcon color={"red.400"} />
+        )}
+      </Td>
       <Td>
         <HStack>
           <IconButton
