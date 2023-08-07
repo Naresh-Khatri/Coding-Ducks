@@ -15,24 +15,28 @@ const diff = {
     label: "Basic",
     starCount: 0,
   },
+  veryEasy: {
+    label: "Very Easy",
+    starCount: 1,
+  },
   easy: {
     label: "Easy",
-    starCount: 1,
+    starCount: 2,
   },
   medium: {
     label: "Medium",
-    starCount: 2,
+    starCount: 3,
   },
   hard: {
     label: "Hard",
-    starCount: 3,
+    starCount: 4,
   },
 };
 
 function DiffBadge({ difficulty, size }: DiffBadgeProps) {
   return (
     <Flex direction={"column"} alignItems={"center"} justifyContent={"center"}>
-      {difficulty !== "tutorial" && (
+      {difficulty !== "tutorial" && difficulty !== "veryEasy" && (
         <HStack>
           {[1, 2, 3].map((i) => (
             <FAIcon
