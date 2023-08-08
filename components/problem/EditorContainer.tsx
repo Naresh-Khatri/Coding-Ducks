@@ -1,5 +1,5 @@
-import { Box, Button, Flex } from "@chakra-ui/react";
-import React, { useContext, useRef, useState } from "react";
+import { Box, Button, Flex, useDisclosure } from "@chakra-ui/react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import ToolBar from "../ToolBar";
 import NewConsole from "../NewConsole";
 import BottomActions from "../BottomActions";
@@ -7,6 +7,8 @@ import dynamic from "next/dynamic";
 import { IProblem, Lang, Output } from "../../types";
 import Sheet, { SheetRef } from "react-modal-sheet";
 import { EditorSettingsContext } from "../../contexts/editorSettingsContext";
+import Split from "react-split";
+import SplitComponent from "react-ace/lib/split";
 
 const { Container, Content, Backdrop, Header } = Sheet;
 
@@ -36,50 +38,107 @@ function RightEditorContainer({
   setShowConsole,
   lang,
 }: RightEditorContainerProps) {
+  const splitRef = useRef<
+    Split & {
+      split: SplitComponent;
+    }
+  >();
+
+  const translation = 6;
+  const duration = 16;
+  const [draging, setDraging] = useState(false);
+  useEffect(() => {
+    if (draging) return;
+    const openAnimation = (counter: number) => {
+      if (counter === 60) {
+        return;
+      }
+      counter += translation;
+      splitRef.current?.split?.setSizes([100 - counter, counter]);
+      requestAnimationFrame(() => openAnimation(counter));
+    };
+    const closeAnimation = (counter: number) => {
+      if (counter < 5) return;
+      counter -= translation;
+      splitRef.current?.split?.setSizes([100 - counter, counter]);
+      requestAnimationFrame(() => closeAnimation(counter));
+    };
+
+    if (showConsole) {
+      requestAnimationFrame(() => openAnimation(0));
+    } else {
+      let counter = splitRef.current.split.getSizes()[1];
+      requestAnimationFrame(() => closeAnimation(counter));
+    }
+  }, [showConsole]);
+
   return (
-    <Flex direction={"column"} justify="space-between" width="100%" px={2}>
-      <Flex justify={"end"}>
-        <ToolBar
-          isLoading={isLoading}
-          runCode={runCode}
-          onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
-          onCodeReset={onCodeResetModalOpen}
-        />
-      </Flex>
-      <Flex flexGrow={1} direction="column" h={"45"}>
-        <Flex flexGrow={1} overflow="auto">
-          <AceCodeEditor
-            problemId={problemData.id}
-            starterCode={
-              problemData.starterCodes.find((sc) => sc.lang === lang)?.code
-            }
-            errorIndex={output?.results[0]?.errorIndex || 0}
-            runCode={() => runCode(false)}
+    <>
+      <Flex direction={"column"}>
+        <Flex justify={"end"} px={".4rem"}>
+          <ToolBar
+            isLoading={isLoading}
+            runCode={runCode}
+            onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
+            onCodeReset={onCodeResetModalOpen}
           />
         </Flex>
-        <Flex w={"full"}>
-          {showConsole && (
-            <Box overflow={"auto"} w={"full"}>
-              <NewConsole
-                output={output}
-                onClose={() => {
-                  setShowConsole(false);
-                }}
-              />
-            </Box>
-          )}
+        <Flex flex={1}>
+          <Split
+            ref={splitRef}
+            className="split-v"
+            minSize={0}
+            style={{ height: "100%", width: "100%" }}
+            onDragStart={() => {
+              setDraging(true);
+            }}
+            onDragEnd={() => {
+              setDraging(false);
+            }}
+            onDrag={(sizes) => {
+              setShowConsole(sizes[1] > 10);
+            }}
+            direction="vertical"
+          >
+            <Flex w={"100%"} h={"100%"} direction={"column"} px={"0.4rem"}>
+              <Flex direction="column" h={"100%"}>
+                <Flex flex={1} overflow="auto">
+                  <AceCodeEditor
+                    problemId={problemData.id}
+                    starterCode={
+                      problemData.starterCodes.find((sc) => sc.lang === lang)
+                        ?.code
+                    }
+                    errorIndex={output?.results[0]?.errorIndex || 0}
+                    runCode={() => runCode(false)}
+                  />
+                </Flex>
+              </Flex>
+            </Flex>
+            <Flex w={"100%"} h={"100%"} direction={"column"}>
+              {showConsole && (
+                <NewConsole
+                  output={output}
+                  isLoading={isLoading}
+                  onClose={() => {
+                    setShowConsole(false);
+                  }}
+                />
+              )}
+            </Flex>
+          </Split>
+        </Flex>
+        <Flex h={"3rem"} px={2}>
+          <BottomActions
+            isTutorialProblem={problemData.difficulty === "tutorial"}
+            showConsole={showConsole}
+            setShowConsole={setShowConsole}
+            runCode={runCode}
+            isLoading={isLoading}
+          />
         </Flex>
       </Flex>
-      <Flex h={"50px"}>
-        <BottomActions
-          isTutorialProblem={problemData.difficulty === "tutorial"}
-          showConsole={showConsole}
-          setShowConsole={setShowConsole}
-          runCode={runCode}
-          isLoading={isLoading}
-        />
-      </Flex>
-    </Flex>
+    </>
   );
 }
 interface BottomEditorContainerProps {
