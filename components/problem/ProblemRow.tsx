@@ -11,12 +11,25 @@ import {
   Tr,
   useToast,
   Link as ChakraLink,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
+  Spinner,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import Link from "next/link";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { DIFFICULTY_TO_COLOR } from "../../data/problems";
 import FAIcon from "../FAIcon";
+import { useProblemSolvedByData } from "../../hooks/useProblemsData";
+import { UserList } from "../FollowDetailsModal";
+import { formatDate } from "../../lib/formatDate";
 
 interface ProblemRowProps {
   isLocked: boolean;
@@ -24,6 +37,16 @@ interface ProblemRowProps {
   index: number;
 }
 function ProblemRow({ isLocked, problem }: ProblemRowProps) {
+  const {
+    isOpen: isShowSolvedByOpen,
+    onOpen: onShowSolvedByOpen,
+    onClose: onShowSolvedByClose,
+  } = useDisclosure();
+  const {
+    data: solvedByUsers,
+    isLoading,
+    error,
+  } = useProblemSolvedByData(problem.id, isShowSolvedByOpen);
   const toast = useToast();
   return (
     <>
@@ -59,7 +82,7 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
           </Td>
         </Tr>
       )}
-      <Tr key={problem.id} onClick={() => console.log("clicked")}>
+      <Tr key={problem.id}>
         <Td px={{ base: 3, md: 3 }} h={"50px"}>
           <Center>
             {isLocked ? null : problem.status === "tried" ? (
@@ -91,13 +114,41 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
                 size={"md"}
                 name={submission.User.fullname}
                 src={submission.User.photoURL}
-                onClick={() =>
-                  (window.location.href = `/users/${submission.User.username}`)
-                }
+                onClick={onShowSolvedByOpen}
+                // onClick={() =>
+                //   (window.location.href = `/users/${submission.User.username}`)
+                // }
                 cursor={"pointer"}
               />
             ))}
           </AvatarGroup>
+          <Modal isOpen={isShowSolvedByOpen} onClose={onShowSolvedByClose}>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Solved By</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                {isLoading ? (
+                  <Spinner />
+                ) : (
+                  solvedByUsers.map((user) => (
+                    <UserList
+                      key={user.id}
+                      user={user}
+                      caption={formatDate(user.solvedAt)}
+                      onClose={onShowSolvedByClose}
+                    />
+                  ))
+                )}
+              </ModalBody>
+
+              <ModalFooter>
+                <Button colorScheme="blue" mr={3} onClick={onShowSolvedByClose}>
+                  Close
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
         </Td>
       </Tr>
     </>
