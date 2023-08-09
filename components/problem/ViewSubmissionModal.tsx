@@ -168,7 +168,7 @@ function ViewSubmissionModal({
                   rightIcon={<ChevronRightIcon />}
                   onClick={onClose}
                 >
-                  Next
+                  Next Problem
                 </Button>
               </a>
             )}
