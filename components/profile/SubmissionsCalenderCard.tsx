@@ -16,7 +16,6 @@ function SubmissionsCalenderCard({ subsData }: SubmissionCalenderCardProps) {
   const maxCount = Math.max(...subsData.map((sub) => sub.count));
   const data: Activity[] = subsData
     .map((submission: { date: string; count: number }): Activity => {
-      console.log(submission.date);
       return {
         count: submission.count,
         date: submission.date,
@@ -33,7 +32,7 @@ function SubmissionsCalenderCard({ subsData }: SubmissionCalenderCardProps) {
     (d.getMonth() + 1 < 10 ? "0" : "") + (d.getMonth() + 1)
   }-${(d.getDate() < 10 ? "0" : "") + d.getDate()}`;
 
-  if (data[0].date !== lastYearDate)
+  if (data[0]?.date !== lastYearDate)
     data.unshift({
       level: 0,
       date: lastYearDate,
