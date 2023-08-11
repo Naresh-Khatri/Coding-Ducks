@@ -1,6 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
-import { IExam, IExamProblem, IProblem, IProblemTag, IRating } from "../types";
+import {
+  IExam,
+  IExamProblem,
+  IProblem,
+  IProblemTag,
+  IRating,
+  IUser,
+} from "../types";
 
 // ------------- Fetch functions ------------
 export const getAllProblems = async (allowExams: boolean) => {
@@ -50,6 +57,11 @@ export const getProblem = async (problemSlug: string) => {
   const problem = data.data as IProblem;
   return problem;
 };
+export const getProblemSolvedBy = async (problemId: number) => {
+  const { data } = await axiosInstance.get(`/problems/${problemId}/solvedBy`);
+  const problem = data.data as (IUser & { solvedAt: string })[];
+  return problem;
+};
 
 export const getProblemRating = async (problemId: number) => {
   const { data } = await axiosInstance.get(`/problems/${problemId}/ratings`);
@@ -84,6 +96,14 @@ export const useProblemData = ({ slug }: { slug: string }) => {
     queryKey: ["problem", slug],
     queryFn: () => getProblem(slug),
     enabled: slug != undefined,
+  });
+};
+
+export const useProblemSolvedByData = (problemId: number, enabled: boolean) => {
+  return useQuery({
+    queryKey: ["solvedBy", problemId],
+    queryFn: () => getProblemSolvedBy(problemId),
+    enabled,
   });
 };
 
