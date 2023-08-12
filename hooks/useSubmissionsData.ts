@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
-import { ISubmission, ISubmissionsQuery, Lang } from "../types";
+import { IProblem, ISubmission, ISubmissionsQuery, Lang } from "../types";
 
 // ------------- Fetch functions------------
 export const getSubmissions = async ({
@@ -27,7 +27,7 @@ export const getSubmission = async (
 ) => {
   const result = await axiosInstance.get(`/submissions/${submissionId}`);
   return { data: result.data?.data, status: result.status } as {
-    data: ISubmission;
+    data: ISubmission & { nextProblem: IProblem };
     status: number;
   };
 };
