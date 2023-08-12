@@ -7,6 +7,7 @@ import {
   Flex,
   HStack,
   IconButton,
+  Text,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -30,21 +31,19 @@ function NormalLayout({ children }: { children: ReactNode }) {
       >
         <Container
           maxW="container.xl"
-          height={'fit-content'}
+          height={"fit-content"}
           display={"flex"}
           flexDirection={"column"}
         >
-          <Flex w={"100%"}>
-            <Flex w={"100%"} display={{ base: "none", md: "flex" }}>
-              <DesktopNavBar />
-            </Flex>
-            <Flex
-              w={"100%"}
-              direction={"column"}
-              display={{ base: "flex", md: "none" }}
-            >
-              <MobileNavBar />
-            </Flex>
+          <Flex w={"100%"} display={{ base: "none", md: "flex" }}>
+            <DesktopNavBar />
+          </Flex>
+          <Flex
+            w={"100%"}
+            direction={"column"}
+            display={{ base: "flex", md: "none" }}
+          >
+            <MobileNavBar />
           </Flex>
           <Flex as="main" flex={1}>
             {children}
@@ -128,7 +127,12 @@ const MobileNavItem = ({ label, href }: NavItem) => {
 
 function DesktopNavBar() {
   return (
-    <Flex w={"100%"} justifyContent="space-between" align={"center"}>
+    <Flex
+      py={"0.2rem"}
+      w={"100%"}
+      justifyContent="space-between"
+      align={"center"}
+    >
       <Link href={"https://codingducks.live"}>
         <Image
           src={
@@ -137,6 +141,7 @@ function DesktopNavBar() {
           width={175}
           height={175}
           alt={"logo"}
+          style={{ height: "2.5rem", width: "auto" }}
         />
       </Link>
       <HStack>
@@ -158,7 +163,6 @@ const NavLink = ({ label, href }) => {
     <Link href={href} style={{ margin: "0 .5em" }} shallow>
       <Button
         px={2}
-        py={1}
         rounded={"md"}
         variant={router.pathname === href ? "solid" : "ghost"}
         _hover={{
@@ -167,7 +171,7 @@ const NavLink = ({ label, href }) => {
         }}
         colorScheme="purple"
       >
-        {label}
+        <Text fontSize={"sm"}>{label}</Text>
       </Button>
     </Link>
   );
