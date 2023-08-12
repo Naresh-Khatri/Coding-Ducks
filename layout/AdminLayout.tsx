@@ -110,6 +110,20 @@ function AdminLayout({ children }) {
               </Text>
             </Box>
           </Link>
+          <Link href={"/dashboard/submissions"}>
+            <Box
+              bg={"purple.800"}
+              px={8}
+              py={5}
+              borderRadius={20}
+              my={2}
+              _disabled={{ bg: "purple.800" }}
+            >
+              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
+                Submissions
+              </Text>
+            </Box>
+          </Link>
         </Flex>
         {children}
       </Flex>
