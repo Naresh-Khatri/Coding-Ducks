@@ -10,6 +10,7 @@ import {
   createIcon,
   Flex,
   keyframes,
+  Center,
 } from "@chakra-ui/react";
 
 import NormalLayout from "../layout/NormalLayout";
@@ -82,7 +83,12 @@ export default function HomePage() {
             >
               Code. <br /> Connect. <br /> Conquer.
             </Heading>
-            <Text color={"gray.500"} fontSize={"xl"} textAlign={"left"} mb={10}>
+            <Text
+              color={"gray.500"}
+              fontSize={"lg"}
+              textAlign={"justify"}
+              my={5}
+            >
               Welcome to Coding Ducks. Simplifying coding with interactive
               challenges and a supportive community. Join us to unleash your
               coding potential today!
@@ -90,8 +96,9 @@ export default function HomePage() {
             <Stack
               direction={"column"}
               spacing={3}
+              mt={5}
               align={"center"}
-              alignSelf={"center"}
+              alignSelf={"start"}
               position={"relative"}
             >
               <Link href={"/problems"}>
