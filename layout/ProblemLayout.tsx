@@ -14,8 +14,8 @@ function ProblemLayout({ children }: ProblemLayoutProps) {
   const { setBottomSheetIsOpen } = useContext(EditorSettingsContext);
   return (
     <Flex direction={"column"} h={"100dvh"}>
-      <Flex as="nav" alignItems={"center"} w={"100vw"} px={2} h={"70px"}>
-        <HStack alignItems={"center"} h={"70px"}>
+      <Flex as="nav" alignItems={"center"} w={"100vw"} px={2} h={"4rem"}>
+        <HStack alignItems={"center"} h={"4rem"}>
           <Link href={"/problems"}>
             <IconButton
               aria-label="Go back"
