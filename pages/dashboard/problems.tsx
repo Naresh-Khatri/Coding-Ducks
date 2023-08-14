@@ -50,6 +50,10 @@ const COLUMNS = [
     accessor: "order",
   },
   {
+    Header: "Active",
+    accessor: "isActive",
+  },
+  {
     Header: "Actions",
   },
 ];
@@ -68,7 +72,7 @@ function ProblemPage() {
 
   return (
     <AdminLayout>
-      <Container maxW="container.xl" overflowY={"scroll"}>
+      <Container maxW="container.xl" overflowY={"auto"}>
         <Flex direction={"column"} h={"100%"}>
           <HStack my={10} justify="space-between">
             <Link href="/dashboard/add-problem">
