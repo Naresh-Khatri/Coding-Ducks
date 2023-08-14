@@ -141,6 +141,7 @@ function ProblemPage() {
     // onUserUpgradeModalOpen()
     setIsLoading(true);
     setShowConsole(true);
+    setOutput(null);
     const payload = {
       code,
       lang,
@@ -149,7 +150,7 @@ function ProblemPage() {
     };
     try {
       const res = await axios.post("/runCode", payload);
-      console.log(res.data);
+      // console.log(res.data);
       if (submit) {
         setTabIndex(SUBMISSION_TAB_INDEX);
         setSubmittedSubId(res.data.submissionId);
@@ -191,7 +192,7 @@ function ProblemPage() {
         // onSubmissionModalOpen();
       }
       setOutput(res.data);
-      console.log(res.data);
+      // console.log(res.data);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
