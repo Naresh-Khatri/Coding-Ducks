@@ -102,6 +102,23 @@ const AddProblemPage = () => {
 
   const router = useRouter();
 
+  const beforeunload = (e) => {
+    console.log("called unload");
+    e.preventDefault();
+    return (e.returnValue = "");
+  };
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!title && !slug && !desc && !diffLevel && !testCases && !selectedTags) {
+      removeEventListener("beforeunload", beforeunload);
+      console.log("removed event listener");
+    } else {
+      addEventListener("beforeunload", beforeunload);
+      addEventListener("unload", beforeunload);
+      console.log("added event listener");
+    }
+  }, [title, slug, desc, diffLevel, testCases, selectedTags]);
+
   const toast = useToast();
   const submit = async () => {
     const payload = {
@@ -127,7 +144,7 @@ const AddProblemPage = () => {
         duration: 9000,
         isClosable: true,
       });
-      // router.push("/dashboard/problems");
+      router.push("/dashboard/problems");
     } catch (error) {
       toast({
         title: "Please check the fields!",
@@ -199,6 +216,7 @@ const AddProblemPage = () => {
                 >
                   <option value="tutorial">Tutorial</option>
                   <option value="basic">Basic</option>
+                  <option value="veryEasy">Very Easy</option>
                   <option value="easy">Easy</option>
                   <option value="medium">Medium</option>
                   <option value="hard">hard</option>
@@ -218,7 +236,14 @@ const AddProblemPage = () => {
                   modules={{
                     toolbar: [
                       [{ header: [1, 2, false] }],
-                      ["bold", "italic", "underline", "strike", "blockquote"],
+                      [
+                        "bold",
+                        "italic",
+                        "underline",
+                        "strike",
+                        "blockquote",
+                        "script",
+                      ],
                       ["code"],
                       [
                         { list: "ordered" },
@@ -371,6 +396,7 @@ const AddProblemPage = () => {
                   <Thead>
                     <Tr>
                       <Th>Id</Th>
+                      <Th>Frontend Input</Th>
                       <Th>Input</Th>
                       <Th>Output</Th>
                       <Th>explaination</Th>
