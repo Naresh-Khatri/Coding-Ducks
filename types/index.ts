@@ -9,19 +9,20 @@ interface Follower {
 }
 export interface IUser {
   id: number;
-  googleUID: string;
+  googleUID?: string;
   uid?: string;
   displayName?: string;
-  email: string;
-  isAdmin: boolean;
-  isNoob: boolean;
-  registeredAt: string;
-  bio: string;
-  followedBy: Array<Follower>;
-  following: Array<Follower>;
-  fullname: string;
+  email?: string;
+  isAdmin?: boolean;
+  isNoob?: boolean;
+  registeredAt?: string;
+  bio?: string;
+  followedBy?: Array<Follower>;
+  following?: Array<Follower>;
+  fullname?: string;
   username: string;
   photoURL: string;
+  points?: number;
   roll?: string;
   rank?: number;
   createdAt?: string;
@@ -91,6 +92,7 @@ export interface IProblem extends IExamProblem {
   slug?: string;
   title: string;
   frontendProblemId?: number;
+  isActive?: boolean;
   description: string;
   difficulty: IDifficulty;
   status?: "unsolved" | "tried" | "solved";
@@ -177,7 +179,13 @@ export interface IProblemSubmissionResult {
   result: Testcase[];
 }
 
-export type IDifficulty = "tutorial" | "basic" | "easy" | "medium" | "hard";
+export type IDifficulty =
+  | "tutorial"
+  | "basic"
+  | "veryEasy"
+  | "easy"
+  | "medium"
+  | "hard";
 
 export type Lang = "js" | "py" | "cpp" | "c" | "java";
 export type Theme =
