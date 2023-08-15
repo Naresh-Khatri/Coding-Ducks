@@ -41,7 +41,6 @@ function UsersPage() {
     queryFn: () => getUserStats(username as string),
     refetchOnMount: false,
   });
-  console.log(statsData);
   useEffect(() => {
     if (!userData || !statsData) {
       toast({
