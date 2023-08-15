@@ -13,7 +13,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
-import Image from "next/image";
 import Link from "next/link";
 import { getUsers } from "../../hooks/useUsersData";
 import NormalLayout from "../../layout/NormalLayout";
@@ -64,7 +63,7 @@ const LoadingUserCard = () => {
       bg={useColorModeValue("white", "#111928bf")}
       boxShadow="2xl"
       backdropFilter="blur(4px) saturate(180%)"
-      borderRadius="12px"
+      borderRadius="0.8rem"
       border="1px solid rgba(255,255,255,.125)"
       _hover={{ backgroundColor: useColorModeValue("gray.100", "#111528") }}
     >
@@ -76,13 +75,13 @@ const LoadingUserCard = () => {
         transition="all .1s ease-in-out"
       >
         <Box position={"relative"}>
-          <SkeletonCircle size="130px" />{" "}
+          <SkeletonCircle size="8rem" />{" "}
         </Box>
       </Box>
       <Flex mt={100} align="center" direction={"column"}>
         <VStack>
-          <Skeleton h={"20px"} w={"5em"} />
-          <Skeleton h="14px" w={"4em"} />
+          <Skeleton h={"1.25rem"} w={"5em"} />
+          <Skeleton h="0.8rem" w={"4em"} />
           <Skeleton mt={3} h="20px" w={"1.5em"} />
         </VStack>
       </Flex>
