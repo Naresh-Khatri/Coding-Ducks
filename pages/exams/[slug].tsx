@@ -188,10 +188,7 @@ function TakeTest() {
 
   useEffect(() => {
     if (code.trim().length === 0) return;
-    localStorage.setItem(
-      `code ${examData?.id} ${currentProblemIdx}`,
-      code
-    );
+    localStorage.setItem(`code ${examData?.id} ${currentProblemIdx}`, code);
   }, [code, examData, currentProblemIdx]);
 
   const handleOnCodeRetrive = async () => {
@@ -290,6 +287,7 @@ function TakeTest() {
                     {showConsole && (
                       <Box overflow={"auto"} w={"full"}>
                         <NewConsole
+                          isLoading={isLoading}
                           output={output}
                           onClose={() => {
                             setShowConsole(false);

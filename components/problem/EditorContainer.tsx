@@ -229,6 +229,7 @@ function BottomEditorContainer({
                     <Box overflow={"auto"} w={"full"}>
                       <NewConsole
                         output={output}
+                        isLoading={isLoading}
                         onClose={() => {
                           setShowConsole(false);
                         }}
