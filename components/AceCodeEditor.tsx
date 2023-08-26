@@ -36,6 +36,7 @@ interface AceCodeEditorProps {
   problemId: number;
   starterCode?: string;
   runCode?: () => void;
+  allowPadding?: boolean;
   errorIndex?: number;
   hideHeader?: boolean;
 }
@@ -43,11 +44,14 @@ interface AceCodeEditorProps {
 function AceCodeEditor({
   starterCode,
   errorIndex,
+  allowPadding,
   problemId,
   hideHeader,
 }: AceCodeEditorProps) {
   const editorRef = useRef<AceEditor>(null);
-  const { settings, code, setCode } = useContext(EditorSettingsContext);
+  const { settings, code, setCode, isLoading } = useContext(
+    EditorSettingsContext
+  );
   const { lang, theme, keyBindings, allowAutoComplete, fontSize, tabSize } =
     settings;
 
@@ -75,16 +79,18 @@ function AceCodeEditor({
 
   // set lang
   useEffect(() => {
+    if (isLoading) return;
     const ccode =
       localStorage.getItem(`code-${problemId}-${lang}`) || starterCode || "";
     setCode(ccode);
     setTimeout(() => {
       if (editorRef.current?.editor) foldStarterCode(editorRef.current.editor);
     }, 10);
-  }, [lang, problemId]);
+  }, [lang, problemId, isLoading]);
 
   // set code
   useEffect(() => {
+    if (code === "") return;
     handleOnChange(code);
   }, [code]);
 
@@ -121,9 +127,10 @@ function AceCodeEditor({
       );
     });
   };
+
   //TODO: optimize these pieces of shit codes
   const handleOnChange = (newCode: string) => {
-    if (newCode.trim() === "") return;
+    if (isLoading) return;
     localStorage.setItem(`code-${problemId}-${lang}`, newCode);
     setCode(newCode);
     foldStarterCode(editorRef.current.editor);
@@ -151,8 +158,9 @@ function AceCodeEditor({
   return (
     <Flex
       direction={"column"}
-      my={2}
+      py={allowPadding ? 2 : 0}
       w={"100%"}
+      h={"100%"}
       style={{
         border: "1px solid rgba(255,255,255,.125)",
         borderRadius: "10px",
