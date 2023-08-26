@@ -11,11 +11,38 @@ import {
 } from "@chakra-ui/react";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-import { Output } from "../types";
 import { CloseIcon } from "@chakra-ui/icons";
 import { errorType2Label } from "../lib/utils";
 import FAIcon from "./FAIcon";
 
+export interface Output {
+  isCorrect: boolean;
+  passedCount: number;
+  errorCount: number;
+  totalCount: number;
+  totalRuntime: number;
+  results: IRunResult[];
+}
+export interface IRunResult {
+  stdout: string;
+  stdin?: string | null;
+  stderr?: string;
+  exitCode: number;
+  memoryUsage?: number;
+  runtime?: number;
+  signal?: string | null;
+  errorType?:
+    | "compile-time"
+    | "run-time"
+    | "pre-compile-time"
+    | "run-timeout"
+    | "segmentation-error"
+    | null;
+  isPublic?: boolean;
+  isCorrect?: boolean;
+  expectedOutput?: string;
+  output?: string;
+}
 interface NewConsoleProps {
   output: Output;
   isLoading: boolean;
@@ -38,20 +65,10 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
       </Center>
     );
 
-  const memoryUsage =
-    output.results?.reduce((acc, res) => {
-      return acc + res.result?.memoryUsage;
-    }, 0) /
-    (1024 * 1024 * output.results.length);
-  const cpuUsage =
-    output.results?.reduce((acc, res) => {
-      return acc + res.result?.cpuUsage;
-    }, 0) /
-    (1000 * output.results.length);
 
-  if (output.results?.some((r) => r.errorOccurred)) {
+  if (output.errorCount > 0) {
     // get the testcase with error
-    const errorTestCase = output.results.find((r) => r.errorOccurred === true);
+    const errorTestCase = output.results.find((r) => r.isCorrect === false);
     return (
       <Box w={"100%"} p={5} overflowY={"auto"}>
         <HStack justifyContent={"space-between"}>
@@ -71,12 +88,15 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
           <Box bg={"#f1635f22"} p={3} borderRadius={10}>
             <Text
               w={"100%"}
-              as={"code"}
+              as={"pre"}
+              overflowX={"auto"}
+              whiteSpace={"pre-wrap"}
+              textOverflow={"clip"}
               color={"red.400"}
               p={0}
               fontWeight={"semibold"}
               dangerouslySetInnerHTML={{
-                __html: errorTestCase?.errorMessage?.replace(/\n/g, "<br />"),
+                __html: errorTestCase?.output?.replace(/\n/g, "<br />"),
               }}
             ></Text>
           </Box>
@@ -98,10 +118,11 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
           </Text>
           <HStack>
             <Text display={{ base: "none", md: "block" }} fontSize={"md"}>
-              Runtime: {cpuUsage.toFixed(1)} ms
+              Runtime: {output?.totalRuntime.toFixed(0)} ms
             </Text>{" "}
             <Text display={{ base: "none", md: "block" }} fontSize={"md"}>
-              Memory: {memoryUsage.toFixed(2)} MB
+              {/* Memory: {memoryUsage.toFixed(2)} MB */}
+              Memory: N/A MB
             </Text>
             <IconButton
               aria-label="close"
@@ -156,7 +177,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               w={"100%"}
               p={0}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.input.replace(
+                __html: output?.results[selectedCase]?.stdin.replace(
                   /\n/g,
                   "<br />"
                 ),
@@ -171,7 +192,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               as="code"
               w={"100%"}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.actualOutput?.replace(
+                __html: output?.results[selectedCase]?.output?.replace(
                   /\n/g,
                   "<br />"
                 ),
@@ -186,7 +207,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               as="code"
               w={"100%"}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase].output.replace(
+                __html: output?.results[selectedCase]?.expectedOutput?.replace(
                   /\n/g,
                   "<br />"
                 ),
