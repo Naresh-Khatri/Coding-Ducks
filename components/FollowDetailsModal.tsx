@@ -80,7 +80,6 @@ interface UserListProps {
   onClose: () => void;
 }
 export const UserList = ({ user, caption, onClose }: UserListProps) => {
-  const router = useRouter();
   return (
     <Link as={NextLink} href={`/users/${user.username}`} onClick={onClose}>
       <Flex justify={"space-between"} alignItems="center" my={2}>
