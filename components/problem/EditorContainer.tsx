@@ -104,6 +104,7 @@ function RightEditorContainer({
               <Flex direction="column" h={"100%"}>
                 <Flex flex={1} overflow="auto">
                   <AceCodeEditor
+                    allowPadding
                     problemId={problemData.id}
                     starterCode={
                       problemData.starterCodes.find((sc) => sc.lang === lang)
