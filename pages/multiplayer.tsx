@@ -70,8 +70,11 @@ function MultiplayerPage() {
   useEffect(() => {
     if (Object.keys(user).length === 0) return;
 
-    // const socketInstance = io("ws://localhost:3333");
-    const socketInstance = io("wss://api.codingducks.live");
+    const socketInstance = io(
+      process.env.NODE_ENV === "development"
+        ? "ws://localhost:3333"
+        : "wss://api.codingducks.live"
+    );
     setSocket(socketInstance);
 
     socketInstance.on("connect success", (user) => {
