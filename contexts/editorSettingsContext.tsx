@@ -30,6 +30,7 @@ interface IEditorSettingsContext {
   code: string;
   setCode: (code: string) => void;
   updateSettings: (newSettings: IEditorSettings) => void;
+  isLoading?: boolean;
   bottomSheetIsOpen?: boolean;
   setBottomSheetIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -46,10 +47,12 @@ const EditorSettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(initialState);
   const [code, setCode] = useState("");
   const [bottomSheetIsOpen, setBottomSheetIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const storedSettings = JSON.parse(localStorage.getItem("editorSettings"));
     if (storedSettings) setSettings(storedSettings);
+    setIsLoading(false);
   }, []);
 
   const updateSettings = (newSettings: IEditorSettings) => {
@@ -66,6 +69,7 @@ const EditorSettingsProvider = ({ children }) => {
       value={{
         settings,
         updateSettings,
+        isLoading,
         code,
         setCode,
         bottomSheetIsOpen,
