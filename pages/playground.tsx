@@ -1,29 +1,20 @@
-import { useEffect, useState } from "react";
+import { memo, useContext, useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Center,
   Container,
   Flex,
+  Grid,
+  GridItem,
   HStack,
+  Input,
+  Spinner,
   Text,
   useClipboard,
+  useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
-import CodeMirror from "@uiw/react-codemirror";
-import { keymap } from "@codemirror/view";
-
-import { dracula } from "@uiw/codemirror-theme-dracula";
-import { atomone } from "@uiw/codemirror-theme-atomone";
-import { eclipse } from "@uiw/codemirror-theme-eclipse";
-import { okaidia } from "@uiw/codemirror-theme-okaidia";
-import { githubDark, githubLight } from "@uiw/codemirror-theme-github";
-import { duotoneDark, duotoneLight } from "@uiw/codemirror-theme-duotone";
-import { xcodeDark, xcodeLight } from "@uiw/codemirror-theme-xcode";
-
-import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
-import { cpp } from "@codemirror/lang-cpp";
-import { java } from "@codemirror/lang-java";
 import NormalLayout from "../layout/NormalLayout";
 import axios from "../lib/axios";
 import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
@@ -31,6 +22,16 @@ import ToolBar from "../components/ToolBar";
 import { useRouter } from "next/router";
 import SetMeta from "../components/SEO/SetMeta";
 import FAIcon from "../components/FAIcon";
+import EditorSettingsProvider, {
+  EditorSettingsContext,
+} from "../contexts/editorSettingsContext";
+import dynamic from "next/dynamic";
+import WindowHeader from "../components/WindowHeader";
+import Split from "react-split";
+
+const AceCodeEditor = dynamic(() => import("../components/AceCodeEditor"), {
+  ssr: false,
+});
 
 interface OutputType {
   stdout?: string;
@@ -38,107 +39,42 @@ interface OutputType {
   error?: string;
 }
 
-function Playground() {
-  const [code, setCode] = useState("");
-  const [output, setOutput] = useState<OutputType>({});
+function PlaygroundPage() {
+  const [isLessThan800] = useMediaQuery("(max-width: 800px)", {
+    ssr: true,
+    fallback: false, // return false on the server, and re-evaluate on the client side
+  });
+
+  // const [output, setOutput] = useState<OutputType>({});
   const [isLoading, setIsLoading] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState("");
+  const [hasError, setHasError] = useState(false);
   const [runTime, setRunTime] = useState(0);
   const [memory, setMemory] = useState(0);
+  const [input, setInput] = useState("");
 
-  const [lang, setLang] = useState("py");
-  const [theme, setTheme] = useState("dracula");
-
+  const { settings, code, setCode, updateSettings } = useContext(
+    EditorSettingsContext
+  );
+  const { lang } = settings;
   const toast = useToast();
   const router = useRouter();
-  const { setValue, hasCopied, onCopy } = useClipboard("");
 
-  const supportedLangs = {
-    py: python(),
-    js: javascript(),
-    cpp: cpp(),
-    c: cpp(),
-    java: java(),
-  };
-  const supportedThemes = {
-    dracula: dracula,
-    atomone: atomone,
-    eclipse: eclipse,
-    okaidia: okaidia,
-    githubDark: githubDark,
-    githubLight: githubLight,
-    duotoneDark: duotoneDark,
-    duotoneLight: duotoneLight,
-    xcodeDark: xcodeDark,
-    xcodeLight: xcodeLight,
-  };
-  const saveCode = () => {
-    console.log("saving file");
-  };
   useEffect(() => {
     if (!code) return;
     localStorage.setItem("playground-code", code);
   }, [code]);
+
   useEffect(() => {
-    setCode(localStorage.getItem("playground-code") || `print("Hello World")`);
-    setLang(localStorage.getItem("lang") || "py");
-    setTheme(localStorage.getItem("theme") || "dracula");
+    const savedInputValue = localStorage.getItem("playground-input");
+    if (savedInputValue) setInput(savedInputValue);
   }, []);
-  useEffect(() => {
-    console.log(router);
-    if (router.query.code) {
-      console.log(router.query);
-      // setCode(router.query.code || 'cant find code!')
-      // setLang(router.query.lang || "py")
-    }
-  }, [router]);
-  const shortcuts = [
-    {
-      key: "Ctrl-Enter",
-      preventDefault: true,
-      run: () => {
-        runCode();
-        return true;
-      },
-    },
-    {
-      key: "Ctrl-s",
-      preventDefault: true,
-      run: saveCode,
-    },
-  ];
-  const save = (e: string) => {
-    console.log("save", e);
-  };
-  const runCode = async () => {
-    setIsLoading(true);
-    const payload = { code, lang };
-    try {
-      const res = await axios.post("/playground", payload);
-      console.log(res);
-      setOutput(res.data);
-      let output = res.data.stderr || res.data.stdout;
-      output = output.replace(/\n/g, "<br />");
-      setConsoleOutput(output);
-      setRunTime(res.data.cpuUsage / 1000);
-      setMemory(res.data.memoryUsage / (1024 * 1024));
-
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.log(error);
-      toast({
-        title: "Error",
-        description: "Something went wrong",
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
-
-      // setOutput({ error: "Somehings fishy :thinking_face:" });
-    }
+  const handleOnInputTextChange = (e) => {
+    setInput(e.target.value);
+    localStorage.setItem("playground-input", e.target.value);
   };
 
+  const { setValue, hasCopied, onCopy } = useClipboard("");
   const shareCode = () => {
     // console.log(`${router.pathname}?code=${code}&lang=${lang}`);
     setValue(
@@ -146,6 +82,52 @@ function Playground() {
     );
     onCopy();
   };
+
+  const runCode = async () => {
+    setIsLoading(true);
+    setHasError(false);
+    const payload = { code, lang, inputs: [input] };
+    try {
+      const { compiletTime, totalRuntime, memory, results, stderr } = (
+        await axios.post("/playground", payload)
+      ).data;
+      setRunTime(+(+totalRuntime).toFixed(1));
+      setMemory(0);
+
+      setIsLoading(false);
+      if (stderr || results[0]?.errorType) {
+        setHasError(true);
+        toast({
+          title: "Error",
+          description: "Something's wrong with your code!",
+          status: "error",
+        });
+      }
+
+      let output =
+        stderr ||
+        results[0]?.stderr ||
+        results[0]?.stdout ||
+        results[0]?.errorType;
+      output = output?.replace(/\n/g, "<br />");
+      setConsoleOutput(output);
+    } catch (error) {
+      setIsLoading(false);
+      setHasError(true);
+      console.log(error);
+      toast({
+        title: "Error",
+        description:
+          error?.response?.data?.code === 401
+            ? "Please login first!"
+            : "Something went wrong",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <NormalLayout>
       <SetMeta
@@ -157,38 +139,25 @@ function Playground() {
       <Container maxW={"5xl"}>
         <Box w={"100%"}>
           <Box w={"100%"} h={100}>
-            <ToolBar runCode={runCode} isLoading={isLoading} />
-            {/*
-            <HStack spacing={4}>
-               <Box>
-                <IconButton>
-                  <FontAwesomeIcon icon={faBoxOpen} />
-                </IconButton>
-                <IconButton>
-                  <FontAwesomeIcon icon={faSave} />
-                </IconButton>
-              </Box>
-              <Box>
+            <ToolBar />
+            {isLessThan800 ? (
+              <MobileView
+                input={input}
+                hasError={hasError}
+                running={isLoading}
+                consoleOutput={consoleOutput}
+                handleOnInputTextChange={handleOnInputTextChange}
+              />
+            ) : (
+              <DesktopView
+                input={input}
+                running={isLoading}
+                hasError={hasError}
+                consoleOutput={consoleOutput}
+                handleOnInputTextChange={handleOnInputTextChange}
+              />
+            )}
 
-              </Box>
-            </HStack> */}
-            <Flex
-              alignItems={"center"}
-              bg={"#1d1d1d"}
-              h={7}
-              px={5}
-              borderRadius="10px 10px 0 0"
-            >
-              <Text>main.py</Text>
-            </Flex>
-            <CodeMirror
-              autoFocus
-              value={code}
-              style={{ fontSize: "1rem", height: 600 }}
-              theme={supportedThemes[theme]}
-              extensions={[keymap.of(shortcuts as any), supportedLangs[lang]]}
-              onChange={(value) => setCode(value)}
-            />
             <HStack justify={"space-between"}>
               <HStack spacing={2}>
                 <Button
@@ -207,19 +176,10 @@ function Playground() {
                 </Button>
               </HStack>
               <Box>
-                <Text fontSize={"md"}>Runtime: {runTime.toFixed(0)} ms</Text>{" "}
-                <Text fontSize={"md"}> Memory: {memory.toFixed(2)} MB</Text>
+                <Text fontSize={"md"}>Runtime: {runTime} ms</Text>{" "}
+                <Text fontSize={"md"}> Memory: {memory} KB</Text>
               </Box>
             </HStack>
-            <Box
-              bg={"#1d1d1d"}
-              as="pre"
-              p={3}
-              overflow={"auto"}
-              color={output.stderr ? "red.300" : "white"}
-              dangerouslySetInnerHTML={{ __html: consoleOutput }}
-              h={"100px"}
-            ></Box>
           </Box>
         </Box>
       </Container>
@@ -227,4 +187,179 @@ function Playground() {
   );
 }
 
-export default Playground;
+interface ViewProps {
+  input: string;
+  running: boolean;
+  hasError: boolean;
+  consoleOutput: string;
+  handleOnInputTextChange: (e) => void;
+}
+const MobileView = ({
+  input,
+  running,
+  hasError,
+  consoleOutput,
+  handleOnInputTextChange,
+}: ViewProps) => {
+  return (
+    <Flex
+      w={"100%"}
+      h={"80vh"}
+      direction={"column"}
+      justifyContent={"center"}
+      alignItems={"center"}
+      gap={5}
+    >
+      <AceCodeEditor problemId={-1} hideHeader />
+      <Flex
+        borderRadius={"10px"}
+        border={"1px solid rgba(255,255,255,.125)"}
+        direction={"column"}
+        alignItems={"center"}
+        w={"100%"}
+        minH={32}
+      >
+        <Text py={1}>Input:</Text>
+        <Input
+          value={input}
+          onChange={handleOnInputTextChange}
+          flex={1}
+          bg={"#1d1d1d"}
+          fontFamily={
+            "Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;"
+          }
+          focusBorderColor="none"
+          borderRadius={"10px"}
+          as={"textarea"}
+          outline={"none"}
+          border={"none"}
+          type="text"
+        />
+      </Flex>
+      <Flex
+        borderRadius={"10px"}
+        border={"1px solid rgba(255,255,255,.125)"}
+        direction={"column"}
+        alignItems={"center"}
+        w={"100%"}
+        minH={32}
+      >
+        <Text py={1}>Output:</Text>
+        <Center h={"100%"} w={"100%"}>
+          {running ? (
+            <Spinner />
+          ) : (
+            <Box
+              borderRadius={"10px"}
+              flex={1}
+              bg={"#1d1d1d"}
+              as="pre"
+              p={3}
+              overflow={"auto"}
+              color={hasError ? "red.300" : "white"}
+              dangerouslySetInnerHTML={{
+                __html: consoleOutput?.replace(/\n/g, "<br />"),
+              }}
+              w={"100%"}
+              h={"100%"}
+            ></Box>
+          )}
+        </Center>
+      </Flex>
+    </Flex>
+  );
+};
+const DesktopView = ({
+  input,
+  running,
+  hasError,
+  consoleOutput,
+  handleOnInputTextChange,
+}: ViewProps) => {
+  return (
+    <Split
+      className="split-h"
+      minSize={300}
+      style={{ height: "40rem", width: "100%" }}
+    >
+      <Flex
+        w={"100%"}
+        h={"100%"}
+        direction={"column"}
+        justifyContent={"center"}
+        alignItems={"center"}
+        fontSize={"5xl"}
+      >
+        <AceCodeEditor problemId={-1} hideHeader />
+      </Flex>
+      <Split
+        className="split-v"
+        minSize={100}
+        style={{ height: "100%", width: "100%" }}
+        direction="vertical"
+      >
+        <Flex
+          borderRadius={"10px"}
+          border={"1px solid rgba(255,255,255,.125)"}
+          direction={"column"}
+          alignItems={"center"}
+        >
+          <Text py={1}>Input:</Text>
+          <Input
+            value={input}
+            onChange={handleOnInputTextChange}
+            flex={1}
+            bg={"#1d1d1d"}
+            fontFamily={
+              "Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;"
+            }
+            focusBorderColor="none"
+            borderRadius={"10px"}
+            as={"textarea"}
+            outline={"none"}
+            border={"none"}
+            type="text"
+          />
+        </Flex>
+        <Flex
+          borderRadius={"10px"}
+          border={"1px solid rgba(255,255,255,.125)"}
+          direction={"column"}
+          alignItems={"center"}
+        >
+          <Text py={1}>Output:</Text>
+          <Center h={"100%"} w={"100%"}>
+            {running ? (
+              <Spinner />
+            ) : (
+              <Box
+                height={"100%"}
+                borderRadius={"10px"}
+                flex={1}
+                bg={"#1d1d1d"}
+                as="pre"
+                p={3}
+                overflow={"auto"}
+                color={hasError ? "red.300" : "white"}
+                dangerouslySetInnerHTML={{
+                  __html: consoleOutput?.replace(/\n/g, "<br />"),
+                }}
+                w={"100%"}
+              ></Box>
+            )}
+          </Center>
+        </Flex>
+      </Split>
+    </Split>
+  );
+};
+
+const PlaygoundPageWrapper = () => {
+  return (
+    <EditorSettingsProvider>
+      <PlaygroundPage />
+    </EditorSettingsProvider>
+  );
+};
+
+export default PlaygoundPageWrapper;
