@@ -27,7 +27,7 @@ function NormalLayout({ children }: { children: ReactNode }) {
         direction={"column"}
         justifyContent={"space-between"}
         flex="1"
-        h={"100vh"}
+        minH={"100vh"}
       >
         <Container
           maxW="container.xl"
@@ -49,8 +49,8 @@ function NormalLayout({ children }: { children: ReactNode }) {
             {children}
           </Flex>
         </Container>
-        <Footer />
       </Flex>
+      <Footer />
     </>
   );
 }
@@ -138,6 +138,7 @@ function DesktopNavBar() {
           src={
             "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
           }
+          priority
           width={175}
           height={175}
           alt={"logo"}
