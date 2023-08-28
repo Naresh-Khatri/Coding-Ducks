@@ -141,8 +141,31 @@ interface TestCaseResult {
 export interface Output {
   isCorrect: boolean;
   passedCount: number;
+  errorCount: number;
   totalCount: number;
-  results: TestCaseResult[];
+  totalRuntime: number;
+  results: IRunResult[];
+}
+export interface IRunResult {
+  stdout: string;
+  stdin?: string | null;
+  stderr?: string;
+  exitCode: number;
+  memoryUsage?: number;
+  runtime?: number;
+  signal?: string | null;
+  errorIndex?: number;
+  errorType?:
+    | "compile-time"
+    | "run-time"
+    | "pre-compile-time"
+    | "run-timeout"
+    | "segmentation-error"
+    | null;
+  isPublic?: boolean;
+  isCorrect?: boolean;
+  expectedOutput?: string;
+  output?: string;
 }
 
 export interface ISubmission {

@@ -14,35 +14,8 @@ import { useState } from "react";
 import { CloseIcon } from "@chakra-ui/icons";
 import { errorType2Label } from "../lib/utils";
 import FAIcon from "./FAIcon";
+import { Output } from "../types";
 
-export interface Output {
-  isCorrect: boolean;
-  passedCount: number;
-  errorCount: number;
-  totalCount: number;
-  totalRuntime: number;
-  results: IRunResult[];
-}
-export interface IRunResult {
-  stdout: string;
-  stdin?: string | null;
-  stderr?: string;
-  exitCode: number;
-  memoryUsage?: number;
-  runtime?: number;
-  signal?: string | null;
-  errorType?:
-    | "compile-time"
-    | "run-time"
-    | "pre-compile-time"
-    | "run-timeout"
-    | "segmentation-error"
-    | null;
-  isPublic?: boolean;
-  isCorrect?: boolean;
-  expectedOutput?: string;
-  output?: string;
-}
 interface NewConsoleProps {
   output: Output;
   isLoading: boolean;
