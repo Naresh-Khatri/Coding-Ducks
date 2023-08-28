@@ -79,7 +79,7 @@ function UsersPage() {
               <UserInfo viewingUser={userData} viewingUserStats={statsData} />
             </GridItem>
             <GridItem colSpan={2}>
-              <HStack>
+              <HStack alignItems={"stretch"}>
                 <OverallStatsCard statsData={statsData} />
                 <BadgesCard userData={userData} />
               </HStack>
