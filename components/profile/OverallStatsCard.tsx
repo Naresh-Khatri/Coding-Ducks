@@ -65,15 +65,13 @@ function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
           <HStack>
             {/* <FAIcon height={"1.4rem"} icon={faFire} /> */}
             <Text fontSize={"3xl"} fontWeight={"bold"} lineHeight={1.2}>
-              {statsData.longestStreak || statsData.dailySubmissions.length > 0
-                ? 1
-                : 0}
+              {statsData.longestStreak || "N/A"}
             </Text>
             <Text fontSize={"md"} alignSelf={"end"} color={"whiteAlpha.600"}>
               days
             </Text>
           </HStack>
-          <Text fontSize={"sm"}>Longest Streak </Text>
+          <Text fontSize={"sm"} textAlign={'center'}>Longest Streak </Text>
         </Flex>
         <Divider orientation="vertical" height={10} />
         <Flex
