@@ -26,6 +26,7 @@ import { LEAGUES } from "../../data/leagues";
 import { userContext } from "../../contexts/userContext";
 import axiosInstance from "../../lib/axios";
 import FollowDetailsModal from "../FollowDetailsModal";
+import { pointsToLeague } from "../../lib/utils";
 
 const gradentKeyframs = keyframes` 
 	0% {
@@ -130,7 +131,7 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
               <Popover size={"xl"}>
                 <PopoverTrigger>
                   <Text fontSize="sm" fontWeight="bold">
-                    {LEAGUES[viewingUserStats.league].label}
+                  {LEAGUES[pointsToLeague(viewingUser.points).id].label}
                   </Text>
                 </PopoverTrigger>
                 <Portal>
