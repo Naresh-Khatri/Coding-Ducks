@@ -35,7 +35,7 @@ function ExamStatsCard({ examSubs }) {
 const ExamCard = ({ submissions }) => {
   // console.log(submissions)
   return (
-    <Link href={`/exams/${submissions[0].slug}`} style={{ width: "100%" }}>
+    <Link href={`/contests/${submissions[0].slug}`} style={{ width: "100%" }}>
       <Grid
         style={{ margin: "10px 0" }}
         h={{ base: 30, md: 50 }}

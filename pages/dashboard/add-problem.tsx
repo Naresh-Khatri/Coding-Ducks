@@ -329,7 +329,7 @@ const AddProblemPage = () => {
                       <Select ref={selectedExam}>
                         {examsList.map((exam) => (
                           <option key={exam.id} value={exam.id}>
-                            {`${exam.title} - /exams/${exam.slug}`}
+                            {`${exam.title} - /contests/${exam.slug}`}
                           </option>
                         ))}
                       </Select>

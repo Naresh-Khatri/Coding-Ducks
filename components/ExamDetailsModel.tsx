@@ -73,7 +73,7 @@ function ExamDetailsModel({ examData, isOpen, onClose, canStartExam, timerText, 
           <Button variant="ghost" mr={3} onClick={handleClose}>
             Close
           </Button>
-          <Link href={"/exams/" + examData.slug}>
+          <Link href={"/contests/" + examData.slug}>
             <Button colorScheme="purple" disabled={canStartExam}>
               {canStartExam ? timerText : "Start Exam"}
               </Button>

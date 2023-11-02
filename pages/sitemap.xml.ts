@@ -61,7 +61,7 @@ const generateSiteMap = ({ exams, problems, users }: generateSiteMapProps) => {
      ${exams
        .map(({ slug, updatedAt }) => {
          return generateSiteMapItem({
-           path: `${hostUrl}/exams/${slug}`,
+           path: `${hostUrl}/contests/${slug}`,
            lastmod: updatedAt.split("T")[0],
            changefreq: "weekly",
          });

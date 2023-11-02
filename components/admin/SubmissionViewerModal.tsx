@@ -103,7 +103,7 @@ function SubmissionViewerModal({
                           <Text>
                             Exam: {exam?.id}. {exam?.title}
                           </Text>
-                          <Link href={`/exams/${exam?.slug}`}>
+                          <Link href={`/contests/${exam?.slug}`}>
                             <Button>Open Exam</Button>
                           </Link>
                         </Box>
