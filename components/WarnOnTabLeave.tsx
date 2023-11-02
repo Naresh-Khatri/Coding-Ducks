@@ -12,9 +12,13 @@ import {
   Text,
   VStack,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+const randIdx = Math.floor(Math.random() * 2);
+const COOLDOWN_PERIOD = 5;
 
 function WarnOnTabLeave() {
   const images = [
@@ -26,22 +30,51 @@ function WarnOnTabLeave() {
     "Were you trying to leave the page?",
     "closing the exam wi",
   ];
-  const randIdx = Math.floor(Math.random() * 2);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [remainingTime, setRemainingTime] = useState(COOLDOWN_PERIOD);
+  const [timer, setTimer] = useState(null);
+
+  const toast = useToast();
+
   useEffect(() => {
     window.addEventListener("blur", () => {
       onOpen();
+      setRemainingTime(COOLDOWN_PERIOD);
+
+      if (timer) clearInterval(timer);
+      setTimer(
+        setInterval(() => {
+          setRemainingTime((p) => p - 1);
+        }, 1000)
+      );
+      const t = setTimeout(() => {
+        onClose();
+        toast({
+          title: "Editor unlocked!",
+          description: "Please follow the guidelines",
+        });
+        clearTimeout(t);
+      }, COOLDOWN_PERIOD * 1000);
     });
-  }, [onOpen]);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [onClose, onOpen, timer, toast]);
 
   return (
     <Box>
-      <Modal onClose={onClose} size={"md"} isOpen={isOpen}>
+      <Modal
+        closeOnEsc={false}
+        closeOnOverlayClick={false}
+        onClose={onClose}
+        size={"md"}
+        isOpen={isOpen}
+      >
         <ModalOverlay backdropFilter="blur(5px)" />
         <ModalContent>
           <ModalHeader>No cheating pls!!</ModalHeader>
-          <ModalCloseButton />
+          {/* <ModalCloseButton /> */}
           <ModalBody>
             <VStack justifyContent={"center"} alignContent={"center"}>
               <Image
@@ -56,12 +89,19 @@ function WarnOnTabLeave() {
                 fontSize={"3xl"}
                 textAlign={"center"}
               >
+                Editor is locked for {remainingTime}s
+              </Text>
+              <Text
+                fontWeight={"extrabold"}
+                fontSize={"1xl"}
+                textAlign={"center"}
+              >
                 Switching to other tabs or apps will disqualify you!
               </Text>
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose} colorScheme="purple">
+            <Button onClick={onClose} colorScheme="purple" isDisabled>
               Okay
             </Button>
           </ModalFooter>
