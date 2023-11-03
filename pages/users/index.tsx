@@ -28,7 +28,7 @@ function UsersPage() {
     useQuery({
       queryKey: ["users"],
       queryFn: getUsers,
-      refetchOnMount: false,
+      refetchOnMount: true,
     });
   return (
     <NormalLayout>
