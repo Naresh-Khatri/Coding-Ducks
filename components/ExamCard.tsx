@@ -127,7 +127,7 @@ function ExamCard({ examData }: { examData: IExam }) {
         mb={4}
         mx={2}
         shadow={"2xl"}
-        disabled={isBounded && (hasEnded || !hasStarted)}
+        isDisabled={isBounded && (hasEnded || !hasStarted)}
         onClick={onOpen}
       >
         {isBounded
