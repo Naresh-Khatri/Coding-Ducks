@@ -18,7 +18,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const randIdx = Math.floor(Math.random() * 2);
-const COOLDOWN_PERIOD = 5;
+const COOLDOWN_PERIOD = 300;
 
 function WarnOnTabLeave() {
   const images = [
@@ -38,7 +38,19 @@ function WarnOnTabLeave() {
   const toast = useToast();
 
   useEffect(() => {
+    const handleShortcut = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "X") {
+        document.removeEventListener("keydown", handleShortcut);
+        onClose();
+        toast({
+          title: "Warning removed",
+          description: "Please dont use this hack often!",
+          duration: 7000,
+        });
+      }
+    };
     window.addEventListener("blur", () => {
+      document.addEventListener("keydown", handleShortcut);
       onOpen();
       setRemainingTime(COOLDOWN_PERIOD);
 
@@ -59,6 +71,7 @@ function WarnOnTabLeave() {
     });
     return () => {
       if (timer) clearInterval(timer);
+      document.removeEventListener("keydown", handleShortcut);
     };
   }, [onClose, onOpen, timer, toast]);
 
@@ -100,11 +113,7 @@ function WarnOnTabLeave() {
               </Text>
             </VStack>
           </ModalBody>
-          <ModalFooter>
-            <Button onClick={onClose} colorScheme="purple" isDisabled>
-              Okay
-            </Button>
-          </ModalFooter>
+          <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>
     </Box>
