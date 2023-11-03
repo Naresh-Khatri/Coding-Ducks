@@ -103,7 +103,7 @@ function ExamCard({ examData }: { examData: IExam }) {
           fontSize={"sm"}
           letterSpacing={1.1}
         >
-          Exam
+          contest
         </Text>
         <Heading
           color={useColorModeValue("gray.700", "white")}
@@ -117,7 +117,7 @@ function ExamCard({ examData }: { examData: IExam }) {
           as={"div"}
           color={"gray.500"}
           noOfLines={4}
-          dangerouslySetInnerHTML={{ __html: description || "exam" }}
+          dangerouslySetInnerHTML={{ __html: description || "contest" }}
         ></Text>
       </Stack>
       <Spacer />
@@ -135,8 +135,8 @@ function ExamCard({ examData }: { examData: IExam }) {
             ? `Opens in ${timerText}`
             : !hasEnded && hasStarted
             ? `Closes in ${timerText}`
-            : "Exam ended"
-          : "Start Exam"}
+            : "Contest ended"
+          : "Start contest"}
       </Button>
       <ExamDetailsModel
         examData={examData}
