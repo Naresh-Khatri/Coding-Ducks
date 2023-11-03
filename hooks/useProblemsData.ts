@@ -11,19 +11,14 @@ import {
 
 // ------------- Fetch functions ------------
 export const getAllProblems = async (allowExams: boolean) => {
-  const res = await axiosInstance.get(
+  const { data: problems }: { data: IExamProblem[] } = await axiosInstance.get(
     `/problems${allowExams ? "?allowExams=true" : ""}`
   );
-  const problems: IExamProblem[] = res.data;
-  const examsList: IExam[] = [];
-  problems?.forEach((problem) => {
-    if (!examsList.find((e) => e.id === problem.examId))
-      examsList.push({
-        id: problem?.examId,
-        title: problem.exam?.title,
-        slug: problem.exam?.slug,
-      });
-  });
+
+  const { data: examsList }: { data: IExam[] } = await axiosInstance.get(
+    `/exams/`
+  );
+  console.log(examsList);
   return { problems, examsList } as {
     problems: IExamProblem[];
     examsList: IExam[];
