@@ -15,12 +15,11 @@ function ProblemSelector({ problemId, isActive, state }) {
         alignItems="center"
         justifyContent="center"
         borderRadius={18}
-        w={55}
-        h={55}
+        w={isActive ? 51 : 55}
+        h={isActive ? 51 : 55}
         transform={isActive ? "scale(1.15)" : ""}
         bg={bgColor}
         textAlign="center"
-        // bg={isComplete ? 'green.400' : 'brand.900'}
         border={isActive ? "2px solid white" : ""}
         color={useColorModeValue("black", "black")}
         _hover={{ border: "2px dotted black", cursor: "pointer" }}
@@ -58,7 +57,7 @@ function LeftProblemsList({
   };
 
   return (
-    <Box overflowY={"auto"}>
+    <Box>
       {problems.map((problem, index) => (
         <Box
           key={index}
