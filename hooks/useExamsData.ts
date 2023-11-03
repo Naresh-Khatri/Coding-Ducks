@@ -27,12 +27,14 @@ export const useExamsData = () => {
   return useQuery(["exams"], getExams);
 };
 export const useExamData = (examSlug: string) => {
-  return useQuery(["exam", examSlug], () => getExam(examSlug));
+  return useQuery(["exam", examSlug], () => getExam(examSlug), {
+    refetchInterval: 60 * 1000,
+  });
 };
 
 export const useExamProblemsData = ({ examId }: { examId: number }) => {
   return useQuery(["examProblems", examId], () => getExamProblems(examId), {
-    refetchOnMount: false,
+    refetchInterval: 60 * 1000,
     enabled: !!examId,
   });
 };
