@@ -133,7 +133,10 @@ const AddProblemPage = () => {
       starterCodes,
     };
 
-    if (hasExam) payload["examId"] = +selectedExam.current.value;
+    if (hasExam) {
+      payload["examId"] = +selectedExam.current.value;
+      payload["frontendProblemId"] = undefined;
+    }
 
     try {
       const res = await axios.post("/problems", payload);

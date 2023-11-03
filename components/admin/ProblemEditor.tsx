@@ -173,6 +173,7 @@ function ProblemEditor({
     };
     if (newHasExam) {
       payload["examId"] = +selectedExamRef.current.value;
+      payload["frontendProblemId"] = undefined;
     }
     try {
       const res = await axios.patch(`/problems/${problemData.id}`, payload);
