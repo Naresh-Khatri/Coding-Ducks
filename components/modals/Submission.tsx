@@ -89,18 +89,20 @@ function Submission({
                     >
                       Close
                     </Button>
-                    <Button
-                      colorScheme="purple"
-                      w={"40"}
-                      mr={3}
-                      onClick={() => {
-                        setCurrentProblemIdx((prev) => prev + 1);
-                        onClose();
-                      }}
-                      disabled={!canGoToNextProblem}
-                    >
-                      Next Problem
-                    </Button>
+                    {canGoToNextProblem && (
+                      <Button
+                        colorScheme="purple"
+                        w={"40"}
+                        mr={3}
+                        onClick={() => {
+                          setCurrentProblemIdx((prev) => prev + 1);
+                          onClose();
+                        }}
+                        isDisabled={!canGoToNextProblem}
+                      >
+                        Next Problem
+                      </Button>
+                    )}
                   </Flex>
                 </Flex>
               ) : (
