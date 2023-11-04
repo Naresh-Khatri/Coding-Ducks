@@ -28,13 +28,13 @@ export const useExamsData = () => {
 };
 export const useExamData = (examSlug: string) => {
   return useQuery(["exam", examSlug], () => getExam(examSlug), {
-    refetchInterval: 60 * 1000,
+    refetchInterval: 150 * 1000,
   });
 };
 
 export const useExamProblemsData = ({ examId }: { examId: number }) => {
   return useQuery(["examProblems", examId], () => getExamProblems(examId), {
-    refetchInterval: 60 * 1000,
+    refetchInterval: 150 * 1000,
     enabled: !!examId,
   });
 };
