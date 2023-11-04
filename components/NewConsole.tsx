@@ -24,7 +24,7 @@ interface NewConsoleProps {
 
 function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
   const [selectedCase, setSelectedCase] = useState(0);
-  console.log(output)
+  console.log(output);
   if (!output?.results)
     return (
       <Center p={4} w={"100%"} h={"100%"}>
@@ -38,7 +38,6 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
         )}
       </Center>
     );
-
 
   if (output.errorCount > 0) {
     // get the testcase with error
@@ -151,7 +150,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               w={"100%"}
               p={0}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.input?.replace(
+                __html: output?.results[selectedCase]?.stdin?.replace(
                   /\n/g,
                   "<br />"
                 ),
@@ -166,7 +165,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               as="code"
               w={"100%"}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.actualOutput?.replace(
+                __html: output?.results[selectedCase]?.output?.replace(
                   /\n/g,
                   "<br />"
                 ),
@@ -181,7 +180,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               as="code"
               w={"100%"}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.output?.replace(
+                __html: output?.results[selectedCase]?.expectedOutput?.replace(
                   /\n/g,
                   "<br />"
                 ),

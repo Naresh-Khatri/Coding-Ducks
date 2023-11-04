@@ -24,6 +24,7 @@ import WarnOnTabLeave from "../../components/WarnOnTabLeave";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Output } from "../../types";
 import SetMeta from "../../components/SEO/SetMeta";
+import EditorSettingsProvider from "../../contexts/editorSettingsContext";
 
 function TakeTest() {
   const router = useRouter();
@@ -342,5 +343,14 @@ function TakeTest() {
     </MainLayout>
   );
 }
+// We cant use context directly so this wrappers helps
+function ContestPageWrapper() {
+  return (
+    <EditorSettingsProvider>
+      {/* <ProblemPage /> */}
+      <TakeTest />
+    </EditorSettingsProvider>
+  );
+}
 
-export default TakeTest;
+export default ContestPageWrapper;
