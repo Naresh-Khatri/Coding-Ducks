@@ -25,7 +25,7 @@ export default function ExamPage() {
   const { data: exams } = useQuery({
     queryKey: ["exams"],
     queryFn: getExams,
-    refetchOnMount: false,
+    refetchOnMount: true,
   });
   const { user } = useContext(userContext);
 
