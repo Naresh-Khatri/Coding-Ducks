@@ -1,10 +1,11 @@
-import { Badge, Box, Text } from "@chakra-ui/react";
+import { Badge, Box, Stack, Text } from "@chakra-ui/react";
 import React from "react";
 
 import ExampleTestcase from "./ExampleTestcase";
 import { IProblem } from "../types";
 
 function ExamProblemStatement({ problem }: { problem: IProblem }) {
+  if (!problem) return null;
   return (
     <Box p={5} overflowY="auto">
       <Box>
@@ -13,11 +14,27 @@ function ExamProblemStatement({ problem }: { problem: IProblem }) {
           {problem.title}
         </Text>
 
-        <Badge
-          colorScheme={`${problem.difficulty === "easy" ? "green" : "yellow"}`}
-        >
-          {problem.difficulty}
-        </Badge>
+        <Stack>
+          <Badge
+            w={"fit-content"}
+            colorScheme={`${
+              problem.difficulty === "easy" ? "green" : "yellow"
+            }`}
+          >
+            {problem.difficulty}
+          </Badge>
+          {problem.tags?.map((tag) => (
+            <Badge
+              w={"fit-content"}
+              key={tag}
+              colorScheme={`${
+                problem.difficulty === "easy" ? "green" : "yellow"
+              }`}
+            >
+              {tag}
+            </Badge>
+          ))}
+        </Stack>
         <Box p={5}>
           <Text
             dangerouslySetInnerHTML={{ __html: problem.description }}

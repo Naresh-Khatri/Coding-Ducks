@@ -150,6 +150,8 @@ export interface IRunResult {
   stdout: string;
   stdin?: string | null;
   stderr?: string;
+  actualOutput?: string;
+  input?: string;
   exitCode: number;
   memoryUsage?: number;
   runtime?: number;

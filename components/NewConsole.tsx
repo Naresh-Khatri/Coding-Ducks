@@ -24,6 +24,7 @@ interface NewConsoleProps {
 
 function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
   const [selectedCase, setSelectedCase] = useState(0);
+  console.log(output)
   if (!output?.results)
     return (
       <Center p={4} w={"100%"} h={"100%"}>
@@ -91,11 +92,11 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
           </Text>
           <HStack>
             <Text display={{ base: "none", md: "block" }} fontSize={"md"}>
-              Runtime: {output?.totalRuntime.toFixed(0)} ms
+              {/* Runtime: {output?.totalRuntime.toFixed(0)} ms */}
             </Text>{" "}
             <Text display={{ base: "none", md: "block" }} fontSize={"md"}>
               {/* Memory: {memoryUsage.toFixed(2)} MB */}
-              Memory: N/A MB
+              {/* Memory: N/A MB */}
             </Text>
             <IconButton
               aria-label="close"
@@ -150,7 +151,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               w={"100%"}
               p={0}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.stdin.replace(
+                __html: output?.results[selectedCase]?.input?.replace(
                   /\n/g,
                   "<br />"
                 ),
@@ -165,7 +166,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               as="code"
               w={"100%"}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.output?.replace(
+                __html: output?.results[selectedCase]?.actualOutput?.replace(
                   /\n/g,
                   "<br />"
                 ),
@@ -180,7 +181,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               as="code"
               w={"100%"}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.expectedOutput?.replace(
+                __html: output?.results[selectedCase]?.output?.replace(
                   /\n/g,
                   "<br />"
                 ),
