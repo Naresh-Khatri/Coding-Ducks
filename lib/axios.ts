@@ -4,7 +4,8 @@ import { auth } from "../firebase/firebase";
 export const baseURL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3333"
-    : "https://api.codingducks.live";
+    : // "http://192.168.31.197:3333"
+      "https://api2.codingducks.live";
 
 const axiosInstance = axios.create({
   baseURL,
@@ -42,3 +43,17 @@ axiosInstance.interceptors.request.use(
 );
 
 export default axiosInstance;
+
+// const loadScript = (src: string, callback: (err: string, ) => void) => {
+//   const script = document.createElement("script");
+//   script.src = src;
+//   document.head.appendChild(script);
+
+//   script.onload = () => callback()
+//   script.onerror = () => callback(throw('lol'))
+
+// };
+
+// loadScript("http://codingducks.live", () => {
+//   loadScript("https://codingducks2.live",)
+// });
