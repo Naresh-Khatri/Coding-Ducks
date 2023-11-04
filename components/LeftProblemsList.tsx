@@ -57,7 +57,7 @@ function LeftProblemsList({
   };
 
   return (
-    <Box>
+    <Box overflowY={"auto"}>
       {problems.map((problem, index) => (
         <Box
           key={index}
