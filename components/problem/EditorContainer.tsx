@@ -110,7 +110,9 @@ function RightEditorContainer({
                       problemData.starterCodes.find((sc) => sc.lang === lang)
                         ?.code
                     }
-                    errorIndex={output?.results[0]?.errorIndex || 0}
+                    // errorIndex={
+                    //   (lang === "py" && output?.results[0]?.errorIndex) || 0
+                    // }
                     runCode={() => runCode(false)}
                   />
                 </Flex>
