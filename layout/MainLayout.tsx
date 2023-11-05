@@ -40,7 +40,7 @@ function MainLayout({ children, examData }: MainLayoutProps) {
   const { id: examId, title, slug: examSlug } = examData;
 
   const { data: submissionData } = useExamSubmissionsData(examId);
-  const { totalMarks, marksObtained } = submissionData?.data || {
+  const { totalMarks, marksObtained } = submissionData || {
     totalMarks: 0,
     marksObtained: 0,
   };
