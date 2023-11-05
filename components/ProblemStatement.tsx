@@ -18,7 +18,8 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
           mb={"1rem"}
           fontSize={{ base: "2xl", lg: "2xl" }}
         >
-          #{problem.frontendProblemId}. {problem.title}
+          #{problem.examId ? problem.order : problem.frontendProblemId}.
+          {problem.title}
         </Text>
         <Flex justifyContent={"space-between"} w={"100%"}>
           <HStack>
@@ -37,26 +38,28 @@ function ProblemStatement({ problem }: { problem: IProblem }) {
             <LikeDislikeButtons problemId={problem.id} />
           </HStack>
           <DiffBadge difficulty={problem.difficulty} size="md" />
-          <Stack alignItems={"end"} display={{ base: "none", md: "flex" }}>
-            <HStack>
-              <Text fontSize={"sm"}>Accuracy: </Text>
-              <Text fontWeight={"bold"} fontSize={"sm"}>
-                {problem.accuracy.toFixed(1)}%
-              </Text>
-              <Tooltip label="How many submissions were correct">
-                <InfoIcon />
-              </Tooltip>
-            </HStack>
-            <HStack align={"center"}>
-              <Text fontSize={"sm"}>Submissions:</Text>
-              <Text fontWeight={"bold"} fontSize={"sm"}>
-                {problem.submissionCount}
-              </Text>
-              <Tooltip label="Number of submission for this problem">
-                <InfoIcon />
-              </Tooltip>
-            </HStack>
-          </Stack>
+          {!problem.examId && (
+            <Stack alignItems={"end"} display={{ base: "none", md: "flex" }}>
+              <HStack>
+                <Text fontSize={"sm"}>Accuracy: </Text>
+                <Text fontWeight={"bold"} fontSize={"sm"}>
+                  {problem.accuracy.toFixed(1)}%
+                </Text>
+                <Tooltip label="How many submissions were correct">
+                  <InfoIcon />
+                </Tooltip>
+              </HStack>
+              <HStack align={"center"}>
+                <Text fontSize={"sm"}>Submissions:</Text>
+                <Text fontWeight={"bold"} fontSize={"sm"}>
+                  {problem.submissionCount}
+                </Text>
+                <Tooltip label="Number of submission for this problem">
+                  <InfoIcon />
+                </Tooltip>
+              </HStack>
+            </Stack>
+          )}
         </Flex>
         <Box
           dangerouslySetInnerHTML={{ __html: problem.description }}
