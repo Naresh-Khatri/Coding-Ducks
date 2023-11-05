@@ -26,12 +26,7 @@ import FAIcon from "./FAIcon";
 function Timer() {
   const router = useRouter();
   const { slug } = router.query;
-  const {
-    data: examData,
-    refetch: refetchExamData,
-    isLoading: examDataLoading,
-    isError: examDataError,
-  } = useExamData(slug as string);
+  const { data: examData } = useExamData(slug as string);
 
   const [timer, setTimer] = useState(null);
   const [timerText, setTimerText] = useState("Unbounded");
