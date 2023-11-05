@@ -47,8 +47,8 @@ function LeftProblemsList({
 }: LeftProblemsListProps) {
   const { data: examSubmissionsData, refetch: refetchExamSubmissionsData } =
     useExamSubmissionsData(examId);
-  const submissions = examSubmissionsData?.data?.submissions;
-  const getState = (problemId) => {
+  const submissions = examSubmissionsData?.submissions;
+  const getState = (problemId: number) => {
     if (!examSubmissionsData) return "notAttempted";
     const submission = submissions.find((sub) => sub.problemId === problemId);
     if (submission?.marks == 10) return "passed";
