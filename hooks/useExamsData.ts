@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
-import { IExam } from "../types";
+import { IExam, IProblem } from "../types";
 
 // ------------- Fetch functions------------
 export const getExams = async () => {
@@ -14,11 +14,13 @@ export const getExam = async (examSlug: string) => {
 };
 
 export const getExamProblems = async (examId: number) => {
-  return axiosInstance.get(`/problems/examProblems/${examId}`);
+  const { data } = await axiosInstance.get(`/problems/examProblems/${examId}`);
+  return data as IProblem[];
 };
 
 export const getExamSubmissions = async (examId: number) => {
-  return axiosInstance.get(`/exams/getProgress/${examId}`);
+  const { data } = await axiosInstance.get(`/exams/getProgress/${examId}`);
+  return data;
 };
 
 // ------------- RQ hooks ------------
