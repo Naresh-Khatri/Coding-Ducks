@@ -1,19 +1,14 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Box, Flex, Skeleton, useDisclosure, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
 import Split from "react-split";
 import axios from "../../lib/axios";
 
-import ToolBar from "../../components/ToolBar";
-import CodeEditor from "../../components/CodeEditor";
-import ProblemStatement from "../../components/ExamProblemStatement";
 import LeftProblemsList from "../../components/LeftProblemsList";
 import MainLayout from "../../layout/MainLayout";
 import SubmissionModal from "../../components/modals/Submission";
 
-import BottomActions from "../../components/BottomActions";
-import NewConsole from "../../components/NewConsole";
 import {
   useExamData,
   useExamProblemsData,
@@ -24,14 +19,19 @@ import WarnOnTabLeave from "../../components/WarnOnTabLeave";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { Output } from "../../types";
 import SetMeta from "../../components/SEO/SetMeta";
-import EditorSettingsProvider from "../../contexts/editorSettingsContext";
+import EditorSettingsProvider, {
+  EditorSettingsContext,
+} from "../../contexts/editorSettingsContext";
+import { RightEditorContainer } from "../../components/problem/EditorContainer";
+import ProblemStatement from "../../components/ProblemStatement";
+import ProblemDeleteModle from "../../components/admin/ProblemDeleteModal";
 
 function TakeTest() {
   const router = useRouter();
+  const { settings, code, setCode } = useContext(EditorSettingsContext);
+
   const { slug } = router.query;
-  const [code, setCode] = useState("");
-  const [lang, setLang] = useState("py");
-  const [theme, setTheme] = useState("dracula");
+  const { lang, theme } = settings;
   const [output, setOutput] = useState<Output>();
   const [isLoading, setIsLoading] = useState(false);
   const [currentProblemIdx, setCurrentProblemIdx] = useState(1);
@@ -100,7 +100,11 @@ function TakeTest() {
     }
   };
   const onCodeReset = () => {
-    setCode(problemsData?.data[currentProblemIdx - 1].starterCode || "");
+    setCode(
+      problemsData[currentProblemIdx - 1].starterCodes.find(
+        (sc) => sc.lang === lang
+      )?.code || ""
+    );
     toast({
       title: "Code Reset",
       description: "Your code has been reset successfully",
@@ -112,14 +116,14 @@ function TakeTest() {
     onCodeResetModalClose();
   };
   // this custom hook works on onSuccess only.
-  const {
-    refetch: refrechLastSubmission,
-    isLoading: lastSubmissionIsLoading,
-    fetchStatus: lastSubmissionFetchStatus,
-  } = useLastSubmissionData(
-    problemsData?.data[currentProblemIdx - 1]?.id,
-    onCodeRetriveSuccess
-  );
+  // const {
+  //   refetch: refrechLastSubmission,
+  //   isLoading: lastSubmissionIsLoading,
+  //   fetchStatus: lastSubmissionFetchStatus,
+  // } = useLastSubmissionData(
+  //   problemsData ? problemsData[currentProblemIdx - 1].order : 0,
+  //   onCodeRetriveSuccess
+  // );
 
   const { data: submissionData, refetch: refetchSubmissionData } =
     useExamSubmissionsData(examData?.id as number);
@@ -180,7 +184,7 @@ function TakeTest() {
     if (!problemsData) return;
     setCode(
       localStorage.getItem(`code ${examData?.id} ${currentProblemIdx}`) ||
-        problemsData?.data[currentProblemIdx - 1]?.starterCode ||
+        problemsData[currentProblemIdx - 1]?.starterCode ||
         ""
     );
     setShowConsole(false);
@@ -192,9 +196,9 @@ function TakeTest() {
     localStorage.setItem(`code ${examData?.id} ${currentProblemIdx}`, code);
   }, [code, examData, currentProblemIdx]);
 
-  const handleOnCodeRetrive = async () => {
-    refrechLastSubmission();
-  };
+  // const handleOnCodeRetrive = async () => {
+  //   refrechLastSubmission();
+  // };
 
   const runCode = async (submit = false) => {
     setIsLoading(true);
@@ -203,7 +207,7 @@ function TakeTest() {
       code,
       lang,
       submit,
-      problemId: problemsData.data[currentProblemIdx - 1].id,
+      problemId: problemsData[currentProblemIdx - 1].id,
       examId: examData.id,
     };
     try {
@@ -229,7 +233,8 @@ function TakeTest() {
     }
   };
 
-  if (!examData || problemsDataLoading) return <div>Loading...</div>;
+  if (!examData || problemsDataLoading || !problemsData)
+    return <div>Loading...</div>;
   return (
     <MainLayout examData={examData}>
       <SetMeta
@@ -243,12 +248,12 @@ function TakeTest() {
         <Flex>
           <LeftProblemsList
             examId={examData.id}
-            problems={problemsData?.data}
+            problems={problemsData}
             currentProblemIdx={currentProblemIdx}
             setCurrentProblemIdx={setCurrentProblemIdx}
           />
         </Flex>
-        {problemsDataLoading || problemsData?.data.length === 0 ? (
+        {problemsDataLoading || problemsData?.length === 0 ? (
           <Skeleton height="100vh" />
         ) : (
           <Flex flexGrow={1}>
@@ -257,57 +262,18 @@ function TakeTest() {
               minSize={300}
               style={{ height: "100%", width: "100%" }}
             >
-              <ProblemStatement
-                problem={problemsData.data[currentProblemIdx - 1]}
+              <ProblemStatement problem={problemsData[currentProblemIdx - 1]} />
+              <RightEditorContainer
+                isLoading={isLoading}
+                runCode={runCode}
+                problemData={problemsData[currentProblemIdx - 1]}
+                onCodeResetModalOpen={onCodeResetModalOpen}
+                onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
+                output={output}
+                showConsole={showConsole}
+                setShowConsole={setShowConsole}
+                lang={lang}
               />
-              <Flex
-                direction={"column"}
-                justify="space-between"
-                width="100%"
-                px={2}
-              >
-                <Flex justify={"end"}>
-                  <ToolBar
-                    isLoading={isLoading}
-                    runCode={runCode}
-                    onCodeRetrievalModalOpen={onCodeRetrievalModalOpen}
-                    onCodeReset={onCodeResetModalOpen}
-                  />
-                </Flex>
-                <Flex flexGrow={1} direction="column" h={"45"}>
-                  <Flex flexGrow={1} overflow="auto">
-                    <CodeEditor
-                      code={code}
-                      setCode={setCode}
-                      lang={lang}
-                      theme={theme}
-                      runCode={() => runCode(false)}
-                    />
-                  </Flex>
-                  <Flex w={"full"}>
-                    {showConsole && (
-                      <Box overflow={"auto"} w={"full"}>
-                        <NewConsole
-                          isLoading={isLoading}
-                          output={output}
-                          onClose={() => {
-                            setShowConsole(false);
-                          }}
-                        />
-                      </Box>
-                    )}
-                  </Flex>
-                </Flex>
-                <Flex h={"50px"}>
-                  <BottomActions
-                    isTutorialProblem={true}
-                    showConsole={showConsole}
-                    setShowConsole={setShowConsole}
-                    runCode={runCode}
-                    isLoading={isLoading}
-                  />
-                </Flex>
-              </Flex>
             </Split>
           </Flex>
         )}
@@ -318,7 +284,7 @@ function TakeTest() {
         >
           This will replace your current code with the default code.
         </ConfirmModal>
-        <ConfirmModal
+        {/* <ConfirmModal
           onClose={onCodeRetrievalModalClose}
           isOpen={isCodeRetrievalModalOpen}
           onConfirm={handleOnCodeRetrive}
@@ -328,7 +294,7 @@ function TakeTest() {
         >
           This will replace your current code with the code from your last
           submission.
-        </ConfirmModal>
+        </ConfirmModal> */}
         <SubmissionModal
           onClose={() => {
             setLastSubmissionPassed(false);
@@ -337,7 +303,7 @@ function TakeTest() {
           isOpen={isSubmissionModalOpen}
           passed={lastSubmissionPassed}
           setCurrentProblemIdx={setCurrentProblemIdx}
-          canGoToNextProblem={currentProblemIdx < problemsData.data.length}
+          canGoToNextProblem={currentProblemIdx < problemsData.length}
         />
       </Flex>
     </MainLayout>
@@ -347,7 +313,6 @@ function TakeTest() {
 function ContestPageWrapper() {
   return (
     <EditorSettingsProvider>
-      {/* <ProblemPage /> */}
       <TakeTest />
     </EditorSettingsProvider>
   );
