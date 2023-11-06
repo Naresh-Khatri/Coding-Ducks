@@ -19,6 +19,7 @@ interface BottomActionsProps {
   isLoading: boolean;
   runCode: (val: boolean) => void;
   isTutorialProblem: boolean;
+  examId?: number;
 }
 function BottomActions({
   setShowConsole,
@@ -26,6 +27,7 @@ function BottomActions({
   isLoading,
   runCode,
   isTutorialProblem,
+  examId,
 }: BottomActionsProps) {
   const { user } = useContext(userContext);
   const toast = useToast();
@@ -33,9 +35,10 @@ function BottomActions({
   const notLoggedIn = !user?.username;
   const { isNoob } = user || { isNoob: false };
 
+  console.log(examId);
   return (
     <Box pos="relative" w={"100%"}>
-      {(notLoggedIn || (!isTutorialProblem && isNoob)) && (
+      {(notLoggedIn || (!isTutorialProblem && isNoob)) && !examId && (
         <Center
           pos={"absolute"}
           w={"100%"}
@@ -60,12 +63,12 @@ function BottomActions({
           }}
         >
           <FAIcon style={{ marginRight: "10px" }} icon={faLock} />
-          {notLoggedIn && (
+          {notLoggedIn && !examId && (
             <Text fontWeight={"bold"}>
               You need to be a member to run code.
             </Text>
           )}
-          {isNoob && (
+          {isNoob && !examId && (
             <Text fontWeight={"bold"}>Solve starting 10 problem to unlock</Text>
           )}
         </Center>

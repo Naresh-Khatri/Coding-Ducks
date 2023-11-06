@@ -134,6 +134,7 @@ function RightEditorContainer({
         <Flex h={"3rem"} px={2}>
           <BottomActions
             isTutorialProblem={problemData.difficulty === "tutorial"}
+            examId={problemData.examId}
             showConsole={showConsole}
             setShowConsole={setShowConsole}
             runCode={runCode}
