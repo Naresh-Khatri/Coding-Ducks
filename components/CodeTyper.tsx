@@ -37,10 +37,14 @@ function CodeTyper() {
   const [isLargerThan800] = useMediaQuery("(min-width: 800px)");
 
   useEffect(() => {
-    if (typeof window === "undefined" || isLargerThan800) return;
+    if (
+      typeof window === "undefined" ||
+      typeof Accelerometer === "undefined" ||
+      isLargerThan800
+    )
+      return;
 
-    cardRef.current.style.transform = `perspective(500px) rotateX( 0deg) rotateY(0deg)
-        `;
+    cardRef.current.style.transform = `perspective(500px) rotateX( 0deg) rotateY(0deg)`;
     const acl = new Accelerometer({ frequency: 60 });
     acl.addEventListener("reading", () => {
       setData({
