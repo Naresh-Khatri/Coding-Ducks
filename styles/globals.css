@@ -16,7 +16,8 @@ a {
   box-sizing: border-box;
 }
 
-p > code, li > code {
+p > code,
+li > code {
   border: 1px solid #494949;
   border-radius: 0.3rem;
 }
@@ -141,4 +142,79 @@ code {
 ul {
   margin-block-end: 1em;
   padding-inline-start: 40px;
+}
+
+.splash-bg {
+  background: #1a202c;
+  z-index: 9999;
+}
+.splash-screen {
+  position: absolute;
+  width: 500px;
+  height: auto;
+  left: calc(100% / 2 - 500px / 2);
+  top: calc(100% / 2 - 214px / 2);
+  animation-name: rubberBand;
+  animation-duration: 1s;
+}
+.splash-screen-mobile {
+  position: absolute;
+  width: 400px;
+  height: auto;
+  top: calc(100% / 2 - 214px / 2);
+  left: 0px;
+  animation-name: rubberBand;
+  animation-duration: 1s;
+}
+@keyframes rubberBand {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+
+  30% {
+    transform: scale3d(1.25, 0.75, 1);
+  }
+
+  40% {
+    transform: scale3d(0.75, 1.25, 1);
+  }
+
+  50% {
+    transform: scale3d(1.15, 0.85, 1);
+  }
+
+  65% {
+    transform: scale3d(0.95, 1.05, 1);
+  }
+
+  75% {
+    transform: scale3d(1.05, 0.95, 1);
+  }
+
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.screen-bg-end {
+  transition: background 1s;
+  background: #00000000;
+}
+
+.screen-end {
+  position: absolute;
+  width: 81px;
+  height: auto;
+  left: 13px;
+  top: 3px;
+  transition: all 0.8s;
+}
+
+.screen-end-mobile {
+  position: absolute;
+  width: 172px;
+  height: auto;
+  left: calc(100vw / 2 - 172px / 2 - 17px);
+  top: 0;
+  transition: all 0.8s;
 }
