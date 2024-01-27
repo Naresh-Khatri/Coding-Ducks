@@ -6,8 +6,9 @@ import {
   keyframes,
   useMediaQuery,
 } from "@chakra-ui/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import TypewriterComponent from "typewriter-effect";
+import { isTouchScreen } from "../lib/utils";
 
 const styles = {
   width: "fit-content",
@@ -30,52 +31,11 @@ const glowKeyframes = keyframes`
 `;
 
 function CodeTyper() {
-  const boxRef = useRef(null);
   const cardRef = useRef(null);
   const [isMouseOver, setIsMouseOver] = useState(false);
-  const [data, setData] = useState({});
   const [isLargerThan800] = useMediaQuery("(min-width: 800px)");
 
-  useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      typeof Accelerometer === "undefined" ||
-      isLargerThan800
-    )
-      return;
-
-    cardRef.current.style.transform = `perspective(500px) rotateX( 0deg) rotateY(0deg)`;
-    const acl = new Accelerometer({ frequency: 60 });
-    acl.addEventListener("reading", () => {
-      setData({
-        x: acl.x.toFixed(5),
-        y: acl.y.toFixed(5),
-        z: acl.z.toFixed(5),
-      });
-
-      cardRef.current.style.transform = `perspective(500px) rotateX( ${
-        acl.y * 2
-      }deg) rotateY(${acl.x * 2}deg)`;
-    });
-    acl.start();
-  }, [isLargerThan800]);
-
-  useEffect(() => {
-    if (!isLargerThan800) return;
-    boxRef.current?.addEventListener("mousemove", parallax3DEffect);
-    boxRef.current?.addEventListener("mouseleave", resetEffect);
-    boxRef.current?.addEventListener("mouseenter", () => {
-      setIsMouseOver(true);
-    });
-
-    return () => {
-      if (boxRef.current) {
-        boxRef?.current?.removeEventListener("mousemove", parallax3DEffect);
-        boxRef?.current?.removeEventListener("mouseleave", resetEffect);
-      }
-    };
-  }, [isLargerThan800]);
-  const resetEffect = (e: any) => {
+  const resetEffect = useCallback(() => {
     setIsMouseOver(false);
     setTimeout(function () {
       if (!isMouseOver && cardRef.current) {
@@ -84,30 +44,71 @@ function CodeTyper() {
           "perspective(1000px) rotateX(0deg) rotateY(0deg)";
       }
     }, 300);
-  };
-  const parallax3DEffect = (e: any) => {
-    if (!cardRef.current) return;
-    if (!isMouseOver) {
-      cardRef.current.style.transition = "none";
-    } else {
-      cardRef.current.style.transition = "transform 0.3s";
-    }
-    var card = cardRef?.current;
-    if (!card) return;
-    var cardRect = card.getBoundingClientRect();
-    var cardCenterX = cardRect.left + cardRect.width / 2;
-    var cardCenterY = cardRect.top + cardRect.height / 2;
+  }, []);
 
-    var deltaX = e.clientX - cardCenterX;
-    var deltaY = e.clientY - cardCenterY;
+  // function to handle parallax effect when pointer moves over body
+  // on large screens
+  const parallax3DEffect = useCallback(
+    (e: any) => {
+      if (!cardRef.current) return;
+      if (!isMouseOver) {
+        cardRef.current.style.transition = "none";
+      } else {
+        cardRef.current.style.transition = "transform 0.3s";
+      }
+      var card = cardRef?.current;
+      if (!card) return;
+      var cardRect = card.getBoundingClientRect();
+      var cardCenterX = cardRect.left + cardRect.width / 4;
+      var cardCenterY = cardRect.top + cardRect.height / 4;
 
-    var rotateX = -deltaY / 10;
-    var rotateY = deltaX / 10;
+      var deltaX = e.clientX - cardCenterX;
+      var deltaY = e.clientY - cardCenterY;
 
-    card.style.transform = `perspective(500px) rotateX( ${rotateX}deg) rotateY(${rotateY}deg)`;
-  };
+      var rotateX = -deltaY / 20;
+      var rotateY = deltaX / 20;
+
+      card.style.transform = `perspective(500px) rotateX( ${rotateX}deg) rotateY(${rotateY}deg)`;
+    },
+    [isMouseOver]
+  );
+  // only for touch devices with acl
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      typeof Accelerometer === "undefined" ||
+      !isTouchScreen() ||
+      isLargerThan800
+    )
+      return;
+
+    cardRef.current.style.transform = `perspective(500px) rotateX( 0deg) rotateY(0deg)`;
+    cardRef.current.style.transition = "transform 0.15s";
+    const acl = new Accelerometer({ frequency: 60 });
+    acl.addEventListener("reading", () => {
+      cardRef.current.style.transform = `perspective(500px) rotateX( ${
+        acl.y * 3
+      }deg) rotateY(${acl.x * 3}deg)`;
+    });
+    acl.start();
+  }, [isLargerThan800]);
+
+  // only for large screens without acl
+  useEffect(() => {
+    if (!isLargerThan800) return;
+    document.body?.addEventListener("mousemove", parallax3DEffect);
+    document.body?.addEventListener("mouseleave", resetEffect);
+    document.body?.addEventListener("mouseenter", () => {
+      setIsMouseOver(true);
+    });
+
+    return () => {
+      document.body?.removeEventListener("mousemove", parallax3DEffect);
+      document.body?.removeEventListener("mouseleave", resetEffect);
+    };
+  }, [isLargerThan800, resetEffect]);
   return (
-    <Center ref={boxRef} w={"100%"} h={"100%"} className="yoo">
+    <Center w={"100%"} h={"100%"} className="yoo">
       <Box
         ref={cardRef}
         style={styles}
