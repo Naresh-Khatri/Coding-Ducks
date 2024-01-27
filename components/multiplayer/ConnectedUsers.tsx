@@ -12,31 +12,39 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Text,
+  Tooltip,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import type { FC } from "react";
 import { IUser } from "../../types";
+import { ISocketUser } from "../../lib/socketio/socketEvents";
+import ChakraNextImage from "../utils/ChakraNextImage";
 
-interface Client {
-  id: string;
-  socketId: string;
-}
 interface ConnectedUsersProps {
-  clients: any[];
+  clients: ISocketUser[];
   currentUser: IUser;
 }
 
 const ConnectedUsers: FC<ConnectedUsersProps> = ({ clients, currentUser }) => {
   return (
     <HStack>
-      {Object.keys(clients).map((socketId, i) => (
+      {clients.map(({ fullname, photoURL, id, socketId, username }) => (
         <HStack key={socketId}>
-          <Popover>
+          <Tooltip hasArrow label="Search places" bg="red.600">
+            <ChakraNextImage
+              width={30}
+              height={30}
+              src={photoURL}
+              alt="profile photo"
+              style={{ borderRadius: "50%", width: "36px", height: "auto" }}
+            />
+          </Tooltip>
+          {/* <Popover>
             <PopoverTrigger>
               <Avatar
-                key={i}
-                name={clients[socketId].username}
-                src={clients[socketId].photoURL}
+                key={socketId}
+                name={username}
+                src={photoURL}
                 size="sm"
                 colorScheme="green"
               >
@@ -53,28 +61,26 @@ const ConnectedUsers: FC<ConnectedUsersProps> = ({ clients, currentUser }) => {
                     <Image
                       width={100}
                       height={100}
-                      src={clients[socketId].photoURL}
+                      src={photoURL}
                       alt="profile photo"
                       style={{ borderRadius: "50%" }}
                     />
                   </GridItem>
                   <GridItem colSpan={4} mx={2}>
                     <HStack>
-                      <Text>{clients[socketId].fullname}</Text>
-                      {clients[socketId].id === currentUser.id && (
+                      <Text>{fullname}</Text>
+                      {id === currentUser.id && (
                         <Text as="span" color="green.500">
                           (you)
                         </Text>
                       )}
                     </HStack>
-                    <Text color={"gray.500"}>
-                      @{clients[socketId].username}
-                    </Text>
+                    <Text color={"gray.500"}>@{username}</Text>
                   </GridItem>
                 </Grid>
               </PopoverBody>
             </PopoverContent>
-          </Popover>
+          </Popover> */}
         </HStack>
       ))}
     </HStack>
