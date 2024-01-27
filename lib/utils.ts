@@ -33,3 +33,11 @@ export const pointsToLeague = (points: number) => {
   else if (points < 450) return { id: "master", label: "Master" };
   else return { id: "grandmaster", label: "Grand Master" };
 };
+
+export const isTouchScreen = () => {
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.maxTouchPoints > 0
+  );
+};
