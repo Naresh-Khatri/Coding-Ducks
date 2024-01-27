@@ -154,7 +154,7 @@ ul {
   height: auto;
   left: calc(100% / 2 - 500px / 2);
   top: calc(100% / 2 - 214px / 2);
-  animation-name: rubberBand;
+  animation-name: fadeInUp;
   animation-duration: 1s;
 }
 .splash-screen-mobile {
@@ -163,7 +163,7 @@ ul {
   height: auto;
   top: calc(100% / 2 - 214px / 2);
   left: 0px;
-  animation-name: rubberBand;
+  animation-name: fadeInUp;
   animation-duration: 1s;
 }
 @keyframes rubberBand {
@@ -195,6 +195,18 @@ ul {
     transform: scale3d(1, 1, 1);
   }
 }
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 
 .screen-bg-end {
   transition: background 1s;
@@ -207,7 +219,7 @@ ul {
   height: auto;
   left: 13px;
   top: 3px;
-  transition: all 0.8s;
+  transition: all 0.6s ease-in-out;
 }
 
 .screen-end-mobile {
@@ -216,5 +228,5 @@ ul {
   height: auto;
   left: calc(100vw / 2 - 172px / 2 - 17px);
   top: 0;
-  transition: all 0.8s;
+  transition: all 0.6s;
 }
