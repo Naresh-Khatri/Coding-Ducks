@@ -24,7 +24,6 @@ interface NewConsoleProps {
 
 function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
   const [selectedCase, setSelectedCase] = useState(0);
-  console.log(output);
   if (!output?.results)
     return (
       <Center p={4} w={"100%"} h={"100%"}>
