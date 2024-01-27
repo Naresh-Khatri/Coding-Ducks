@@ -14,8 +14,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
 import "../styles/split.css";
-import { WebsocketContext } from "../contexts/websocketContext";
 import SplashScreen from "../components/SplashScreen";
+import { WebsocketProvider } from "../contexts/websocketContext";
 
 const colors = {
   brand: {
@@ -39,12 +39,11 @@ function MyApp({ Component, pageProps }) {
       <QueryClientProvider client={queryClient}>
         <Hydrate state={pageProps.dehydratedState}>
           <AuthUserProvider>
-            <WebsocketContext>
-              {isLoading && <LoadingOverlay />}
+            <WebsocketProvider>
               <LoadingOverlay />
-              <SplashScreen />
+              {process.env.NODE_ENV === "production" && <SplashScreen />}
               <Component {...pageProps} />
-            </WebsocketContext>
+            </WebsocketProvider>
           </AuthUserProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </Hydrate>
