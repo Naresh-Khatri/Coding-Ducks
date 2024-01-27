@@ -1,7 +1,6 @@
 import {
   Box,
   Heading,
-  Container,
   Text,
   Button,
   Stack,
@@ -10,7 +9,6 @@ import {
   createIcon,
   Flex,
   keyframes,
-  Center,
 } from "@chakra-ui/react";
 
 import NormalLayout from "../layout/NormalLayout";
