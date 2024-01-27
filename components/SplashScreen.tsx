@@ -12,7 +12,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../contexts/userContext";
 import Image from "next/image";
 function SplashScreen() {
-  const [isLoading, setIsLoading] = useState(true);
+  
   const logoImageRef = useRef(null);
   const bgRef = useRef(null);
   const [isLargerThan800] = useMediaQuery("(min-width: 800px)");
@@ -45,43 +45,35 @@ function SplashScreen() {
     };
   }, [isLargerThan800]);
   return (
-    <>
-      {isLoading ? (
-        <Flex
-          position="absolute"
-          justifyContent={"center"}
-          w={"100vw"}
-          h={"100dvh"}
-          ref={bgRef}
-          className="splash-bg"
-        >
-          <Container
-            maxW="container.xl"
-            position={"relative"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            zIndex="100"
-            h={"100dvh"}
-            w="100vw"
-            top={0}
-            bottom={0}
-          >
-            <Image
-              ref={logoImageRef}
-              src="https://ik.imagekit.io/couponluxury/coding_ducks/logo_E_BOxGUcc.png"
-              className={
-                isLargerThan800 ? "splash-screen" : "splash-screen-mobile"
-              }
-              width={500}
-              height={214}
-              alt="logo"
-            />
-          </Container>
-        </Flex>
-      ) : (
-        <></>
-      )}
-    </>
+    <Flex
+      position="absolute"
+      justifyContent={"center"}
+      w={"100vw"}
+      h={"100dvh"}
+      ref={bgRef}
+      className="splash-bg"
+    >
+      <Container
+        maxW="container.xl"
+        position={"relative"}
+        alignItems={"center"}
+        justifyContent={"center"}
+        zIndex="100"
+        h={"100dvh"}
+        w="100vw"
+        top={0}
+        bottom={0}
+      >
+        <Image
+          ref={logoImageRef}
+          src="https://ik.imagekit.io/couponluxury/coding_ducks/logo_E_BOxGUcc.png"
+          className={isLargerThan800 ? "splash-screen" : "splash-screen-mobile"}
+          width={500}
+          height={214}
+          alt="logo"
+        />
+      </Container>
+    </Flex>
   );
 }
 
