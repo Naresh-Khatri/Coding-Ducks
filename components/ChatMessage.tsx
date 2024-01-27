@@ -1,6 +1,8 @@
 import {
+  Badge,
   Box,
   Button,
+  Center,
   Container,
   Flex,
   HStack,
@@ -23,6 +25,8 @@ import React, { useState } from "react";
 import { Socket } from "socket.io-client";
 import { CopyIcon, Icon, InfoIcon } from "@chakra-ui/icons";
 import { IChatMessage, IUser } from "../types";
+import { MESSAGE_SEND } from "../lib/socketio/socketEvents";
+import { IMessage, MessageSend } from "../lib/socketio/socketEventTypes";
 
 interface ChatCompProps {
   socket: Socket;
@@ -30,18 +34,16 @@ interface ChatCompProps {
   roomInfo: any;
   msgsList: IChatMessage[];
 }
-const ChatMessage = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
+const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
   const [show, setShow] = useState(true);
   const [text, setText] = useState("");
   const sendMsg = () => {
-    const newMsg = {
-      username: user.username,
-      userId: user.id,
-      roomId: roomInfo.id,
-      text: text,
-      photoURL: user.photoURL,
-    } as IChatMessage;
-    socket.emit("message", { newMsg, roomInfo: { name: roomInfo.name } });
+    if (text.trim().length === 0) return;
+    const newMsg = { user, room: roomInfo, text } as IMessage;
+    socket.emit(MESSAGE_SEND, {
+      msg: newMsg,
+      room: { id: roomInfo.id },
+    } as MessageSend);
     setText("");
   };
 
@@ -50,6 +52,9 @@ const ChatMessage = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
     return `${date.getHours() > 9 ? date.getHours() : "0" + date.getHours()}:${
       date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes()
     }`;
+  };
+  const self = (msgId: number): boolean => {
+    return msgId === user.id;
   };
 
   return (
@@ -70,41 +75,75 @@ const ChatMessage = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
               Send
             </Button>
           </HStack>
-          <VStack maxH={"700px"} overflow={"auto"} mt={5}>
+          <VStack maxH={"700px"} overflow={"auto"} mt={5} pt={5}>
             {msgsList &&
               msgsList.map((msg, i) => {
                 return (
-                  <HStack
-                    key={i}
-                    bg={user.id == msg.userId ? "green.700" : "gray.700"}
-                    borderRadius={
-                      user.id == msg.userId
-                        ? "20px 20px 0px 20px"
-                        : "20px 20px 20px 0px"
-                    }
-                    minW={"300px"}
-                    p={"1rem"}
-                    mr={user.id === msg.userId ? "10px" : "auto"}
-                    ml={user.id !== msg.userId ? "10px" : "auto"}
-                    justifyContent={"space-between"}
-                  >
-                    <HStack as="span" w={"100%"} align={"start"}>
+                  <>
+                    {/* group by dates */}
+                    {(i === 0 ||
+                      msgsList[i].time.split("T")[0] !==
+                        msgsList[i - 1].time.split("T")[0]) && (
+                      <Center position={"sticky"} top={0} zIndex={99}>
+                        <Badge
+                          fontSize={"md"}
+                          bg={"green"}
+                          // colorScheme="purple"
+                          borderRadius={"10px"}
+                        >
+                          {msg.time.split("T")[0]}
+                        </Badge>
+                      </Center>
+                    )}
+                    <Flex
+                      direction={`row${self(msg.userId) ? "-reverse" : ""}`}
+                      minW={"290px"}
+                      position={"relative"}
+                    >
                       <Image
                         src={msg.photoURL}
                         alt="profile photo"
-                        style={{ borderRadius: "50%" }}
+                        style={{
+                          borderRadius: "50%",
+                          width: "40px",
+                          height: "40px",
+                          position: "absolute",
+                          top: "-1rem",
+                        }}
                         width={40}
                         height={40}
                       />
-                      <VStack w={"100%"} align={"start"}>
-                        <HStack justifyContent={"space-between"} w={"100%"}>
-                          <Text fontWeight={"extrabold"}>{msg.username}:</Text>
-                          <Text color={"gray.500"}>{formatTime(msg.time)}</Text>
-                        </HStack>
-                        <Text>{msg.text}</Text>
-                      </VStack>
-                    </HStack>
-                  </HStack>
+                      <Box
+                        ml={!self(msg.userId) && "3.2rem"}
+                        mr={self(msg.userId) && "3.2rem"}
+                      >
+                        {!self(msg.userId) && (
+                          <Text fontWeight={"extrabold"} w={"fit-content"}>
+                            {msg.username}:
+                          </Text>
+                        )}
+                        <Flex
+                          key={i}
+                          bg={self(msg.userId) ? "green.700" : "gray.700"}
+                          borderRadius={"10px"}
+                          minW={"120px"}
+                          w={"fit-content"}
+                          p={"1rem"}
+                          direction={`row${self(msg.userId) ? "-reverse" : ""}`}
+                        >
+                          <Text>{msg.text}</Text>
+                        </Flex>
+                      </Box>
+                      <Text
+                        alignSelf={"center"}
+                        mr={self(msg.userId) && ".5rem"}
+                        ml={!self(msg.userId) && ".5rem"}
+                        color={"gray.500"}
+                      >
+                        {formatTime(msg.time)}
+                      </Text>
+                    </Flex>
+                  </>
                 );
               })}
           </VStack>
@@ -175,4 +214,4 @@ const RoomInfo = ({ roomInfo }: { roomInfo: roomInfo }) => {
   );
 };
 
-export default ChatMessage;
+export default ChatMessages;
