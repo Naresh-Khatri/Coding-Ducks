@@ -37,7 +37,9 @@ const Footer = () => (
       justify={{ base: "center", md: "space-between" }}
       align={{ base: "center", md: "center" }}
     >
-      <Text>© 2023 Coding ducks. All rights reserved</Text>
+      <Text>
+        © {new Date().getFullYear()} Coding ducks. All rights reserved
+      </Text>
       <ButtonGroup variant="ghost">
         <IconButton
           as="a"
