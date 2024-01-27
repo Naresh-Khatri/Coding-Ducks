@@ -172,7 +172,7 @@ export interface IRunResult {
 
 export interface ISubmission {
   id: number;
-  lang: string;
+  lang: Lang;
   marks: number;
   timestamp: string;
   isAccepted: boolean;
@@ -253,23 +253,6 @@ export interface ICursor {
   col: number;
   username: string;
   color?: string;
-}
-
-export interface IRoomInfo {
-  id: string;
-  isPublic: boolean;
-  name: string;
-  lang: string;
-  owner: IUser;
-  ownerId: number;
-  content: string;
-}
-
-export interface IRoom {
-  clients: IUser[];
-  cursors: ICursor[];
-  msgsList: IChatMessage[];
-  roomInfo: IRoomInfo;
 }
 
 export type ILeague =
