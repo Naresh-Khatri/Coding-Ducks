@@ -8,16 +8,21 @@ import {
   faSquareJs,
 } from "@fortawesome/free-brands-svg-icons";
 import { Box, Flex, Text } from "@chakra-ui/react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 function LangIcon({ lang, height }: { lang: Lang; height: string }) {
-  if (lang === "py") return <FAIcon icon={faPython} height={height} />;
-  if (lang === "js") return <FAIcon icon={faSquareJs} height={height} />;
-  if (lang === "java") return <FAIcon icon={faJava} height={height} />;
-  if (lang === "c") return <FAIcon icon={faCuttlefish} height={height} />;
+  if (lang === "py")
+    return <FAIcon icon={faPython as IconProp} height={height} />;
+  if (lang === "js")
+    return <FAIcon icon={faSquareJs as IconProp} height={height} />;
+  if (lang === "java")
+    return <FAIcon icon={faJava as IconProp} height={height} />;
+  if (lang === "c")
+    return <FAIcon icon={faCuttlefish as IconProp} height={height} />;
   if (lang === "cpp")
     return (
       <Flex alignItems={"center"}>
-        <FAIcon icon={faCuttlefish} height={height} />
+        <FAIcon icon={faCuttlefish as IconProp} height={height} />
         <Text fontWeight={"extrabold"} fontSize={"2xl"}>
           ++
         </Text>
