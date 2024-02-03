@@ -94,12 +94,7 @@ function MultiplayerPage() {
                 >
                   Create
                 </Button>
-                <Button
-                  colorScheme="blue"
-                  p={"1rem 2rem"}
-                  onClick={() => joinRoom()}
-                  isDisabled
-                >
+                <Button colorScheme="blue" p={"1rem 2rem"} isDisabled>
                   {/* TODO: complete join room logic */}u Join
                 </Button>
               </HStack>

@@ -228,7 +228,7 @@ function RoomPage() {
               value={code}
               onChange={handleOnCodeChange}
               handleOnCursorChange={handleOnCursorChange}
-              cursors={cursors}
+              // cursors={cursors}
               fontSize={20}
             />
 

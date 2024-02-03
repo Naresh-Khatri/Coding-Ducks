@@ -18,10 +18,9 @@ import React from "react";
 import { IUser, Lang } from "../../types";
 import dynamic from "next/dynamic";
 import LangIcon from "../LangIcon";
-import ChakraNextImage from "../utils/ChakraNextImage";
-import { ISocketRoom } from "../../lib/socketEvents";
+import { ISocketRoom } from "../../lib/socketio/socketEvents";
 
-const CodePreview = dynamic(() => import("./CodePreview"), { ssr: false });
+// const CodePreview = dynamic(() => import("./CodePreview"), { ssr: false });
 
 function RoomCard({ room }: { room: ISocketRoom }) {
   return (
