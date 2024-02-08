@@ -1,18 +1,7 @@
-import {
-  Box,
-  Center,
-  Container,
-  Flex,
-  Spinner,
-  Text,
-  useMediaQuery,
-} from "@chakra-ui/react";
-import Router from "next/router";
-import { useContext, useEffect, useRef, useState } from "react";
-import { userContext } from "../contexts/userContext";
+import { Container, Flex, useMediaQuery } from "@chakra-ui/react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 function SplashScreen() {
-  
   const logoImageRef = useRef(null);
   const bgRef = useRef(null);
   const [isLargerThan800] = useMediaQuery("(min-width: 800px)");
