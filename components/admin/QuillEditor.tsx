@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -6,7 +5,7 @@ interface QuillEditorProps {
   newDescription: string;
   setNewDescription: (newDescription: string) => void;
 }
- function QuillEditor({ newDescription, setNewDescription }: QuillEditorProps) {
+function QuillEditor({ newDescription, setNewDescription }: QuillEditorProps) {
   // const quillRef = useRef(null);
 
   // TODO: Add keyboard shortcuts
@@ -42,7 +41,7 @@ interface QuillEditorProps {
       onChange={setNewDescription}
     />
   );
-});
+}
 
 // prevent eslint error
 QuillEditor.displayName = "QuillEditor";
