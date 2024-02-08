@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from "react";
 
 import AceEditor from "react-ace";
-import { Range } from "ace-builds";
+import { Range } from "react-ace/node_modules/ace-builds";
 import { IAceEditor } from "react-ace/lib/types";
 
 import "ace-builds/src-noconflict/mode-javascript";
@@ -28,9 +28,9 @@ import "ace-builds/src-noconflict/keybinding-vscode";
 
 import { Flex } from "@chakra-ui/react";
 
-import WindowHeader from "./WindowHeader";
-import { langToAceModes } from "../lib/utils";
-import { EditorSettingsContext } from "../contexts/editorSettingsContext";
+import WindowHeader from "../WindowHeader";
+import { langToAceModes } from "../../lib/utils";
+import { EditorSettingsContext } from "../../contexts/editorSettingsContext";
 
 interface AceCodeEditorProps {
   problemId: number;
