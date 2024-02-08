@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
-import ReactQuill from "react-quill";
+import dynamic from "next/dynamic";
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 interface QuillEditorProps {
   newDescription: string;
   setNewDescription: (newDescription: string) => void;
 }
-function QuillEditor({ newDescription, setNewDescription }: QuillEditorProps) {
-  const quillRef = useRef(null);
+ function QuillEditor({ newDescription, setNewDescription }: QuillEditorProps) {
+  // const quillRef = useRef(null);
 
   // TODO: Add keyboard shortcuts
   // useEffect(() => {
@@ -19,9 +20,9 @@ function QuillEditor({ newDescription, setNewDescription }: QuillEditorProps) {
     <ReactQuill
       style={{ borderRadius: 10 }}
       theme="snow"
-      ref={(el) => {
-        quillRef.current = el;
-      }}
+      // ref={(el) => {
+      //   quillRef.current = el;
+      // }}
       modules={{
         toolbar: [
           [{ header: [1, 2, false] }],
@@ -41,6 +42,9 @@ function QuillEditor({ newDescription, setNewDescription }: QuillEditorProps) {
       onChange={setNewDescription}
     />
   );
-}
+});
+
+// prevent eslint error
+QuillEditor.displayName = "QuillEditor";
 
 export default QuillEditor;

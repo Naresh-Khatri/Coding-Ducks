@@ -29,7 +29,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import { IExam } from "../../types";
 import FAIcon from "../FAIcon";
-const QuillNoSSRWrapper = dynamic(import("react-quill"), {
+const QuillNoSSRWrapper = dynamic(() => import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
 });

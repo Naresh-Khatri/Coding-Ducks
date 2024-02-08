@@ -44,9 +44,9 @@ import { useTagsData } from "../../hooks/useProblemsData";
 import { IProblem, IStarterCode, Testcase } from "../../types";
 import { INITIAL_STARTER_CODES } from "../../data/starterCodeData";
 
-const Quill = dynamic(import("./QuillEditor"), { ssr: false });
+const Quill = dynamic(() => import("./QuillEditor"), { ssr: false });
 const StarterCodeEditor = dynamic(
-  import("../../components/StarterCodeEditor"),
+  () => import("../../components/StarterCodeEditor"),
   { ssr: false }
 );
 type IAction = { type: string; payload: IStarterCode };

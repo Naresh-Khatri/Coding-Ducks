@@ -12,7 +12,7 @@ import SplitComponent from "react-ace/lib/split";
 
 const { Container, Content, Backdrop, Header } = Sheet;
 
-const AceCodeEditor = dynamic(() => import("../AceCodeEditor"), {
+const AceCodeEditor = dynamic(() => import("../editors/AceCodeEditor"), {
   ssr: false,
 });
 

@@ -27,7 +27,7 @@ import dynamic from "next/dynamic";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import Link from "next/link";
 
-const AceEditor = dynamic(import("react-ace"), { ssr: false });
+const AceEditor = dynamic(() => import("react-ace"), { ssr: false });
 
 interface ViewSubmissionModalProps {
   isOpen: boolean;

@@ -29,7 +29,7 @@ import dynamic from "next/dynamic";
 import WindowHeader from "../components/WindowHeader";
 import Split from "react-split";
 
-const AceCodeEditor = dynamic(() => import("../components/AceCodeEditor"), {
+const AceCodeEditor = dynamic(() => import("../components/editors/AceCodeEditor"), {
   ssr: false,
 });
 

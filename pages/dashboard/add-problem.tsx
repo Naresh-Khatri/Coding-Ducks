@@ -49,11 +49,11 @@ import { IProblemTag, IStarterCode } from "../../types";
 import { INITIAL_STARTER_CODES } from "../../data/starterCodeData";
 
 const StarterCodeEditor = dynamic(
-  import("../../components/StarterCodeEditor"),
+  () => import("../../components/StarterCodeEditor"),
   { ssr: false }
 );
 
-const QuillNoSSRWrapper = dynamic(import("react-quill"), {
+const QuillNoSSRWrapper = dynamic(() => import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,
 });
