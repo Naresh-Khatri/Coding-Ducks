@@ -15,6 +15,6 @@
     "isolatedModules": true,
     "jsx": "preserve"
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "lib/axios.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "lib/axios.js", ".trash/ExerciseLayout.tsx", ".trash/add-exercise.tsx", ".trash/exercises.tsx", ".trash/ExerciseRow.tsx", ".trash/exerciseContext.tsx", ".trash/EditableCode.tsx"],
   "exclude": ["node_modules"]
 }
