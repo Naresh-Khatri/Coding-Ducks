@@ -10,9 +10,14 @@ import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-terminal";
 
-import AceEditor from "react-ace";
+import AceEditor, { IAceEditorProps } from "react-ace";
+import { ForwardedRef } from "react";
 
-const BaseAceEditor = ({ ref, ...props }) => {
+interface IBaseAceEditor extends IAceEditorProps {
+  ref?: ForwardedRef<any>;
+}
+
+const BaseAceEditor = ({ ref, ...props }: IBaseAceEditor) => {
   return <AceEditor {...props} ref={ref} />;
 };
 
