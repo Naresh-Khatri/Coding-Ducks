@@ -1,13 +1,6 @@
-import AceEditor from "react-ace";
-
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-dracula";
-import "ace-builds/src-noconflict/ext-language_tools";
 import { useEffect, useRef, useState } from "react";
 import { ICursor } from "../types";
-
-// import "../styles/ace-editor.css";
-
+import AceEditorWithRef from "./editors/AceEditorWithRef";
 interface CustomAceProps {
   value?: string;
   onChange?: (value: string) => void;
@@ -71,7 +64,7 @@ function CustomAce({
 
   return (
     <>
-      <AceEditor
+      <AceEditorWithRef
         ref={editorRef}
         mode="javascript"
         value={value}
