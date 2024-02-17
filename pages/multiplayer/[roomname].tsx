@@ -1,7 +1,4 @@
-import { io } from "socket.io-client";
 import React, { useContext, useEffect, useState } from "react";
-import axiosInstance from "../../lib/axios";
-import { useQuery } from "@tanstack/react-query";
 import FAIcon from "../../components/FAIcon";
 import dynamic from "next/dynamic";
 
@@ -34,17 +31,30 @@ import {
   CODE_EXEC_START,
   CODE_UPDATE,
   CURSOR_UPDATE,
+  ISocketRoom,
+  ISocketUser,
   LANG_UPDATE,
   USER_JOIN,
   USER_LEAVE,
 } from "../../lib/socketio/socketEvents";
-import { UserJoin, UserLeave } from "../../lib/socketio/socketEventTypes";
+import {
+  CodeUpdate,
+  CursorUpdate,
+  ICodeChangeEvent,
+  ICursorPos,
+  UserJoin,
+  UserLeave,
+} from "../../lib/socketio/socketEventTypes";
 import ChatMessages from "../../components/ChatMessage";
 import Link from "next/link";
 
-const CustomAce = dynamic(() => import("../../components/CustomAce"), {
-  ssr: false,
-});
+// const CustomAce = dynamic(() => import("../../components/CustomAce"), {
+//   ssr: false,
+// });
+const AceEditorWithCursors = dynamic(
+  () => import("../../components/editors/AceEditorWithCursors"),
+  { ssr: false }
+);
 
 function RoomPage() {
   const { user } = useContext(userContext);
@@ -52,7 +62,6 @@ function RoomPage() {
     currRoomInfo,
     consoleInfo,
     setConsoleInfo,
-    cursors,
     msgsList,
     resultIsLoading,
     socket,
@@ -61,7 +70,44 @@ function RoomPage() {
   } = useContext(websocketContext);
   // const roomname =
   const router = useRouter();
-  const [code, setCode] = useState("");
+  const [code, setCode] =
+    useState(`import React, { useEffect, useState, useRef } from "react";
+import { OpenStreetMapProvider } from 'leaflet-geosearch';
+import L from 'leaflet'
+import "leaflet/dist/leaflet.css";
+import 'leaflet/dist/leaflet.css'
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css'
+import "leaflet-defaulticon-compatibility";
+
+function Map(props) {
+  useEffect(async () => {
+    const provider = new OpenStreetMapProvider();
+    const results = await provider.search({ query: props.adress });
+
+    if(results.length > 0 == true) {
+      var map = L.map('map', {
+        center: [results[0].y, results[0].x],
+        zoom: 18,
+        layers: 
+          [
+            L.tileLayer(
+              'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+              { attribution: ''}
+            ),
+          ]
+      })
+      L.marker([results[0].y, results[0].x]).addTo(map)
+    } else {
+      document.getElementById("map").style.display = "none"
+    }
+  }, [])
+
+
+  return <div id="map" style={{ height: "30vh"}}></div>
+}
+
+export default Map;
+  "`);
 
   const [showChat, setShowChat] = useState(false);
   const [unreadMsgsCount, setUnreadMsgsCount] = useState(msgsList.length);
@@ -77,18 +123,17 @@ function RoomPage() {
     }
     return () => {
       // HACK: should pass room.id only in payload but its null, so using name instead
-      if (socket)
-        socket.emit(USER_LEAVE, {
-          room: { name: roomname },
-          user: { id: user.id, username: user.username },
-        } as UserLeave);
+      // if (socket)
+      //   socket.emit(USER_LEAVE, {
+      //     room: { name: roomname },
+      //     user: { id: user.id, username: user.username },
+      //   } as UserLeave);
       // resetStates();
     };
-  }, [router.isReady, user.id, socket]);
+  }, [router.isReady, socket]);
 
-  const handleOnCodeChange = (code: string) => {
-    setCode(code);
-    const userr = {
+  const handleOnCodeChange = (event: ICodeChangeEvent) => {
+    const userr: ISocketUser = {
       id: user.id,
       username: user.username,
       fullname: user.fullname,
@@ -97,19 +142,28 @@ function RoomPage() {
       id: currRoomInfo.id,
       name: currRoomInfo.name,
     };
-    socket.emit(CODE_UPDATE, { code, userr, roomInfo: roomInfoo });
+    socket.emit(CODE_UPDATE, {
+      user: userr,
+      room: roomInfoo,
+      event,
+    } as CodeUpdate);
   };
 
-  const handleOnCursorChange = (cursor) => {
-    // console.log(cursor);
-    socket.emit(CURSOR_UPDATE, {
-      cursor,
-      user: { id: user.id, username: user.username, fullname: user.fullname },
-      roomInfo: {
-        id: currRoomInfo.id,
-        name: currRoomInfo.name,
-      },
-    });
+  // this is only responsible for cursor change and not code change
+  const handleOnCursorChange = (cursor: ICursorPos) => {
+    const payload: CursorUpdate = {
+      user: { id: user.id, username: user.username },
+      room: { id: currRoomInfo.id, name: currRoomInfo.name },
+      newPos: cursor,
+    };
+    socket.emit(CURSOR_UPDATE, payload);
+  };
+  const handleOnSelectionChange = (event: {
+    type: "insert" | "remove";
+    anchor: ICursorPos;
+    lead: ICursorPos;
+  }) => {
+    console.log(event);
   };
 
   const handleLangChange = (e) => {
@@ -224,13 +278,20 @@ function RoomPage() {
               )}
             </HStack>
             {/* {JSON.stringify(currRoomInfo, null , 2)} */}
-            <CustomAce
+            <AceEditorWithCursors
+              value={code}
+              handleOnCodeChange={handleOnCodeChange}
+              handleOnCursorChange={handleOnCursorChange}
+              handleOnSelectionChange={handleOnSelectionChange}
+              fontSize={20}
+            />
+            {/* <CustomAce
               value={code}
               onChange={handleOnCodeChange}
               handleOnCursorChange={handleOnCursorChange}
               // cursors={cursors}
               fontSize={20}
-            />
+            /> */}
 
             {consoleInfo && (
               <>

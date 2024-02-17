@@ -22,7 +22,7 @@ export interface ISocketRoom {
   ownerId?: number;
   createdAt?: Date;
   updatedAt?: Date;
-  owner: ISocketUser;
+  owner?: ISocketUser;
   clients?: ISocketUser[];
   cursors?: any[];
   msgsList?: any[];

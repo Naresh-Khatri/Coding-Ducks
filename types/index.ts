@@ -248,12 +248,12 @@ export interface IChatMessage {
   photoURL: string;
 }
 
-export interface ICursor {
-  row: number;
-  col: number;
-  username: string;
-  color?: string;
-}
+// export interface ICursor {
+//   row: number;
+//   col: number;
+//   username: string;
+//   color?: string;
+// }
 
 export type ILeague =
   | "noob"

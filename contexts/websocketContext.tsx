@@ -7,14 +7,16 @@ import {
   Dispatch,
   SetStateAction,
 } from "react";
-import { IChatMessage, ICursor, IDefaultResult } from "../types";
+import { IDefaultResult } from "../types";
 import { userContext } from "./userContext";
 import { Socket, io } from "socket.io-client";
 import { useToast } from "@chakra-ui/react";
 import {
   CODE_EXEC_END,
   CODE_EXEC_START,
+  CODE_UPDATED,
   CONNECT,
+  CURSOR_UPDATED,
   ISocketRoom,
   ISocketUser,
   LANG_UPDATED,
@@ -34,6 +36,9 @@ import {
 } from "../lib/socketio/socketEvents";
 import {
   CommonFailed,
+  CursorUpdated,
+  ICursor,
+  IMessage,
   LangUpdated,
   LobbyUpdated,
   RoomCreateSuccess,
@@ -51,8 +56,9 @@ interface IWebsocketContext {
   currRoomInfo: ISocketRoom;
   connectedClients: ISocketUser[];
   roomsList: ISocketRoom[];
-  msgsList: IChatMessage[];
+  msgsList: IMessage[];
   cursors: ICursor[];
+  setCursors: Dispatch<SetStateAction<ICursor[]>>;
   socket: Socket;
   isCreatingRoom: boolean;
   setIsCreatingRoom: Dispatch<SetStateAction<boolean>>;
@@ -77,8 +83,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
   const [connectedClients, setConnectedClients] = useState<ISocketUser[]>([]);
   const [currRoomClients, setCurrRoomClients] = useState<ISocketUser[]>([]);
 
-  const [msgsList, setMsgsList] = useState<IChatMessage[]>([]);
-  // const [cursors, setCursors] = useState<Map<string, ICursor>>(new Map());
+  const [msgsList, setMsgsList] = useState<IMessage[]>([]);
   const [cursors, setCursors] = useState<ICursor[]>([]);
 
   const [consoleInfo, setConsoleInfo] = useState<IDefaultResult>(null);
@@ -148,14 +153,13 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       setConnectedClients(clients);
     });
     socketInstance.on(USER_DISCONNECTED, ({ clients }: UserDisconnected) => {
-      console.log("user disconnected");
+      console.log(clients);
       setConnectedClients(clients);
     });
-    socketInstance.on(USER_LEFT, ({ room, user }: UserLost) => {
-      console.log("left", user);
-      console.log(currRoomClients);
+    socketInstance.on(USER_LEFT, ({ room, user, cursors }: UserLost) => {
       setCurrRoomClients((p) => p.filter((client) => client.id !== user.id));
-      console.log(currRoomClients);
+      // setCursors((p) => p.filter((c) => c.user.id !== user.id));
+      setCursors(cursors);
       toast({
         title: "User Exited!",
         description: `${user.username}(#${user.id}) has Left!`,
@@ -163,11 +167,10 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
         isClosable: true,
       });
     });
-    socketInstance.on(USER_LOST, ({ room, user }: UserLost) => {
-      console.log("disconnected", user);
-      console.log(currRoomClients);
+    socketInstance.on(USER_LOST, ({ room, user, cursors }: UserLost) => {
       setCurrRoomClients((p) => p.filter((client) => client.id !== user.id));
-      console.log(currRoomClients);
+      // setCursors((p) => p.filter((c) => c.user.id !== user.id));
+      setCursors(cursors);
       toast({
         title: "User disconnected!",
         description: `${user.username}(#${user.id}) has disconnected!`,
@@ -182,6 +185,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
         setCurrRoomInfo(room);
         setCurrRoomClients(clients);
         setMsgsList(msgsList);
+        setCursors(cursors);
         toast({
           title: "Room joined",
           description: `You've joined ${room.name}`,
@@ -190,9 +194,10 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
         });
       }
     );
-    socketInstance.on(USER_JOINED, ({ clients, user }: UserJoined) => {
+    socketInstance.on(USER_JOINED, ({ clients, user, cursors }: UserJoined) => {
       setCurrRoomClients(clients);
       console.log("user-connected: clients", clients);
+      setCursors(cursors);
       toast({
         title: "User connected",
         description: `${user.username} has joined the room`,
@@ -221,13 +226,6 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       setIsCreatingRoom(false);
     });
     socketInstance.on(ROOM_CREATED, ({ newRoom, user }: RoomCreated) => {
-      // setMsgsList(msgsList);
-      // set cursors
-      // const cursors = new Map();
-      // if (Object.keys(res.cursors).length > 0)
-      //   Object.keys(res.cursors).forEach((userIds) => {
-      //     cursors.set(userIds, res.cursors[userIds]);
-      //   });
       setRoomsList((p) => [...p, newRoom]);
       toast({
         title: "New Room Created",
@@ -297,6 +295,15 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       setConsoleInfo(payload.res);
       setResultIsLoading(false);
     });
+    socketInstance.on(CURSOR_UPDATED, (payload: CursorUpdated) => {
+      const { newPos, user, room } = payload;
+      setCursors((p) =>
+        p.map((cursor) => {
+          if (cursor.user.id === user.id) return { ...cursor, pos: newPos };
+          else return cursor;
+        })
+      );
+    });
     return () => {
       setSocket(null);
       socketInstance.disconnect();
@@ -314,6 +321,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
         isCreatingRoom,
         setIsCreatingRoom,
         cursors,
+        setCursors,
 
         currRoomClients,
         setCurrRoomClients,
