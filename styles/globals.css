@@ -103,25 +103,42 @@ code {
     opacity: 1;
   }
 }
-.ace_cursor_color_0::after,
-.ace_cursor_color_0::before {
-  background: #7c52e7;
+
+.ace_cursor_color_purple::after,
+.ace_cursor_color_purple::before {
+  background: #9f7aea;
 }
-.ace_cursor_color_1::after,
-.ace_cursor_color_1::before {
-  background: #4b8de4;
+.ace_cursor_color_blue::after,
+.ace_cursor_color_blue::before {
+  background: #4299e1;
 }
-.ace_cursor_color_2::after,
-.ace_cursor_color_2::before {
-  background: #a11c39;
+.ace_cursor_color_pink::after,
+.ace_cursor_color_pink::before {
+  background: #ed64a6;
 }
-.ace_cursor_color_3::after,
-.ace_cursor_color_3::before {
-  background: #7faf0f;
+.ace_cursor_color_yellow::after,
+.ace_cursor_color_yellow::before {
+  background: #ecc94b;
 }
-.ace_cursor_color_4::after,
-.ace_cursor_color_4::before {
-  background: #18b96e;
+.ace_cursor_color_red::after,
+.ace_cursor_color_red::before {
+  background: #f56565;
+}
+.ace_cursor_color_green::after,
+.ace_cursor_color_green::before {
+  background: #48bb78;
+}
+.ace_cursor_color_teal::after,
+.ace_cursor_color_teal::before {
+  background: #38b2ac;
+}
+.ace_cursor_color_orange::after,
+.ace_cursor_color_orange::before {
+  background: #ed8936;
+}
+.ace_cursor_color_cyan::after,
+.ace_cursor_color_cyan::before {
+  background: #0bc5ea;
 }
 
 .ace-error-highlight {
@@ -178,7 +195,6 @@ ul {
   }
 }
 
-
 .screen-bg-end {
   transition: background 1s;
   background: #00000000;
@@ -188,7 +204,8 @@ ul {
   position: absolute;
   width: 81px;
   height: auto;
-  left: 13px;
+  left: 14px;
+  opacity: 0.7;
   top: 3px;
   transition: all 0.6s ease-in-out;
 }
@@ -200,4 +217,131 @@ ul {
   left: calc(100vw / 2 - 172px / 2 - 17px);
   top: 0;
   transition: all 0.6s;
+}
+
+.myLineDecoration {
+  background: lightblue;
+  width: 5px !important;
+  margin-left: 3px;
+}
+.my-inline-decoration {
+  /* background: rgb(112, 0, 112); */
+}
+/* LIGHT COLORS */
+.color-purple {
+  background-color: #805ad5;
+}
+.color-blue {
+  background-color: #4299e1;
+}
+.color-pink {
+  background-color: #ed64a6;
+}
+.color-yellow {
+  background-color: #ecc94b;
+}
+.color-red {
+  background-color: #f56565;
+}
+.color-green {
+  background-color: #48bb78;
+}
+.color-teal {
+  background-color: #38b2ac;
+}
+.color-orange {
+  background-color: #ed8936;
+}
+.cojlor-cyan {
+  background-color: #0bc5ea;
+}
+/* DARK COLORS */
+.color-dark-purple {
+  background-color: #44337a;
+}
+.color-dark-blue {
+  background-color: #2a4365;
+}
+.color-dark-pink {
+  background-color: #702459;
+}
+.color-dark-yellow {
+  background-color: #744210;
+}
+.color-dark-red {
+  background-color: #822727;
+}
+.color-dark-green {
+  background-color: #22543d;
+}
+.color-dark-teal {
+  background-color: #234e52;
+}
+.color-dark-orange {
+  background-color: #7b341e;
+}
+.color-dark-cyan {
+  background-color: #086f83;
+}
+.my-cursor {
+  width: 2px !important;
+  /* background-color: #0bc5ea; */
+  z-index: 1;
+  /* animation: blink 1s infinite; */
+}
+.my-cursor::after {
+  content: "";
+  width: fit-content;
+  background-color: inherit;
+  font-size: 1rem;
+  padding: 0 3px;
+  border-radius: 5px;
+  position: absolute;
+  bottom: -17px;
+  left: 0px;
+  /* animation: fade 3s forwards ease-out; */
+}
+.my-cursor-text {
+  width: fit-content;
+  background-color: inherit;
+  font-size: 1rem;
+  padding: 0 3px;
+  border-radius: 5px;
+  position: absolute;
+  bottom: -17px;
+  left: 0px;
+  /* animation: fade 3s forwards ease-out; */
+}
+@keyframes fade {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes blink-reverse {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
