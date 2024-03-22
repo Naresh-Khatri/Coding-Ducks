@@ -95,13 +95,15 @@ function AceCodeEditor({
   }, [code]);
 
   const foldStarterCode = (editor: IAceEditor) => {
+    if (!editorRef.current) return;
     // get the lines with 🦆 and make pairs
     const lines = editorRef.current.editor.session.getDocument()[
       "$lines"
     ] as string[];
     const pairs = lines.reduce((acc, curr, idx) => {
       if (curr.includes("🦆")) {
-        if (acc.at(-1)?.length === 1)
+        if (acc.at(-1) && acc.at.length === 1)
+          // @ts-ignore
           return [...acc.slice(0, -1), [...acc.at(-1), idx]];
         else return [...acc, [idx]];
       }
@@ -130,16 +132,17 @@ function AceCodeEditor({
 
   //TODO: optimize these pieces of shit codes
   const handleOnChange = (newCode: string) => {
-    if (isLoading) return;
+    if (!editorRef.current || isLoading) return;
     localStorage.setItem(`code-${problemId}-${lang}`, newCode);
     setCode(newCode);
     foldStarterCode(editorRef.current.editor);
   };
   const placeErrorMarker = () => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || !errorIndex) return;
     Object.values(editorRef.current.editor.session.getMarkers(true)).forEach(
       (marker) => {
         if (marker.clazz === "ace-error-highlight")
+          // @ts-ignore
           editorRef.current.editor.session.removeMarker(marker.id as number);
       }
     );
@@ -155,6 +158,7 @@ function AceCodeEditor({
   };
 
   placeErrorMarker();
+  if (!lang) return null;
   return (
     <Flex
       direction={"column"}

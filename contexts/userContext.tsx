@@ -31,7 +31,7 @@ interface userContextProps {
   registerWithEmailAndPassword: (
     email: string,
     password: string
-  ) => Promise<UserCredential>;
+  ) => Promise<UserCredential | undefined>;
   logInWithEmailAndPassword: (email: string, password: string) => Promise<User>;
   sendPasswordReset: (email: string) => Promise<void>;
   updateUser: (updatedUser: any) => Promise<void>;

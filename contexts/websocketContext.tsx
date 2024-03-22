@@ -6,7 +6,6 @@ import {
   useContext,
   Dispatch,
   SetStateAction,
-  useReducer,
 } from "react";
 import { IDefaultResult } from "../types";
 import { userContext } from "./userContext";
@@ -15,7 +14,6 @@ import { useToast } from "@chakra-ui/react";
 import {
   CODE_EXEC_END,
   CODE_EXEC_START,
-  CODE_UPDATED,
   CONNECT,
   CURSOR_UPDATED,
   ISocketRoom,
@@ -38,7 +36,6 @@ import {
 import {
   CommonFailed,
   CursorUpdated,
-  IDirectory,
   ICursor,
   IMessage,
   LangUpdated,
@@ -50,14 +47,8 @@ import {
   UserDisconnected,
   UserJoinSuccess,
   UserJoined,
-  UserLeft,
   UserLost,
-  IFile,
 } from "../lib/socketio/socketEventTypes";
-import FSTreeReducer, {
-  FSActionType,
-  IFSAction,
-} from "../reducers/FSTreeReducer";
 import useGlobalStore from "../stores";
 
 interface IWebsocketContext {
@@ -70,14 +61,14 @@ interface IWebsocketContext {
   msgsList: IMessage[];
   cursors: ICursor[];
   setCursors: Dispatch<SetStateAction<ICursor[]>>;
-  socket: Socket;
+  socket: Socket | null;
   isCreatingRoom: boolean;
   setIsCreatingRoom: Dispatch<SetStateAction<boolean>>;
 
   currRoomClients: ISocketUser[];
   setCurrRoomClients: Dispatch<SetStateAction<ISocketRoom[]>>;
   resultIsLoading: boolean;
-  consoleInfo: IDefaultResult;
+  consoleInfo: IDefaultResult | null;
   setConsoleInfo: Dispatch<SetStateAction<IDefaultResult>>;
   resetStates;
 }
@@ -85,9 +76,9 @@ interface IWebsocketContext {
 export const websocketContext = createContext({} as IWebsocketContext);
 
 export function WebsocketProvider({ children }: { children: ReactNode }) {
-  const [socket, setSocket] = useState<Socket>();
+  const [socket, setSocket] = useState<Socket | null>(null);
   const initFS = useGlobalStore((state) => state.initFS);
-  const setCurrRoom = useGlobalStore((state) => state.setCurrRoom);
+  // const setCurrRoom = useGlobalStore((state) => state.setCurrRoom);
 
   const [roomsList, setRoomsList] = useState<ISocketRoom[]>([]);
 
@@ -97,7 +88,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
   const [msgsList, setMsgsList] = useState<IMessage[]>([]);
   const [cursors, setCursors] = useState<ICursor[]>([]);
 
-  const [consoleInfo, setConsoleInfo] = useState<IDefaultResult>(null);
+  const [consoleInfo, setConsoleInfo] = useState<IDefaultResult | null>(null);
   const [resultIsLoading, setResultIsLoading] = useState(false);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
@@ -112,7 +103,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
     // });
     setMsgsList([]);
     setCurrRoomClients([]);
-    setCurrRoom(null);
+    // setCurrRoom(null);
   };
 
   useEffect(() => {
@@ -145,7 +136,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       if (type === "join-user-to-room") {
         setRoomsList((p) =>
           p.map((room) => {
-            if (room.id == payload.room.id) {
+            if (room.clients && room.id == payload.room.id) {
               return { ...room, clients: [...room.clients, payload.user] };
             } else return room;
           })
@@ -153,7 +144,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       } else if (type === "remove-user-from-room") {
         setRoomsList((p) =>
           p.map((room) => {
-            if (room.name == payload.room.name) {
+            if (room.clients && room.name == payload.room.name) {
               return {
                 ...room,
                 clients: room.clients.filter(
@@ -175,7 +166,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
     socketInstance.on(USER_LEFT, ({ room, user, cursors }: UserLost) => {
       setCurrRoomClients((p) => p.filter((client) => client.id !== user.id));
       // setCursors((p) => p.filter((c) => c.user.id !== user.id));
-      setCursors(cursors);
+      setCursors(cursors || []);
       toast({
         title: "User Exited!",
         description: `${user.username}(#${user.id}) has Left!`,
@@ -186,7 +177,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
     socketInstance.on(USER_LOST, ({ room, user, cursors }: UserLost) => {
       setCurrRoomClients((p) => p.filter((client) => client.id !== user.id));
       // setCursors((p) => p.filter((c) => c.user.id !== user.id));
-      setCursors(cursors);
+      setCursors(cursors || []);
       toast({
         title: "User disconnected!",
         description: `${user.username}(#${user.id}) has disconnected!`,
@@ -198,8 +189,8 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       USER_JOIN_SUCCESS,
       ({ room, msgsList, fileSystemTree }: UserJoinSuccess) => {
         console.log("youve joined", fileSystemTree);
-        setCurrRoom({ ...room });
-        setMsgsList(msgsList);
+        // setCurrRoom({ ...room });
+        setMsgsList(msgsList || []);
         initFS(fileSystemTree);
         // dispatchFSTree({
         //   type: FSActionType.INIT,
@@ -234,7 +225,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       });
     });
     socketInstance.on(ROOM_CREATE_FAILED, ({ msg }: CommonFailed) => {
-      setCurrRoom(null);
+      // setCurrRoom(null);
       setIsCreatingRoom(false);
       toast({
         title: "Couldn't create room!",
