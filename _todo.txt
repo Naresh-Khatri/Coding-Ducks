@@ -1,11 +1,156 @@
 28/11/2022 
     figured out auth
-
-
-
-
-
-
 todo:
 
     AI assisted warning
+    
+
+
+
+19/12/22
+
+    user set default profile picture
+    
+
+
+
+when sort off then sort by default
+
+
+msgs sorting
+
+11/04/23
+
+planning to do datetime stuff in node before saving
+
+✅change default problem # to 1
+warnings
+notify ending in 10m
+store exam started time for individual students
+
+recheck if 10min warning working
+also toasts
+
+✅hide private testcases
+✅add reset code to starter btn
+fix window not found issues(check terminal)
+* restricted private exam access
+    * redirect to home if tried to access private exam
+
+
+✅feedback page
+
+no subs when exam over
+
+finish test button
+
+starter code not coming
+
+
+merge playground and multiplayer
+sync multiple cursors in multiplayer
+create problems page
+migrate to appwrite
+
+
+create a 404 page
+
+custom solution code
+custom input
+new validator
+
+tabs for problems
+store lang specific to problem in localStorage
+add auto complete
+confetti on submission accepted
+starter code for each Language
+react query hook return null of prop undefined
+
+custom test case
+fold code
+
+
+
+23/08/23
+
+    - enforce lowercase username 
+    - longest streak not working 
+
+    - prevent navigation on inputs filled (add problem) 
+    - show solved by ✅
+    - next btn on submission modal ✅
+
+    - improve new console component ✅
+
+
+
+cant update exam title
+
+
+allow admins to enter an ended contest
+
+work on code reset
+
+when adding new exam, isBounded is not adding end time
+
+work on course
+
+
+15/01/24
+
+- cant read sitemap.xml
+
+
+16/02/24
+ 
+things to test
+    - cursor state when user joins and leaves
+    - selection shouldnt trigger when during a code change
+    - send server cursor and selection on user join
+
+20/02/24
+
+files entities would also be responsible for dirs
+make sure to create 'root' dir while creating new room
+make sure to not allow new lines in file name
+
+emit event when text is formatted
+
+03/03/24 
+    - I have spent way too much time researching for various ways to add multiplayer
+        functionaly on the editor. I was spectical for using Yjs and wanted to implement
+        my own CRDT. Realised that its not an easy job even with Automerge. So after almost
+        10 days of no result I ended up using Yjs ALONG WITH the editor binding
+    - Also I have realised that going with monaco was initially temping and was 
+        easier experience but I wanted to chanllenge myself and build the custom editors
+        with CodeMirror6. I really like the overall architecture of it (though i dont
+        understand it fully).  So, friendship with Ace and Monaco has ended and Codemirror
+        is my new best friend
+
+    - I have searched for many online IDEs with terminal support but it looks like 
+        huge work (docker, hyper, FS or DB, file imports, kubernetes?). 
+    - Now my only focus is on 2 options. 
+        1. Web editor
+            - this will only have 3 tabs html, css and js with output just like codepen
+        2. Blank
+            - here you can create a FS and run any language but imports not available
+    - Hopefully this will be done by today. cya tonight
+
+
+09/03/24
+    - check all components when user is not loaded
+    
+12/03/24
+    - Since im unable to create a persistent store layer for pg i 
+        have decided to keep 2 sources of truth for room contnets
+        - one is ydoc which is persistent in leveldb on server    
+        - other is plain text(contentHTML, ..CSS, ..JS) for guestmode
+    - add a middleware to check presnt in room before updating it
+
+
+                            owner       allowed user    normal user     no login
+
+ducklets/id (private)       ✅edit      ✅edit          req             login
+duckelts/id (public)        edit        edit            guest           guest
+
+ducklets/undefined          ✅edit      ✅edit          req             login

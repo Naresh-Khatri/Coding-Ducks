@@ -1,44 +1,28 @@
 import { useContext, useEffect, useState } from "react";
 import {
-  Box,
   Button,
-  Card,
-  CardBody,
-  CardFooter,
   Center,
   Container,
-  Flex,
-  Grid,
-  GridItem,
   HStack,
-  Heading,
   Input,
-  Select,
   SimpleGrid,
-  SlideFade,
   Spinner,
-  Stack,
   Text,
-  VStack,
-  useColorModeValue,
-  useToast,
 } from "@chakra-ui/react";
 
 import NormalLayout from "../../layout/NormalLayout";
 import { userContext } from "../../contexts/userContext";
 import { AddIcon } from "@chakra-ui/icons";
-import axiosInstance from "../../lib/axios";
 import SetMeta from "../../components/SEO/SetMeta";
 import { websocketContext } from "../../contexts/websocketContext";
-import Link from "next/link";
-import Image from "next/image";
-import ChakraNextImage from "../../components/utils/ChakraNextImage";
 import RoomCard from "../../components/multiplayer/RoomCard";
+import { useRoomsData } from "../../hooks/useRoomsData";
 
 function MultiplayerPage() {
   const { user } = useContext(userContext);
+  const { data: roomsList, isLoading, error } = useRoomsData();
   const {
-    roomsList,
+    // roomsList,
     connectedClients,
     socket,
     isCreatingRoom,
@@ -69,7 +53,7 @@ function MultiplayerPage() {
         url="https://codingducks.live/multiplayer"
       />
       <Container maxW={{ base: "100vw", md: "90vw" }} minH={"100vh"}>
-        {!socket ? (
+        {false ? (
           <Center w={"full"} h={"full"}>
             <HStack>
               <Spinner /> <Text>Connecting to WebSocket server...</Text>
@@ -99,13 +83,22 @@ function MultiplayerPage() {
                 </Button>
               </HStack>
             </HStack>
-            <Text>Available rooms:{roomsList.length}</Text>
-            <Text>connected Clinets: {connectedClients.length}</Text>
-            <SimpleGrid gap={10} columns={{ base: 2, sm: 3, lg: 4 }}>
-              {roomsList.map((room, i) => (
-                <RoomCard room={room} key={room.name} />
-              ))}
-            </SimpleGrid>
+
+            {isLoading ? (
+              <Spinner />
+            ) : error ? (
+              <p>somethings went wrong</p>
+            ) : (
+              <>
+                <Text>Available rooms:{roomsList.length}</Text>
+                <Text>connected Clinets: {connectedClients.length}</Text>
+                <SimpleGrid gap={10} columns={{ base: 2, sm: 3, lg: 4 }}>
+                  {roomsList.map((room, i) => (
+                    <RoomCard room={room} key={room.name} />
+                  ))}
+                </SimpleGrid>
+              </>
+            )}
           </>
         )}
       </Container>
