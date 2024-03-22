@@ -28,15 +28,20 @@ import SocialLogin from "../components/social/SocialLogin";
 
 export const LoginPage = () => {
   const toast = useToast();
-  const { user, registerWithEmailAndPassword, logInWithEmailAndPassword } =
-    useContext(userContext);
+  const {
+    user,
+    firebaseUser,
+    registerWithEmailAndPassword,
+    logInWithEmailAndPassword,
+  } = useContext(userContext);
 
   const router = useRouter();
   useEffect(() => {
-    if (Object.keys(user).length) {
+    if (firebaseUser) {
       router.push("/setup-profile");
     }
-  });
+    if (user) router.push("/");
+  }, [user]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -177,6 +182,11 @@ export const LoginPage = () => {
                         isInvalid={!isPasswordValid && password !== ""}
                         value={password}
                         onChange={handleOnPasswordChange}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            onLoginBtnClicked();
+                          }
+                        }}
                       />
                     </FormControl>
                   </Stack>
@@ -190,10 +200,17 @@ export const LoginPage = () => {
                   w="full"
                   colorScheme="purple"
                   onClick={onLoginBtnClicked}
+                  isDisabled={!isEmailValid || !isPasswordValid}
                   isLoading={logginInProgress}
                 >
                   Login
                 </Button>
+
+                {/* <HStack py={"1rem"} justifyContent={"center"}>
+                  <Button variant="link" colorScheme="blue" size="sm">
+                    Dont have an account?
+                  </Button>
+                </HStack> */}
               </TabPanel>
               <TabPanel>
                 <Stack spacing="6">
@@ -240,11 +257,17 @@ export const LoginPage = () => {
                           isPassword2Valid ? "green.500" : "red.500"
                         }
                         isInvalid={!isPassword2Valid && password2 !== ""}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            onRegisterBtnClicked();
+                          }
+                        }}
                       />
                     </FormControl>
                     <Button
                       w="full"
                       colorScheme="purple"
+                      isDisabled={!isEmailValid || !isPasswordValid || password !== password2}
                       onClick={onRegisterBtnClicked}
                       isLoading={logginInProgress}
                     >

@@ -31,7 +31,6 @@ const colors = {
 const theme = extendTheme({ colors, config: { initialColorMode: "dark" } });
 
 function MyApp({ Component, pageProps }) {
-  const { isLoading } = useContext(LoadingContext);
   const [queryClient] = useState(() => new QueryClient());
 
   return (
@@ -42,6 +41,7 @@ function MyApp({ Component, pageProps }) {
             <WebsocketProvider>
               <LoadingOverlay />
               {process.env.NODE_ENV === "production" && <SplashScreen />}
+              {/* <SplashScreen /> */}
               <Component {...pageProps} />
             </WebsocketProvider>
           </AuthUserProvider>

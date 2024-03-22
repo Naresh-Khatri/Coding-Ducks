@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import {
   Box,
@@ -15,6 +17,7 @@ import {
   Spacer,
   Text,
   useDisclosure,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
@@ -32,25 +35,26 @@ import EditProfileInModel from "./EditProfileInModel";
 import Link from "next/link";
 import FollowDetailsModal from "./FollowDetailsModal";
 import FAIcon from "./FAIcon";
+import UserAvatar from "./utils/UserAvatar";
 
 function UserProfile() {
   const { user, loading, logout } = useContext(userContext);
-  const { fullname, email, roll, photoURL, isAdmin, username } = user;
 
   const [maskedEmail, setMaskedEmail] = useState("");
   const [isEmailMasked, setIsEmailMasked] = useState(true);
 
   useEffect(() => {
-    if (email) {
-      const emailParts = email.split("@");
+    if (user && user.email) {
+      const emailParts = user.email.split("@");
       const maskedEmail = `${emailParts[0].slice(0, 2)}...@${emailParts[1]}`;
       setMaskedEmail(maskedEmail);
     }
-  }, [email]);
+  }, [user]);
 
   const [isEditing, setIsEditing] = useState(false);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast();
   // this will be used to show followers and following details
   const {
     isOpen: isFollowInfoOpen,
@@ -62,7 +66,7 @@ function UserProfile() {
     //TODO: add update profile logic
   };
   if (loading) return <>Loading...</>;
-  if (!loading && !user?.email)
+  if (!user)
     return (
       <Link href="/login">
         <Button color={"white"} bg="purple.600" _hover={{ bg: "purple.500" }}>
@@ -70,15 +74,16 @@ function UserProfile() {
         </Button>
       </Link>
     );
+  const { fullname, email, photoURL, isAdmin, username } = user;
   return (
     <Box>
       <HStack onClick={onOpen} cursor="pointer">
         <IconButton aria-label="profile picture" borderRadius={50}>
-          <Image
+          <UserAvatar
             src={photoURL}
+            w={40}
+            h={40}
             alt="Profile Picture"
-            width={40}
-            height={40}
             style={{ borderRadius: "50%", width: "auto", height: "2.5rem" }}
           />
         </IconButton>
@@ -112,13 +117,12 @@ function UserProfile() {
             <Divider mt={15} h={70}></Divider>
             <Center position="relative">
               <Box position={"absolute"}>
-                <Image
-                  referrerPolicy="no-referrer"
-                  style={{ borderRadius: "50%", width: "150px" }}
+                <UserAvatar
                   src={photoURL}
-                  width={150}
-                  height={150}
+                  w={150}
+                  h={150}
                   alt="profile"
+                  style={{ borderRadius: "50%", width: "150px" }}
                 />
               </Box>
             </Center>
@@ -237,7 +241,19 @@ function UserProfile() {
             )}
             {!isEditing && (
               <Flex m={2} justify="space-between">
-                <Button colorScheme="red" variant="outline" onClick={logout}>
+                <Button
+                  colorScheme="red"
+                  variant="outline"
+                  onClick={() => {
+                    logout();
+                    toast({
+                      title: "Logged out",
+                      status: "success",
+                      duration: 3000,
+                      isClosable: true,
+                    });
+                  }}
+                >
                   <FAIcon icon={faSignOut} height={"1.3rem"} />
                   Logout
                 </Button>

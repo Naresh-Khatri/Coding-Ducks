@@ -6,6 +6,7 @@ import {
   useContext,
   Dispatch,
   SetStateAction,
+  useReducer,
 } from "react";
 import { IDefaultResult } from "../types";
 import { userContext } from "./userContext";
@@ -37,6 +38,7 @@ import {
 import {
   CommonFailed,
   CursorUpdated,
+  IDirectory,
   ICursor,
   IMessage,
   LangUpdated,
@@ -50,12 +52,21 @@ import {
   UserJoined,
   UserLeft,
   UserLost,
+  IFile,
 } from "../lib/socketio/socketEventTypes";
+import FSTreeReducer, {
+  FSActionType,
+  IFSAction,
+} from "../reducers/FSTreeReducer";
+import useGlobalStore from "../stores";
 
 interface IWebsocketContext {
-  currRoomInfo: ISocketRoom;
   connectedClients: ISocketUser[];
   roomsList: ISocketRoom[];
+  // currFile: IFile | null;
+  // setCurrFile: Dispatch<SetStateAction<IFile>>;
+  // dispatchFSTree: Dispatch<IFSAction>;
+  // fileSystemTree: IDirectory;
   msgsList: IMessage[];
   cursors: ICursor[];
   setCursors: Dispatch<SetStateAction<ICursor[]>>;
@@ -65,7 +76,6 @@ interface IWebsocketContext {
 
   currRoomClients: ISocketUser[];
   setCurrRoomClients: Dispatch<SetStateAction<ISocketRoom[]>>;
-  code: string;
   resultIsLoading: boolean;
   consoleInfo: IDefaultResult;
   setConsoleInfo: Dispatch<SetStateAction<IDefaultResult>>;
@@ -75,10 +85,11 @@ interface IWebsocketContext {
 export const websocketContext = createContext({} as IWebsocketContext);
 
 export function WebsocketProvider({ children }: { children: ReactNode }) {
-  const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState<Socket>();
+  const initFS = useGlobalStore((state) => state.initFS);
+  const setCurrRoom = useGlobalStore((state) => state.setCurrRoom);
 
   const [roomsList, setRoomsList] = useState<ISocketRoom[]>([]);
-  const [currRoomInfo, setCurrRoomInfo] = useState<ISocketRoom | null>(null);
 
   const [connectedClients, setConnectedClients] = useState<ISocketUser[]>([]);
   const [currRoomClients, setCurrRoomClients] = useState<ISocketUser[]>([]);
@@ -90,22 +101,27 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
   const [resultIsLoading, setResultIsLoading] = useState(false);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
-  const { user } = useContext(userContext);
+  const { user, userLoaded } = useContext(userContext);
 
   const toast = useToast();
 
   const resetStates = () => {
+    // dispatchFSTree({
+    //   type: FSActionType.INIT,
+    //   payload: { data: {} as IDirectory },
+    // });
     setMsgsList([]);
     setCurrRoomClients([]);
-    setCurrRoomInfo(null);
+    setCurrRoom(null);
   };
 
   useEffect(() => {
-    if (Object.keys(user).length === 0) return;
+    if (userLoaded || !user) return;
 
     const socketInstance = io(
       process.env.NODE_ENV === "development"
-        ? "ws://localhost:3333"
+        ? // ? "ws://localhost:3333"
+          "wss://dev3333.codingducks.live"
         : "wss://api2.codingducks.live"
     );
 
@@ -180,12 +196,26 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
     });
     socketInstance.on(
       USER_JOIN_SUCCESS,
-      ({ room, clients, msgsList, cursors }: UserJoinSuccess) => {
-        console.log("youve joined", clients);
-        setCurrRoomInfo(room);
-        setCurrRoomClients(clients);
+      ({ room, msgsList, fileSystemTree }: UserJoinSuccess) => {
+        console.log("youve joined", fileSystemTree);
+        setCurrRoom({ ...room });
         setMsgsList(msgsList);
-        setCursors(cursors);
+        initFS(fileSystemTree);
+        // dispatchFSTree({
+        //   type: FSActionType.INIT,
+        //   payload: { data: fileSystemTree },
+        // });
+        // const recentlyOpenedFileId = localStorage.getItem(
+        //   `active-file-in-room-${room.id}`
+        // );
+        // if (recentlyOpenedFileId) {
+        //   // setCurrFile(file);
+        //   dispatchFSTree({
+        //     type: FSActionType.SELECT_FILE,
+        //     payload: { fileId: +recentlyOpenedFileId },
+        //   });
+        // }
+
         toast({
           title: "Room joined",
           description: `You've joined ${room.name}`,
@@ -195,9 +225,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       }
     );
     socketInstance.on(USER_JOINED, ({ clients, user, cursors }: UserJoined) => {
-      setCurrRoomClients(clients);
       console.log("user-connected: clients", clients);
-      setCursors(cursors);
       toast({
         title: "User connected",
         description: `${user.username} has joined the room`,
@@ -206,7 +234,7 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       });
     });
     socketInstance.on(ROOM_CREATE_FAILED, ({ msg }: CommonFailed) => {
-      setCurrRoomInfo(null);
+      setCurrRoom(null);
       setIsCreatingRoom(false);
       toast({
         title: "Couldn't create room!",
@@ -268,10 +296,8 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
     //   });
     // });
     socketInstance.on(LANG_UPDATED, ({ updatedRoom, user }: LangUpdated) => {
+      // TODO: update this shit
       const { lang } = updatedRoom;
-      setCurrRoomInfo((p) => {
-        return { ...p, lang };
-      });
       toast({
         title: "Language Changed!",
         description: `${user.username} changed to ${lang}`,
@@ -296,10 +322,18 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       setResultIsLoading(false);
     });
     socketInstance.on(CURSOR_UPDATED, (payload: CursorUpdated) => {
-      const { newPos, user, room } = payload;
+      const { newCursor, user, room } = payload;
+      console.log(payload);
       setCursors((p) =>
         p.map((cursor) => {
-          if (cursor.user.id === user.id) return { ...cursor, pos: newPos };
+          if (cursor.user.id === user.id)
+            return {
+              ...cursor,
+              cursor: {
+                pos: newCursor.pos || cursor.cursor.pos,
+                selection: newCursor.selection,
+              },
+            };
           else return cursor;
         })
       );
@@ -315,7 +349,10 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
       value={{
         socket,
         connectedClients,
-        currRoomInfo,
+        // currFile,
+        // setCurrFile,
+        // dispatchFSTree,
+        // fileSystemTree,
         msgsList,
         roomsList,
         isCreatingRoom,
@@ -325,7 +362,6 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
 
         currRoomClients,
         setCurrRoomClients,
-        code: currRoomInfo?.content || "",
         resultIsLoading,
         consoleInfo,
         setConsoleInfo,

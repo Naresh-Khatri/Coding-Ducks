@@ -7,7 +7,7 @@ function SplashScreen() {
   const [isLargerThan800] = useMediaQuery("(min-width: 800px)");
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
+    // document.body.style.overflow = "hidden";
     let t1: NodeJS.Timeout;
     let t2: NodeJS.Timeout;
     let t3: NodeJS.Timeout;
@@ -37,7 +37,7 @@ function SplashScreen() {
     <Flex
       position="absolute"
       justifyContent={"center"}
-      w={"100vw"}
+      w={"100%"}
       h={"100dvh"}
       ref={bgRef}
       className="splash-bg"

@@ -17,19 +17,19 @@ import {
 import Image from "next/image";
 import type { FC } from "react";
 import { IUser } from "../../types";
-import { ISocketUser } from "../../lib/socketio/socketEvents";
+import { IYJsUser } from "../../lib/socketio/socketEvents";
 import ChakraNextImage from "../utils/ChakraNextImage";
 
 interface ConnectedUsersProps {
-  clients: ISocketUser[];
+  clients: IYJsUser[];
   currentUser: IUser;
 }
 
 const ConnectedUsers: FC<ConnectedUsersProps> = ({ clients, currentUser }) => {
   return (
     <HStack>
-      {clients.map(({ fullname, photoURL, id, socketId, username }) => (
-        <HStack key={socketId}>
+      {clients.map(({ fullname, photoURL, id, clientId, username }) => (
+        <HStack key={clientId}>
           <Tooltip hasArrow label="Search places" bg="red.600">
             <ChakraNextImage
               width={30}

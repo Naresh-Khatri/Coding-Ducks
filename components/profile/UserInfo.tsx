@@ -1,3 +1,4 @@
+"use client";
 import {
   Avatar,
   AvatarBadge,
@@ -17,7 +18,6 @@ import {
   Portal,
   Spacer,
   Text,
-  Tooltip,
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
@@ -52,32 +52,35 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
   );
   useEffect(() => {
     setIsFollowing(
-      !!loggedInUser.following?.find((user) => user.id === viewingUser.id)
+      // @ts-ignore
+      !!loggedInUser?.following?.find((user) => user.id === viewingUser.id)
     );
     setViewingUserState(viewingUser);
-    setIsLoading(false)
-  }, [loggedInUser.following, viewingUser, viewingUser.id]);
+    setIsLoading(false);
+  }, [loggedInUser?.following, viewingUser, viewingUser.id]);
 
   const handleFollowBtnClick = async () => {
     setIsLoading(true);
-    if (isFollowing) {
-      setIsFollowing(false);
-      await axiosInstance.post("/users/unfollow", {
-        fromUser: loggedInUser.id,
-        toUser: viewingUser.id,
-      });
-    } else {
-      setIsFollowing(true);
-      await axiosInstance.post("/users/follow", {
-        fromUser: loggedInUser.id,
-        toUser: viewingUser.id,
-      });
-    }
-    const { data } = await axiosInstance.get(
-      `/users/username/${viewingUserState.username}`
-    );
-    setViewingUserState(data.data);
-    setIsLoading(false);
+    try {
+      if (isFollowing) {
+        setIsFollowing(false);
+        await axiosInstance.post("/users/unfollow", {
+          fromUser: loggedInUser && loggedInUser.id,
+          toUser: viewingUser.id,
+        });
+      } else {
+        setIsFollowing(true);
+        await axiosInstance.post("/users/follow", {
+          fromUser: loggedInUser && loggedInUser.id,
+          toUser: viewingUser.id,
+        });
+      }
+      const { data } = await axiosInstance.get(
+        `/users/username/${viewingUserState.username}`
+      );
+      setViewingUserState(data.data);
+      setIsLoading(false);
+    } catch (error) {}
   };
 
   if (!viewingUserState) return null;
@@ -131,7 +134,7 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
               <Popover size={"xl"}>
                 <PopoverTrigger>
                   <Text fontSize="sm" fontWeight="bold">
-                  {LEAGUES[pointsToLeague(viewingUser.points).id].label}
+                    {LEAGUES[pointsToLeague(viewingUser.points).id].label}
                   </Text>
                 </PopoverTrigger>
                 <Portal>
@@ -167,7 +170,7 @@ function UserInfoCard({ viewingUser, viewingUserStats }) {
             </VStack>
             <HStack>
               <Button
-                disabled={!loggedInUser.id}
+                disabled={!loggedInUser?.id}
                 bg={isFollowing ? "gray.700" : "purple.600"}
                 color="white"
                 onClick={handleFollowBtnClick}

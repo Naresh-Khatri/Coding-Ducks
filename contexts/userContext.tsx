@@ -1,5 +1,4 @@
 import { User, UserCredential } from "firebase/auth";
-import { useRouter } from "next/router";
 import {
   createContext,
   useContext,
@@ -18,10 +17,13 @@ import {
 } from "../firebase/firebase";
 import axios from "../lib/axios";
 import { IUser } from "../types";
+import { useRouter as useOldRouter } from "next/router";
+import { useRouter as useNewRouter } from "next/navigation";
 
 interface userContextProps {
-  user: IUser;
+  user: IUser | null;
   loading: boolean;
+  userLoaded: boolean;
   error: any;
   firebaseUser: User;
   logout: () => void;
@@ -38,12 +40,16 @@ interface userContextProps {
 export const userContext = createContext({} as userContextProps);
 
 export function AuthUserProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const [user, loading, error] = useAuthState(auth);
-  const [completeUser, setCompleteUser] = useState({});
+  const [completeUser, setCompleteUser] = useState<IUser | null>(null);
+  const [userLoaded, setUserLoaded] = useState(false);
+
+  // const oldRouter = useOldRouter();
+  const newRouter = useNewRouter();
 
   const updateUser = async (updatedUser) => {
     try {
+      if (!user) return;
       const res = await axios.patch(`/users/`, {
         ...updatedUser,
         googleUID: user.uid,
@@ -55,8 +61,8 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const makeUserObject = async (user) => {
-    const obj = {
+  const makeUserObject = (user) => {
+    return {
       id: user.id || null,
       roll: user.roll,
       fullname: user.fullname,
@@ -71,32 +77,33 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
       registeredAt: user.registeredAt,
       lastLoginAt: user.lastLoginAt,
     };
-    setCompleteUser(obj);
   };
   const loadUser = async () => {
     try {
       if (!loading) {
         // check if user is stored in db
         if (user) {
-          // console.log('firebase user', user)
-          axios
-            .get(`/users/${user.uid}`)
-            .then((res) => {
-              // console.log("user changed", res.data);
-              if (res.data.length == 0) {
-                // if user doesnt exist, redirect to setup-profile
-                router.push("/setup-profile");
-              } else {
-                // if user exist in db then set completeUser to the user object
-                // console.log(res.data)
-                makeUserObject(res.data);
-              }
-            })
-            .catch((err) => {
-              console.log(err);
-            });
+          // console.log("firebase user", user);
+          try {
+            const { data } = await axios.get(`/users/${user.uid}`);
+            if (data.length == 0) {
+              // if user doesnt exist, redirect to setup-profile
+              // if(oldRouter) oldRouter.push("/setup-profile");
+              if(newRouter) newRouter.push("/setup-profile");
+            } else {
+              // if user exist in db then set completeUser to the user object
+              // console.log(res.data)
+              const usr = makeUserObject(data);
+              setCompleteUser(usr);
+            }
+          } catch (err) {
+            console.log(err);
+          } finally {
+            setUserLoaded(true);
+          }
         } else {
           console.log("user is null");
+          setUserLoaded(true);
           // if (router.pathname !== "/") router.push("/login");
         }
       }
@@ -108,15 +115,16 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     logoutFromFirebase();
-    setCompleteUser({});
+    setCompleteUser(null);
   };
 
   return (
     <userContext.Provider
       value={{
-        user: completeUser as IUser,
+        user: completeUser,
         firebaseUser: user as any,
         loading,
+        userLoaded,
         error,
         signInWithGoogle,
         registerWithEmailAndPassword,

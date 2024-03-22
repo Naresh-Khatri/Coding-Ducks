@@ -1,6 +1,6 @@
+"use client";
 import React, { ReactNode } from "react";
 import {
-  Box,
   Button,
   Collapse,
   Container,
@@ -16,7 +16,7 @@ import Footer from "./components/Footer";
 import Link from "next/link";
 import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";
 
@@ -60,7 +60,8 @@ const links = [
   { label: "Users", href: "/users" },
   { label: "Contests", href: "/contests" },
   { label: "Playground", href: "/playground" },
-  { label: "Multiplayer", href: "/multiplayer" },
+  // { label: "Multiplayer", href: "/multiplayer" },
+  { label: "Ducklets", href: "/ducklets" },
 ];
 
 function MobileNavBar() {
@@ -107,7 +108,7 @@ interface NavItem {
 const MobileNavItem = ({ label, href }: NavItem) => {
   const router = useRouter();
   return (
-    <Link href={href} style={{ margin: "0 .5em" }}>
+    <Link href={href || "#"} style={{ margin: "0 .5em" }}>
       <Button
         px={2}
         py={1}

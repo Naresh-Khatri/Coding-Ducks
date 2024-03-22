@@ -40,15 +40,14 @@ export default function EditUserProfile() {
 
   useEffect(() => {
     // if not loading, firebaseuser null and user null, redirect to login
-    if (!loading && !firebaseUser && Object.keys(user).length == 0)
-      router.push("/");
+    if (!loading && !firebaseUser) router.push("/login");
+    if (user) router.push("/");
 
     if (firebaseUser) {
       setFullname(firebaseUser.displayName || "");
     }
     // if (!loading && Object.keys(user) == 0) router.push("/login");
     // checking for googleUID in the user object to make sure used is in db
-    if (user.googleUID) router.push("/");
   }, [user, firebaseUser, router, loading]);
   const handleCancelClick = () => {
     router.push("/");

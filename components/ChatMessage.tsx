@@ -32,7 +32,7 @@ interface ChatCompProps {
   socket: Socket;
   user: any;
   roomInfo: any;
-  msgsList: IChatMessage[];
+  msgsList: IMessage[];
 }
 const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
   const [show, setShow] = useState(true);
@@ -82,8 +82,8 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                   <>
                     {/* group by dates */}
                     {(i === 0 ||
-                      msgsList[i].time.split("T")[0] !==
-                        msgsList[i - 1].time.split("T")[0]) && (
+                      msgsList[i].time.toString().split("T")[0] !==
+                        msgsList[i - 1].time.toString().split("T")[0]) && (
                       <Center position={"sticky"} top={0} zIndex={99}>
                         <Badge
                           fontSize={"md"}
@@ -91,17 +91,17 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                           // colorScheme="purple"
                           borderRadius={"10px"}
                         >
-                          {msg.time.split("T")[0]}
+                          {msg.time.toString().split("T")[0]}
                         </Badge>
                       </Center>
                     )}
                     <Flex
-                      direction={`row${self(msg.userId) ? "-reverse" : ""}`}
+                      direction={`row${self(msg.user.id) ? "-reverse" : ""}`}
                       minW={"290px"}
                       position={"relative"}
                     >
                       <Image
-                        src={msg.photoURL}
+                        src={msg.user.photoURL}
                         alt="profile photo"
                         style={{
                           borderRadius: "50%",
@@ -114,33 +114,35 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                         height={40}
                       />
                       <Box
-                        ml={!self(msg.userId) && "3.2rem"}
-                        mr={self(msg.userId) && "3.2rem"}
+                        ml={!self(msg.user.id) && "3.2rem"}
+                        mr={self(msg.user.id) && "3.2rem"}
                       >
-                        {!self(msg.userId) && (
+                        {!self(msg.user.id) && (
                           <Text fontWeight={"extrabold"} w={"fit-content"}>
-                            {msg.username}:
+                            {msg.user.username}:
                           </Text>
                         )}
                         <Flex
                           key={i}
-                          bg={self(msg.userId) ? "green.700" : "gray.700"}
+                          bg={self(msg.user.id) ? "green.700" : "gray.700"}
                           borderRadius={"10px"}
                           minW={"120px"}
                           w={"fit-content"}
                           p={"1rem"}
-                          direction={`row${self(msg.userId) ? "-reverse" : ""}`}
+                          direction={`row${
+                            self(msg.user.id) ? "-reverse" : ""
+                          }`}
                         >
                           <Text>{msg.text}</Text>
                         </Flex>
                       </Box>
                       <Text
                         alignSelf={"center"}
-                        mr={self(msg.userId) && ".5rem"}
-                        ml={!self(msg.userId) && ".5rem"}
+                        mr={self(msg.user.id) && ".5rem"}
+                        ml={!self(msg.user.id) && ".5rem"}
                         color={"gray.500"}
                       >
-                        {formatTime(msg.time)}
+                        {formatTime(msg.time.toString())}
                       </Text>
                     </Flex>
                   </>

@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef } from "react";
 
 import AceEditor from "react-ace";
-import { Range } from "react-ace/node_modules/ace-builds";
 import { IAceEditor } from "react-ace/lib/types";
+import { Range } from "ace-builds";
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
