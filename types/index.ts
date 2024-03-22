@@ -212,7 +212,7 @@ export type IDifficulty =
   | "medium"
   | "hard";
 
-export type Lang = "js" | "py" | "cpp" | "c" | "java";
+export type Lang = "js" | "py" | "cpp" | "c" | "java" | "other";
 export type Theme =
   | "dracula"
   | "monokai"
