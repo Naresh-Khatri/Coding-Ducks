@@ -4,6 +4,7 @@ import { auth } from "../firebase/firebase";
 export const baseURL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3333"
+    // ? "https://dev3333.codingducks.live"
     : // "http://192.168.31.197:3333"
       "https://api2.codingducks.live";
 
