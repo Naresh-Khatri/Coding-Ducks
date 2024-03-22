@@ -173,8 +173,6 @@ const CMEditor = ({
   lang: Lang;
 }) => {
   let extensions: (LanguageSupport | Extension)[] = [];
-  extensions.push(keymap.of([{ key: "Ctrl-Enter", run: expandAbbreviation }]));
-  extensions.push(abbreviationTracker());
   extensions.push(indentUnit.of("  "));
   if (lang === "html") {
     extensions.push(html());
