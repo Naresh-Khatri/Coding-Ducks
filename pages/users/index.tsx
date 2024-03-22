@@ -24,12 +24,11 @@ import { pointsToLeague } from "../../lib/utils";
 import { LEAGUES } from "../../data/leagues";
 
 function UsersPage() {
-  const { data: users, isLoading }: { data: IUser[]; isLoading: boolean } =
-    useQuery({
-      queryKey: ["users"],
-      queryFn: getUsers,
-      refetchOnMount: true,
-    });
+  const { data: users, isLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: getUsers,
+    refetchOnMount: true,
+  }) as { data: IUser[]; isLoading: boolean };
   return (
     <NormalLayout>
       <SetMeta
@@ -107,6 +106,7 @@ const UserCard = ({ user }: { user: IUser }) => {
     if (rank === 3) return "darkorange";
     return "gray";
   };
+  if (!user.points || !user.rank) return <Text>stats not found</Text>;
   return (
     <Link href={`/users/${user.username}`}>
       <Flex

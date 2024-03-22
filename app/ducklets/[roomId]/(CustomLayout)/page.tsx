@@ -65,8 +65,6 @@ import { FileBadge } from "components/ducklets/FileBadge";
 import DuckletsNavbar from "components/ducklets/Navbar";
 import UserAvatar from "components/utils/UserAvatar";
 import Link from "next/link";
-import { SettingsIcon } from "@chakra-ui/icons";
-import FileIcons from "components/multiplayer/FileIcons";
 import { LangSettingsPopover } from "components/ducklets/LangSettingsPopover";
 
 const CMEditor = dynamic(
