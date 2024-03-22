@@ -87,8 +87,8 @@ const createFileSystemSlice: StateCreator<
   currFileLoading: false,
   // @ts-ignore
   currFile: null,
-  setCurrFile: (file: IFile | null) =>
-    set((state) => ({ ...state, currFile: file })),
+  // setCurrFile: (file: IFile | null) =>
+  //   set((state) => ({ ...state, currFile: file })),
 
   initFS: (newFS: IDirectory) =>
     set((state) => {
