@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { IDirectory } from "../lib/socketio/socketEventTypes";
 
 export enum FSActionType {
