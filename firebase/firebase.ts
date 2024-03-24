@@ -33,10 +33,14 @@ const signInWithGoogle = async (): Promise<User> => {
     return user;
   } catch (err) {
     console.error(err);
+    return err;
   }
 };
 
-const logInWithEmailAndPassword = async (email: string, password: string): Promise<User> => {
+const logInWithEmailAndPassword = async (
+  email: string,
+  password: string
+): Promise<User> => {
   return new Promise(async (resolve, reject) => {
     try {
       return await signInWithEmailAndPassword(auth, email, password);
@@ -46,7 +50,10 @@ const logInWithEmailAndPassword = async (email: string, password: string): Promi
     }
   });
 };
-const registerWithEmailAndPassword = async (email: string, password: string) => {
+const registerWithEmailAndPassword = async (
+  email: string,
+  password: string
+) => {
   try {
     return await createUserWithEmailAndPassword(auth, email, password);
   } catch (err) {
@@ -56,9 +63,9 @@ const registerWithEmailAndPassword = async (email: string, password: string) => 
 };
 const sendPasswordReset = async (email: string): Promise<void> => {
   try {
-    return await sendPasswordResetEmail(auth, email)
+    return await sendPasswordResetEmail(auth, email);
   } catch (err) {
-    return err.message
+    return err.message;
   }
 };
 const logout = () => {

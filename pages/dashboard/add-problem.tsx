@@ -97,7 +97,7 @@ const AddProblemPage = () => {
     { id: 0, input: "", output: "", explaination: "", isPublic: false },
   ]);
 
-  const selectedExam = useRef(null);
+  const selectedExam = useRef<HTMLSelectElement>(null);
   const [selectedTags, setSelectedTags] = useState<IProblemTag[]>([]);
 
   const router = useRouter();
@@ -134,8 +134,10 @@ const AddProblemPage = () => {
     };
 
     if (hasExam) {
-      payload["examId"] = +selectedExam.current.value;
-      payload["frontendProblemId"] = undefined;
+      payload["examId"] = selectedExam.current
+        ? +selectedExam.current.value
+        : undefined;
+      payload["frontendProblemId"] = 0;
     }
 
     try {
@@ -330,11 +332,12 @@ const AddProblemPage = () => {
                         Select Exam
                       </FormLabel>
                       <Select ref={selectedExam}>
-                        {examsList.map((exam) => (
-                          <option key={exam.id} value={exam.id}>
-                            {`${exam.title} - /contests/${exam.slug}`}
-                          </option>
-                        ))}
+                        {examsList &&
+                          examsList.map((exam) => (
+                            <option key={exam.id} value={exam.id}>
+                              {`${exam.title} - /contests/${exam.slug}`}
+                            </option>
+                          ))}
                       </Select>
                     </FormControl>
                     <FormControl mt="2%">

@@ -48,11 +48,13 @@ export default function ExamPage() {
       />
       <NormalLayout>
         <Container maxW={"6xl"}>
-          <Heading my={10}>
-            <Text as={"span"} fontSize={"3xl"}>
-              Welcome Back {user.fullname}!
-            </Text>
-          </Heading>
+          {user && (
+            <Heading my={10}>
+              <Text as={"span"} fontSize={"3xl"}>
+                Welcome Back {user.fullname}!
+              </Text>
+            </Heading>
+          )}
 
           <SimpleGrid columns={[1, 2, 3]} spacing={10} placeItems="center">
             {exams?.map((exam) => (

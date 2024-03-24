@@ -74,7 +74,7 @@ function ExampleTestcase({ testCase }: ExampleTestcaseProps) {
         <Text
           display="inline"
           dangerouslySetInnerHTML={{
-            __html: testCase.output.replaceAll("\n", "<br>"),
+            __html: testCase.output?.replaceAll("\n", "<br>") || "",
           }}
         ></Text>
       </Box>

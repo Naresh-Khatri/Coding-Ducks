@@ -1,7 +1,6 @@
 import {
   Avatar,
   AvatarGroup,
-  Box,
   Button,
   Card,
   CardBody,
@@ -15,12 +14,9 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import React from "react";
-import { IUser, Lang } from "../../types";
-import dynamic from "next/dynamic";
-import LangIcon from "../LangIcon";
 import { ISocketRoom } from "../../lib/socketio/socketEvents";
+import FileIcons from "./FileIcons";
 
-// const CodePreview = dynamic(() => import("./CodePreview"), { ssr: false });
 
 function RoomCard({ room }: { room: ISocketRoom }) {
   return (
@@ -38,7 +34,7 @@ function RoomCard({ room }: { room: ISocketRoom }) {
                 <Heading size="md">{room.name}</Heading>
                 <Text color={"whiteAlpha.500"}>{room.owner.username}</Text>
               </VStack>
-              <LangIcon lang={room.lang} height="2rem" />
+              <FileIcons fileName={`index.${room.lang}`} width={2} />
               {/* <CodePreview code={room.content} lang={room.lang} /> */}
             </HStack>
           </CardBody>

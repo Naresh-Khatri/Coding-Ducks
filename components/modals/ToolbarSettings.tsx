@@ -36,7 +36,9 @@ function ToolbarSettings({ isOpen, onClose }: ToolbarSettingsProps) {
               <Select
                 w={"120px"}
                 value={settings.fontSize}
-                onChange={(e) => updateSettings({ fontSize: +e.target.value })}
+                onChange={(e) =>
+                  updateSettings({ ...settings, fontSize: +e.target.value })
+                }
               >
                 {[10, 12, 14, 16, 18, 20, 22, 24].map((size) => (
                   <option key={size} value={size}>
@@ -51,7 +53,10 @@ function ToolbarSettings({ isOpen, onClose }: ToolbarSettingsProps) {
                 w={"120px"}
                 value={settings.tabSize}
                 onChange={(e) =>
-                  updateSettings({ tabSize: +e.target.value as 2 | 4 })
+                  updateSettings({
+                    ...settings,
+                    tabSize: +e.target.value as 2 | 4,
+                  })
                 }
               >
                 {[2, 4].map((size) => (
@@ -67,7 +72,10 @@ function ToolbarSettings({ isOpen, onClose }: ToolbarSettingsProps) {
                 w="120px"
                 value={settings.keyBindings}
                 onChange={(e) =>
-                  updateSettings({ keyBindings: e.target.value as IKeyBinds })
+                  updateSettings({
+                    ...settings,
+                    keyBindings: e.target.value as IKeyBinds,
+                  })
                 }
               >
                 <option value="default">Default</option>
@@ -89,7 +97,10 @@ function ToolbarSettings({ isOpen, onClose }: ToolbarSettingsProps) {
                 isDisabled
                 isChecked={settings.runCodeOnCtrlEnter}
                 onChange={(e) =>
-                  updateSettings({ runCodeOnCtrlEnter: e.target.checked })
+                  updateSettings({
+                    ...settings,
+                    runCodeOnCtrlEnter: e.target.checked,
+                  })
                 }
               />
             </Flex>
@@ -103,7 +114,10 @@ function ToolbarSettings({ isOpen, onClose }: ToolbarSettingsProps) {
                 isDisabled
                 isChecked={settings.showDriverCode}
                 onChange={(e) =>
-                  updateSettings({ showDriverCode: e.target.checked })
+                  updateSettings({
+                    ...settings,
+                    showDriverCode: e.target.checked,
+                  })
                 }
               />
             </Flex>

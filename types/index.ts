@@ -19,7 +19,7 @@ export interface IUser {
   bio?: string;
   followedBy?: Array<Follower>;
   following?: Array<Follower>;
-  fullname?: string;
+  fullname: string;
   username: string;
   photoURL: string;
   points?: number;
@@ -45,18 +45,18 @@ export interface IUserStatsResponse {
 export interface IExam {
   id: number;
   slug: string;
-  isBounded?: boolean;
-  warnOnBlur?: boolean;
+  isBounded: boolean;
+  warnOnBlur: boolean;
   title: string;
-  active?: boolean;
-  coverImg?: string;
-  description?: string;
-  durations?: number;
-  endTime?: string;
-  marks?: number;
-  startTime?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  active: boolean;
+  coverImg: string;
+  description: string;
+  durations: number;
+  endTime: string;
+  marks: number;
+  startTime: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface IExamProblem {
@@ -96,7 +96,7 @@ export interface IProblem extends IExamProblem {
   description: string;
   difficulty: IDifficulty;
   status?: "unsolved" | "tried" | "solved";
-  accuracy?: number;
+  accuracy: number;
   submissions?: ISubmission[];
   submissionCount?: number;
   tags: string[];
@@ -180,12 +180,12 @@ export interface ISubmission {
   tests_passed: number;
   total_tests: number;
   userId: number;
-  User?: IUser;
+  User: IUser;
   code?: string;
   examId?: number;
   Exam?: IExam;
   problemId?: number;
-  Problem?: IProblem;
+  Problem: IProblem;
 }
 
 export interface Testcase {

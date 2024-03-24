@@ -2,7 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { IKeyBinds, Lang, Theme } from "../types";
 
 interface IEditorSettings {
-  lang?: Lang;
+  lang: Lang;
   theme?: Theme;
   fontSize?: number;
   tabSize?: 2 | 4;
@@ -31,8 +31,8 @@ interface IEditorSettingsContext {
   setCode: (code: string) => void;
   updateSettings: (newSettings: IEditorSettings) => void;
   isLoading?: boolean;
-  bottomSheetIsOpen?: boolean;
-  setBottomSheetIsOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  bottomSheetIsOpen: boolean;
+  setBottomSheetIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 export const EditorSettingsContext = createContext({
   settings: initialState,
@@ -50,7 +50,9 @@ const EditorSettingsProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedSettings = JSON.parse(localStorage.getItem("editorSettings"));
+    const storedSettings = JSON.parse(
+      localStorage.getItem("editorSettings") || ""
+    );
     if (storedSettings) setSettings(storedSettings);
     setIsLoading(false);
   }, []);

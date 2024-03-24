@@ -9,7 +9,7 @@ export interface IMessage {
   user: { id: number; username: string; photoURL: string };
   room: ISocketRoom;
   text: string;
-  time?: Date;
+  time: Date;
 }
 
 export interface ICursorPos {
@@ -45,8 +45,8 @@ export interface IFile extends Entity {
 export interface IDirectory extends Entity {
   name: string;
   isOpen: boolean;
-  files?: IFile[];
-  childDirs?: IDirectory[];
+  files: IFile[];
+  childDirs: IDirectory[];
 }
 
 // ---------- GENERICS ----------

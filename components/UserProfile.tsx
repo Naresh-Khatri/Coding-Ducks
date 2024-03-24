@@ -121,6 +121,7 @@ function UserProfile() {
                   src={photoURL}
                   w={150}
                   h={150}
+                  height="150px"
                   alt="profile"
                   style={{ borderRadius: "50%", width: "150px" }}
                 />

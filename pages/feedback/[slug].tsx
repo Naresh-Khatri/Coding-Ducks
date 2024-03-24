@@ -142,14 +142,19 @@ function FeedbackPage() {
                   icon={
                     <StarIcon
                       fontSize={60}
-                      color={rating <= ratings.ui ? "goldenrod" : "gray.200"}
+                      color={
+                        ratings.ui && rating <= ratings.ui
+                          ? "goldenrod"
+                          : "gray.200"
+                      }
                     />
                   }
                 />
               ))}
             </HStack>
             <Text color={"GrayText"} textAlign={"center"}>
-              {RATING_DESC_UI[ratings.ui - 1] || "Select a rating"}
+              {(ratings.ui && RATING_DESC_UI[ratings.ui - 1]) ||
+                "Select a rating"}
             </Text>
 
             <HStack alignSelf={"end"}>
@@ -197,7 +202,9 @@ function FeedbackPage() {
                     <StarIcon
                       fontSize={60}
                       color={
-                        rating <= ratings.difficulty ? "goldenrod" : "gray.200"
+                        ratings.difficulty && rating <= ratings.difficulty
+                          ? "goldenrod"
+                          : "gray.200"
                       }
                     />
                   }
@@ -205,7 +212,9 @@ function FeedbackPage() {
               ))}
             </HStack>
             <Text color={"GrayText"} textAlign={"center"}>
-              {RATING_DESC_DIFF[ratings.difficulty - 1] || "Select a rating"}
+              {(ratings.difficulty &&
+                RATING_DESC_DIFF[ratings.difficulty - 1]) ||
+                "Select a rating"}
             </Text>
 
             <HStack alignSelf={"end"}>
@@ -253,7 +262,9 @@ function FeedbackPage() {
                     <StarIcon
                       fontSize={60}
                       color={
-                        rating <= ratings.usefulness ? "goldenrod" : "gray.200"
+                        ratings.usefulness && rating <= ratings.usefulness
+                          ? "goldenrod"
+                          : "gray.200"
                       }
                     />
                   }
@@ -261,7 +272,9 @@ function FeedbackPage() {
               ))}
             </HStack>
             <Text color={"GrayText"} textAlign={"center"}>
-              {RATING_DESC_USEFUL[ratings.usefulness - 1] || "Select a rating"}
+              {(ratings.usefulness &&
+                RATING_DESC_USEFUL[ratings.usefulness - 1]) ||
+                "Select a rating"}
             </Text>
 
             <HStack alignSelf={"end"}>
@@ -309,7 +322,9 @@ function FeedbackPage() {
                     <StarIcon
                       fontSize={60}
                       color={
-                        rating <= ratings.overall ? "goldenrod" : "gray.200"
+                        ratings.overall && rating <= ratings.overall
+                          ? "goldenrod"
+                          : "gray.200"
                       }
                     />
                   }
@@ -317,7 +332,8 @@ function FeedbackPage() {
               ))}
             </HStack>
             <Text color={"GrayText"} textAlign={"center"}>
-              {RATING_DESC_UI[ratings.overall - 1] || "Select a rating"}
+              {(ratings.overall && RATING_DESC_UI[ratings.overall - 1]) ||
+                "Select a rating"}
             </Text>
 
             <HStack alignSelf={"end"}>

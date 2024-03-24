@@ -20,7 +20,7 @@ import {
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import { createAspectRatio, Cropper } from "react-advanced-cropper";
+import { createAspectRatio, Cropper, CropperRef } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 
 import { useEffect, useRef, useState } from "react";
@@ -85,7 +85,7 @@ function ExamEditor({
   const [oldCoverImg, setOldCoverImg] = useState(coverImg);
   const [newCoverImg, setNewCoverImg] = useState<any>();
 
-  const cropperRef = useRef(null);
+  const cropperRef = useRef<CropperRef>(null);
 
   const toast = useToast();
 
@@ -115,7 +115,7 @@ function ExamEditor({
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async (e) => {
-      setNewCoverImg(e.target.result);
+      if (e.target) setNewCoverImg(e.target.result);
     };
   };
   const updateExam = async () => {
@@ -130,7 +130,7 @@ function ExamEditor({
     formData.append("startTime", new Date(newStartTime).toISOString());
     formData.append("endTime", new Date(newEndTime).toISOString());
 
-    if (newCoverImg) {
+    if (newCoverImg && cropperRef.current) {
       const data = await convertCanvasToBlob(cropperRef.current.getCanvas());
       formData.append("coverImg", data);
     }

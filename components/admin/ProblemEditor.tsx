@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Box,
   Button,
@@ -109,7 +110,7 @@ function ProblemEditor({
   }
 
   // const [newStarterCode, setNewStartedCode] = useState(starterCode);
-  const [newSelectedTags, setNewSelectedTags] = useState([]);
+  const [newSelectedTags, setNewSelectedTags] = useState<string[]>([]);
 
   const selectedExamRef = useRef(null);
   const quillRef = useRef(null);

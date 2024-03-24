@@ -23,7 +23,7 @@ import "react-quill/dist/quill.snow.css";
 
 import axios from "../../lib/axios";
 import { useRouter } from "next/router";
-import { createAspectRatio, Cropper } from "react-advanced-cropper";
+import { createAspectRatio, Cropper, CropperRef } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 
 import dynamic from "next/dynamic";
@@ -42,9 +42,9 @@ const AddExam = () => {
   const [active, setActive] = useState(false);
   const [isBounded, setIsBounded] = useState(false);
   const [totalMarks, setTotalMarks] = useState(100);
-  const [coverImg, setCoverImg] = useState(null);
+  const [coverImg, setCoverImg] = useState("");
 
-  const cropperRef = useRef(null);
+  const cropperRef = useRef<CropperRef>(null);
   const toast = useToast();
   const router = useRouter();
 
@@ -53,8 +53,8 @@ const AddExam = () => {
     const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = async (e) => {
-      setCoverImg(e.target.result);
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      if (e.target && e.target.result) setCoverImg("" + e.target.result);
     };
   };
 
@@ -75,10 +75,11 @@ const AddExam = () => {
       formData.append("marks", totalMarks.toString());
       formData.append("active", active.toString());
       formData.append("isBounded", isBounded.toString());
-      formData.append(
-        "coverImg",
-        await convertCanvasToBlob(cropperRef.current.getCanvas())
-      );
+      if (cropperRef.current)
+        formData.append(
+          "coverImg",
+          await convertCanvasToBlob(cropperRef.current.getCanvas())
+        );
 
       const res = await axios.post("/exams", formData);
       toast({

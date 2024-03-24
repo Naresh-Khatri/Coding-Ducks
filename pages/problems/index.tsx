@@ -82,7 +82,7 @@ function ProblemsPage() {
                     key={idx}
                     index={idx}
                     problem={problem}
-                    isLocked={idx >= 10 && user?.isNoob}
+                    isLocked={idx >= 10 && (user?.isNoob || false)}
                   />
                 ))}
               </Tbody>

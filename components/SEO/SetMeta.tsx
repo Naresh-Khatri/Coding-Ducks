@@ -85,7 +85,7 @@ const extractScriptContents = (xmlString = "") => {
   )
     return [];
 
-  const scriptContents = [];
+  const scriptContents: string[] = [];
   let startIndex = xmlString.indexOf(scriptStartTag);
 
   while (startIndex !== -1) {

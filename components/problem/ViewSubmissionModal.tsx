@@ -49,7 +49,7 @@ function ViewSubmissionModal({
         <ModalHeader>Submission Details</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {error && <Box> {data.status} </Box>}
+          {/* {error && <Box> {(data && data.status) || ""} </Box>} */}
           {isLoading || !submissionData ? (
             <>
               <Stack spacing={5}>
@@ -123,7 +123,11 @@ function ViewSubmissionModal({
                         fontWeight="extrabold"
                         fontSize={"xl"}
                       >
-                        {errorType2Label[submissionData.tests[0].errorType]}
+                        {
+                          errorType2Label[
+                            submissionData.tests[0].errorType || "run-time"
+                          ]
+                        }
                       </Text>
                     </HStack>
                     <Box py={2}>
@@ -134,7 +138,9 @@ function ViewSubmissionModal({
                           w={"100%"}
                           color={"red.400"}
                           dangerouslySetInnerHTML={{
-                            __html: submissionData?.tests[0].errorMessage
+                            __html: (
+                              submissionData?.tests[0].errorMessage || ""
+                            )
                               .split("\n")
                               .slice(1)
                               .join("\n"),
@@ -185,7 +191,7 @@ const Profile = ({ user, timestamp }: { user: IUser; timestamp: string }) => {
       <Flex>
         <Image
           src={user.photoURL}
-          alt={user.fullname}
+          alt={user.fullname || "user"}
           width={50}
           height={50}
           style={{ width: "50px", height: "50px", borderRadius: "50%" }}

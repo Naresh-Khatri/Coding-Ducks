@@ -111,7 +111,9 @@ function DuckletPage() {
     onClose: onDrawerClose,
   } = useDisclosure();
 
-  const [requestingUser, setRequestingUser] = useState<ISocketUser>({});
+  const [requestingUser, setRequestingUser] = useState<ISocketUser | null>(
+    null
+  );
 
   const {
     data: update,
@@ -489,6 +491,7 @@ function DuckletPage() {
             (c) =>
               c.pos && (
                 <Box
+                  key={c.username}
                   position={"absolute"}
                   left={c.pos.x * window.innerWidth || 0}
                   top={c.pos.y * window.innerHeight || 0}
@@ -601,7 +604,7 @@ function DuckletPage() {
         onClose={onAllowRequestModalClose}
       >
         <ModalOverlay />
-        {requestingUser.id && (
+        {requestingUser && (
           <ModalContent>
             <ModalHeader>Join Request</ModalHeader>
             <ModalCloseButton />

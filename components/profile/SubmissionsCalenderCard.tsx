@@ -38,7 +38,8 @@ function SubmissionsCalenderCard({ subsData }: SubmissionCalenderCardProps) {
       date: lastYearDate,
       count: 0,
     });
-  if (data.at(-1).date !== thisYearDate)
+  const lastElement = data.at(-1);
+  if (lastElement && lastElement.date !== thisYearDate)
     data.push({
       level: 0,
       date: thisYearDate,

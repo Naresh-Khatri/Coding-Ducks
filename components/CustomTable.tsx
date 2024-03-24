@@ -110,11 +110,12 @@ function CustomTable({
                   <FormLabel htmlFor="exam">Filter by exam</FormLabel>
                   <Select id="exam" onChange={handleOnFilterChange}>
                     <option value="all">All</option>
-                    {examsList.map((exam) => (
-                      <option key={exam.id} value={exam.id}>
-                        {exam.title}
-                      </option>
-                    ))}
+                    {examsList &&
+                      examsList.map((exam) => (
+                        <option key={exam.id} value={exam.id}>
+                          {exam.title}
+                        </option>
+                      ))}
                   </Select>
                 </FormControl>
               </Flex>
@@ -164,7 +165,7 @@ function CustomTable({
                         <ProblemRow
                           problem={row.original}
                           fetchProblems={refetchData}
-                          examsList={examsList}
+                          examsList={examsList || []}
                         />
                       ) : (
                         <ExamRow

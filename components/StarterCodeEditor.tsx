@@ -15,7 +15,7 @@ interface AceCodeEditorProps {
   fontSize: number;
   setCode: (value: string) => void;
   theme: Theme;
-  lang?: Lang;
+  lang: Lang;
 }
 
 const langToAceMode: { [key in Lang]: IAceModes } = {
@@ -24,6 +24,7 @@ const langToAceMode: { [key in Lang]: IAceModes } = {
   java: "java",
   c: "c_cpp",
   cpp: "c_cpp",
+  other: 'javascript'
 };
 
 function AceCodeEditor({

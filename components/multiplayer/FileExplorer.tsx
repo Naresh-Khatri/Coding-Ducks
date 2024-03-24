@@ -30,7 +30,7 @@ interface File {
 function FileExplorer() {
   // const currRoom = useGlobalStore((state) => state.currRoom);
   const fileSystemTree = useGlobalStore((state) => state.fileSystemTree);
-  const lastOpenedFileId = useGlobalStore((state) => state.lastOpenedFileId);
+  // const lastOpenedFileId = useGlobalStore((state) => state.lastOpenedFileId);
   const selectFile = useGlobalStore((state) => state.selectFile);
 
   console.log(fileSystemTree);

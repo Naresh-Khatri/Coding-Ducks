@@ -15,7 +15,7 @@ import useGlobalStore from "../../stores";
 import Split from "react-split";
 
 function SideBar() {
-  const currRoom = useGlobalStore((state) => state.currRoom);
+  // const currRoom = useGlobalStore((state) => state.currRoom);
   return (
     <Split
       style={{ height: "100%", width: "100%" }}
@@ -30,10 +30,10 @@ function SideBar() {
               <Flex as="span" flex="1" textAlign="left">
                 <Text>room:</Text>
                 <Text fontWeight={"bold"} ml={"1rem"}>
-                  {currRoom.name}
+                  {/* {currRoom.name} */}
                 </Text>
                 <Text color={"whiteAlpha.500"} ml={".3rem"}>
-                  (#{currRoom.id})
+                  {/* (#{currRoom.id}) */}
                 </Text>
               </Flex>
               <AccordionIcon />
@@ -44,11 +44,11 @@ function SideBar() {
               </HStack>
               <HStack>
                 <Text fontWeight={"bold"}>Owner: </Text>
-                <Text>{currRoom.owner?.username}</Text>
+                {/* <Text>{currRoom.owner?.username}</Text> */}
               </HStack>
               <HStack>
                 <Text fontWeight={"bold"}>Created: </Text>
-                <Text>{currRoom.createdAt.toString()}</Text>
+                {/* <Text>{currRoom.createdAt.toString()}</Text> */}
               </HStack>
             </AccordionPanel>
           </AccordionItem>

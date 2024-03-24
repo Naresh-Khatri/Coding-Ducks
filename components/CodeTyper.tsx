@@ -31,7 +31,7 @@ const glowKeyframes = keyframes`
 `;
 
 function CodeTyper() {
-  const cardRef = useRef(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isLargerThan800] = useMediaQuery("(min-width: 800px)");
 
@@ -78,7 +78,8 @@ function CodeTyper() {
       typeof window === "undefined" ||
       typeof Accelerometer === "undefined" ||
       !isTouchScreen() ||
-      isLargerThan800
+      isLargerThan800 ||
+      !cardRef.current
     )
       return;
 
@@ -86,6 +87,7 @@ function CodeTyper() {
     cardRef.current.style.transition = "transform 0.15s";
     const acl = new Accelerometer({ frequency: 60 });
     acl.addEventListener("reading", () => {
+      if (!cardRef.current || !acl.x || !acl.y) return;
       cardRef.current.style.transform = `perspective(500px) rotateX( ${
         acl.y * 3
       }deg) rotateY(${acl.x * 3}deg)`;

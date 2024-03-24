@@ -81,7 +81,7 @@ export default function ToolBar({
           <Select
             maxW={40}
             onChange={(e) => {
-              updateSettings({ theme: e.target.value as Theme });
+              updateSettings({ ...settings, theme: e.target.value as Theme });
             }}
             value={theme}
             color="white"

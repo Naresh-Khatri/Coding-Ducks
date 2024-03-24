@@ -18,14 +18,14 @@ function ProblemPage() {
 
   return (
     <AdminLayout>
-      <Container  p={10} maxW="full" overflowY={"scroll"}>
+      <Container p={10} maxW="full" overflowY={"scroll"}>
         {isLoading ? (
           "Loading..."
         ) : (
           <SubmissionsTable
             query={query}
             setQuery={setQuery}
-            subsData={data.data}
+            subsData={data ? data.data : []}
           />
         )}
       </Container>

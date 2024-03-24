@@ -53,7 +53,7 @@ function ExamDetailsModel({ examData, isOpen, onClose, canStartExam, timerText, 
           </Flex>
           <Text
             color={"gray.500"}
-            noOfLines={readMore ? null : 4}
+            noOfLines={readMore ? 100 : 4}
             pt={4}
             dangerouslySetInnerHTML={{ __html: examData.description }}
           ></Text>

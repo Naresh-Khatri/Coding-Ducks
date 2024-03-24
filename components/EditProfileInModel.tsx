@@ -23,7 +23,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../contexts/userContext";
 
-import { createAspectRatio, Cropper } from "react-advanced-cropper";
+import { createAspectRatio, Cropper, CropperRef } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 import axios from "../lib/axios";
 import FAIcon from "./FAIcon";
@@ -42,17 +42,17 @@ interface EditProfileInModelProps {
 function EditProfileInModel({ onCancel, onSubmit }: EditProfileInModelProps) {
   const { user, updateUser, loadUser } = useContext(userContext);
 
-  const [fullname, setFullname] = useState(user.fullname || "");
-  const [newRoll, setNewRoll] = useState(user.roll || "");
-  const [newEmail, setNewEmail] = useState(user.email || "");
-  const [newUsername, setNewUsername] = useState(user.username || "");
+  const [fullname, setFullname] = useState("");
+  const [newRoll, setNewRoll] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newUsername, setNewUsername] = useState("");
   const [isUsernameValid, setIsUsernameValid] = useState(false);
   const [isRollValid, setIsRollValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
 
-  const [newProfilePicture, setNewProfilePicture] = useState(null);
+  const [newProfilePicture, setNewProfilePicture] = useState<string>("");
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const cropperRef = useRef(null);
+  const cropperRef = useRef<CropperRef>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
@@ -64,6 +64,7 @@ function EditProfileInModel({ onCancel, onSubmit }: EditProfileInModelProps) {
 
   const toast = useToast();
   const updateProfile = async () => {
+    if (!user) return;
     setIsLoading(true);
     const payload: ProfileUpdatePayload = {};
     if (user.fullname !== fullname) payload.fullname = fullname;
@@ -97,6 +98,8 @@ function EditProfileInModel({ onCancel, onSubmit }: EditProfileInModelProps) {
     }
   };
   const UploadProfilePicture = async () => {
+    if (!cropperRef.current) return;
+
     setIsLoading(true);
     const convertCanvasToBlob = (canvas: any): Promise<Blob> => {
       return new Promise((resolve) => {
@@ -147,15 +150,19 @@ function EditProfileInModel({ onCancel, onSubmit }: EditProfileInModelProps) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async (e) => {
-      setNewProfilePicture(e.target.result);
+      // @ts-check
+      setNewProfilePicture("" + e.target);
     };
   };
 
   useEffect(() => {
-    handleRollChange({ target: { value: newRoll } });
-    handleUsernameChange({ target: { value: newUsername } });
-    handleEmailChange({ target: { value: newEmail } });
-  });
+    if (!user) return;
+    setFullname(user.fullname || "");
+    setNewProfilePicture(user.photoURL || "");
+    handleRollChange({ target: { value: user.roll } });
+    handleUsernameChange({ target: { value: user.username } });
+    handleEmailChange({ target: { value: user.email } });
+  }, [user]);
   const handleUsernameChange = (e) => {
     const username = e.target.value;
     setNewUsername(username);

@@ -18,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FAIcon from "../FAIcon";
 import { IRatingUser } from "../../types";
+import UserAvatar from "components/utils/UserAvatar";
 
 interface LikeDislikeButtonsProps {
   problemId: number;
@@ -132,11 +133,12 @@ const UsersList: FC<{ users: IRatingUser[] }> = ({ users }) => {
       {users.map((user) => (
         <ListItem key={user.id} style={{ listStyle: "none" }}>
           <Flex alignItems="center" justifyContent="space-between" p={1}>
-            <Image
-              src={user.photoURL}
+            <UserAvatar
+              src={user.photoURL || ""}
+              name={user.username}
               alt="user profile"
-              width={30}
-              height={30}
+              w={30}
+              h={30}
               style={{ borderRadius: "50%" }}
             />
             <Link href={`/users/${user.username}`}>

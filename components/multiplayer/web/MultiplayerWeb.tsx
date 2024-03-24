@@ -6,6 +6,7 @@ import { Box, Button, Center, Flex, HStack, Text } from "@chakra-ui/react";
 import Split from "react-split";
 import FileIcons from "../FileIcons";
 
+import { LanguageSupport } from "@codemirror/language";
 import { dracula } from "@uiw/codemirror-theme-dracula";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
@@ -16,7 +17,7 @@ import useGlobalStore from "../../../stores";
 import { SocketIOProvider } from "y-socket.io";
 import { yCollab } from "y-codemirror.next";
 import { vim } from "@replit/codemirror-vim";
-import { useMutateRoomYDoc } from "hooks/useRoomsData";
+// import { useMutateRoomYDoc } from "hooks/useRoomsData";
 const CodeMirror = dynamic(() => import("@uiw/react-codemirror"), {
   ssr: false,
 });
@@ -37,7 +38,7 @@ function MultiplayerWeb({ room }: IMultiplayerWebProps) {
   const [srcDoc, setSrcDoc] = useState("Loading...");
   const [provider, setProvider] = useState<SocketIOProvider>();
 
-  const { mutate } = useMutateRoomYDoc();
+  // const { mutate } = useMutateRoomYDoc();
   console.log(room);
 
   useEffect(() => {
@@ -63,8 +64,8 @@ function MultiplayerWeb({ room }: IMultiplayerWebProps) {
     );
     provider.on("status", (status) => {
       console.log(status);
-      if(status === "connected"){
-        Y.applyUpdate(yDoc, new Uint8Array(room.yDoc));
+      if (status === "connected") {
+        // Y.applyUpdate(yDoc, new Uint8Array(room.yDoc));
       }
     });
     setProvider(provider);
@@ -92,26 +93,26 @@ function MultiplayerWeb({ room }: IMultiplayerWebProps) {
         </html>`
       );
       console.log("will update");
-      mutate(
-        {
-          roomId: room.id,
-          contents: Buffer.from(Y.encodeStateAsUpdate(yDoc)),
-        },
-        {
-          onSettled(data, error, variables, context) {
-            console.log("ydoc stored");
-            // console.log(Y.decodeUpdate(data.yDoc), Y.encodeStateAsUpdate(yDoc));
-            // console.log(
-            //   typeof new Uint8Array(data.yDoc),
-            //   typeof Y.encodeStateAsUpdate(yDoc)
-            // );
-          },
-        }
-      );
+      // mutate(
+      //   {
+      //     roomId: room.id,
+      //     contents: Buffer.from(Y.encodeStateAsUpdate(yDoc)),
+      //   },
+      //   {
+      //     onSettled(data, error, variables, context) {
+      //       console.log("ydoc stored");
+      //       // console.log(Y.decodeUpdate(data.yDoc), Y.encodeStateAsUpdate(yDoc));
+      //       // console.log(
+      //       //   typeof new Uint8Array(data.yDoc),
+      //       //   typeof Y.encodeStateAsUpdate(yDoc)
+      //       // );
+      //     },
+      //   }
+      // );
     },
     1000
   );
-  if (!provider) return <p>"Loading..."</p>;
+  if (!provider) return <p>Loading...</p>;
 
   return (
     <Box
@@ -179,7 +180,7 @@ const CMEditor = ({
   lang: Lang;
   provider: SocketIOProvider;
 }) => {
-  const extensions = [];
+  const extensions: LanguageSupport[] = [];
   if (lang === "html") extensions.push(html());
   if (lang === "css") extensions.push(css());
   if (lang === "js") extensions.push(javascript());

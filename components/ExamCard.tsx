@@ -20,7 +20,7 @@ function ExamCard({ examData }: { examData: IExam }) {
   const { isOpen, onOpen, onClose, onToggle } = useDisclosure();
 
   const [timerText, setTimerText] = useState("");
-  const [timer, setTimer] = useState(null);
+  const [timer, setTimer] = useState<any>(null);
   const [hasEnded, setHasEnded] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 

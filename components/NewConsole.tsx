@@ -17,7 +17,7 @@ import FAIcon from "./FAIcon";
 import { Output } from "../types";
 
 interface NewConsoleProps {
-  output: Output;
+  output: Output | null;
   isLoading: boolean;
   onClose: () => void;
 }
@@ -45,7 +45,11 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
       <Box w={"100%"} p={5} overflowY={"auto"}>
         <HStack justifyContent={"space-between"}>
           <Text color={"red.400"} fontWeight="extrabold" fontSize={"xl"}>
-            {errorType2Label[errorTestCase.errorType]}
+            {
+              errorType2Label[
+                (errorTestCase && errorTestCase.errorType) || "run-time"
+              ]
+            }
           </Text>
           <IconButton
             aria-label="close"
@@ -68,7 +72,7 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               p={0}
               fontWeight={"semibold"}
               dangerouslySetInnerHTML={{
-                __html: errorTestCase?.output?.replace(/\n/g, "<br />"),
+                __html: errorTestCase?.output?.replace(/\n/g, "<br />") || "",
               }}
             ></Text>
           </Box>
@@ -149,10 +153,11 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               w={"100%"}
               p={0}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.stdin?.replace(
-                  /\n/g,
-                  "<br />"
-                ),
+                __html:
+                  output?.results[selectedCase]?.stdin?.replace(
+                    /\n/g,
+                    "<br />"
+                  ) || "",
               }}
             ></Text>
           </Box>
@@ -164,10 +169,11 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               as="code"
               w={"100%"}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.output?.replace(
-                  /\n/g,
-                  "<br />"
-                ),
+                __html:
+                  output?.results[selectedCase]?.output?.replace(
+                    /\n/g,
+                    "<br />"
+                  ) || "",
               }}
             ></Text>
           </Box>
@@ -179,10 +185,11 @@ function NewConsole({ output, isLoading, onClose }: NewConsoleProps) {
               as="code"
               w={"100%"}
               dangerouslySetInnerHTML={{
-                __html: output?.results[selectedCase]?.expectedOutput?.replace(
-                  /\n/g,
-                  "<br />"
-                ),
+                __html:
+                  output?.results[selectedCase]?.expectedOutput?.replace(
+                    /\n/g,
+                    "<br />"
+                  ) || "",
               }}
             ></Text>
           </Box>

@@ -3,6 +3,7 @@ import React from "react";
 import FAIcon from "../FAIcon";
 import { LEAGUES } from "../../data/leagues";
 import { IUserStatsResponse } from "../../types";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
   return (
@@ -33,7 +34,7 @@ function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
         >
           <FAIcon
             height={"2rem"}
-            icon={LEAGUES[statsData.league].icon}
+            icon={LEAGUES[statsData.league].icon as IconProp}
             color={LEAGUES[statsData.league].color}
           />
           <Text fontSize={"sm"} fontWeight={"bold"} mt={3}>
@@ -71,7 +72,9 @@ function OverallStatsCard({ statsData }: { statsData: IUserStatsResponse }) {
               days
             </Text>
           </HStack>
-          <Text fontSize={"sm"} textAlign={'center'}>Longest Streak </Text>
+          <Text fontSize={"sm"} textAlign={"center"}>
+            Longest Streak{" "}
+          </Text>
         </Flex>
         <Divider orientation="vertical" height={10} />
         <Flex

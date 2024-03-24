@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useExamData } from "../hooks/useExamsData";
 import { useRouter } from "next/router";
 import {
   Button,
-  Center,
   HStack,
   Modal,
   ModalBody,
@@ -12,9 +11,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Stack,
   Text,
-  Toast,
   VStack,
   useDisclosure,
   useToast,
@@ -28,9 +25,12 @@ function Timer() {
   const { slug } = router.query;
   const { data: examData } = useExamData(slug as string);
 
-  const [timer, setTimer] = useState(null);
+  const [timer, setTimer] = useState<NodeJS.Timeout>();
   const [timerText, setTimerText] = useState("Unbounded");
-  const { isBounded, endTime } = examData;
+  const { isBounded, endTime } = examData as {
+    isBounded: boolean;
+    endTime: string;
+  };
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [warningShown, setWarningShown] = useState(false);
 

@@ -48,7 +48,7 @@ function MultiplayerPage() {
 
   // check params for room name
   const createRoom = async () => {
-    if (!user.id) return;
+    if (!user || !socket) return;
     setIsCreatingRoom(true);
     const newRoom = {
       roomname: roomname,

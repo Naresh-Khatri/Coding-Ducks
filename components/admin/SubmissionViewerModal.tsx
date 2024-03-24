@@ -45,7 +45,7 @@ function SubmissionViewerModal({
   const { data, isLoading, error } = useSubmissionData(submissionId, isOpen);
 
   const submission = data?.data;
-  if (isLoading) return <Spinner />;
+  if (isLoading || !submission) return <Spinner />;
   const { User: user, Exam: exam, Problem: problem } = submission;
   return (
     <Modal

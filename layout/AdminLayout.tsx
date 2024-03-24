@@ -22,7 +22,7 @@ function AdminLayout({ children }) {
 
   useEffect(() => {
     //TODO: add better redirect logic user is not logged in
-    if (Object.keys(user).length && !user?.isAdmin) {
+    if (user && !user?.isAdmin) {
       toast({
         title: "You are not authorized to view this page",
         status: "error",

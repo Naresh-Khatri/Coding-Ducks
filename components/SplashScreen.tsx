@@ -2,8 +2,8 @@ import { Container, Flex, useMediaQuery } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 function SplashScreen() {
-  const logoImageRef = useRef(null);
-  const bgRef = useRef(null);
+  const logoImageRef = useRef<HTMLImageElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
   const [isLargerThan800] = useMediaQuery("(min-width: 800px)");
 
   useEffect(() => {
@@ -13,13 +13,16 @@ function SplashScreen() {
     let t3: NodeJS.Timeout;
     let t4: NodeJS.Timeout;
     t1 = setTimeout(() => {
+      if (!logoImageRef.current) return;
       logoImageRef.current.classList.add(
         isLargerThan800 ? "screen-end" : "screen-end-mobile"
       );
       t2 = setTimeout(() => {
+        if (!bgRef.current) return;
         bgRef.current.classList.add("screen-bg-end");
       }, 500);
       t3 = setTimeout(() => {
+        if (!bgRef.current) return;
         bgRef.current.style.display = "none";
       }, 900);
       t4 = setTimeout(() => {

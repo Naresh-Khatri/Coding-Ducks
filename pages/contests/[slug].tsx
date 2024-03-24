@@ -32,7 +32,7 @@ function TakeTest() {
 
   const { slug } = router.query;
   const { lang, theme } = settings;
-  const [output, setOutput] = useState<Output>();
+  const [output, setOutput] = useState<Output | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentProblemIdx, setCurrentProblemIdx] = useState(1);
   const [lastSubmissionPassed, setLastSubmissionPassed] = useState(false);
@@ -100,6 +100,7 @@ function TakeTest() {
     }
   };
   const onCodeReset = () => {
+    if (!problemsData) return;
     setCode(
       problemsData[currentProblemIdx - 1].starterCodes.find(
         (sc) => sc.lang === lang
@@ -201,6 +202,7 @@ function TakeTest() {
   // };
 
   const runCode = async (submit = false) => {
+    if (!problemsData || !examData) return;
     setIsLoading(true);
     setShowConsole(true);
     const payload = {

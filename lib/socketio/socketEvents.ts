@@ -1,19 +1,19 @@
 import { Lang } from "../../types";
 
 export interface IYJsUser {
-  clientId?: number;
-  color?: string;
-  id?: number;
+  clientId: number;
+  color: string;
+  id: number;
   fullname?: string;
   email?: string;
-  photoURL?: string;
-  username?: string;
+  photoURL: string;
+  username: string;
   openedFileId?: number;
   pos?: { x: number; y: number };
 }
 export interface ISocketUser {
   socketId?: string;
-  id?: number;
+  id: number;
   fullname?: string;
   email?: string;
   photoURL?: string;
@@ -28,13 +28,13 @@ export interface ISocketRoom {
   id: number;
   name: string;
   isPublic?: boolean;
-  lang?: Lang;
+  lang: Lang;
   content?: string;
-  ownerId?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  owner?: ISocketUser;
-  clients?: ISocketUser[];
+  ownerId: number;
+  createdAt: Date;
+  updatedAt: Date;
+  owner: ISocketUser;
+  clients: ISocketUser[];
   cursors?: any[];
   msgsList?: any[];
   con: Buffer;

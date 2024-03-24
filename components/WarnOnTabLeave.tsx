@@ -33,7 +33,7 @@ function WarnOnTabLeave() {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [remainingTime, setRemainingTime] = useState(COOLDOWN_PERIOD);
-  const [timer, setTimer] = useState(null);
+  const [timer, setTimer] = useState<NodeJS.Timeout>();
 
   const toast = useToast();
 

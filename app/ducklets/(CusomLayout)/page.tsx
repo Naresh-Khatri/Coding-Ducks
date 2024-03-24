@@ -74,7 +74,7 @@ function DuckletsPage() {
         )}
 
         <Text mt={"4rem"} fontSize={"2xl"}>
-          Other user's ducklets
+          Other user&apos;s ducklets
         </Text>
         <Divider mb={5} />
         {otherRoomsLoading ? (

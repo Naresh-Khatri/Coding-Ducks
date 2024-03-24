@@ -108,19 +108,20 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
         </Td>
         <Td m={0} p={0} pl={5} px={{ base: 1, md: 3 }}>
           <AvatarGroup size="md" max={2} h={"50px"}>
-            {problem.submissions.map((submission, idx) => (
-              <Avatar
-                key={idx}
-                size={"md"}
-                name={submission.User.fullname}
-                src={submission.User.photoURL}
-                onClick={onShowSolvedByOpen}
-                // onClick={() =>
-                //   (window.location.href = `/users/${submission.User.username}`)
-                // }
-                cursor={"pointer"}
-              />
-            ))}
+            {problem.submissions &&
+              problem.submissions.map((submission, idx) => (
+                <Avatar
+                  key={idx}
+                  size={"md"}
+                  name={submission.User.fullname}
+                  src={submission.User.photoURL}
+                  onClick={onShowSolvedByOpen}
+                  // onClick={() =>
+                  //   (window.location.href = `/users/${submission.User.username}`)
+                  // }
+                  cursor={"pointer"}
+                />
+              ))}
           </AvatarGroup>
           <Modal isOpen={isShowSolvedByOpen} onClose={onShowSolvedByClose}>
             <ModalOverlay />
@@ -131,6 +132,7 @@ function ProblemRow({ isLocked, problem }: ProblemRowProps) {
                 {isLoading ? (
                   <Spinner />
                 ) : (
+                  solvedByUsers &&
                   solvedByUsers.map((user) => (
                     <UserList
                       key={user.id}

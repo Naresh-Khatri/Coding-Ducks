@@ -22,7 +22,7 @@ interface RightEditorContainerProps {
   problemData: IProblem;
   onCodeRetrievalModalOpen: () => void;
   onCodeResetModalOpen: () => void;
-  output: Output;
+  output: Output | null;
   showConsole: boolean;
   setShowConsole: (show: boolean) => void;
   lang: Lang;
@@ -42,7 +42,7 @@ function RightEditorContainer({
     Split & {
       split: SplitComponent;
     }
-  >();
+  >(null);
 
   const translation = 6;
   const duration = 16;
@@ -67,7 +67,7 @@ function RightEditorContainer({
     if (showConsole) {
       requestAnimationFrame(() => openAnimation(0));
     } else {
-      let counter = splitRef.current.split.getSizes()[1];
+      let counter = splitRef.current && splitRef.current.split.getSizes()[1];
       requestAnimationFrame(() => closeAnimation(counter));
     }
   }, [showConsole]);
@@ -151,7 +151,7 @@ interface BottomEditorContainerProps {
   problemData: IProblem;
   onCodeRetrievalModalOpen: () => void;
   onCodeResetModalOpen: () => void;
-  output: Output;
+  output: Output | null;
   showConsole: boolean;
   setShowConsole: (show: boolean) => void;
   lang: Lang;

@@ -37,7 +37,7 @@ function ProblemPage() {
 
   const router = useRouter();
   const { slug } = router.query;
-  const [output, setOutput] = useState<Output>();
+  const [output, setOutput] = useState<Output | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
   const [submittedSubId, setSubmittedSubId] = useState<number>(0);
@@ -113,7 +113,9 @@ function ProblemPage() {
 
   const onCodeReset = () => {
     setCode(
-      problemData.starterCodes.find((sc) => sc.lang === lang)?.code || ""
+      (problemData &&
+        problemData.starterCodes.find((sc) => sc.lang === lang)?.code) ||
+        ""
     );
     toast({
       title: "Code Reset",
@@ -131,7 +133,7 @@ function ProblemPage() {
     isLoading: lastSubmissionIsLoading,
     fetchStatus: lastSubmissionFetchStatus,
   } = useLastSubmissionDataV2(
-    problemData?.id,
+    problemData ? problemData?.id : 0,
     lang,
     onCodeRetrievalSuccess,
     onCodeRetrievalError
@@ -146,7 +148,7 @@ function ProblemPage() {
       code,
       lang,
       submit,
-      problemId: problemData.id,
+      problemId: problemData && problemData.id,
     };
     try {
       const res = await axios.post("/runCode", payload);

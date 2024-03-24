@@ -114,8 +114,8 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                         height={40}
                       />
                       <Box
-                        ml={!self(msg.user.id) && "3.2rem"}
-                        mr={self(msg.user.id) && "3.2rem"}
+                        ml={!self(msg.user.id) ? "3.2rem" : "0"}
+                        mr={self(msg.user.id) ? "3.2rem" : "0"}
                       >
                         {!self(msg.user.id) && (
                           <Text fontWeight={"extrabold"} w={"fit-content"}>
@@ -138,8 +138,8 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                       </Box>
                       <Text
                         alignSelf={"center"}
-                        mr={self(msg.user.id) && ".5rem"}
-                        ml={!self(msg.user.id) && ".5rem"}
+                        mr={self(msg.user.id) ? ".5rem" : "0"}
+                        ml={!self(msg.user.id) ? ".5rem" : "0"}
                         color={"gray.500"}
                       >
                         {formatTime(msg.time.toString())}

@@ -13,7 +13,7 @@ function ErrorPage404() {
         alignItems={"center"}
         justifyContent={"center"}
       >
-        <Flex flex={{ base: null, lg: 1 }}>
+        <Flex>
           <Flex
             direction={{ base: "row", lg: "column" }}
             justifyContent={"center"}
@@ -27,7 +27,6 @@ function ErrorPage404() {
           </Flex>
         </Flex>
         <Flex
-          flex={{ base: null, lg: 3 }}
           direction={"column"}
           alignItems={"center"}
           justifyContent={"center"}

@@ -106,6 +106,8 @@ const UserCard = ({ user }: { user: IUser }) => {
     if (rank === 3) return "darkorange";
     return "gray";
   };
+  const bg1 = useColorModeValue("white", "#111928bf");
+  const bg2 = useColorModeValue("gray.100", "#111528");
   if (!user.points || !user.rank) return <Text>stats not found</Text>;
   return (
     <Link href={`/users/${user.username}`}>
@@ -115,12 +117,12 @@ const UserCard = ({ user }: { user: IUser }) => {
         justifyContent={"center"}
         h={{ base: 150, md: 200 }}
         position="relative"
-        bg={useColorModeValue("white", "#111928bf")}
+        bg={bg1}
         boxShadow="2xl"
         backdropFilter="blur(4px) saturate(180%)"
         borderRadius="12px"
         border="1px solid rgba(255,255,255,.125)"
-        _hover={{ backgroundColor: useColorModeValue("gray.100", "#111528") }}
+        _hover={{ backgroundColor: bg2 }}
       >
         <Box
           position="absolute"
