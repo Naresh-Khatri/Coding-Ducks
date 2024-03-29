@@ -14,9 +14,9 @@ import { javascript } from "@codemirror/lang-javascript";
 import dynamic from "next/dynamic";
 import { debounce } from "../../../lib/utils";
 import useGlobalStore from "../../../stores";
-import { SocketIOProvider } from "y-socket.io";
 import { yCollab } from "y-codemirror.next";
 import { vim } from "@replit/codemirror-vim";
+import { WebsocketProvider } from "y-websocket";
 // import { useMutateRoomYDoc } from "hooks/useRoomsData";
 const CodeMirror = dynamic(() => import("@uiw/react-codemirror"), {
   ssr: false,
@@ -36,18 +36,18 @@ function MultiplayerWeb({ room }: IMultiplayerWebProps) {
   const yDoc = useGlobalStore((state) => state.yDoc);
 
   const [srcDoc, setSrcDoc] = useState("Loading...");
-  const [provider, setProvider] = useState<SocketIOProvider>();
+  const [provider, setProvider] = useState<WebsocketProvider>();
 
   // const { mutate } = useMutateRoomYDoc();
   console.log(room);
 
   useEffect(() => {
-    const provider = new SocketIOProvider(
-      "http://localhost:3333",
-      // "wss://dev3333.codingducks.live",
+    const provider = new WebsocketProvider(
+      process.env.NODE_ENV === "development"
+        ? "ws://localhost:3334"
+        : "wss://yjs.codingducks.live",
       "room:" + room.id,
-      yDoc,
-      { autoConnect: true }
+      yDoc
     );
     console.log(room);
     // Y.applyUpdate(yDoc, new Uint8Array(room.yDoc));
@@ -178,7 +178,7 @@ const CMEditor = ({
 }: {
   yDoc: Y.Doc;
   lang: Lang;
-  provider: SocketIOProvider;
+  provider: WebsocketProvider;
 }) => {
   const extensions: LanguageSupport[] = [];
   if (lang === "html") extensions.push(html());

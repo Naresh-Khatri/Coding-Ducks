@@ -241,8 +241,9 @@ function DuckletPage() {
   const setupYjs = (room: ISocketRoom) => {
     if (!user || !room) return null;
     const _provider = new WebsocketProvider(
-      "ws://localhost:3334",
-      // "wss://dev3333.codingducks.live",
+      process.env.NODE_ENV === "development"
+        ? "ws://localhost:3334"
+        : "wss://yjs.codingducks.live",
       "room:" + room.id,
       yDoc
     );
