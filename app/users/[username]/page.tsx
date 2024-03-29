@@ -22,6 +22,7 @@ import ExamStatsCard from "../../../components/profile/ExamStatsCard";
 import SubmissionsCalenderCard from "../../../components/profile/SubmissionsCalenderCard";
 import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
+import generateMeta from "components/SEO/generateMeta";
 
 function UsersPage() {
   const [isMobile] = useMediaQuery("(max-width: 768px)", {
@@ -44,13 +45,6 @@ function UsersPage() {
   if (!statsData) return <p> waiting</p>;
   return (
     <NormalLayout>
-      <SetMeta
-        title={`${userData.username} - User Profile and Achievements`}
-        description={`bio - ${userData?.bio}`}
-        keywords={`${userData?.fullname}, user profile, coding achievements, coding solutions, community contributions`}
-        image={userData?.photoURL}
-        url={`https://www.codingducks.live/users/${userData?.username}`}
-      />
       <Container maxW={"8xl"}>
         {isMobile ? (
           <VStack>
