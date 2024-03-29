@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Box,
   Button,
   Drawer,
   DrawerBody,
@@ -33,6 +34,10 @@ import {
   faCircle,
   faEye,
   faEyeSlash,
+  faList,
+  faTableColumns,
+  faWindowMaximize,
+  faWindowMinimize,
 } from "@fortawesome/free-solid-svg-icons";
 import DucksletsList from "./DucksletsList";
 import Link from "next/link";
@@ -42,6 +47,7 @@ import { WarningTwoIcon } from "@chakra-ui/icons";
 import ShareMenu from "./ShareMenu";
 import SettingsMenu from "./SettingsMenu";
 import UserAvatar from "../utils/UserAvatar";
+import { Dispatch, SetStateAction } from "react";
 
 interface IDuckeletsNavbarProps {
   user: IUser | null;
@@ -57,6 +63,8 @@ interface IDuckeletsNavbarProps {
   refetchCurrRoom?: () => void;
   roomMutationLoading?: boolean;
   clients?: IYJsUser[];
+  layout: "vertical" | "horizontal";
+  setLayout: Dispatch<SetStateAction<"horizontal" | "vertical">>;
 }
 const DuckletsNavbar = ({
   room,
@@ -66,6 +74,8 @@ const DuckletsNavbar = ({
   refetchCurrRoom,
   roomMutationLoading,
   clients,
+  layout,
+  setLayout,
 }: IDuckeletsNavbarProps) => {
   const {
     isOpen: isDrawerOpen,
@@ -197,38 +207,73 @@ const DuckletsNavbar = ({
       </HStack>
 
       <HStack>
-        {!userIsGuest && (
-          <HStack>
-            {room?.isPublic ? (
-              <HStack>
-                <FAIcon icon={faEye} fontSize={"1rem"} />
-                <Text color={"green"}>(Public)</Text>
-              </HStack>
-            ) : (
-              <HStack>
-                <FAIcon icon={faEyeSlash} fontSize={"1rem"} />
-                <Text color={"red"}>(Private)</Text>
-              </HStack>
-            )}
-            <HStack>
-              <FAIcon icon={faCircle} fontSize={"0.5rem"} />
-              {clients &&
-                clients.map((client) => (
-                  <UserAvatar
-                    key={client.clientId}
-                    src={client.photoURL || ""}
-                    name={client.fullname}
-                    alt={"profile picture"}
-                    w={40}
-                    h={40}
-                    style={{
-                      borderRadius: "50%",
-                      border: "3px solid " + client.color,
-                    }}
-                  />
-                ))}
+        <Tooltip hasArrow label="Change layout">
+          <Button
+            aria-label="change layout"
+            onClick={() => {
+              setLayout((p) => {
+                if (p === "horizontal") return "vertical";
+                else return "horizontal";
+              });
+            }}
+            variant={"ghost"}
+            position={"relative"}
+          >
+            <Box
+              position={"absolute"}
+              left={layout === "horizontal" ? 2 : 10}
+              transition={"left 0.3s ease"}
+              right={0}
+              color={"purple.400"}
+              bg={"ActiveBorder"}
+              borderRadius={5}
+              w={8}
+              h={8}
+            ></Box>
+            <HStack zIndex={1} gap={4}>
+              <FAIcon icon={faTableColumns} fontSize={"1rem"} />
+              <FAIcon icon={faWindowMaximize} fontSize={"1rem"} />
             </HStack>
-          </HStack>
+          </Button>
+        </Tooltip>
+        <FAIcon icon={faCircle} fontSize={"0.5rem"} />
+        {!userIsGuest && (
+          <Tooltip
+            hasArrow
+            label={`This ducklet is ${room.isPublic ? "public" : "private"}`}
+          >
+            <HStack>
+              {room?.isPublic ? (
+                <HStack>
+                  <FAIcon icon={faEye} fontSize={"1rem"} />
+                  <Text color={"green"}>(Public)</Text>
+                </HStack>
+              ) : (
+                <HStack>
+                  <FAIcon icon={faEyeSlash} fontSize={"1rem"} />
+                  <Text color={"red"}>(Private)</Text>
+                </HStack>
+              )}
+              <HStack>
+                <FAIcon icon={faCircle} fontSize={"0.5rem"} />
+                {clients &&
+                  clients.map((client) => (
+                    <UserAvatar
+                      key={client.clientId}
+                      src={client.photoURL || ""}
+                      name={client.fullname}
+                      alt={"profile picture"}
+                      w={40}
+                      h={40}
+                      style={{
+                        borderRadius: "50%",
+                        border: "3px solid " + client.color,
+                      }}
+                    />
+                  ))}
+              </HStack>
+            </HStack>
+          </Tooltip>
         )}
         {userIsGuest && (
           <Tooltip

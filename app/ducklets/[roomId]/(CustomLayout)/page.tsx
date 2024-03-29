@@ -85,8 +85,9 @@ function DuckletPage() {
     isError: isErrorRoomData,
     refetch: refetchCurrRoom,
   } = useRoomData({ id: +roomId });
-  const [srcDoc, setSrcDoc] = useState("Loading...");
+  const [srcDoc, setSrcDoc] = useState("<h1>Loading...</h1>");
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
+  const [layout, setLayout] = useState<"horizontal" | "vertical">("horizontal");
 
   const { mutate: mutateRoomContents } = useMutateRoomContents(+roomId);
   const { mutate: mutateRoom, isLoading: roomMutationLoading } = useMutateRoom(
@@ -551,6 +552,8 @@ function DuckletPage() {
           refetchCurrRoom={refetchCurrRoom}
           roomMutationLoading={roomMutationLoading}
           clients={clients}
+          layout={layout}
+          setLayout={setLayout}
         />
         <Box
           width={"100vw"}
@@ -559,15 +562,17 @@ function DuckletPage() {
           //   bg={"#282A36"}
         >
           <Split
+            key={layout}
             style={{ height: "calc(100dvh - 48px)", width: "100%" }}
-            direction="vertical"
+            className={layout === "horizontal" ? "split-h" : "split-v"}
+            direction={layout === "horizontal" ? "horizontal" : "vertical"}
             minSize={200}
             sizes={[40, 60]}
           >
             <Box h={"100%"}>
               <Split
-                className="split-h"
-                direction="horizontal"
+                className={layout !== "horizontal" ? "split-h" : "split-v"}
+                direction={layout !== "horizontal" ? "horizontal" : "vertical"}
                 minSize={0}
                 snapOffset={50}
                 style={{
