@@ -34,6 +34,7 @@ import {
   ModalOverlay,
   Spinner,
   Text,
+  Tooltip,
   VStack,
   useDisclosure,
   useToast,
@@ -66,6 +67,7 @@ import DuckletsNavbar from "components/ducklets/Navbar";
 import UserAvatar from "components/utils/UserAvatar";
 import Link from "next/link";
 import { LangSettingsPopover } from "components/ducklets/LangSettingsPopover";
+import SetMeta from "components/SEO/SetMeta";
 
 const CMEditor = dynamic(
   () => import("components/editors/CMEditorWithCollab"),
@@ -422,7 +424,7 @@ function DuckletPage() {
     return (
       <Center h={"100dvh"} w={"full"}>
         <VStack>
-          <Text>You cannot edit in the ducklet</Text>
+          <Text>You cannot edit the ducklet</Text>
           <Button
             colorScheme="purple"
             onClick={() => {
@@ -431,13 +433,25 @@ function DuckletPage() {
           >
             Open as Guest
           </Button>
-          <Button
-            colorScheme="purple"
-            onClick={handleRequestAccess}
-            isLoading={waitingForJoinRequest}
+
+          <Tooltip
+            hasArrow
+            label={!user && "Login to request access"}
+            placement="right"
+            bg="red.600"
           >
-            Request access
-          </Button>
+            <Button
+              colorScheme="purple"
+              isDisabled={!user}
+              onClick={handleRequestAccess}
+              isLoading={waitingForJoinRequest}
+            >
+              Request access
+            </Button>
+          </Tooltip>
+          <Link href={"/ducklets"}>
+            <Button>Back</Button>
+          </Link>
         </VStack>
       </Center>
     );
@@ -448,6 +462,7 @@ function DuckletPage() {
   if (currRoom?.code === 269)
     return (
       <Center h={"100dvh"} w={"full"}>
+        <SetMeta title="Room is private" />
         <VStack>
           <Text>You are not allowed in this private room</Text>
           {/* <Text as="pre">
@@ -483,6 +498,7 @@ function DuckletPage() {
 
   return (
     <>
+      <SetMeta />
       <Flex direction={"column"} h={"100%"} position={"relative"}>
         {clients
           .filter((c) => c.username !== user?.username)
