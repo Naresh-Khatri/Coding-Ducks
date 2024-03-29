@@ -14,7 +14,9 @@ export async function generateMetadata({ params }) {
       url: `https://www.codingducks.live/ducklets/${roomId}`,
     });
     return metaData;
-  } catch (err) {}
+  } catch (err) {
+    console.error(err);
+  }
 }
 function DuckletLayout({ children }: { children: ReactNode }) {
   return children;

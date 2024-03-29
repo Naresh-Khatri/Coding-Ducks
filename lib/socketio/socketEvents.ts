@@ -27,6 +27,7 @@ export interface ISocketUser {
 export interface ISocketRoom {
   id: number;
   name: string;
+  description?: string;
   isPublic?: boolean;
   lang: Lang;
   content?: string;
