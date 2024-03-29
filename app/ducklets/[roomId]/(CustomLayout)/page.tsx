@@ -1,5 +1,6 @@
 "use client";
 import { use, useEffect, useState } from "react";
+import { WebsocketProvider } from "y-websocket";
 
 import {
   ISocketRoom,
@@ -42,8 +43,7 @@ import Split from "react-split";
 import dynamic from "next/dynamic";
 import { debounce, getRandColor } from "lib/utils";
 import useGlobalStore from "stores";
-import { SocketIOProvider } from "y-socket.io";
-import { Socket, io } from "socket.io-client";
+import { io } from "socket.io-client";
 import {
   useMutateRoom,
   useMutateRoomContents,
@@ -84,7 +84,7 @@ function DuckletPage() {
     refetch: refetchCurrRoom,
   } = useRoomData({ id: +roomId });
   const [srcDoc, setSrcDoc] = useState("Loading...");
-  const [provider, setProvider] = useState<SocketIOProvider | null>(null);
+  const [provider, setProvider] = useState<WebsocketProvider | null>(null);
 
   const { mutate: mutateRoomContents } = useMutateRoomContents(+roomId);
   const { mutate: mutateRoom, isLoading: roomMutationLoading } = useMutateRoom(
@@ -239,15 +239,14 @@ function DuckletPage() {
     setSocket(_socket);
   };
   const setupYjs = (room: ISocketRoom) => {
-    if (!user) return null;
-    const _provider = new SocketIOProvider(
-      "http://localhost:3333",
+    if (!user || !room) return null;
+    const _provider = new WebsocketProvider(
+      "ws://localhost:3334",
       // "wss://dev3333.codingducks.live",
-      "room:" + room?.id,
-      yDoc,
-      { autoConnect: true, resyncInterval: 1000 }
+      "room:" + room.id,
+      yDoc
     );
-    console.log(room);
+    // console.log(room);
     // Y.applyUpdate(yDoc, new Uint8Array(room.yDoc));
 
     _provider.awareness.on("update", (changes) => {
@@ -272,7 +271,7 @@ function DuckletPage() {
           contentCSS: _css,
           contentJS: _js,
         });
-        if (tr.local) saveContentsInDB();
+        // if (tr.local) saveContentsInDB();
       }
     );
     _provider.on("status", (status) => {
@@ -324,7 +323,7 @@ function DuckletPage() {
     },
     1000
   );
-  const updateUserPointerPos = (provider: SocketIOProvider, e: MouseEvent) => {
+  const updateUserPointerPos = (provider: WebsocketProvider, e: MouseEvent) => {
     debounce((e) => {
       provider.awareness.setLocalStateField("user", {
         // @ts-ignore
@@ -336,33 +335,33 @@ function DuckletPage() {
       });
     }, 10);
   };
-  const saveContentsInDB = debounce(() => {
-    if (!currRoom) {
-      console.error("not in a room, cant save");
-      return;
-    }
-    const contentHEAD = yDoc.getText("contentHEAD").toJSON();
-    const contentHTML = yDoc.getText("contentHTML").toJSON();
-    const contentCSS = yDoc.getText("contentCSS").toJSON();
-    const contentJS = yDoc.getText("contentJS").toJSON();
+  // const saveContentsInDB = debounce(() => {
+  //   if (!currRoom) {
+  //     console.error("not in a room, cant save");
+  //     return;
+  //   }
+  //   const contentHEAD = yDoc.getText("contentHEAD").toJSON();
+  //   const contentHTML = yDoc.getText("contentHTML").toJSON();
+  //   const contentCSS = yDoc.getText("contentCSS").toJSON();
+  //   const contentJS = yDoc.getText("contentJS").toJSON();
 
-    mutateRoomContents(
-      {
-        roomId: +currRoom.id,
-        contents: {
-          head: contentHEAD,
-          html: contentHTML,
-          css: contentCSS,
-          js: contentJS,
-        },
-      },
-      {
-        onSettled(data, error, variables, context) {
-          console.log("ydoc stored");
-        },
-      }
-    );
-  }, 1000);
+  //   mutateRoomContents(
+  //     {
+  //       roomId: +currRoom.id,
+  //       contents: {
+  //         head: contentHEAD,
+  //         html: contentHTML,
+  //         css: contentCSS,
+  //         js: contentJS,
+  //       },
+  //     },
+  //     {
+  //       onSettled(data, error, variables, context) {
+  //         console.log("ydoc stored");
+  //       },
+  //     }
+  //   );
+  // }, 1000);
 
   const handleSettingsChanged = async ({
     roomName,

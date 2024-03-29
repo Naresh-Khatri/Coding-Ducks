@@ -3,19 +3,14 @@ import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { vim } from "@replit/codemirror-vim";
 import { dracula } from "@uiw/codemirror-theme-dracula";
-import ReactCodeMirror, {
-  basicSetup,
-  EditorView,
-  placeholder,
-} from "@uiw/react-codemirror";
+import ReactCodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { yCollab } from "y-codemirror.next";
-import { SocketIOProvider } from "y-socket.io";
 import * as Y from "yjs";
-// const Y = require("yjs");
 import { LanguageSupport } from "@codemirror/language";
-import { Spinner } from "@chakra-ui/react";
+import { WebsocketProvider } from "y-websocket";
 
 type Lang = "head" | "html" | "css" | "js";
+
 const CMEditorWithCollab = ({
   yDoc,
   lang,
@@ -23,7 +18,7 @@ const CMEditorWithCollab = ({
 }: {
   yDoc: Y.Doc;
   lang: Lang;
-  provider: SocketIOProvider;
+  provider: WebsocketProvider;
 }) => {
   let value: string;
   let placeholder = "";
@@ -54,6 +49,7 @@ const CMEditorWithCollab = ({
       break;
     }
   }
+  // console.log(lang, value);
   // if (!provider) return <Spinner />;
   return (
     <ReactCodeMirror
