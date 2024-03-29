@@ -3,11 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: [
-      "firebasestorage.googleapis.com",
-      "lh3.googleusercontent.com",
-      "ik.imagekit.io",
-      "res.cloudinary.com",
+    remotePatterns: [
+      { hostname: "firebasestorage.googleapis.com" },
+      { hostname: "lh3.googleusercontent.com" },
+      { hostname: "ik.imagekit.io" },
+      { hostname: "res.cloudinary.com" },
     ],
   },
 };
