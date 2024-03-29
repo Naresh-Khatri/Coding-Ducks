@@ -43,19 +43,10 @@ function GuestModeDuckletPage() {
   const [contentCSS, setContentCSS] = useState("");
   const [contentJS, setContentJS] = useState("");
 
-  const router = useRouter();
   const toast = useToast();
   // init room code when its loaded
   useEffect(() => {
-    // if current user is owner or in allowed list then redirect to edit
-    const userIsAllowedToEdit =
-      user &&
-      currRoom &&
-      (user.id === currRoom.ownerId ||
-        currRoom.allowedUsers?.some((u) => u.id === user.id));
-    if (userIsAllowedToEdit) router.push(`/ducklets/${roomId}`);
-  }, [userLoaded]);
-  useEffect(() => {
+    let timer: NodeJS.Timeout;
     // this is so that any new fetch result wont overwrite current content
     if (
       contentCSS === "" &&
@@ -63,19 +54,25 @@ function GuestModeDuckletPage() {
       contentJS === "" &&
       currRoom
     ) {
-      toast({
-        title: "Opened as Guest",
-        description: "Any changes made here wont be saved",
-        status: "warning",
-        duration: 5000,
-        isClosable: true,
-        position: "top",
-      });
+      timer = setTimeout(() => {
+        toast({
+          title: "Opened as Guest",
+          description: "Any changes made here wont be saved",
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+          position: "top",
+        });
+      }, 2000);
       const { contentHTML, contentCSS, contentJS } = currRoom;
       if (contentHTML) setContentHTML(contentHTML);
       if (contentCSS) setContentCSS(contentCSS);
       if (contentJS) setContentJS(contentJS);
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [currRoom]);
 
   if (isLoading)
