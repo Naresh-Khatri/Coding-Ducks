@@ -41,6 +41,7 @@
     "@uiw/codemirror-theme-vscode": "^4.21.24",
     "@uiw/codemirror-theme-xcode": "^4.12.1",
     "@uiw/react-codemirror": "^4.11.6",
+    "@vercel/analytics": "^1.2.2",
     "@webcontainer/api": "^1.1.9",
     "ace-builds": "^1.15.3",
     "apexcharts": "^3.36.3",

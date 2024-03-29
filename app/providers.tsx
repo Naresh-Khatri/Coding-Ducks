@@ -7,6 +7,7 @@ import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { AuthUserProvider } from "../contexts/userContext";
 import SplashScreen from "../components/SplashScreen";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Analytics } from "@vercel/analytics/react";
 
 const colors = {
   brand: {
@@ -30,6 +31,7 @@ export default function Providers({ children }) {
         {process.env.NODE_ENV === "production" && <SplashScreen />}
         <ChakraProvider theme={theme}>{children}</ChakraProvider>
         <ReactQueryDevtools />
+        <Analytics />
       </AuthUserProvider>
     </QueryClientProvider>
   );
