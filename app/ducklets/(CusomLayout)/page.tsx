@@ -10,7 +10,6 @@ import {
   Card,
   CardBody,
   CardFooter,
-  Center,
   Container,
   Divider,
   HStack,
@@ -18,11 +17,9 @@ import {
   SimpleGrid,
   Skeleton,
   SlideFade,
-  Spinner,
   Stack,
   Text,
   VStack,
-  color,
 } from "@chakra-ui/react";
 import { useUserRoomsData } from "hooks/useUsersData";
 import Link from "next/link";
@@ -44,7 +41,6 @@ function DuckletsPage() {
     isLoading: otherRoomsLoading,
     error: otherRoomsError,
   } = useRoomsData();
-  // console.log(userLoaded);
 
   let filteredOtherRooms = otherRooms;
   if (user)
