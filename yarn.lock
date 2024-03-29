@@ -6357,10 +6357,10 @@ y-webrtc@^10.3.0:
   optionalDependencies:
     ws "^8.14.2"
 
-y-websocket@^1.5.4:
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/y-websocket/-/y-websocket-1.5.4.tgz#d14d4033e102a5191c7e78ddcd5da005ef818336"
-  integrity sha512-Y3021uy0anOIHqAPyAZbNDoR05JuMEGjRNI8c+K9MHzVS8dWoImdJUjccljAznc8H2L7WkIXhRHZ1igWNRSgPw==
+y-websocket@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/y-websocket/-/y-websocket-2.0.2.tgz#2e7ebfbb213b1a597c2b6a0f986c13e61fa8808c"
+  integrity sha512-VmfQpSRBlwDmPQTrB5ctucmWOGyQG5reN5/5FeD5JFfjtxHF0nDsNUW2LhzERbq2mQ6xfBc4mP7jXp5biz7USQ==
   dependencies:
     lib0 "^0.2.52"
     lodash.debounce "^4.0.8"
