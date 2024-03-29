@@ -1,7 +1,7 @@
 import Head from "next/head";
 import React from "react";
 
-interface SetMetaProps {
+export interface SetMetaProps {
   title?: string;
   description?: string;
   keywords?: string;
