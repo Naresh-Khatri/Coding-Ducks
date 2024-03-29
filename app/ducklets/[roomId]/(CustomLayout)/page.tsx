@@ -272,15 +272,14 @@ function DuckletPage() {
           contentCSS: _css,
           contentJS: _js,
         });
-        // if (tr.local) saveContentsInDB();
+        if (tr.local) saveContentsInDB();
       }
     );
-    _provider.on("status", (status) => {
-      console.log(status);
-      if (status === "connected") {
-        // if (room.yDoc) Y.applyUpdate(yDoc, new Uint8Array(room.yDoc));
-      }
-    });
+    // _provider.on("status", (status) => {
+    //   console.log(status);
+    //   if (status === "connected") {
+    //   }
+    // });
 
     // Initialize provider
     _provider.awareness.setLocalStateField("user", {
@@ -336,33 +335,33 @@ function DuckletPage() {
       });
     }, 10);
   };
-  // const saveContentsInDB = debounce(() => {
-  //   if (!currRoom) {
-  //     console.error("not in a room, cant save");
-  //     return;
-  //   }
-  //   const contentHEAD = yDoc.getText("contentHEAD").toJSON();
-  //   const contentHTML = yDoc.getText("contentHTML").toJSON();
-  //   const contentCSS = yDoc.getText("contentCSS").toJSON();
-  //   const contentJS = yDoc.getText("contentJS").toJSON();
+  const saveContentsInDB = debounce(() => {
+    if (!currRoom) {
+      console.error("not in a room, cant save");
+      return;
+    }
+    const contentHEAD = yDoc.getText("contentHEAD").toJSON();
+    const contentHTML = yDoc.getText("contentHTML").toJSON();
+    const contentCSS = yDoc.getText("contentCSS").toJSON();
+    const contentJS = yDoc.getText("contentJS").toJSON();
 
-  //   mutateRoomContents(
-  //     {
-  //       roomId: +currRoom.id,
-  //       contents: {
-  //         head: contentHEAD,
-  //         html: contentHTML,
-  //         css: contentCSS,
-  //         js: contentJS,
-  //       },
-  //     },
-  //     {
-  //       onSettled(data, error, variables, context) {
-  //         console.log("ydoc stored");
-  //       },
-  //     }
-  //   );
-  // }, 1000);
+    mutateRoomContents(
+      {
+        roomId: +currRoom.id,
+        contents: {
+          head: contentHEAD,
+          html: contentHTML,
+          css: contentCSS,
+          js: contentJS,
+        },
+      },
+      {
+        onSettled(data, error, variables, context) {
+          console.log("ydoc stored");
+        },
+      }
+    );
+  }, 1000);
 
   const handleSettingsChanged = async ({
     roomName,
