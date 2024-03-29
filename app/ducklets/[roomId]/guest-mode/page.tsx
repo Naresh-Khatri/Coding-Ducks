@@ -32,6 +32,7 @@ import { useParams, useRouter } from "next/navigation";
 import { userContext } from "../../../../contexts/userContext";
 
 import IFrameRenderer from "../../../../components/ducklets/IFrameRenderer";
+import DuckletsNavbar from "components/ducklets/Navbar";
 
 function GuestModeDuckletPage() {
   const { user, userLoaded } = use(userContext);
@@ -42,6 +43,7 @@ function GuestModeDuckletPage() {
   const [contentHTML, setContentHTML] = useState("");
   const [contentCSS, setContentCSS] = useState("");
   const [contentJS, setContentJS] = useState("");
+  const [layout, setLayout] = useState<"horizontal" | "vertical">("horizontal");
 
   const toast = useToast();
   // init room code when its loaded
@@ -84,6 +86,14 @@ function GuestModeDuckletPage() {
         </HStack>
       </Center>
     );
+  if (!currRoom)
+    return (
+      <Center w={"full"} h={"full"}>
+        <HStack>
+          <Box>No Ducklet Found</Box>
+        </HStack>
+      </Center>
+    );
   return (
     <Box
       width={"100vw"}
@@ -91,20 +101,33 @@ function GuestModeDuckletPage() {
       overflow={"hidden"}
       //   bg={"#282A36"}
     >
-      {/* <GuestNavbar userLoaded={userLoaded} user={user} room={currRoom} /> */}
+      <DuckletsNavbar
+        user={user}
+        userLoaded={userLoaded}
+        room={currRoom}
+        layout={layout}
+        setLayout={setLayout}
+      />
+
       <Split
+        key={layout}
         style={{ height: "calc(100dvh - 48px)", width: "100%" }}
-        direction="vertical"
+        className={layout === "horizontal" ? "split-h" : "split-v"}
+        direction={layout === "horizontal" ? "horizontal" : "vertical"}
         minSize={200}
         sizes={[40, 60]}
       >
-        <Box>
+        <Box h={"100%"}>
           <Split
-            className="split-h"
-            direction="horizontal"
+            className={layout !== "horizontal" ? "split-h" : "split-v"}
+            direction={layout !== "horizontal" ? "horizontal" : "vertical"}
             minSize={0}
             snapOffset={50}
-            style={{ width: "100%", height: "100%" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "#282A36 !important",
+            }}
           >
             <Flex direction={"column"} pos={"relative"}>
               <FileBadge fileType="html" />

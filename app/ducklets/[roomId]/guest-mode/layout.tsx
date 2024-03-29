@@ -40,10 +40,5 @@ export default function GuestModeLayout({
     if (userIsAllowedToEdit) router.push(`/ducklets/${roomId}`);
   }, [userLoaded]);
   if (!currRoom || !userLoaded) return null;
-  return (
-    <Flex direction={"column"} h={"100vh"}>
-      <DuckletsNavbar user={user} userLoaded={userLoaded} room={currRoom} />
-      <Flex flex={1}>{children}</Flex>
-    </Flex>
-  );
+  return children;
 }
