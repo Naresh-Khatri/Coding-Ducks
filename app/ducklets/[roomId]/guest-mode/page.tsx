@@ -43,7 +43,7 @@ function GuestModeDuckletPage() {
   const [contentHTML, setContentHTML] = useState("");
   const [contentCSS, setContentCSS] = useState("");
   const [contentJS, setContentJS] = useState("");
-  const [layout, setLayout] = useState<"horizontal" | "vertical">("horizontal");
+  const [layout, setLayout] = useState<"horizontal" | "vertical">("vertical");
 
   const toast = useToast();
   // init room code when its loaded

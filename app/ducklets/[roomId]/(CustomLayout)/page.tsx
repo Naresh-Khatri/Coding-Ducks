@@ -87,7 +87,7 @@ function DuckletPage() {
   } = useRoomData({ id: +roomId });
   const [srcDoc, setSrcDoc] = useState("<h1>Loading...</h1>");
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
-  const [layout, setLayout] = useState<"horizontal" | "vertical">("horizontal");
+  const [layout, setLayout] = useState<"horizontal" | "vertical">("vertical");
 
   const { mutate: mutateRoomContents } = useMutateRoomContents(+roomId);
   const { mutate: mutateRoom, isLoading: roomMutationLoading } = useMutateRoom(
@@ -573,7 +573,7 @@ function DuckletPage() {
               <Split
                 className={layout !== "horizontal" ? "split-h" : "split-v"}
                 direction={layout !== "horizontal" ? "horizontal" : "vertical"}
-                minSize={0}
+                minSize={20}
                 snapOffset={50}
                 style={{
                   width: "100%",
