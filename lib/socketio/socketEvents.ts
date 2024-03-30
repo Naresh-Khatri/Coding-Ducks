@@ -29,8 +29,6 @@ export interface ISocketRoom {
   name: string;
   description?: string;
   isPublic?: boolean;
-  lang: Lang;
-  content?: string;
   ownerId: number;
   createdAt: Date;
   updatedAt: Date;
@@ -38,11 +36,8 @@ export interface ISocketRoom {
   clients: ISocketUser[];
   cursors?: any[];
   msgsList?: any[];
-  con: Buffer;
   allowedUsers?: ISocketUser[];
 
-  type?: "web" | "normal";
-  yDoc?: Uint8Array;
   contentHTML?: string;
   contentCSS?: string;
   contentJS?: string;
