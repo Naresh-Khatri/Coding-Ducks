@@ -286,16 +286,16 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
     //     return new Map(p);
     //   });
     // });
-    socketInstance.on(LANG_UPDATED, ({ updatedRoom, user }: LangUpdated) => {
-      // TODO: update this shit
-      const { lang } = updatedRoom;
-      toast({
-        title: "Language Changed!",
-        description: `${user.username} changed to ${lang}`,
-        status: "success",
-        isClosable: true,
-      });
-    });
+    // socketInstance.on(LANG_UPDATED, ({ updatedRoom, user }: LangUpdated) => {
+    //   // TODO: update this shit
+    //   const { lang } = updatedRoom;
+    //   toast({
+    //     title: "Language Changed!",
+    //     description: `${user.username} changed to ${lang}`,
+    //     status: "success",
+    //     isClosable: true,
+    //   });
+    // });
     socketInstance.on(CODE_EXEC_START, (payload) => {
       toast({
         title: "Execution Requested!",

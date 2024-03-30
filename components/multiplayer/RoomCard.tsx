@@ -34,7 +34,7 @@ function RoomCard({ room }: { room: ISocketRoom }) {
                 <Heading size="md">{room.name}</Heading>
                 <Text color={"whiteAlpha.500"}>{room.owner.username}</Text>
               </VStack>
-              <FileIcons fileName={`index.${room.lang}`} width={2} />
+              {/* <FileIcons fileName={`index.${room.lang}`} width={2} /> */}
               {/* <CodePreview code={room.content} lang={room.lang} /> */}
             </HStack>
           </CardBody>
