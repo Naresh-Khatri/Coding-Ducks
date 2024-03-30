@@ -224,8 +224,7 @@ const DuckletsNavbar = ({
               left={layout === "horizontal" ? 2 : 10}
               transition={"left 0.3s ease"}
               right={0}
-              color={"purple.400"}
-              bg={"ActiveBorder"}
+              bg={"purple.400"}
               borderRadius={5}
               w={8}
               h={8}
