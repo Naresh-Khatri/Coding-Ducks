@@ -4,7 +4,6 @@ import { use, useEffect } from "react";
 import { userContext } from "../../../../contexts/userContext";
 import { useParams } from "next/navigation";
 import { getRoom, useRoomData } from "../../../../hooks/useRoomsData";
-import DuckletsNavbar from "../../../../components/ducklets/Navbar";
 // import generateMeta from "components/SEO/generateMeta";
 import { Flex } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
@@ -38,7 +37,7 @@ export default function GuestModeLayout({
       (user.id === currRoom.ownerId ||
         currRoom.allowedUsers?.some((u) => u.id === user.id));
     if (userIsAllowedToEdit) router.push(`/ducklets/${roomId}`);
-  }, [userLoaded]);
+  }, [currRoom, roomId, router, user, userLoaded]);
   if (!currRoom || !userLoaded) return null;
   return children;
 }
