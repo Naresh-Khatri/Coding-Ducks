@@ -161,7 +161,7 @@ const RoomCard = ({
 }: {
   room: ISocketRoom;
   isMine?: boolean;
-  refetch: () => void;
+  refetch?: () => void;
 }) => {
   const [isHovering, setIsHovering] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -180,7 +180,7 @@ const RoomCard = ({
             isClosable: true,
           });
           onClose();
-          refetch();
+          if (refetch) refetch();
         },
       }
     );
