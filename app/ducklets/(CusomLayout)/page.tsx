@@ -165,7 +165,7 @@ const RoomCard = ({
 }) => {
   const [isHovering, setIsHovering] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { mutate } = useRemoveRoom();
+  const { mutate, isLoading: isDeleteingRoom } = useRemoveRoom();
   const toast = useToast();
   const handleDuckletRemove = () => {
     mutate(
@@ -222,7 +222,12 @@ const RoomCard = ({
 
               <ModalFooter>
                 <Button variant="ghost">No</Button>
-                <Button colorScheme="red" mr={3} onClick={handleDuckletRemove}>
+                <Button
+                  colorScheme="red"
+                  mr={3}
+                  onClick={handleDuckletRemove}
+                  isLoading={isDeleteingRoom}
+                >
                   Delete
                 </Button>
               </ModalFooter>
