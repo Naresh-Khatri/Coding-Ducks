@@ -80,6 +80,33 @@ export const useMutateRoom = (roomId: number) =>
     }
   );
 
+export const useRemoveRoom = () =>
+  useMutation(["delete", "room"], async ({ id }: { id: number }) => {
+    const { data } = await axiosInstance.delete(`/rooms/${id}`);
+    console.log(data);
+    return data;
+  });
+export const useCreateRoom = () =>
+  useMutation(
+    ["create", "room"],
+    async ({
+      name,
+      description,
+      isPublic,
+    }: {
+      name: string;
+      description: string;
+      isPublic: boolean;
+    }) => {
+      const { data } = await axiosInstance.post(`/rooms/`, {
+        name,
+        description,
+        isPublic,
+      });
+      return data;
+    }
+  );
+
 export const useRoomsData = () =>
   useQuery(
     ["rooms"],
