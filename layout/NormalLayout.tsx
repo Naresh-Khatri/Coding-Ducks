@@ -106,15 +106,18 @@ interface NavItem {
   href?: string;
 }
 const MobileNavItem = ({ label, href }: NavItem) => {
-  const router = useRouter();
   return (
     <Link href={href || "#"} style={{ margin: "0 .5em" }}>
       <Button
         px={2}
         py={1}
         rounded={"md"}
-        // variant={router.pathname === href ? "solid" : "ghost"}
-        variant={'ghost'}
+        variant={"ghost"}
+        // variant={
+        //   typeof window !== "undefined" && window.location.pathname === href
+        //     ? "solid"
+        //     : "ghost"
+        // }
         _hover={{
           textDecoration: "none",
           bg: useColorModeValue("gray.200", "gray.700"),
@@ -167,8 +170,12 @@ const NavLink = ({ label, href }) => {
       <Button
         px={2}
         rounded={"md"}
-        // variant={router.pathname === href ? "solid" : "ghost"}
-        variant={'ghost'}
+        // variant={
+        //   typeof window !== "undefined" && window.location.pathname === href
+        //     ? "solid"
+        //     : "ghost"
+        // }
+        variant={"ghost"}
         _hover={{
           textDecoration: "none",
           bg: useColorModeValue("gray.200", "gray.700"),
