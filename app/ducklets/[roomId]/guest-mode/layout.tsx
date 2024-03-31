@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 //     const metaData = generateMeta({
 //       title: `${data.data.name}(guest) | Ducklets`,
 //       description: `Join ${data.data.name}, created By ${data.data.owner?.fullname}\n ${data.data.description}`,
-//       url: `https://www.codingducks.live/ducklets/${roomId}`,
+//       url: `https://www.codingducks.xyz/ducklets/${roomId}`,
 //     });
 //     return metaData;
 //   } catch (err) {}

@@ -55,7 +55,7 @@ function ProblemsPage() {
         title="Coding Ducks - Coding Problems Collection"
         description="Explore our diverse collection of coding problems on Coding Ducks. Enhance your programming skills and solve algorithmic challenges in Python, JavaScript, C++, and Java."
         keywords="coding problems, algorithmic challenges, programming exercises, problem-solving, Python, JavaScript, C++, Java"
-        url="https://www.codingducks.live/problems"
+        url="https://www.codingducks.xyz/problems"
       />
       <Container maxW="container.xl" px={{ base: 0, md: 4 }}>
         {isLoading ? (

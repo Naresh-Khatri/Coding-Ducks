@@ -112,8 +112,8 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
     const socketInstance = io(
       process.env.NODE_ENV === "development"
         ? // ? "ws://localhost:3333"
-          "wss://dev3333.codingducks.live"
-        : "wss://api2.codingducks.live"
+          "wss://dev3333.codingducks.xyz"
+        : "wss://api2.codingducks.xyz"
     );
 
     socketInstance.on(CONNECT, () => {

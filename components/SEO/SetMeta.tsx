@@ -29,7 +29,7 @@ function SetMeta({
   image =
     image ||
     "https://ik.imagekit.io/couponluxury/coding_ducks/og_logo_jpRQg8f-Z.png";
-  url = url || "https://www.codingducks.live/";
+  url = url || "https://www.codingducks.xyz/";
 
   const scripts = extractScriptContents(schema);
   return (

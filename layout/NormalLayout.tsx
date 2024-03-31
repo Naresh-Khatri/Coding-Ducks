@@ -77,7 +77,7 @@ function MobileNavBar() {
           variant={"ghost"}
           aria-label={"Toggle Navigation"}
         />
-        <Link href={"https://codingducks.live"}>
+        <Link href={"https://codingducks.xyz"}>
           <Image
             src={
               "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
@@ -138,7 +138,7 @@ function DesktopNavBar() {
       justifyContent="space-between"
       align={"center"}
     >
-      <Link href={"https://codingducks.live"}>
+      <Link href={"https://codingducks.xyz"}>
         <Image
           src={
             "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"

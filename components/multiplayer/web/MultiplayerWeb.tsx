@@ -45,7 +45,7 @@ function MultiplayerWeb({ room }: IMultiplayerWebProps) {
     const provider = new WebsocketProvider(
       process.env.NODE_ENV === "development"
         ? "ws://localhost:3334"
-        : "wss://yjs.codingducks.live",
+        : "wss://yjs.codingducks.xyz",
       "room:" + room.id,
       yDoc
     );

@@ -7,7 +7,7 @@ export async function generateMetadata() {
   const metaData = generateMeta({
     title: `Ducklets | CodingDucks`,
     description: "Welcome to Ducklets!",
-    url: `https://www.codingducks.live/ducklets`,
+    url: `https://www.codingducks.xyz/ducklets`,
   });
   return metaData;
 }

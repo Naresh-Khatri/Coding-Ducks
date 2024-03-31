@@ -9,7 +9,7 @@ export async function generateMetadata({ params }) {
     description: `bio - ${userData.bio}`,
     keywords: `${userData.fullname}, user profile, coding achievements, coding solutions, community contributions`,
     image: userData.photoURL,
-    url: `https://www.codingducks.live/users/${userData.username}`,
+    url: `https://www.codingducks.xyz/users/${userData.username}`,
   });
   return metaData;
 }

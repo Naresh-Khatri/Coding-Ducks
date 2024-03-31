@@ -40,7 +40,7 @@ function ErrorPage404() {
           <Text fontWeight={"bold"} fontSize={"3xl"}>
             Page not found
           </Text>
-          <Link href={"https://codingducks.live"} style={{ width: "100%" }}>
+          <Link href={"https://codingducks.xyz"} style={{ width: "100%" }}>
             <Button colorScheme="purple" mt={4} w="full">
               Go Home
             </Button>

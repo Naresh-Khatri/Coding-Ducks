@@ -175,8 +175,8 @@ function DuckletPage() {
     const _socket = io(
       process.env.NODE_ENV === "development"
         ? "ws://localhost:3333"
-        : // "wss://dev3333.codingducks.live"
-          "wss://api2.codingducks.live",
+        : // "wss://dev3333.codingducks.xyz"
+          "wss://api2.codingducks.xyz",
       { query: { userId: user.id } }
     );
     // _socket.emit(
@@ -246,7 +246,7 @@ function DuckletPage() {
     const _provider = new WebsocketProvider(
       process.env.NODE_ENV === "development"
         ? "ws://localhost:3334"
-        : "wss://yjs.codingducks.live",
+        : "wss://yjs.codingducks.xyz",
       "room:" + room.id,
       yDoc
     );

@@ -216,7 +216,7 @@ function ProblemPage() {
         title={` ${problemData.title} - Coding Ducks `}
         description={`Get the solution for the ${problemData.title} coding problem on Coding Ducks. Solve the challenge using Python, JavaScript, C++, or Java and improve your coding skills.`}
         keywords={`${problemData.title}, coding problem, solution, Python, JavaScript, C++, Java`}
-        url={`https://www.codingducks.live/problems/${problemData.slug}`}
+        url={`https://www.codingducks.xyz/problems/${problemData.slug}`}
       />
       <Flex w={"100vw"} direction="row">
         {problemDataLoading ? (

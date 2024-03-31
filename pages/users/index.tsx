@@ -35,7 +35,7 @@ function UsersPage() {
         title="Coding Ducks - Explore Coders and Users"
         description="Discover a vibrant community of coders and users on Coding Ducks. Explore user profiles, coding achievements, and contributions to the coding community."
         keywords="coders, users, user profiles, coding achievements, coding community, programming enthusiasts"
-        url="https://www.codingducks.live/users"
+        url="https://www.codingducks.xyz/users"
       />
       <Container mt={70} maxW={"6xl"} minH={"100vh"}>
         <Text fontSize="4xl" fontWeight="bold" mb={10}>

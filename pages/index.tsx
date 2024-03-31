@@ -35,7 +35,7 @@ export default function HomePage() {
         title="Coding Ducks - Enhance Your Coding Skills with Fun Challenges"
         description="Join Coding Ducks and take your coding skills to new heights. Solve coding challenges, practice programming in Python, JavaScript, C++, and Java, and level up your coding expertise."
         keywords="coding challenges, programming practice, Python, JavaScript, C++, Java, coding skills, coding platform, algorithmic problem solving"
-        url="https://www.codingducks.live/"
+        url="https://www.codingducks.xyz/"
       />
       <NormalLayout>
         <Flex

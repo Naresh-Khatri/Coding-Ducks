@@ -20,7 +20,7 @@ const generateMeta = async ({
   const _image =
     image ||
     "https://ik.imagekit.io/couponluxury/coding_ducks/og_logo_jpRQg8f-Z.png";
-  const _url = url || "https://www.codingducks.live/";
+  const _url = url || "https://www.codingducks.xyz/";
 
   let metaData: Metadata = {};
 

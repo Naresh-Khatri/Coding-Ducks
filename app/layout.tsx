@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Ducklets | CodingDucks",
     description: "Welcome to Ducklets!",
-    url: "https://www.codingducks.live/",
+    url: "https://www.codingducks.xyz/",
   },
 };
 

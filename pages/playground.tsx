@@ -134,7 +134,7 @@ function PlaygroundPage() {
         title="Playground - Coding Ducks"
         description="Practice coding in real-time with our interactive coding playground on Coding Ducks. Experiment, test, and refine your code in Python, JavaScript, C++, and Java."
         keywords="interactive coding playground, code testing, coding experimentation, Python, JavaScript, C++, Java"
-        url="https://www.codingducks.live/playground"
+        url="https://www.codingducks.xyz/playground"
       />
       <Container maxW={"5xl"}>
         <Box w={"100%"}>

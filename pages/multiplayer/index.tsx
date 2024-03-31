@@ -66,7 +66,7 @@ function MultiplayerPage() {
         title="Coding Ducks - Collaborative Real-Time Coding with Friends"
         description="Code collaboratively in real-time with your friends on Coding Ducks. Engage in multiplayer coding challenges, work together on problem-solving, and strengthen your coding skills as a team."
         keywords="multiplayer coding challenges, collaborative coding, real-time coding, coding with friends, teamwork, problem-solving, programming collaboration"
-        url="https://codingducks.live/multiplayer"
+        url="https://codingducks.xyz/multiplayer"
       />
       <Container maxW={{ base: "100vw", md: "90vw" }} minH={"100vh"}>
         {!socket ? (

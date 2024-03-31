@@ -243,7 +243,7 @@ function TakeTest() {
         title={`Coding Ducks - ${examData?.title} - Coding Exam Solutions`}
         description={`Access the solutions for the ${examData?.title} coding exam on Coding Ducks. Review the problem statements and improve your coding techniques in Python, JavaScript, C++, or Java.`}
         keywords={`${examData?.title}, coding exam, solution, Python, JavaScript, C++, Java`}
-        url={`https://codingducks.live/${examData?.slug}`}
+        url={`https://codingducks.xyz/${examData?.slug}`}
       />
       {examData?.warnOnBlur && <WarnOnTabLeave />}
       <Flex w={"100vw"} direction="row">
