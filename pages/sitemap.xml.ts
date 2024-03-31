@@ -1,14 +1,15 @@
 import axios from "axios";
 import { IExam, IProblem, IUser } from "../types";
+import { ISocketRoom } from "lib/socketio/socketEvents";
 
 const baseUrl = {
   development: "http://localhost:3333",
-  production: "https://api.codingducks.live",
+  production: "https://api.codingducks.xyz",
 }[process.env.NODE_ENV];
 
 const hostUrl = {
   development: "http://localhost:3000",
-  production: "https://codingducks.live",
+  production: "https://codingducks.xyz",
 }[process.env.NODE_ENV];
 function SiteMap() {
   return null;
@@ -25,8 +26,14 @@ interface generateSiteMapProps {
   exams: IExam[];
   users: IUser[];
   problems: IProblem[];
+  ducklets: ISocketRoom[];
 }
-const generateSiteMap = ({ exams, problems, users }: generateSiteMapProps) => {
+const generateSiteMap = ({
+  exams,
+  problems,
+  users,
+  ducklets,
+}: generateSiteMapProps) => {
   return `<?xml version="1.0" encoding="UTF-8"?>
    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
      <!--We manually set the two URLs we know already-->
@@ -45,6 +52,15 @@ const generateSiteMap = ({ exams, problems, users }: generateSiteMapProps) => {
          return generateSiteMapItem({
            path: `${hostUrl}/problems/${slug}`,
            lastmod: updatedAt?.split("T")[0],
+           changefreq: "daily",
+         });
+       })
+       .join("")}
+     ${ducklets
+       .map(({ id, updatedAt }) => {
+         return generateSiteMapItem({
+           path: `${hostUrl}/ducklets/${id}`,
+           lastmod: String(updatedAt).split("T")[0],
            changefreq: "daily",
          });
        })
@@ -91,12 +107,16 @@ export async function getServerSideProps({ res }) {
       data: { problemsList: problemsData },
     },
   } = await axios.get(`${baseUrl}/problems/page`);
+  const {
+    data: { data: duckletsData },
+  } = await axios.get(`${baseUrl}/rooms/`);
   res.setHeader("Content-Type", "text/xml");
   res.write(
     generateSiteMap({
       exams: examsData,
       users: usersData,
       problems: problemsData,
+      ducklets: duckletsData,
     })
   );
   res.end();
