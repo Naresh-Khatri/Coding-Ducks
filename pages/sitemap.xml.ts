@@ -4,7 +4,7 @@ import { ISocketRoom } from "lib/socketio/socketEvents";
 
 const baseUrl = {
   development: "http://localhost:3333",
-  production: "https://api.codingducks.xyz",
+  production: "https://api2.codingducks.xyz",
 }[process.env.NODE_ENV];
 
 const hostUrl = {
