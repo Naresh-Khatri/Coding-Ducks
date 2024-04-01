@@ -66,14 +66,17 @@ export const useMutateRoom = (roomId: number) =>
     async ({
       roomId,
       roomName,
+      description,
       isPublic,
     }: {
       roomId: number;
       roomName: string;
+      description: string;
       isPublic: boolean;
     }) => {
       const { data } = await axiosInstance.patch(`/rooms/${roomId}`, {
         name: roomName,
+        description,
         isPublic,
       });
       return data;
