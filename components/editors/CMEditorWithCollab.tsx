@@ -60,7 +60,7 @@ const CMEditorWithCollab = ({
       extensions={[
         ...extensions,
         EditorView.lineWrapping,
-        vim(),
+        // vim(),
         yCollab(
           yDoc.getText(`content${String(lang).toUpperCase()}`),
           provider.awareness
