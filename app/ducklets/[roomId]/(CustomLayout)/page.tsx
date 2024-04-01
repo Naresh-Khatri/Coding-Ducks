@@ -14,6 +14,11 @@ import {
   USER_REMOVED_FROM_DUCKLET,
 } from "lib/socketio/socketEvents";
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Badge,
   Box,
   Button,
@@ -33,10 +38,17 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
+  Tab,
+  TabIndicator,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   Tooltip,
   VStack,
   useDisclosure,
+  useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
 import Split from "react-split";
@@ -68,6 +80,10 @@ import UserAvatar from "components/utils/UserAvatar";
 import Link from "next/link";
 import { LangSettingsPopover } from "components/ducklets/LangSettingsPopover";
 import SetMeta from "components/SEO/SetMeta";
+import FileIcons from "components/multiplayer/FileIcons";
+import FAIcon from "components/FAIcon";
+import { faAddressBook, faCubes } from "@fortawesome/free-solid-svg-icons";
+import { DesktopView, MobileView } from "components/ducklets/DuckletViews";
 
 const CMEditor = dynamic(
   () => import("components/editors/CMEditorWithCollab"),
@@ -103,6 +119,9 @@ function DuckletPage() {
   // const [userIsNotAllowedError, setUserIsNotAllowedError] = useState("");
   const [userNotAllowedToEdit, setUserNotAllowedToEdit] = useState(false);
   const [waitingForJoinRequest, setWatingForJoinRequest] = useState(false);
+
+  const [isMobile] = useMediaQuery("(max-width: 650px)");
+
   const {
     isOpen: isAllowRequestModalOpen,
     onOpen: onAllowRequestModalOpen,
@@ -147,7 +166,6 @@ function DuckletPage() {
     const _userNotAllowedToEdit =
       roomIsPublic && !selfIsOwner && !selfInAllowed;
     setUserNotAllowedToEdit(_userNotAllowedToEdit || false);
-    console.log(_userNotAllowedToEdit);
 
     if (userNotAllowedToEdit) {
       return;
@@ -250,19 +268,15 @@ function DuckletPage() {
       "room:" + room.id,
       yDoc
     );
-    // console.log(room);
-    // Y.applyUpdate(yDoc, new Uint8Array(room.yDoc));
 
     _provider.awareness.on("update", (changes) => {
       const _clients = Array.from(_provider.awareness.getStates().values()).map(
         (v) => v.user
       );
-      console.log(_clients);
-      // todo: add joined and left toast
       setClients(_clients);
     });
     yDoc.on(
-      "update",
+      "updateV2",
       (update: Uint8Array, origin: any, doc: Y.Doc, tr: Y.Transaction) => {
         const _head = doc.getText("contentHEAD").toJSON();
         const _html = doc.getText("contentHTML").toJSON();
@@ -368,9 +382,11 @@ function DuckletPage() {
 
   const handleSettingsChanged = async ({
     roomName,
+    description,
     isPublic,
   }: {
     roomName: string;
+    description: string;
     isPublic: boolean;
   }) => {
     if (!currRoom || !currRoom.id) return console.error("no room id");
@@ -378,6 +394,7 @@ function DuckletPage() {
       {
         roomId: +currRoom?.id,
         roomName,
+        description,
         isPublic,
       },
       {
@@ -466,9 +483,6 @@ function DuckletPage() {
         <SetMeta title="Room is private" />
         <VStack>
           <Text>You are not allowed in this private room</Text>
-          {/* <Text as="pre">
-            {JSON.stringify(Object.keys(errorRoomData.response.data), null, 2)}
-          </Text> */}
           {/* @ts-ignore */}
           <Text as="pre">{currRoom.message}</Text>
           <Button
@@ -499,7 +513,6 @@ function DuckletPage() {
 
   return (
     <>
-      <SetMeta />
       <Flex direction={"column"} h={"100%"} position={"relative"}>
         {clients
           .filter((c) => c.username !== user?.username)
@@ -561,62 +574,16 @@ function DuckletPage() {
           overflow={"hidden"}
           //   bg={"#282A36"}
         >
-          <Split
-            key={layout}
-            style={{ height: "calc(100dvh - 48px)", width: "100%" }}
-            className={layout === "horizontal" ? "split-h" : "split-v"}
-            direction={layout === "horizontal" ? "horizontal" : "vertical"}
-            minSize={200}
-            sizes={[40, 60]}
-          >
-            <Box h={"100%"}>
-              <Split
-                className={layout !== "horizontal" ? "split-h" : "split-v"}
-                direction={layout !== "horizontal" ? "horizontal" : "vertical"}
-                minSize={20}
-                snapOffset={50}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  background: "#282A36 !important",
-                }}
-              >
-                <Flex direction={"column"}>
-                  <LangSettingsPopover lang="html">
-                    <Box bg={"#282A36"}>
-                      <Text as={"code"}>&lt;head&gt;</Text>
-                      <CMEditor yDoc={yDoc} provider={provider} lang={"head"} />
-                      <Text as={"code"}>&lt;/head&gt;</Text>
-                    </Box>
-                  </LangSettingsPopover>
-                  <Flex flex={1} height={"calc(100% - 30px)"}>
-                    <CMEditor yDoc={yDoc} provider={provider} lang={"html"} />
-                  </Flex>
-                </Flex>
-                <Flex direction={"column"}>
-                  <LangSettingsPopover lang="css"></LangSettingsPopover>
-                  <Flex flex={1} height={"calc(100% - 30px)"}>
-                    <CMEditor yDoc={yDoc} provider={provider} lang={"css"} />
-                  </Flex>
-                </Flex>
-                <Flex direction={"column"}>
-                  <LangSettingsPopover lang="js"></LangSettingsPopover>
-                  <Flex flex={1} height={"calc(100% - 20px)"}>
-                    <CMEditor yDoc={yDoc} provider={provider} lang={"js"} />
-                  </Flex>
-                </Flex>
-              </Split>
-            </Box>
-            <Box w={"full"} h={"full"} bg={"white"}>
-              <iframe
-                title="output"
-                sandbox="allow-scripts"
-                width={"100%"}
-                height={"100%"}
-                srcDoc={srcDoc}
-              ></iframe>
-            </Box>
-          </Split>
+          {isMobile ? (
+            <MobileView provider={provider} srcDoc={srcDoc} yDoc={yDoc} />
+          ) : (
+            <DesktopView
+              layout={layout}
+              provider={provider}
+              srcDoc={srcDoc}
+              yDoc={yDoc}
+            />
+          )}
         </Box>
       </Flex>
       <Modal
@@ -704,5 +671,4 @@ function DuckletPage() {
     </>
   );
 }
-
 export default DuckletPage;

@@ -1,81 +1,77 @@
 "use client";
-import React, {
-  Dispatch,
-  SetStateAction,
-  use,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   Box,
-  Button,
   Center,
-  Flex,
   HStack,
   Spinner,
-  Text,
-  Tooltip,
+  useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
-import Split from "react-split";
-import { FileBadge } from "../../../../components/ducklets/FileBadge";
-import ReactCodeMirror, { Extension, keymap } from "@uiw/react-codemirror";
-import { dracula } from "@uiw/codemirror-theme-dracula";
-import { LanguageSupport, indentUnit } from "@codemirror/language";
-import { html } from "@codemirror/lang-html";
-import { css } from "@codemirror/lang-css";
-import { javascript } from "@codemirror/lang-javascript";
 
 import { useRoomData } from "../../../../hooks/useRoomsData";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { userContext } from "../../../../contexts/userContext";
 
-import IFrameRenderer from "../../../../components/ducklets/IFrameRenderer";
 import DuckletsNavbar from "components/ducklets/Navbar";
+import { DesktopView, MobileView } from "components/ducklets/DuckletViews";
 
 function GuestModeDuckletPage() {
   const { user, userLoaded } = use(userContext);
   const { roomId } = useParams() as { roomId: string };
   const { data: currRoom, isLoading } = useRoomData({ id: +roomId });
 
-  console.log(currRoom);
+  const [contentHEAD, setContentHEAD] = useState("");
   const [contentHTML, setContentHTML] = useState("");
   const [contentCSS, setContentCSS] = useState("");
   const [contentJS, setContentJS] = useState("");
+  const [srcDoc, setSrcDoc] = useState("");
+
   const [layout, setLayout] = useState<"horizontal" | "vertical">("vertical");
 
   const toast = useToast();
+  const [isMobile] = useMediaQuery("(max-width: 650px)");
   // init room code when its loaded
   useEffect(() => {
+    if (!currRoom) return;
+    const { contentHEAD, contentHTML, contentCSS, contentJS } = currRoom;
+    if (contentHEAD) setContentHEAD(contentHEAD);
+    if (contentHTML) setContentHTML(contentHTML);
+    if (contentCSS) setContentCSS(contentCSS);
+    if (contentJS) setContentJS(contentJS);
+
     let timer: NodeJS.Timeout;
-    // this is so that any new fetch result wont overwrite current content
-    if (
-      contentCSS === "" &&
-      contentHTML === "" &&
-      contentJS === "" &&
-      currRoom
-    ) {
-      timer = setTimeout(() => {
-        toast({
-          title: "Opened as Guest",
-          description: "Any changes made here wont be saved",
-          status: "warning",
-          duration: 5000,
-          isClosable: true,
-          position: "top",
-        });
-      }, 2000);
-      const { contentHTML, contentCSS, contentJS } = currRoom;
-      if (contentHTML) setContentHTML(contentHTML);
-      if (contentCSS) setContentCSS(contentCSS);
-      if (contentJS) setContentJS(contentJS);
-    }
+    timer = setTimeout(() => {
+      toast({
+        title: "Opened as Guest",
+        description: "Any changes made here wont be saved",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }, 2000);
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [currRoom]);
+  }, [currRoom, toast]);
+
+  useEffect(() => {
+    const timer: NodeJS.Timeout = setTimeout(() => {
+      setSrcDoc(`
+    <html>
+      <head>${contentHEAD}</head>
+      <body>${contentHTML}</body>
+      <style>${contentCSS}</style>
+      <script>${contentJS}</script>
+    </html>
+      `);
+    }, 1000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [contentHEAD, contentHTML, contentCSS, contentJS]);
 
   if (isLoading)
     return (
@@ -109,105 +105,40 @@ function GuestModeDuckletPage() {
         setLayout={setLayout}
       />
 
-      <Split
-        key={layout}
-        style={{ height: "calc(100dvh - 48px)", width: "100%" }}
-        className={layout === "horizontal" ? "split-h" : "split-v"}
-        direction={layout === "horizontal" ? "horizontal" : "vertical"}
-        minSize={200}
-        sizes={[40, 60]}
-      >
-        <Box h={"100%"}>
-          <Split
-            className={layout !== "horizontal" ? "split-h" : "split-v"}
-            direction={layout !== "horizontal" ? "horizontal" : "vertical"}
-            minSize={0}
-            snapOffset={50}
-            style={{
-              width: "100%",
-              height: "100%",
-              background: "#282A36 !important",
-            }}
-          >
-            <Flex direction={"column"} pos={"relative"}>
-              <FileBadge fileType="html" />
-              <CMEditor
-                value={contentHTML || ""}
-                setValue={setContentHTML}
-                lang={"html"}
-              />
-            </Flex>
-            <Flex direction={"column"} pos={"relative"}>
-              <FileBadge fileType="css" />
-              <CMEditor
-                value={contentCSS || ""}
-                setValue={setContentCSS}
-                lang={"css"}
-              />
-            </Flex>
-            <Flex direction={"column"} pos={"relative"}>
-              <FileBadge fileType="js" />
-              <CMEditor
-                value={contentJS || ""}
-                setValue={setContentJS}
-                lang={"js"}
-              />
-            </Flex>
-          </Split>
-        </Box>
-        <Box w={"full"} bg={"white"}>
-          {/* <HStack
-            h={"2rem"}
-            bg={"#282A36"}
-            justifyContent={"space-between"}
-            px={"1.5rem"}
-          >
-            <Box></Box>
-            <Box>
-              <Tooltip label="This feature is coming soon..." placement="left">
-                <Button isDisabled size={"sm"}>Console</Button>
-              </Tooltip>
-            </Box>
-          </HStack> */}
-          <IFrameRenderer
-            contentHTML={contentHTML}
-            contentCSS={contentCSS}
-            contentJS={contentJS}
-          />
-        </Box>
-      </Split>
+      {isMobile ? (
+        <MobileView
+          srcDoc={srcDoc}
+          isGuest={true}
+          guestState={{
+            head: contentHEAD,
+            html: contentHTML,
+            css: contentCSS,
+            js: contentJS,
+            setHead: setContentHEAD,
+            setHtml: setContentHTML,
+            setCss: setContentCSS,
+            setJs: setContentJS,
+          }}
+        />
+      ) : (
+        <DesktopView
+          layout={layout}
+          srcDoc={srcDoc}
+          isGuest={true}
+          guestState={{
+            head: contentHEAD,
+            html: contentHTML,
+            css: contentCSS,
+            js: contentJS,
+            setHead: setContentHEAD,
+            setHtml: setContentHTML,
+            setCss: setContentCSS,
+            setJs: setContentJS,
+          }}
+        />
+      )}
     </Box>
   );
 }
 
 export default GuestModeDuckletPage;
-
-type Lang = "html" | "css" | "js";
-const CMEditor = ({
-  value,
-  setValue,
-  lang,
-}: {
-  value: string;
-  setValue: Dispatch<SetStateAction<string>>;
-  lang: Lang;
-}) => {
-  let extensions: (LanguageSupport | Extension)[] = [];
-  extensions.push(indentUnit.of("  "));
-  if (lang === "html") {
-    extensions.push(html());
-  } else if (lang === "css") {
-    extensions.push(css());
-  } else {
-    extensions.push(javascript());
-  }
-  return (
-    <ReactCodeMirror
-      value={value}
-      onChange={(e) => setValue(e)}
-      extensions={extensions}
-      theme={dracula}
-      key={lang}
-    />
-  );
-};
