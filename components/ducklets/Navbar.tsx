@@ -21,6 +21,7 @@ import {
   Tooltip,
   VStack,
   useDisclosure,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import {
   ISocketRoom,
@@ -43,7 +44,7 @@ import DucksletsList from "./DucksletsList";
 import Link from "next/link";
 import Image from "next/image";
 import { getTimeAgo } from "../../lib/formatDate";
-import { WarningTwoIcon } from "@chakra-ui/icons";
+import { ChevronLeftIcon, WarningTwoIcon } from "@chakra-ui/icons";
 import ShareMenu from "./ShareMenu";
 import SettingsMenu from "./SettingsMenu";
 import UserAvatar from "../utils/UserAvatar";
@@ -83,7 +84,7 @@ const DuckletsNavbar = ({
     onClose: onDrawerClose,
   } = useDisclosure();
   const userIsGuest = userLoaded && !user;
-  // console.log(userLoaded, user);
+  const [isMobile] = useMediaQuery("(max-width: 650px)");
 
   return (
     <HStack
@@ -107,7 +108,16 @@ const DuckletsNavbar = ({
         >
           <DrawerOverlay />
           <DrawerContent>
-            <DrawerHeader borderBottomWidth="1px">Your Ducklets</DrawerHeader>
+            <DrawerHeader borderBottomWidth="1px">
+              <VStack alignItems={"start"}>
+                {isMobile && (
+                  <Button variant={"outline"} leftIcon={<ChevronLeftIcon />}>
+                    home
+                  </Button>
+                )}
+                <Text>Your Ducklets</Text>
+              </VStack>
+            </DrawerHeader>
             <DrawerBody>
               {userIsGuest ? (
                 <VStack>
@@ -122,22 +132,24 @@ const DuckletsNavbar = ({
             </DrawerBody>
           </DrawerContent>
         </Drawer>
-        <Button variant={"ghost"}>
-          <Link href={"/"}>
-            <Text fontWeight={"bold"}>Home</Text>
-          </Link>
-        </Button>
+        {!isMobile && (
+          <Button variant={"ghost"}>
+            <Link href={"/"}>
+              <Text fontWeight={"bold"}>Home</Text>
+            </Link>
+          </Button>
+        )}
       </HStack>
       <HStack
-        pos={"absolute"}
-        left={"50%"}
-        transform={"translateX(-50%)"}
+        pos={isMobile ? "inherit" : "absolute"}
+        left={isMobile ? "" : "50%"}
+        transform={isMobile ? "" : "translateX(-50%)"}
         h={"full"}
       >
         <Popover>
           <PopoverTrigger>
             <Button variant={"ghost"} h={"full"}>
-              <HStack>
+              <HStack w={"fit-content"}>
                 <UserAvatar
                   src={room.owner?.photoURL || ""}
                   alt="profile pic"
@@ -148,14 +160,19 @@ const DuckletsNavbar = ({
                   }}
                 />
                 <VStack alignItems={"flex-start"}>
-                  <Text
-                    lineHeight={0.7}
-                    fontWeight={"bold"}
-                    fontSize={"1.1rem"}
-                  >
-                    {room.name}
-                    {userIsGuest && " (Guest Most)"}
-                  </Text>
+                  <HStack>
+                    <Text
+                      lineHeight={0.7}
+                      fontWeight={"bold"}
+                      fontSize={"1.1rem"}
+                      maxW={isMobile ? "120px" : "fit-content"}
+                      textOverflow={"ellipsis"}
+                      overflow={"hidden"}
+                    >
+                      {room.name}
+                    </Text>
+                    <Text>{userIsGuest && "(Guest Most)"}</Text>
+                  </HStack>
 
                   <Text lineHeight={0.7} fontSize={"0.8rem"} color={"gray.500"}>
                     {room.owner?.username}
@@ -171,7 +188,7 @@ const DuckletsNavbar = ({
               <PopoverHeader>Ducklet Info</PopoverHeader>
               <PopoverBody>
                 <Text>Name: {room.name}</Text>
-                <Text>Description: NA</Text>
+                <Text>Description: {room.description}</Text>
                 <Text>Visibility: {room.isPublic ? "Public" : "Private"}</Text>
                 <Text>
                   Updated : {room.updatedAt ? getTimeAgo(room.updatedAt) : "NA"}
@@ -203,40 +220,44 @@ const DuckletsNavbar = ({
             </PopoverContent>
           </Portal>
         </Popover>
-        <ShareMenu />
+        {!isMobile && <ShareMenu />}
       </HStack>
 
-      <HStack>
-        <Tooltip hasArrow label="Change layout">
-          <Button
-            aria-label="change layout"
-            onClick={() => {
-              setLayout((p) => {
-                if (p === "horizontal") return "vertical";
-                else return "horizontal";
-              });
-            }}
-            variant={"ghost"}
-            position={"relative"}
-          >
-            <Box
-              position={"absolute"}
-              left={layout === "horizontal" ? 2 : 10}
-              transition={"left 0.3s ease"}
-              right={0}
-              bg={"purple.400"}
-              borderRadius={5}
-              w={8}
-              h={8}
-            ></Box>
-            <HStack zIndex={1} gap={4}>
-              <FAIcon icon={faTableColumns} fontSize={"1rem"} />
-              <FAIcon icon={faWindowMaximize} fontSize={"1rem"} />
-            </HStack>
-          </Button>
-        </Tooltip>
-        <FAIcon icon={faCircle} fontSize={"0.5rem"} />
-        {!userIsGuest && (
+      <HStack justifyContent={"end"}>
+        {!isMobile && (
+          <>
+            <Tooltip hasArrow label="Change layout">
+              <Button
+                aria-label="change layout"
+                onClick={() => {
+                  setLayout((p) => {
+                    if (p === "horizontal") return "vertical";
+                    else return "horizontal";
+                  });
+                }}
+                variant={"ghost"}
+                position={"relative"}
+              >
+                <Box
+                  position={"absolute"}
+                  left={layout === "horizontal" ? 2 : 10}
+                  transition={"left 0.3s ease"}
+                  right={0}
+                  bg={"purple.400"}
+                  borderRadius={5}
+                  w={8}
+                  h={8}
+                ></Box>
+                <HStack zIndex={1} gap={4}>
+                  <FAIcon icon={faTableColumns} fontSize={"1rem"} />
+                  <FAIcon icon={faWindowMaximize} fontSize={"1rem"} />
+                </HStack>
+              </Button>
+            </Tooltip>
+            <FAIcon icon={faCircle} fontSize={"0.5rem"} />
+          </>
+        )}
+        {!userIsGuest && !isMobile && (
           <Tooltip
             hasArrow
             label={`This ducklet is ${room.isPublic ? "public" : "private"}`}
@@ -253,28 +274,30 @@ const DuckletsNavbar = ({
                   <Text color={"red"}>(Private)</Text>
                 </HStack>
               )}
-              <HStack>
-                <FAIcon icon={faCircle} fontSize={"0.5rem"} />
-                {clients &&
-                  clients.map((client) => (
-                    <UserAvatar
-                      key={client.clientId}
-                      src={client.photoURL || ""}
-                      name={client.fullname}
-                      alt={"profile picture"}
-                      w={40}
-                      h={40}
-                      style={{
-                        borderRadius: "50%",
-                        border: "3px solid " + client.color,
-                      }}
-                    />
-                  ))}
-              </HStack>
             </HStack>
           </Tooltip>
         )}
-        {userIsGuest && (
+        {!userIsGuest && (
+          <HStack>
+            {!isMobile && <FAIcon icon={faCircle} fontSize={"0.5rem"} />}
+            {clients &&
+              clients.map((client) => (
+                <UserAvatar
+                  key={client.clientId}
+                  src={client.photoURL || ""}
+                  name={client.fullname}
+                  alt={"profile picture"}
+                  w={40}
+                  h={40}
+                  style={{
+                    borderRadius: "50%",
+                    border: "3px solid " + client.color,
+                  }}
+                />
+              ))}
+          </HStack>
+        )}
+        {userIsGuest && !isMobile && (
           <Tooltip
             label="Guest mode projects arent synced with cloud"
             bg={"yellow.400"}
@@ -288,16 +311,23 @@ const DuckletsNavbar = ({
             />
           </Tooltip>
         )}
-        {userIsGuest && (
-          <>
+        {userIsGuest &&
+          (isMobile ? (
             <Link href={"/login"}>
-              <Button colorScheme="purple">Sign Up</Button>
+              <Button colorScheme="purple" size={"sm"}>
+                <Text lineHeight={0.7}>Sign Up</Text>
+              </Button>
             </Link>
-            <Link href={"/login"}>
-              <Button>Login</Button>
-            </Link>
-          </>
-        )}
+          ) : (
+            <>
+              <Link href={"/login"}>
+                <Button colorScheme="purple">Sign Up</Button>
+              </Link>
+              <Link href={"/login"}>
+                <Button>Login</Button>
+              </Link>
+            </>
+          ))}
         {!userIsGuest && (
           <SettingsMenu
             room={room}
