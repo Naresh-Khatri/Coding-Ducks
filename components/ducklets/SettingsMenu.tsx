@@ -19,6 +19,7 @@ import {
   Spinner,
   Switch,
   Text,
+  Textarea,
   VStack,
 } from "@chakra-ui/react";
 import React, { ReactNode, useEffect, useState } from "react";
@@ -54,13 +55,16 @@ function SettingsMenu({
   refetchCurrRoom: () => void;
   handleSettingsChanged: ({
     roomName,
+    description,
     isPublic,
   }: {
     roomName: string;
+    description: string;
     isPublic: boolean;
   }) => void;
 }) {
   const [roomName, setRoomName] = useState(room.name);
+  const [description, setDescription] = useState(room.description || "");
   const [isPublic, setIsPublic] = useState(room.isPublic || false);
   const [username, setUsername] = useState("");
 
@@ -96,7 +100,6 @@ function SettingsMenu({
       <MenuButton as={IconButton} icon={<SettingsIcon />}></MenuButton>
       <MenuList p={"1rem"} zIndex={9999}>
         <Text fontWeight={"bold"} fontSize={"lg"}>
-          {" "}
           Edit your ducklet
         </Text>
 
@@ -112,19 +115,37 @@ function SettingsMenu({
                 w={"100%"}
                 onChange={(e) => {
                   setRoomName(e.target.value);
-                  handleSettingsChanged({ roomName: e.target.value, isPublic });
+                  handleSettingsChanged({
+                    roomName: e.target.value,
+                    description,
+                    isPublic,
+                  });
                 }}
                 isDisabled={!selfIsOwner}
                 readOnly={!selfIsOwner}
               />
-              {/* {room.name !== roomName && (
-                <IconButton
-                  colorScheme="green"
-                  aria-label="save name"
-                  onClick={() => handleSettingsChanged({ roomName, isPublic })}
-                  icon={<FAIcon icon={faSave} />}
-                />
-              )} */}
+            </HStack>
+          </VStack>
+          <VStack gap={0} mt={"1.5rem"} alignItems={"flex-start"}>
+            <FormLabel htmlFor="description">
+              <Text fontWeight={"bold"}>Description:</Text>
+            </FormLabel>
+            <HStack w="full">
+              <Textarea
+                id="description"
+                value={description}
+                w={"100%"}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  handleSettingsChanged({
+                    roomName,
+                    description: e.target.value,
+                    isPublic,
+                  });
+                }}
+                isDisabled={!selfIsOwner}
+                readOnly={!selfIsOwner}
+              />
             </HStack>
           </VStack>
           <VStack gap={0} mt={"1.5rem"} alignItems={"flex-start"}>
@@ -271,34 +292,17 @@ function SettingsMenu({
                 isChecked={isPublic}
                 onChange={() => {
                   setIsPublic(!isPublic);
-                  handleSettingsChanged({ roomName, isPublic: !isPublic });
+                  handleSettingsChanged({
+                    roomName,
+                    description,
+                    isPublic: !isPublic,
+                  });
                 }}
                 isDisabled={!selfIsOwner}
                 readOnly={!selfIsOwner}
               />
             </HStack>
-
-            {/* {room.isPublic !== isPublic && (
-              <IconButton
-                aria-label="save name"
-                colorScheme="green"
-                onClick={() => handleSettingsChanged({ roomName, isPublic })}
-                isLoading={mutationLoading}
-                icon={<FAIcon icon={faSave} />}
-              />
-            )} */}
           </HStack>
-          {/* <Button
-            mt={4}
-            colorScheme="purple"
-            type="submit"
-            justifySelf={"end"}
-            isDisabled={room.name === roomName && room.isPublic === isPublic}
-            onClick={() => handleSettingsChanged({ roomName, isPublic })}
-            isLoading={mutationLoading}
-          >
-            Submit
-          </Button> */}
         </FormControl>
       </MenuList>
     </Menu>
