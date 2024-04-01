@@ -38,6 +38,7 @@ export interface ISocketRoom {
   msgsList?: any[];
   allowedUsers?: ISocketUser[];
 
+  contentHEAD?: string;
   contentHTML?: string;
   contentCSS?: string;
   contentJS?: string;
