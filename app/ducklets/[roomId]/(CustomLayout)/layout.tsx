@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
     const data = await getRoom({ id: +roomId });
     const metaData = generateMeta({
       title: `${data.data.name} | Ducklets`,
-      description: `Join ${data.data.name}, created By ${data.data.owner?.fullname}\n ${data.data.description}`,
+      description: `Join ${data.data.name}, created By ${data.data.owner?.fullname} - ${data.data.description}`,
       url: `https://www.codingducks.xyz/ducklets/${roomId}`,
     });
     return metaData;
