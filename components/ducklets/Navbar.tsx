@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Box,
   Button,
   Drawer,
@@ -17,6 +16,11 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Portal,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   Tooltip,
   VStack,
@@ -27,32 +31,34 @@ import {
   ISocketRoom,
   ISocketUser,
   IYJsUser,
+  MESSAGE_RECEIVE,
 } from "../../lib/socketio/socketEvents";
-import { IUser } from "../../types";
 import FAIcon from "../FAIcon";
 import {
-  faBars,
   faCircle,
+  faComment,
   faEye,
   faEyeSlash,
-  faList,
+  faFile,
   faTableColumns,
   faWindowMaximize,
-  faWindowMinimize,
 } from "@fortawesome/free-solid-svg-icons";
 import DucksletsList from "./DucksletsList";
 import Link from "next/link";
-import Image from "next/image";
 import { getTimeAgo } from "../../lib/formatDate";
-import { ChevronLeftIcon, WarningTwoIcon } from "@chakra-ui/icons";
+import { ChatIcon, ChevronLeftIcon, WarningTwoIcon } from "@chakra-ui/icons";
 import ShareMenu from "./ShareMenu";
 import SettingsMenu from "./SettingsMenu";
 import UserAvatar from "../utils/UserAvatar";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
+import ChatMessages from "components/ChatMessage";
+import useGlobalStore from "stores";
+import { userContext } from "contexts/userContext";
+import { IMessage } from "lib/socketio/socketEventTypes";
+import { getRoomMsgs } from "hooks/useRoomsData";
+import { useParams } from "next/navigation";
 
 interface IDuckeletsNavbarProps {
-  user: IUser | null;
-  userLoaded: boolean;
   room: ISocketRoom;
   handleSettingsChanged?: ({
     roomName,
@@ -69,8 +75,6 @@ interface IDuckeletsNavbarProps {
 }
 const DuckletsNavbar = ({
   room,
-  user,
-  userLoaded,
   handleSettingsChanged,
   refetchCurrRoom,
   roomMutationLoading,
@@ -78,6 +82,7 @@ const DuckletsNavbar = ({
   layout,
   setLayout,
 }: IDuckeletsNavbarProps) => {
+  const { user, userLoaded } = use(userContext);
   const {
     isOpen: isDrawerOpen,
     onOpen: onDrawerOpen,
@@ -85,7 +90,29 @@ const DuckletsNavbar = ({
   } = useDisclosure();
   const userIsGuest = userLoaded && !user;
   const [isMobile] = useMediaQuery("(max-width: 650px)");
+  const socket = useGlobalStore((state) => state.socket);
 
+  const msgsList = useGlobalStore((state) => state.msgsList);
+  const setMsgsList = useGlobalStore((state) => state.setMsgsList);
+  const pushNewMsg = useGlobalStore((state) => state.pushNewMsg);
+
+  const [unReadMsgsCount, setUnReadMsgsCount] = useState(msgsList.length);
+
+  const { roomId } = useParams() as { roomId: string };
+  useEffect(() => {
+    if (!socket) return;
+    const fetchMsgs = async () => {
+      const { data } = await getRoomMsgs(+roomId);
+      setMsgsList(data);
+      setUnReadMsgsCount(data.length);
+    };
+    fetchMsgs();
+
+    socket.on(MESSAGE_RECEIVE, (newMsg: IMessage) => {
+      pushNewMsg(newMsg);
+      if (!isDrawerOpen) setUnReadMsgsCount((p) => p + 1);
+    });
+  }, [socket]);
   return (
     <HStack
       h={"48px"}
@@ -95,11 +122,29 @@ const DuckletsNavbar = ({
       position={"relative"}
     >
       <HStack>
-        <IconButton
-          onClick={onDrawerOpen}
-          icon={<FAIcon icon={faBars} fontSize={"1rem"} />}
-          aria-label="open drawer"
-        />
+        <Box pos={"relative"}>
+          <IconButton
+            onClick={() => {
+              onDrawerOpen();
+              setUnReadMsgsCount(0);
+            }}
+            icon={<FAIcon icon={faComment} fontSize={"1rem"} />}
+            aria-label="open drawer"
+          />
+          <Box
+            bg="red.500"
+            pos={"absolute"}
+            top={-2}
+            right={-2}
+            w={"fit-content"}
+            px={1}
+            borderRadius={"full"}
+          >
+            <Text fontSize={".9rem"} fontWeight={"bold"} color={"white"}>
+              {unReadMsgsCount > 0 ? unReadMsgsCount : null}
+            </Text>
+          </Box>
+        </Box>
 
         <Drawer
           placement={"left"}
@@ -108,32 +153,71 @@ const DuckletsNavbar = ({
         >
           <DrawerOverlay />
           <DrawerContent>
-            <DrawerHeader borderBottomWidth="1px">
-              <VStack alignItems={"start"}>
-                {isMobile && (
+            {isMobile && (
+              <DrawerHeader borderBottomWidth="1px" p={1}>
+                <VStack alignItems={"start"}>
                   <Button variant={"outline"} leftIcon={<ChevronLeftIcon />}>
                     home
                   </Button>
-                )}
-                <Text>Your Ducklets</Text>
-              </VStack>
-            </DrawerHeader>
-            <DrawerBody>
-              {userIsGuest ? (
-                <VStack>
-                  <Text>Login to see your projects</Text>
-                  <Link href={"/login"}>
-                    <Button colorScheme="purple">Login</Button>
-                  </Link>
                 </VStack>
-              ) : (
-                <DucksletsList userId={user ? user.id : 0} />
-              )}
+              </DrawerHeader>
+            )}
+            <DrawerBody p={1}>
+              <Tabs variant="enclosed">
+                <TabList>
+                  <Tab>
+                    <HStack>
+                      <ChatIcon />
+                      <Text>Chat</Text>
+                    </HStack>
+                  </Tab>
+                  <Tab>
+                    <HStack>
+                      <FAIcon icon={faFile} />
+                      <Text>Ducklets</Text>
+                    </HStack>
+                  </Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    {userIsGuest ? (
+                      <VStack>
+                        <Text>Login to see chat</Text>
+                        <Link href={"/login"}>
+                          <Button colorScheme="purple">Login</Button>
+                        </Link>
+                      </VStack>
+                    ) : (
+                      !userIsGuest &&
+                      socket && (
+                        <ChatMessages
+                          socket={socket}
+                          msgsList={msgsList}
+                          user={user}
+                          roomInfo={{ id: room.id }}
+                        />
+                      )
+                    )}
+                  </TabPanel>
+                  <TabPanel>
+                    {userIsGuest ? (
+                      <VStack>
+                        <Text>Login to see your projects</Text>
+                        <Link href={"/login"}>
+                          <Button colorScheme="purple">Login</Button>
+                        </Link>
+                      </VStack>
+                    ) : (
+                      <DucksletsList userId={user ? user.id : 0} />
+                    )}
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
             </DrawerBody>
           </DrawerContent>
         </Drawer>
         {!isMobile && (
-          <Button variant={"ghost"}>
+          <Button variant={"outline"}>
             <Link href={"/"}>
               <Text fontWeight={"bold"}>Home</Text>
             </Link>
@@ -266,12 +350,10 @@ const DuckletsNavbar = ({
               {room?.isPublic ? (
                 <HStack>
                   <FAIcon icon={faEye} fontSize={"1rem"} />
-                  <Text color={"green"}>(Public)</Text>
                 </HStack>
               ) : (
                 <HStack>
                   <FAIcon icon={faEyeSlash} fontSize={"1rem"} />
-                  <Text color={"red"}>(Private)</Text>
                 </HStack>
               )}
             </HStack>
@@ -285,7 +367,7 @@ const DuckletsNavbar = ({
                 <UserAvatar
                   key={client.clientId}
                   src={client.photoURL || ""}
-                  name={client.fullname}
+                  name={client.username}
                   alt={"profile picture"}
                   w={40}
                   h={40}
