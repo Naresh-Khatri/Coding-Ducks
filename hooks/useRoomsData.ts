@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
-import { IDirectory, IFile } from "../lib/socketio/socketEventTypes";
+import { IDirectory, IFile, IMessage } from "../lib/socketio/socketEventTypes";
 import { ISocketRoom } from "../lib/socketio/socketEvents";
 
 // ------------- Fetch functions------------
@@ -25,6 +25,10 @@ export const getRoom = async ({ id, name }: { id?: number; name?: string }) => {
     data = await axiosInstance.get(`/rooms/name/${name}`);
   }
   return data;
+};
+export const getRoomMsgs = async (roomId: number) => {
+  const { data } = await axiosInstance.get(`/rooms/${roomId}/msgs`);
+  return data as { data: IMessage[] };
 };
 const getRooms = async () => {
   const { data } = await axiosInstance.get(`/rooms/`);
@@ -125,6 +129,15 @@ export const useRoomData = ({ id, name }: { id?: number; name?: string }) =>
     async () => {
       const { data } = await getRoom({ id, name });
       return data as ISocketRoom;
+    },
+    { refetchInterval: 10000, retry: false, refetchOnWindowFocus: false }
+  );
+export const useRoomsMsgsData = (roomId: number) =>
+  useQuery(
+    ["room", "msgs", roomId],
+    async () => {
+      const { data } = await getRoomMsgs(roomId);
+      return data as IMessage[];
     },
     { refetchInterval: 10000, retry: false, refetchOnWindowFocus: false }
   );
