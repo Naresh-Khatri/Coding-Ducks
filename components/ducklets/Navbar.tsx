@@ -108,10 +108,6 @@ const DuckletsNavbar = ({
     };
     fetchMsgs();
 
-    socket.on(MESSAGE_RECEIVE, (newMsg: IMessage) => {
-      pushNewMsg(newMsg);
-      if (!isDrawerOpen) setUnReadMsgsCount((p) => p + 1);
-    });
   }, [socket]);
   return (
     <HStack

@@ -69,76 +69,135 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                 msgsList[i - 1].time.toString().split("T")[0]
             )
               return (
-                <Center position={"sticky"} top={0} zIndex={99} key={i}>
-                  <Badge
-                    fontSize={"md"}
-                    px={2}
-                    colorScheme="purple"
-                    borderRadius={"7px"}
-                  >
-                    {msg.time.toString().split("T")[0]}
-                  </Badge>
-                </Center>
-              );
-            else
-              return (
-                <Slide
-                  in={true}
-                  direction="left"
-                  key={i}
-                  style={{
-                    display: "flex",
-                    minWidth: "100%",
-                    position: "relative",
-                    flexDirection: `row${self(msg.user.id) ? "-reverse" : ""}`,
-                  }}
-                >
-                  <UserAvatar
-                    src={msg.user.photoURL}
-                    name={msg.user.username}
-                    alt="profile photo"
+                <>
+                  <Center position={"sticky"} top={0} zIndex={99} key={i}>
+                    <Badge
+                      fontSize={"md"}
+                      px={2}
+                      colorScheme="purple"
+                      borderRadius={"7px"}
+                    >
+                      {msg.time.toString().split("T")[0]}
+                    </Badge>
+                  </Center>
+                  <Slide
+                    in={true}
+                    direction="left"
+                    key={i}
                     style={{
-                      borderRadius: "50%",
-                      width: "40px",
-                      height: "40px",
-                      position: "absolute",
+                      display: "flex",
+                      minWidth: "100%",
+                      position: "relative",
+                      flexDirection: `row${
+                        self(msg.user.id) ? "-reverse" : ""
+                      }`,
                     }}
-                    w={40}
-                    h={40}
-                  />
-                  <Box
-                    ml={!self(msg.user.id) ? "3.2rem" : "0"}
-                    mr={self(msg.user.id) ? "3.2rem" : "0"}
-                    position={"relative"}
                   >
-                    {!self(msg.user.id) && (
-                      <Text fontWeight={"extrabold"} w={"fit-content"}>
-                        {msg.user.username}
+                    <UserAvatar
+                      src={msg.user.photoURL}
+                      name={msg.user.username}
+                      alt="profile photo"
+                      style={{
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        position: "absolute",
+                      }}
+                      w={40}
+                      h={40}
+                    />
+                    <Box
+                      ml={!self(msg.user.id) ? "3.2rem" : "0"}
+                      mr={self(msg.user.id) ? "3.2rem" : "0"}
+                      position={"relative"}
+                    >
+                      {!self(msg.user.id) && (
+                        <Text fontWeight={"extrabold"} w={"fit-content"}>
+                          {msg.user.username}
+                        </Text>
+                      )}
+                      <Flex
+                        key={i}
+                        bg={self(msg.user.id) ? "purple.700" : "gray.600"}
+                        borderRadius={"10px"}
+                        minW={"120px"}
+                        w={"fit-content"}
+                        p={"1rem"}
+                      >
+                        <Text>{msg.text}</Text>
+                      </Flex>
+                      <Text
+                        position={"absolute"}
+                        zIndex={99}
+                        alignSelf={"end"}
+                        right={2}
+                        bottom={0}
+                        color={"gray.500"}
+                      >
+                        {formatTime(msg.time.toString())}
                       </Text>
-                    )}
-                    <Flex
-                      key={i}
-                      bg={self(msg.user.id) ? "purple.700" : "gray.600"}
-                      borderRadius={"10px"}
-                      minW={"120px"}
-                      w={"fit-content"}
-                      p={"1rem"}
-                    >
-                      <Text>{msg.text}</Text>
-                    </Flex>
-                    <Text
-                      position={"absolute"}
-                      zIndex={99}
-                      alignSelf={"end"}
-                      right={2}
-                      bottom={0}
-                      color={"gray.500"}
-                    >
-                      {formatTime(msg.time.toString())}
-                    </Text>
-                  </Box>
-                </Slide>
+                    </Box>
+                  </Slide>
+                </>
               );
+            return (
+              <Slide
+                in={true}
+                direction="left"
+                key={i}
+                style={{
+                  display: "flex",
+                  minWidth: "100%",
+                  position: "relative",
+                  flexDirection: `row${self(msg.user.id) ? "-reverse" : ""}`,
+                }}
+              >
+                <UserAvatar
+                  src={msg.user.photoURL}
+                  name={msg.user.username}
+                  alt="profile photo"
+                  style={{
+                    borderRadius: "50%",
+                    width: "40px",
+                    height: "40px",
+                    position: "absolute",
+                  }}
+                  w={40}
+                  h={40}
+                />
+                <Box
+                  ml={!self(msg.user.id) ? "3.2rem" : "0"}
+                  mr={self(msg.user.id) ? "3.2rem" : "0"}
+                  position={"relative"}
+                >
+                  {!self(msg.user.id) && (
+                    <Text fontWeight={"extrabold"} w={"fit-content"}>
+                      {msg.user.username}
+                    </Text>
+                  )}
+                  <Flex
+                    key={i}
+                    bg={self(msg.user.id) ? "purple.700" : "gray.600"}
+                    borderRadius={"10px"}
+                    minW={"120px"}
+                    w={"fit-content"}
+                    p={"1rem"}
+                  >
+                    <Text>{msg.text}</Text>
+                  </Flex>
+                  <Text
+                    position={"absolute"}
+                    zIndex={99}
+                    alignSelf={"end"}
+                    right={2}
+                    bottom={0}
+                    color={"gray.500"}
+                  >
+                    {formatTime(msg.time.toString())}
+                  </Text>
+                </Box>
+              </Slide>
+            );
           })}
       </VStack>
     </>
