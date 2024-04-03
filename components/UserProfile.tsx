@@ -81,6 +81,7 @@ function UserProfile() {
         <IconButton aria-label="profile picture" borderRadius={50}>
           <UserAvatar
             src={photoURL}
+            name={username}
             w={40}
             h={40}
             alt="Profile Picture"
