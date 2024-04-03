@@ -1,6 +1,6 @@
 import { StateCreator, create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { IDirectory, IFile } from "../lib/socketio/socketEventTypes";
+import { IDirectory, IFile, IMessage } from "../lib/socketio/socketEventTypes";
 import { ISocketRoom, IYJsUser } from "../lib/socketio/socketEvents";
 import * as Y from "yjs";
 import { Socket } from "socket.io-client";
@@ -14,6 +14,9 @@ interface IWebsocketState {
   // lastOpenedFileId: number;
   socket: Socket | null;
   setSocket: (socket: Socket) => void;
+  msgsList: IMessage[];
+  setMsgsList: (msgsList: IMessage[]) => void;
+  pushNewMsg: (msgsList: IMessage) => void;
 }
 interface IFSState {
   // FILE SYSTEM
@@ -67,6 +70,17 @@ const createWebsocketSlice: StateCreator<
 > = (set) => ({
   socket: null,
   setSocket: (socket: Socket) => set((state) => ({ ...state, socket })),
+  msgsList: [],
+  setMsgsList: (newMsgsList: IMessage[]) =>
+    set((state) => ({
+      ...state,
+      msgsList: newMsgsList,
+    })),
+  pushNewMsg: (newMsg: IMessage) =>
+    set((state) => ({
+      ...state,
+      msgsList: [newMsg, ...state.msgsList],
+    })),
   // currRoom: null,
   // lastOpenedFileId: 0,
   // setCurrRoom: (room: ISocketRoom) =>
