@@ -97,13 +97,7 @@ function GuestModeDuckletPage() {
       overflow={"hidden"}
       //   bg={"#282A36"}
     >
-      <DuckletsNavbar
-        user={user}
-        userLoaded={userLoaded}
-        room={currRoom}
-        layout={layout}
-        setLayout={setLayout}
-      />
+      <DuckletsNavbar room={currRoom} layout={layout} setLayout={setLayout} />
 
       {isMobile ? (
         <MobileView
