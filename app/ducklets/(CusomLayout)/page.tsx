@@ -138,7 +138,8 @@ const CreateRoomCard = ({ onOpen }: { onOpen: () => void }) => {
         direction={{ base: "column", sm: "row" }}
         overflow="hidden"
         variant="outline"
-        _hover={{ border: "1px solid #9d4edd", transition: "border .2s" }}
+        _hover={{ border: "1px dashed #9d4edd", transition: "border .2s" }}
+        border={"1px dashed #ffffff29"}
         onClick={onOpen}
       >
         <CardBody>
