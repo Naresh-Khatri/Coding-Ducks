@@ -114,12 +114,7 @@ function DuckletPage() {
     null
   );
 
-  const {
-    data: update,
-    isLoading: mutateAllowListLoading,
-    error: mutateAllowListError,
-    mutate: mutateAllowList,
-  } = useUpdateAllowList();
+  const { mutate: mutateAllowList } = useUpdateAllowList();
 
   const { user, userLoaded } = use(userContext);
 
@@ -312,6 +307,10 @@ function DuckletPage() {
   <body>${contentHTML}</body>
   <style>${contentCSS}</style>
   <script>${contentJS}</script>
+  <script>const as = document.querySelectorAll('a')
+as.forEach(a=>{
+  a.href = "javascript:void(0)"
+})</script>
 </html>`
       );
     },

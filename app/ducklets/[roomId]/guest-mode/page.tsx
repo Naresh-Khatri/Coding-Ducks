@@ -65,6 +65,10 @@ function GuestModeDuckletPage() {
       <body>${contentHTML}</body>
       <style>${contentCSS}</style>
       <script>${contentJS}</script>
+  <script>const as = document.querySelectorAll('a')
+as.forEach(a=>{
+  a.href = "javascript:void(0)"
+})</script>
     </html>
       `);
     }, 1000);
