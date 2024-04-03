@@ -9,6 +9,7 @@ export interface IMessage {
   user: { id: number; username: string; photoURL: string };
   room: ISocketRoom;
   text: string;
+  updatedAt: Date;
   time: Date;
 }
 
