@@ -37,10 +37,10 @@ function DucksletsList({ userId }: IDuckletsListProp) {
               px={2}
               cursor={"pointer"}
             >
-              <Box>
-                <p>{room.name}</p>
-              </Box>
-              <Box>{room.updatedAt ? getTimeAgo(room.updatedAt) : "NA"}</Box>
+              <Text fontWeight={"bold"}>{room.name}</Text>
+              <Text textAlign={"right"} color={"gray.500"}>
+                {room.updatedAt ? getTimeAgo(room.updatedAt) : "NA"}
+              </Text>
             </HStack>
           </a>
           <Divider />
