@@ -7,6 +7,7 @@ import {
   ISocketUser,
   IYJsUser,
   ROOM_UPDATED,
+  USER_JOIN_DUCKLET,
   USER_JOIN_REQUEST,
   USER_JOIN_REQUESTED,
   USER_JOIN_REQUEST_ACCEPT,
@@ -14,11 +15,6 @@ import {
   USER_REMOVED_FROM_DUCKLET,
 } from "lib/socketio/socketEvents";
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Badge,
   Box,
   Button,
@@ -38,12 +34,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
-  Tab,
-  TabIndicator,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
   Tooltip,
   VStack,
@@ -51,9 +41,6 @@ import {
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
-import Split from "react-split";
-
-import dynamic from "next/dynamic";
 import { debounce, getRandColor } from "lib/utils";
 import useGlobalStore from "stores";
 import { io } from "socket.io-client";
@@ -63,7 +50,7 @@ import {
   useRoomData,
   useUpdateAllowList,
 } from "hooks/useRoomsData";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { userContext } from "contexts/userContext";
 
 import * as Y from "yjs";
@@ -74,21 +61,11 @@ import {
   UserJoinRequest,
 } from "lib/socketio/socketEventTypes";
 import DucksletsList from "components/ducklets/DucksletsList";
-import { FileBadge } from "components/ducklets/FileBadge";
 import DuckletsNavbar from "components/ducklets/Navbar";
 import UserAvatar from "components/utils/UserAvatar";
 import Link from "next/link";
-import { LangSettingsPopover } from "components/ducklets/LangSettingsPopover";
 import SetMeta from "components/SEO/SetMeta";
-import FileIcons from "components/multiplayer/FileIcons";
-import FAIcon from "components/FAIcon";
-import { faAddressBook, faCubes } from "@fortawesome/free-solid-svg-icons";
 import { DesktopView, MobileView } from "components/ducklets/DuckletViews";
-
-const CMEditor = dynamic(
-  () => import("components/editors/CMEditorWithCollab"),
-  { ssr: false }
-);
 
 function DuckletPage() {
   const yDoc = useGlobalStore((state) => state.yDoc);
@@ -197,27 +174,27 @@ function DuckletPage() {
           "wss://api2.codingducks.xyz",
       { query: { userId: user.id } }
     );
-    // _socket.emit(
-    //   USER_JOIN_DUCKLET,
-    //   { room: currRoom, user } as UserJoinDucklet,
-    //   (res) => {
-    //     const { status, error, msg } = res;
-    //     console.log(res);
-    //     if (status === "error") {
-    //       // setUserIsNotAllowed(true);
-    //       // setUserIsNotAllowedError(msg);
-    //       return;
-    //     }
-    //     // setUserIsNotAllowed(false);
-    //     // setUserIsNotAllowedError("");
-    //     toast({
-    //       title: "Room joined",
-    //       description: `You've joined ${currRoom.name}`,
-    //       status: "success",
-    //       isClosable: true,
-    //     });
-    //   }
-    // );
+    _socket.emit(
+      USER_JOIN_DUCKLET,
+      { room: currRoom, user } as UserJoinDucklet,
+      (res) => {
+        const { status, error, msg } = res;
+        console.log(res);
+        if (status === "error") {
+          // setUserIsNotAllowed(true);
+          // setUserIsNotAllowedError(msg);
+          return;
+        }
+        // setUserIsNotAllowed(false);
+        // setUserIsNotAllowedError("");
+        // toast({
+        //   title: "Room joined",
+        //   description: `You've joined ${currRoom.name}`,
+        //   status: "success",
+        //   isClosable: true,
+        // });
+      }
+    );
     _socket.on(ROOM_UPDATED, (payload: RoomUpdated) => {
       // console.log("room updated", payload);
     });
@@ -513,7 +490,7 @@ function DuckletPage() {
 
   return (
     <>
-      <Flex direction={"column"} h={"100%"} position={"relative"}>
+      <Flex direction={"column"} h={"100%"}>
         {clients
           .filter((c) => c.username !== user?.username)
           .map(
@@ -559,8 +536,6 @@ function DuckletPage() {
           )}
         <DuckletsNavbar
           room={currRoom}
-          user={user}
-          userLoaded={userLoaded}
           handleSettingsChanged={handleSettingsChanged}
           refetchCurrRoom={refetchCurrRoom}
           roomMutationLoading={roomMutationLoading}
