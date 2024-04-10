@@ -2,7 +2,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { AuthUserProvider } from "../contexts/userContext";
 import SplashScreen from "../components/SplashScreen";
@@ -27,12 +27,14 @@ export default function Providers({ children }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Suspense>
       <AuthUserProvider>
         {process.env.NODE_ENV === "production" && <SplashScreen />}
         <ChakraProvider theme={theme}>{children}</ChakraProvider>
         <ReactQueryDevtools />
         <Analytics />
       </AuthUserProvider>
+      </Suspense>
     </QueryClientProvider>
   );
 }
