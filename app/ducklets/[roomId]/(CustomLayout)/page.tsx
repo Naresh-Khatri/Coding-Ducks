@@ -350,7 +350,7 @@ as.forEach(a=>{
       },
       {
         onSettled(data, error, variables, context) {
-          console.log("ydoc stored");
+          // console.log("ydoc stored");
         },
       }
     );
@@ -418,22 +418,22 @@ as.forEach(a=>{
     return (
       <Center h={"100dvh"} w={"full"}>
         <VStack>
-          <Text>You cannot edit the ducklet</Text>
+          <Text>You cannot edit this ducklet</Text>
           <Button
             colorScheme="purple"
             onClick={() => {
               router.push(`/ducklets/${roomId}/guest-mode`);
             }}
+            variant={"outline"}
           >
             Open as Guest
           </Button>
 
-          <Tooltip
-            hasArrow
-            label={!user && "Login to request access"}
-            placement="right"
-            bg="red.600"
-          >
+          {!user ? (
+            <Link href={`/login?from=ducklets/${roomId}`}>
+              <Button colorScheme="purple">Login to request access</Button>
+            </Link>
+          ) : (
             <Button
               colorScheme="purple"
               isDisabled={!user}
@@ -442,7 +442,7 @@ as.forEach(a=>{
             >
               Request access
             </Button>
-          </Tooltip>
+          )}
           <Link href={"/ducklets"}>
             <Button>Back</Button>
           </Link>
@@ -477,7 +477,7 @@ as.forEach(a=>{
       <Center h={"100dvh"} w={"full"}>
         <VStack>
           <Text>Cant join a private room. login to request access</Text>
-          <Link href={"/login"}>
+          <Link href={`/login?from=ducklet/${roomId}`}>
             <Button colorScheme="purple">Login / Signup</Button>
           </Link>
         </VStack>

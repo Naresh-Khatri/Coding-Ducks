@@ -18,7 +18,7 @@ import {
 import axios from "../lib/axios";
 import { IUser } from "../types";
 import { useRouter as useOldRouter } from "next/router";
-import { useRouter as useNewRouter } from "next/navigation";
+import { useRouter as useNewRouter, useSearchParams } from "next/navigation";
 
 interface userContextProps {
   user: IUser | null;
@@ -46,7 +46,7 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
 
   // const oldRouter = useOldRouter();
   const newRouter = useNewRouter();
-
+  const fromRoute = useSearchParams()?.get("from");
   const updateUser = async (updatedUser) => {
     try {
       if (!user) return;
@@ -89,7 +89,11 @@ export function AuthUserProvider({ children }: { children: ReactNode }) {
             if (data.length == 0) {
               // if user doesnt exist, redirect to setup-profile
               // if(oldRouter) oldRouter.push("/setup-profile");
-              if(newRouter) newRouter.push("/setup-profile");
+              if (newRouter) {
+                if (fromRoute)
+                  newRouter.push("/setup-profile/?from=" + fromRoute);
+                else newRouter.push("/setup-profile");
+              }
             } else {
               // if user exist in db then set completeUser to the user object
               // console.log(res.data)

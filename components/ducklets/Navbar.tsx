@@ -107,7 +107,7 @@ const DuckletsNavbar = ({
       setUnReadMsgsCount(data.length);
     };
     fetchMsgs();
-    
+
     socket.on(MESSAGE_RECEIVE, (newMsg: IMessage) => {
       pushNewMsg(newMsg);
       if (!isDrawerOpen) setUnReadMsgsCount((p) => p + 1);
@@ -183,7 +183,7 @@ const DuckletsNavbar = ({
                     {userIsGuest ? (
                       <VStack>
                         <Text>Login to see chat</Text>
-                        <Link href={"/login"}>
+                        <Link href={`/login?from=ducklets/${roomId}`}>
                           <Button colorScheme="purple">Login</Button>
                         </Link>
                       </VStack>
@@ -203,7 +203,7 @@ const DuckletsNavbar = ({
                     {userIsGuest ? (
                       <VStack>
                         <Text>Login to see your projects</Text>
-                        <Link href={"/login"}>
+                        <Link href={`/login?from=ducklets/${roomId}`}>
                           <Button colorScheme="purple">Login</Button>
                         </Link>
                       </VStack>
@@ -395,17 +395,17 @@ const DuckletsNavbar = ({
         )}
         {userIsGuest &&
           (isMobile ? (
-            <Link href={"/login"}>
+            <Link href={`/login?from=ducklets/${roomId}`}>
               <Button colorScheme="purple" size={"sm"}>
                 <Text lineHeight={0.7}>Sign Up</Text>
               </Button>
             </Link>
           ) : (
             <>
-              <Link href={"/login"}>
+              <Link href={`/login?from=ducklets/${roomId}`}>
                 <Button colorScheme="purple">Sign Up</Button>
               </Link>
-              <Link href={"/login"}>
+              <Link href={`/login?from=ducklets/${roomId}`}>
                 <Button>Login</Button>
               </Link>
             </>

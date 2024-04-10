@@ -36,12 +36,19 @@ export const LoginPage = () => {
   } = useContext(userContext);
 
   const router = useRouter();
+  const { from: fromRoute } = router.query;
   useEffect(() => {
+    console.log(fromRoute);
     if (firebaseUser) {
-      router.push("/setup-profile");
+      if (fromRoute) router.push("/setup-profile?from=" + fromRoute);
+      else router.push(`/setup-profile`);
     }
-    if (user) router.push("/");
-  }, [user]);
+    if (user) {
+      if (fromRoute) {
+        router.push("/" + fromRoute);
+      } else router.push("/");
+    }
+  }, [user, fromRoute]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -267,7 +274,11 @@ export const LoginPage = () => {
                     <Button
                       w="full"
                       colorScheme="purple"
-                      isDisabled={!isEmailValid || !isPasswordValid || password !== password2}
+                      isDisabled={
+                        !isEmailValid ||
+                        !isPasswordValid ||
+                        password !== password2
+                      }
                       onClick={onRegisterBtnClicked}
                       isLoading={logginInProgress}
                     >

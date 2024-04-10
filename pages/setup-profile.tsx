@@ -38,10 +38,17 @@ export default function EditUserProfile() {
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
 
+  const { from: fromRoute } = router.query;
   useEffect(() => {
     // if not loading, firebaseuser null and user null, redirect to login
-    if (!loading && !firebaseUser) router.push("/login");
-    if (user) router.push("/");
+    if (!loading && !firebaseUser) {
+      if (fromRoute) router.push("/" + fromRoute);
+      else router.push("/login");
+    }
+    if (user) {
+      if (fromRoute) router.push("/" + fromRoute);
+      else router.push("/");
+    }
 
     if (firebaseUser) {
       setFullname(firebaseUser.displayName || "");
@@ -72,7 +79,8 @@ export default function EditUserProfile() {
         isClosable: true,
       });
       loadUser();
-      router.push("/problems");
+      if (fromRoute) router.push("/" + fromRoute);
+      else router.push("/problems");
     } catch (error) {
       console.log(error);
       toast({
