@@ -51,7 +51,7 @@ const EditorSettingsProvider = ({ children }) => {
 
   useEffect(() => {
     const storedSettings = JSON.parse(
-      localStorage.getItem("editorSettings") || ""
+      localStorage.getItem("editorSettings") || "null"
     );
     if (storedSettings) setSettings(storedSettings);
     setIsLoading(false);
