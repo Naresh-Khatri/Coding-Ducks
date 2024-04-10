@@ -35,7 +35,6 @@ function BottomActions({
   const notLoggedIn = !user?.username;
   const { isNoob } = user || { isNoob: false };
 
-  console.log(examId);
   return (
     <Box pos="relative" w={"100%"}>
       {(notLoggedIn || (!isTutorialProblem && isNoob)) && !examId && (
