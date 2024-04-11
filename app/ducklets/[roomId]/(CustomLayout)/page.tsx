@@ -67,9 +67,9 @@ import Link from "next/link";
 import SetMeta from "components/SEO/SetMeta";
 import { DesktopView, MobileView } from "components/ducklets/DuckletViews";
 
-function DuckletPage() {
-  const yDoc = useGlobalStore((state) => state.yDoc);
+const yDoc = new Y.Doc();
 
+function DuckletPage() {
   const { roomId } = useParams() as { roomId: string };
   const {
     data: currRoom,
@@ -78,7 +78,7 @@ function DuckletPage() {
     isError: isErrorRoomData,
     refetch: refetchCurrRoom,
   } = useRoomData({ id: +roomId });
-  const [srcDoc, setSrcDoc] = useState("<h1>Loading...</h1>");
+  const [srcDoc, setSrcDoc] = useState("");
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const [layout, setLayout] = useState<"horizontal" | "vertical">("vertical");
 
@@ -121,13 +121,14 @@ function DuckletPage() {
   const router = useRouter();
   const toast = useToast();
   useEffect(() => {
-    if (!userLoaded) return;
-    if (!socket) {
-      setupSocketIO();
-    }
+    if (isLoading) return;
     if (!currRoom || !currRoom.id) {
       console.error("room not found");
       return;
+    }
+    if (!userLoaded) return;
+    if (!socket) {
+      setupSocketIO();
     }
     // redirect to guest logic
     const roomIsPublic = currRoom?.isPublic;
