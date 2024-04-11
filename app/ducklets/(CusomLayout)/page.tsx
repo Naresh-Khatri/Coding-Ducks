@@ -299,11 +299,11 @@ const RoomCard = ({
                   {room.updatedAt ? getTimeAgo(room.updatedAt) : "NA"}
                 </Text>
               </VStack>
-              <Link href={`/ducklets/${room.id}`}>
+              <a href={`/ducklets/${room.id}`}>
                 <Button variant="solid" colorScheme="purple">
                   Open
                 </Button>
-              </Link>
+              </a>
             </HStack>
           </CardFooter>
         </Stack>
