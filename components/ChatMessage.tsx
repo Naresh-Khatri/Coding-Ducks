@@ -69,8 +69,8 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                 msgsList[i - 1].time.toString().split("T")[0]
             )
               return (
-                <>
-                  <Center position={"sticky"} top={0} zIndex={99} key={i}>
+                <Box key={i} w={'100%'}>
+                  <Center position={"sticky"} top={0} zIndex={99} mb={2}>
                     <Badge
                       fontSize={"md"}
                       px={2}
@@ -80,10 +80,7 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                       {msg.time.toString().split("T")[0]}
                     </Badge>
                   </Center>
-                  <Slide
-                    in={true}
-                    direction="left"
-                    key={i}
+                  <Flex
                     style={{
                       display: "flex",
                       minWidth: "100%",
@@ -137,13 +134,11 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                         {formatTime(msg.time.toString())}
                       </Text>
                     </Box>
-                  </Slide>
-                </>
+                  </Flex>
+                </Box>
               );
             return (
-              <Slide
-                in={true}
-                direction="left"
+              <Flex
                 key={i}
                 style={{
                   display: "flex",
@@ -196,7 +191,7 @@ const ChatMessages = ({ socket, roomInfo, user, msgsList }: ChatCompProps) => {
                     {formatTime(msg.time.toString())}
                   </Text>
                 </Box>
-              </Slide>
+              </Flex>
             );
           })}
       </VStack>
