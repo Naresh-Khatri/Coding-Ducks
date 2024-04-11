@@ -198,14 +198,14 @@ export const DesktopView = ({
   layout,
   provider,
   yDoc,
-  srcDoc, 
+  srcDoc,
   isGuest,
   guestState,
 }: {
   layout: "vertical" | "horizontal";
   yDoc?: Y.Doc;
   provider?: WebsocketProvider;
-  srcDoc: string
+  srcDoc: string;
   isGuest?: boolean;
   guestState?: {
     head: string;
