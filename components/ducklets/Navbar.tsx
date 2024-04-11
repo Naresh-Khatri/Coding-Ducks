@@ -218,7 +218,7 @@ const DuckletsNavbar = ({
         </Drawer>
         {!isMobile && (
           <Button variant={"outline"}>
-            <Link href={"/"}>
+            <Link href={"/ducklets"}>
               <Text fontWeight={"bold"}>Home</Text>
             </Link>
           </Button>
