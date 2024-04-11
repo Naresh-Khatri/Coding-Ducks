@@ -24,6 +24,9 @@ const CMEditorWithCollab = ({
   let placeholder = "";
   const extensions: LanguageSupport[] = [];
 
+  const undoManager = new Y.UndoManager(
+    yDoc.getText(`content${String(lang).toUpperCase()}`)
+  );
   switch (lang) {
     case "head": {
       value = yDoc.getText("contentHEAD").toJSON();
@@ -53,17 +56,18 @@ const CMEditorWithCollab = ({
   // if (!provider) return <Spinner />;
   return (
     <ReactCodeMirror
-      value={value}
+      // value={value}
       style={{ width: "100%" }}
       key={lang}
       theme={dracula}
       extensions={[
         ...extensions,
         EditorView.lineWrapping,
-        // vim(),
+        vim(),
         yCollab(
           yDoc.getText(`content${String(lang).toUpperCase()}`),
-          provider.awareness
+          provider.awareness,
+          { undoManager }
         ),
       ]}
       placeholder={placeholder}
