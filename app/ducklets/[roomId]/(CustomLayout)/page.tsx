@@ -80,11 +80,13 @@ function DuckletPage() {
     isError: isErrorRoomData,
     refetch: refetchCurrRoom,
   } = useRoomData({ id: +roomId });
-  // if (!isLoading) console.log(isLoading, data, errorRoomData);
   const currRoom = data?.room;
   const role = data?.role;
   if (role === "guest") {
-    router.push(`/ducklets/${roomId}/guest-mode`);
+    // i know i know this seems to be a bad idea
+    if (typeof window !== "undefined")
+      window.location.href = `/ducklets/${roomId}/guest-mode`;
+    else router.push(`/ducklets/${roomId}/guest-mode`);
   }
   const [srcDoc, setSrcDoc] = useState("");
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
@@ -181,20 +183,17 @@ function DuckletPage() {
         // });
       }
     );
-    // _socket.on(USER_JOIN_REQUEST_ACCEPTED, (payload) => {
-    //   if (typeof window !== "undefined") {
-    //     window.location.reload();
-    //   }
-    //   toast({
-    //     title: "Request Accepted!",
-    //     description: `Your request has been accepted!`,
-    //     status: "success",
-    //     isClosable: true,
-    //   });
-    //   // setUserIsNotAllowedError("");
-    //   setWatingForJoinRequest(false);
-    //   refetchCurrRoom();
-    // });
+    _socket.on(USER_JOIN_REQUEST_ACCEPTED, (payload) => {
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+      toast({
+        title: "Request Accepted!",
+        description: `Your request has been accepted!`,
+        status: "success",
+        isClosable: true,
+      });
+    });
     _socket.on(ROOM_UPDATED, (payload: RoomUpdated) => {
       // console.log("room updated", payload);
     });
@@ -204,11 +203,12 @@ function DuckletPage() {
       onAllowRequestModalOpen();
     });
     _socket.on(USER_REMOVED_FROM_DUCKLET, (payload) => {
-      // setUserIsNotAllowedError("You have been banned");
       // fuck clean code, this shit right here works!
       if (typeof window !== "undefined") {
         setTimeout(() => {
-          window.location.reload();
+          if (currRoom?.isPublic)
+            window.location.href = `/ducklets/${roomId}/guest-mode`;
+          else window.location.href = `/ducklets`;
         }, 2000);
       }
       toast({
