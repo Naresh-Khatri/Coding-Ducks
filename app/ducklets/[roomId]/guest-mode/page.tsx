@@ -2,24 +2,33 @@
 import React, { use, useEffect, useState } from "react";
 import {
   Box,
+  Button,
   Center,
   HStack,
   Spinner,
+  Text,
   useMediaQuery,
   useToast,
+  VStack,
 } from "@chakra-ui/react";
 
 import { useRoomData } from "../../../../hooks/useRoomsData";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { userContext } from "../../../../contexts/userContext";
 
 import DuckletsNavbar from "components/ducklets/Navbar";
 import { DesktopView, MobileView } from "components/ducklets/DuckletViews";
+import Link from "next/link";
 
 function GuestModeDuckletPage() {
+  const router = useRouter();
   const { user, userLoaded } = use(userContext);
   const { roomId } = useParams() as { roomId: string };
-  const { data: currRoom, isLoading } = useRoomData({ id: +roomId });
+  const { data, isLoading, error, isError } = useRoomData({ id: +roomId });
+  const currRoom = data?.room;
+  const role = data?.role;
+  if (role === "owner" || role === "contributor")
+    router.replace(`/ducklets/${roomId}`);
 
   const [contentHEAD, setContentHEAD] = useState("");
   const [contentHTML, setContentHTML] = useState("");
@@ -77,7 +86,7 @@ as.forEach(a=>{
     };
   }, [contentHEAD, contentHTML, contentCSS, contentJS]);
 
-  if (isLoading)
+  if (isLoading || !role)
     return (
       <Center w={"full"} h={"full"}>
         <HStack>
@@ -86,12 +95,16 @@ as.forEach(a=>{
         </HStack>
       </Center>
     );
-  if (!currRoom)
+  // @ts-ignore
+  if (!currRoom || (error && error?.status === 404))
     return (
-      <Center w={"full"} h={"full"}>
-        <HStack>
-          <Box>No Ducklet Found</Box>
-        </HStack>
+      <Center w={"100vw"} h={"100vh"}>
+        <VStack>
+          <Text>Ducklet Not Found</Text>
+          <Link href="/ducklets">
+            <Button>Go Home</Button>
+          </Link>
+        </VStack>
       </Center>
     );
   return (
@@ -101,7 +114,12 @@ as.forEach(a=>{
       overflow={"hidden"}
       //   bg={"#282A36"}
     >
-      <DuckletsNavbar room={currRoom} layout={layout} setLayout={setLayout} />
+      <DuckletsNavbar
+        room={currRoom}
+        layout={layout}
+        setLayout={setLayout}
+        roomRole={role}
+      />
 
       {isMobile ? (
         <MobileView

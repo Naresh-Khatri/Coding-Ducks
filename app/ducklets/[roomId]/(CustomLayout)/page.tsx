@@ -71,13 +71,21 @@ const yDoc = new Y.Doc();
 
 function DuckletPage() {
   const { roomId } = useParams() as { roomId: string };
+  const router = useRouter();
+  const toast = useToast();
   const {
-    data: currRoom,
+    data,
     isLoading,
     error: errorRoomData,
     isError: isErrorRoomData,
     refetch: refetchCurrRoom,
   } = useRoomData({ id: +roomId });
+  // if (!isLoading) console.log(isLoading, data, errorRoomData);
+  const currRoom = data?.room;
+  const role = data?.role;
+  if (role === "guest") {
+    router.push(`/ducklets/${roomId}/guest-mode`);
+  }
   const [srcDoc, setSrcDoc] = useState("");
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const [layout, setLayout] = useState<"horizontal" | "vertical">("vertical");
@@ -87,14 +95,11 @@ function DuckletPage() {
     currRoom?.id || 0
   );
 
-  // const [socket, setSocket] = useState<Socket>();
   const socket = useGlobalStore((state) => state.socket);
   const setSocket = useGlobalStore((state) => state.setSocket);
 
   const [clients, setClients] = useState<IYJsUser[]>([]);
 
-  // const [userIsNotAllowedError, setUserIsNotAllowedError] = useState("");
-  const [userNotAllowedToEdit, setUserNotAllowedToEdit] = useState(false);
   const [waitingForJoinRequest, setWatingForJoinRequest] = useState(false);
 
   const [isMobile] = useMediaQuery("(max-width: 650px)");
@@ -118,38 +123,19 @@ function DuckletPage() {
 
   const { user, userLoaded } = use(userContext);
 
-  const router = useRouter();
-  const toast = useToast();
   useEffect(() => {
-    if (isLoading) return;
-    if (!currRoom || !currRoom.id) {
+    if (isLoading || !userLoaded) return;
+    // @ts-ignore
+    if (isErrorRoomData && errorRoomData && errorRoomData.data.code === 404) {
       console.error("room not found");
       return;
     }
-    if (!userLoaded) return;
     if (!socket) {
       setupSocketIO();
     }
-    // redirect to guest logic
-    const roomIsPublic = currRoom?.isPublic;
-    const selfIsOwner = user?.id === currRoom?.ownerId;
-    const selfInAllowed = currRoom?.allowedUsers?.some(
-      (u) => u.id === user?.id
-    );
-    const _userNotAllowedToEdit =
-      roomIsPublic && !selfIsOwner && !selfInAllowed;
-    setUserNotAllowedToEdit(_userNotAllowedToEdit || false);
-
-    if (userNotAllowedToEdit) {
-      return;
-    }
-
-    if (!provider) {
-      setupYjs(currRoom);
-    }
     return () => {
       // todo: cleanup mousemove listener
-      if (currRoom.id === +roomId) return;
+      if (currRoom && currRoom.id === +roomId) return;
       if (provider) {
         provider.awareness.setLocalState(null);
         provider.destroy();
@@ -162,7 +148,8 @@ function DuckletPage() {
   }, [user, userLoaded, currRoom]);
 
   const setupSocketIO = () => {
-    if (!user || !currRoom) return null;
+    console.log("setting socket");
+    if (!user) return null;
     const _socket = io(
       process.env.NODE_ENV === "development"
         ? "ws://localhost:3333"
@@ -172,14 +159,17 @@ function DuckletPage() {
     );
     _socket.emit(
       USER_JOIN_DUCKLET,
-      { room: currRoom, user } as UserJoinDucklet,
+      { room: { id: roomId }, user: { id: user.id } },
       (res) => {
         const { status, error, msg } = res;
-        console.log(res);
         if (status === "error") {
           // setUserIsNotAllowed(true);
           // setUserIsNotAllowedError(msg);
           return;
+        }
+        if (currRoom) {
+          console.log("setting up yjs");
+          setupYjs(currRoom);
         }
         // setUserIsNotAllowed(false);
         // setUserIsNotAllowedError("");
@@ -191,6 +181,20 @@ function DuckletPage() {
         // });
       }
     );
+    // _socket.on(USER_JOIN_REQUEST_ACCEPTED, (payload) => {
+    //   if (typeof window !== "undefined") {
+    //     window.location.reload();
+    //   }
+    //   toast({
+    //     title: "Request Accepted!",
+    //     description: `Your request has been accepted!`,
+    //     status: "success",
+    //     isClosable: true,
+    //   });
+    //   // setUserIsNotAllowedError("");
+    //   setWatingForJoinRequest(false);
+    //   refetchCurrRoom();
+    // });
     _socket.on(ROOM_UPDATED, (payload: RoomUpdated) => {
       // console.log("room updated", payload);
     });
@@ -215,21 +219,6 @@ function DuckletPage() {
         duration: 5000,
       });
     });
-    _socket.on(USER_JOIN_REQUEST_ACCEPTED, (payload) => {
-      if (typeof window !== "undefined") {
-        window.location.reload();
-      }
-      toast({
-        title: "Request Accepted!",
-        description: `Your request has been accepted!`,
-        status: "success",
-        isClosable: true,
-      });
-      // setUserIsNotAllowedError("");
-      setWatingForJoinRequest(false);
-      refetchCurrRoom();
-      setupYjs(currRoom);
-    });
     setSocket(_socket);
   };
   const setupYjs = (room: ISocketRoom) => {
@@ -248,6 +237,9 @@ function DuckletPage() {
       );
       setClients(_clients);
     });
+    // yDoc.on("afterTransaction", (tr: Y.Transaction, doc: Y.Doc) => {
+    //   console.log(doc);
+    // });
     yDoc.on(
       "updateV2",
       (update: Uint8Array, origin: any, doc: Y.Doc, tr: Y.Transaction) => {
@@ -367,6 +359,15 @@ as.forEach(a=>{
     isPublic: boolean;
   }) => {
     if (!currRoom || !currRoom.id) return console.error("no room id");
+    if (currRoom.ownerId !== user?.id) {
+      return toast({
+        title: "Error",
+        description: "You are not the owner of this room",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
     mutateRoom(
       {
         roomId: +currRoom?.id,
@@ -386,7 +387,6 @@ as.forEach(a=>{
             return;
           }
           refetchCurrRoom();
-          console.log(error);
           socket?.emit(ROOM_UPDATED, { updatedRoom: data, user } as RoomUpdate);
         },
       }
@@ -414,54 +414,46 @@ as.forEach(a=>{
       }
     );
   };
-  if (isLoading) return <Spinner />;
-  if (userNotAllowedToEdit) {
-    return (
-      <Center h={"100dvh"} w={"full"}>
-        <VStack>
-          <Text>You cannot edit this ducklet</Text>
-          <Button
-            colorScheme="purple"
-            onClick={() => {
-              router.push(`/ducklets/${roomId}/guest-mode`);
-            }}
-            variant={"outline"}
-          >
-            Open as Guest
-          </Button>
+  if (isLoading || !role) return <Spinner />;
 
-          {!user ? (
-            <Link href={`/login?from=ducklets/${roomId}`}>
-              <Button colorScheme="purple">Login to request access</Button>
-            </Link>
-          ) : (
-            <Button
-              colorScheme="purple"
-              isDisabled={!user}
-              onClick={handleRequestAccess}
-              isLoading={waitingForJoinRequest}
-            >
-              Request access
-            </Button>
-          )}
-          <Link href={"/ducklets"}>
-            <Button>Back</Button>
+  // @ts-ignore
+  // if (!socket || (isErrorRoomData && errorRoomData.data.code === 409)) {
+  //   return (
+  //     <Center h={"100dvh"} w={"full"}>
+  //       <VStack>
+  //         <Text>Cant join a private room. login to request access</Text>
+  //         <Link href={`/login?from=ducklets/${roomId}`}>
+  //           <Button colorScheme="purple">Login / Signup</Button>
+  //         </Link>
+  //       </VStack>
+  //     </Center>
+  //   );
+  // }
+
+  /**
+   * ROOM NOT FOUND | ANY => nothing
+   * */
+  // @ts-ignore
+  if (!currRoom || (isErrorRoomData && errorRoomData.data.code === 404)) {
+    return (
+      <Center w={"100vw"} h={"100vh"}>
+        <VStack>
+          <Text>Ducklet Not Found</Text>
+          <Link href="/ducklets">
+            <Button>Go Home</Button>
           </Link>
         </VStack>
       </Center>
     );
   }
-  // @ts-ignore
-  if (!currRoom || currRoom?.code === 404) return <Text>room not found</Text>;
-  // @ts-ignore
-  if (currRoom?.code === 269)
+
+  if (role === "requester") {
     return (
       <Center h={"100dvh"} w={"full"}>
         <SetMeta title="Room is private" />
         <VStack>
           <Text>You are not allowed in this private room</Text>
           {/* @ts-ignore */}
-          <Text as="pre">{currRoom.message}</Text>
           <Button
             colorScheme="purple"
             onClick={handleRequestAccess}
@@ -469,24 +461,13 @@ as.forEach(a=>{
           >
             Request access
           </Button>
-        </VStack>
-      </Center>
-    );
-
-  if (!socket || !currRoom)
-    return (
-      <Center h={"100dvh"} w={"full"}>
-        <VStack>
-          <Text>Cant join a private room. login to request access</Text>
-          <Link href={`/login?from=ducklet/${roomId}`}>
-            <Button colorScheme="purple">Login / Signup</Button>
+          <Link href="/ducklets">
+            <Button>Go Home</Button>
           </Link>
         </VStack>
       </Center>
     );
-  if (!currRoom || !currRoom.id) return <Text> not found</Text>;
-
-  if (!provider) return <p>provider not found...</p>;
+  }
 
   return (
     <>
@@ -542,6 +523,7 @@ as.forEach(a=>{
           clients={clients}
           layout={layout}
           setLayout={setLayout}
+          roomRole={role}
         />
         <Box
           width={"100vw"}
