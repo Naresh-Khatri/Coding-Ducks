@@ -8,14 +8,6 @@ import {
   DrawerOverlay,
   HStack,
   IconButton,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTrigger,
-  Portal,
   Tab,
   TabList,
   TabPanel,
@@ -29,13 +21,11 @@ import {
 } from "@chakra-ui/react";
 import {
   ISocketRoom,
-  ISocketUser,
   IYJsUser,
   MESSAGE_RECEIVE,
 } from "../../lib/socketio/socketEvents";
 import FAIcon from "../FAIcon";
 import {
-  faCircle,
   faComment,
   faEye,
   faEyeSlash,
@@ -45,10 +35,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import DucksletsList from "./DucksletsList";
 import Link from "next/link";
-import { getTimeAgo } from "../../lib/formatDate";
 import { ChatIcon, ChevronLeftIcon, WarningTwoIcon } from "@chakra-ui/icons";
-import ShareMenu from "./ShareMenu";
-import SettingsMenu from "./SettingsMenu";
 import UserAvatar from "../utils/UserAvatar";
 import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
 import ChatMessages from "components/ChatMessage";
@@ -57,6 +44,9 @@ import { userContext } from "contexts/userContext";
 import { IMessage } from "lib/socketio/socketEventTypes";
 import { getRoomMsgs } from "hooks/useRoomsData";
 import { useParams } from "next/navigation";
+import { RoomRole } from "types";
+import RequestEditAccess from "./RequestEditAccess";
+import DuckletSettingsMenu from "./DuckletSettingsMenu";
 
 interface IDuckeletsNavbarProps {
   room: ISocketRoom;
@@ -72,6 +62,7 @@ interface IDuckeletsNavbarProps {
   clients?: IYJsUser[];
   layout: "vertical" | "horizontal";
   setLayout: Dispatch<SetStateAction<"horizontal" | "vertical">>;
+  roomRole: RoomRole;
 }
 const DuckletsNavbar = ({
   room,
@@ -81,6 +72,7 @@ const DuckletsNavbar = ({
   clients,
   layout,
   setLayout,
+  roomRole,
 }: IDuckeletsNavbarProps) => {
   const { user, userLoaded } = use(userContext);
   const {
@@ -217,11 +209,11 @@ const DuckletsNavbar = ({
           </DrawerContent>
         </Drawer>
         {!isMobile && (
-          <Button variant={"outline"}>
-            <Link href={"/ducklets"}>
+          <Link href={"/ducklets"}>
+            <Button variant={"outline"}>
               <Text fontWeight={"bold"}>Home</Text>
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         )}
       </HStack>
       <HStack
@@ -230,81 +222,16 @@ const DuckletsNavbar = ({
         transform={isMobile ? "" : "translateX(-50%)"}
         h={"full"}
       >
-        <Popover>
-          <PopoverTrigger>
-            <Button variant={"ghost"} h={"full"}>
-              <HStack w={"fit-content"}>
-                <UserAvatar
-                  src={room.owner?.photoURL || ""}
-                  alt="profile pic"
-                  w={30}
-                  h={30}
-                  style={{
-                    borderRadius: "50%",
-                  }}
-                />
-                <VStack alignItems={"flex-start"}>
-                  <HStack>
-                    <Text
-                      lineHeight={0.7}
-                      fontWeight={"bold"}
-                      fontSize={"1.1rem"}
-                      maxW={isMobile ? "120px" : "fit-content"}
-                      textOverflow={"ellipsis"}
-                      overflow={"hidden"}
-                    >
-                      {room.name}
-                    </Text>
-                    <Text>{userIsGuest && "(Guest Most)"}</Text>
-                  </HStack>
-
-                  <Text lineHeight={0.7} fontSize={"0.8rem"} color={"gray.500"}>
-                    {room.owner?.username}
-                  </Text>
-                </VStack>
-              </HStack>
-            </Button>
-          </PopoverTrigger>
-          <Portal>
-            <PopoverContent>
-              <PopoverArrow />
-              <PopoverCloseButton />
-              <PopoverHeader>Ducklet Info</PopoverHeader>
-              <PopoverBody>
-                <Text>Name: {room.name}</Text>
-                <Text>Description: {room.description}</Text>
-                <Text>Visibility: {room.isPublic ? "Public" : "Private"}</Text>
-                <Text>
-                  Updated : {room.updatedAt ? getTimeAgo(room.updatedAt) : "NA"}
-                </Text>
-                <Text>
-                  Created : {room.createdAt ? getTimeAgo(room.createdAt) : "NA"}
-                </Text>
-                <HStack>
-                  <Text> Allowed users:</Text>
-                  {room.allowedUsers?.map((user) => {
-                    return (
-                      <Link href={"/users/" + user.username} key={user.id}>
-                        <UserAvatar
-                          src={user?.photoURL || ""}
-                          name={user?.username}
-                          alt="profile pic"
-                          w={30}
-                          h={30}
-                          style={{
-                            borderRadius: "50%",
-                          }}
-                        />
-                      </Link>
-                    );
-                  })}
-                </HStack>
-                <HStack></HStack>
-              </PopoverBody>
-            </PopoverContent>
-          </Portal>
-        </Popover>
-        {!isMobile && <ShareMenu />}
+        <DuckletSettingsMenu
+          isMobile={isMobile}
+          // @ts-ignore
+          handleSettingsChanged={handleSettingsChanged}
+          // @ts-ignore
+          mutationLoading={roomMutationLoading}
+          // @ts-ignore
+          refetchCurrRoom={refetchCurrRoom}
+          room={room}
+        />
       </HStack>
 
       <HStack justifyContent={"end"}>
@@ -338,7 +265,7 @@ const DuckletsNavbar = ({
                 </HStack>
               </Button>
             </Tooltip>
-            <FAIcon icon={faCircle} fontSize={"0.5rem"} />
+            {/* <FAIcon icon={faCircle} fontSize={"0.5rem"} /> */}
           </>
         )}
         {!userIsGuest && !isMobile && (
@@ -361,7 +288,7 @@ const DuckletsNavbar = ({
         )}
         {!userIsGuest && (
           <HStack>
-            {!isMobile && <FAIcon icon={faCircle} fontSize={"0.5rem"} />}
+            {/* {!isMobile && <FAIcon icon={faCircle} fontSize={"0.5rem"} />} */}
             {clients &&
               clients.map((client) => (
                 <UserAvatar
@@ -379,11 +306,12 @@ const DuckletsNavbar = ({
               ))}
           </HStack>
         )}
-        {userIsGuest && !isMobile && (
+        {userIsGuest && (
           <Tooltip
             label="Guest mode projects arent synced with cloud"
             bg={"yellow.400"}
             // defaultIsOpen
+            hasArrow
             aria-label="A tooltip"
           >
             <WarningTwoIcon
@@ -393,35 +321,7 @@ const DuckletsNavbar = ({
             />
           </Tooltip>
         )}
-        {userIsGuest &&
-          (isMobile ? (
-            <Link href={`/login?from=ducklets/${roomId}`}>
-              <Button colorScheme="purple" size={"sm"}>
-                <Text lineHeight={0.7}>Sign Up</Text>
-              </Button>
-            </Link>
-          ) : (
-            <>
-              <Link href={`/login?from=ducklets/${roomId}`}>
-                <Button colorScheme="purple">Sign Up</Button>
-              </Link>
-              <Link href={`/login?from=ducklets/${roomId}`}>
-                <Button>Login</Button>
-              </Link>
-            </>
-          ))}
-        {!userIsGuest && (
-          <SettingsMenu
-            room={room}
-            // @ts-ignore
-            handleSettingsChanged={handleSettingsChanged}
-            // @ts-ignore
-            refetchCurrRoom={refetchCurrRoom}
-            // @ts-ignore
-            mutationLoading={roomMutationLoading}
-            user={user as ISocketUser}
-          />
-        )}
+        {roomRole === "guest" && <RequestEditAccess currRoom={room} />}
       </HStack>
     </HStack>
   );
