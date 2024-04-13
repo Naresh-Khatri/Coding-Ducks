@@ -56,7 +56,7 @@ const CMEditorWithCollab = ({
   // if (!provider) return <Spinner />;
   return (
     <ReactCodeMirror
-      // value={value}
+      value={value}
       style={{ width: "100%" }}
       key={lang}
       theme={dracula}
