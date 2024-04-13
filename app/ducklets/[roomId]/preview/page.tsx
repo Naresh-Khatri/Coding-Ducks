@@ -1,13 +1,15 @@
+"use server";
 import { getRoom } from "hooks/useRoomsData";
 
 async function DuckletPreview({ params }) {
   const { roomId } = params as { roomId: number };
   const { data } = await getRoom({ id: roomId });
-  const srcDoc = `<html>
-  <head>${data.contentHEAD}</head>
-  <body>${data.contentHTML}</body>
-  <style>${data.contentCSS}</style>
-  <script>${data.contentJS}</script>
+  const { room, role } = data;
+  let srcDoc = `
+  <head>${room.contentHEAD}</head>
+  <body>${room.contentHTML}</body>
+  <style>${room.contentCSS}</style>
+  <script>${room.contentJS}</script>
   <script>const as = document.querySelectorAll('a')
 as.forEach(a=>{
   a.href = "javascript:void(0)"
