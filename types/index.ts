@@ -303,3 +303,10 @@ export interface ISubmissionsQuery {
   orderBy: string;
   asc: boolean;
 }
+
+export type RoomRole =
+  | "owner"
+  | "contributor"
+  | "requester"
+  | "guest"
+  | "none";

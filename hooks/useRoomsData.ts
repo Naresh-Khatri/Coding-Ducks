@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "../lib/axios";
 import { IDirectory, IFile, IMessage } from "../lib/socketio/socketEventTypes";
 import { ISocketRoom } from "../lib/socketio/socketEvents";
+import { RoomRole } from "types";
 
 // ------------- Fetch functions------------
 export const updateRoomContents = async (
@@ -18,13 +19,22 @@ export const updateRoomContents = async (
 };
 
 export const getRoom = async ({ id, name }: { id?: number; name?: string }) => {
-  let data: { data: ISocketRoom };
-  if (id) {
-    data = await axiosInstance.get(`/rooms/${id}`);
-  } else {
-    data = await axiosInstance.get(`/rooms/name/${name}`);
+  try {
+    let data: {
+      data: {
+        room: ISocketRoom;
+        role?: RoomRole;
+      };
+    };
+    if (id) {
+      data = await axiosInstance.get(`/rooms/${id}`);
+    } else {
+      data = await axiosInstance.get(`/rooms/name/${name}`);
+    }
+    return data;
+  } catch (err) {
+    throw err;
   }
-  return data;
 };
 export const getRoomMsgs = async (roomId: number) => {
   const { data } = await axiosInstance.get(`/rooms/${roomId}/msgs`);
@@ -127,8 +137,12 @@ export const useRoomData = ({ id, name }: { id?: number; name?: string }) =>
   useQuery(
     ["room", id, name],
     async () => {
-      const { data } = await getRoom({ id, name });
-      return data as ISocketRoom;
+      try {
+        const data = await getRoom({ id, name });
+        return data.data;
+      } catch (err) {
+        throw err.response;
+      }
     },
     { refetchInterval: 10000, retry: false, refetchOnWindowFocus: false }
   );
