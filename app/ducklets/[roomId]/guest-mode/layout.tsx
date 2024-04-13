@@ -1,43 +1,23 @@
-"use client";
+import { getRoom } from "../../../../hooks/useRoomsData";
+import generateMeta from "components/SEO/generateMeta";
 
-import { use, useEffect } from "react";
-import { userContext } from "../../../../contexts/userContext";
-import { useParams } from "next/navigation";
-import { getRoom, useRoomData } from "../../../../hooks/useRoomsData";
-// import generateMeta from "components/SEO/generateMeta";
-import { Flex } from "@chakra-ui/react";
-import { useRouter } from "next/navigation";
-
-// export async function generateMetadata({ params }) {
-//   const { roomId } = params;
-//   try {
-//     const data = await getRoom({ id: roomId });
-//     const metaData = generateMeta({
-//       title: `${data.data.name}(guest) | Ducklets`,
-//       description: `Join ${data.data.name}, created By ${data.data.owner?.fullname}\n ${data.data.description}`,
-//       url: `https://www.codingducks.xyz/ducklets/${roomId}`,
-//     });
-//     return metaData;
-//   } catch (err) {}
-// }
-export default function GuestModeLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { user, userLoaded } = use(userContext);
-  const { roomId } = useParams() as { roomId: string };
-  const { data: currRoom, isLoading } = useRoomData({ id: +roomId });
-  const router = useRouter();
-  useEffect(() => {
-    // if current user is owner or in allowed list then redirect to edit
-    const userIsAllowedToEdit =
-      user &&
-      currRoom &&
-      (user.id === currRoom.ownerId ||
-        currRoom.allowedUsers?.some((u) => u.id === user.id));
-    if (userIsAllowedToEdit) router.push(`/ducklets/${roomId}`);
-  }, [currRoom, roomId, router, user, userLoaded]);
-  if (!currRoom || !userLoaded) return null;
+export async function generateMetadata({ params }) {
+  const { roomId } = params;
+  try {
+    const data = await getRoom({ id: +roomId });
+    const currRoom = data.data.room;
+    if (!currRoom.isPublic) return;
+    const metaData = generateMeta({
+      title: `${currRoom.name} | Ducklets`,
+      description: `Join ${currRoom.name}, created By ${currRoom.owner?.fullname} - ${currRoom.description}`,
+      url: `https://www.codingducks.xyz/ducklets/${roomId}`,
+    });
+    return metaData;
+  } catch (err) {
+    console.warn("cant fetch details of private ducklet");
+  }
+}
+function GuestModeLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
+export default GuestModeLayout;

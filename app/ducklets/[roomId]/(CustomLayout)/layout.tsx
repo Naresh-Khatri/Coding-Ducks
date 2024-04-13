@@ -1,21 +1,26 @@
-import axios from "axios";
 import generateMeta from "components/SEO/generateMeta";
 import { getRoom } from "hooks/useRoomsData";
+import axiosInstance from "lib/axios";
 import { ReactNode } from "react";
 
 export async function generateMetadata({ params }) {
   const { roomId } = params;
   try {
-    // const data = await axios.get(`http://localhost:3333/rooms/${roomId}`);
     const data = await getRoom({ id: +roomId });
+    const currRoom = data.data.room;
     const metaData = generateMeta({
-      title: `${data.data.name} | Ducklets`,
-      description: `Join ${data.data.name}, created By ${data.data.owner?.fullname} - ${data.data.description}`,
+      title: `${currRoom.name} | Ducklets`,
+      description: `Join ${currRoom.name}, created By ${currRoom.owner?.fullname} - ${currRoom.description}`,
       url: `https://www.codingducks.xyz/ducklets/${roomId}`,
     });
     return metaData;
   } catch (err) {
-    console.error(err);
+    console.warn("cant fetch details of private ducklet");
+    return generateMeta({
+      title: "Private Ducklet | CodingDucks",
+      description: "Join private ducklet, created By - - ",
+      url: `https://www.codingducks.xyz/ducklets/${roomId}`,
+    });
   }
 }
 function DuckletLayout({ children }: { children: ReactNode }) {
