@@ -36,7 +36,7 @@ export const MobileView = ({
   srcDoc,
 }: {
   yDoc?: Y.Doc;
-  provider?: WebsocketProvider;
+  provider?: WebsocketProvider | null;
   isGuest?: boolean;
   guestState?: {
     head: string;
@@ -204,7 +204,7 @@ export const DesktopView = ({
 }: {
   layout: "vertical" | "horizontal";
   yDoc?: Y.Doc;
-  provider?: WebsocketProvider;
+  provider?: WebsocketProvider | null;
   srcDoc: string;
   isGuest?: boolean;
   guestState?: {
