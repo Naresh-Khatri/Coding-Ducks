@@ -39,7 +39,7 @@ import { ChatIcon, ChevronLeftIcon, WarningTwoIcon } from "@chakra-ui/icons";
 import UserAvatar from "../utils/UserAvatar";
 import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
 import ChatMessages from "components/ChatMessage";
-import useGlobalStore from "stores";
+import useGlobalStore, { useDuckletStore } from "stores";
 import { userContext } from "contexts/userContext";
 import { IMessage } from "lib/socketio/socketEventTypes";
 import { getRoomMsgs } from "hooks/useRoomsData";
@@ -60,8 +60,6 @@ interface IDuckeletsNavbarProps {
   refetchCurrRoom?: () => void;
   roomMutationLoading?: boolean;
   clients?: IYJsUser[];
-  layout: "vertical" | "horizontal";
-  setLayout: Dispatch<SetStateAction<"horizontal" | "vertical">>;
   roomRole: RoomRole;
 }
 const DuckletsNavbar = ({
@@ -70,27 +68,28 @@ const DuckletsNavbar = ({
   refetchCurrRoom,
   roomMutationLoading,
   clients,
-  layout,
-  setLayout,
   roomRole,
 }: IDuckeletsNavbarProps) => {
   const { user, userLoaded } = use(userContext);
+  const userIsGuest = userLoaded && !user;
+  const { roomId } = useParams() as { roomId: string };
+
   const {
     isOpen: isDrawerOpen,
     onOpen: onDrawerOpen,
     onClose: onDrawerClose,
   } = useDisclosure();
-  const userIsGuest = userLoaded && !user;
   const [isMobile] = useMediaQuery("(max-width: 650px)");
-  const socket = useGlobalStore((state) => state.socket);
 
+  const socket = useGlobalStore((state) => state.socket);
+  const layout = useDuckletStore((state) => state.layout);
+  const setLayout = useDuckletStore((state) => state.setLayout);
   const msgsList = useGlobalStore((state) => state.msgsList);
   const setMsgsList = useGlobalStore((state) => state.setMsgsList);
   const pushNewMsg = useGlobalStore((state) => state.pushNewMsg);
 
   const [unReadMsgsCount, setUnReadMsgsCount] = useState(msgsList.length);
 
-  const { roomId } = useParams() as { roomId: string };
   useEffect(() => {
     if (!socket) return;
     const fetchMsgs = async () => {
@@ -241,10 +240,9 @@ const DuckletsNavbar = ({
               <Button
                 aria-label="change layout"
                 onClick={() => {
-                  setLayout((p) => {
-                    if (p === "horizontal") return "vertical";
-                    else return "horizontal";
-                  });
+                  setLayout(
+                    layout === "horizontal" ? "vertical" : "horizontal"
+                  );
                 }}
                 variant={"ghost"}
                 position={"relative"}
@@ -294,7 +292,7 @@ const DuckletsNavbar = ({
                 <UserAvatar
                   key={client.clientId}
                   src={client.photoURL || ""}
-                  name={client.username}
+                  name={client.fullname}
                   alt={"profile picture"}
                   w={40}
                   h={40}
