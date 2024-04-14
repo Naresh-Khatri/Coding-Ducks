@@ -1,9 +1,10 @@
 import { StateCreator, create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { IDirectory, IFile, IMessage } from "../lib/socketio/socketEventTypes";
 import { ISocketRoom, IYJsUser } from "../lib/socketio/socketEvents";
 import * as Y from "yjs";
 import { Socket } from "socket.io-client";
+import { WebsocketProvider } from "y-websocket";
 // import Y from 'yjs';
 
 interface IWebsocketState {
@@ -175,6 +176,7 @@ const createFileSystemSlice: StateCreator<
       };
     }),
 });
+
 const useGlobalStore = create<IFSState & IWebsocketState & IYJState>()(
   devtools(
     // persist(
@@ -193,3 +195,54 @@ const useGlobalStore = create<IFSState & IWebsocketState & IYJState>()(
   )
 );
 export default useGlobalStore;
+
+interface IEditorSettings {
+  fontSize: number;
+  setFontSize: (fontSize: number) => void;
+  vimEnabled: boolean;
+  setVimEnabled: (enabled: boolean) => void;
+}
+export const useEditorSettingsStore = create<IEditorSettings>()(
+  persist(
+    (set, get) => ({
+      fontSize: 18,
+      setFontSize: (fontSize: number) =>
+        set((state) => ({ ...state, fontSize })),
+      vimEnabled: false,
+      setVimEnabled: (enabled: boolean) =>
+        set((state) => ({ ...state, vimEnabled: enabled })),
+    }),
+    {
+      name: "editor-settings-storage",
+      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
+    }
+  )
+);
+interface IDucketlet {
+  yjsReady: boolean;
+  setYjsReady: (loading: boolean) => void;
+  layout: "vertical" | "horizontal";
+  setLayout: (layout: "vertical" | "horizontal") => void;
+  yDoc: Y.Doc;
+  setYDoc: (yDoc: Y.Doc) => void;
+  provider: WebsocketProvider | null;
+  setProvider: (provider: WebsocketProvider | null) => void;
+  srcDoc: string;
+  setSrcDoc: (srcDoc: string) => void;
+  isGuest?: boolean;
+  setIsGuest?: (isGuest: boolean) => void;
+}
+export const useDuckletStore = create<IDucketlet>()((set, get) => ({
+  yjsReady: true,
+  setYjsReady: (loading: boolean) => set((state) => ({ ...state, loading })),
+  layout: "vertical",
+  setLayout: (layout: "vertical" | "horizontal") =>
+    set((state) => ({ ...state, layout })),
+  yDoc: new Y.Doc(),
+  setYDoc: (yDoc: Y.Doc) => set((state) => ({ ...state, yDoc })),
+  provider: null,
+  setProvider: (provider: WebsocketProvider | null) =>
+    set((state) => ({ ...state, provider })),
+  srcDoc: "",
+  setSrcDoc: (srcDoc: string) => set((state) => ({ ...state, srcDoc })),
+}));
