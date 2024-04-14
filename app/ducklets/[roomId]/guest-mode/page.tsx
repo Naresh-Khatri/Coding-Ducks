@@ -7,6 +7,7 @@ import {
   HStack,
   Spinner,
   Text,
+  useDisclosure,
   useMediaQuery,
   useToast,
   VStack,
@@ -25,6 +26,8 @@ import {
   USER_JOIN_REQUEST_ACCEPTED,
 } from "lib/socketio/socketEvents";
 import useGlobalStore from "stores";
+import EditorSettingsModal from "components/ducklets/EditorSettingsModal";
+import { SettingsIcon } from "@chakra-ui/icons";
 
 function GuestModeDuckletPage() {
   const { user, userLoaded } = use(userContext);
@@ -49,6 +52,11 @@ function GuestModeDuckletPage() {
 
   const toast = useToast();
   const [isMobile] = useMediaQuery("(max-width: 650px)");
+  const {
+    isOpen: isEditorSettingsModalOpen,
+    onOpen: onEditorSettingsModalOpen,
+    onClose: onEditorSettingsModalClose,
+  } = useDisclosure();
   // init room code when its loaded
   useEffect(() => {
     if (!currRoom) return;
@@ -146,17 +154,22 @@ as.forEach(a=>{
       overflow={"hidden"}
       //   bg={"#282A36"}
     >
-      <DuckletsNavbar
-        room={currRoom}
-        layout={layout}
-        setLayout={setLayout}
-        roomRole={role}
-      />
+      <DuckletsNavbar room={currRoom} roomRole={role} />
 
+      <HStack w={"100%"} flexDirection={"row-reverse"} mb={2}>
+        <Button
+          leftIcon={<SettingsIcon />}
+          size={"sm"}
+          mr={4}
+          onClick={onEditorSettingsModalOpen}
+        >
+          Editor
+        </Button>
+      </HStack>
       {isMobile ? (
         <MobileView
           srcDoc={srcDoc}
-          isGuest={true}
+          guestMode={true}
           guestState={{
             head: contentHEAD,
             html: contentHTML,
@@ -170,9 +183,8 @@ as.forEach(a=>{
         />
       ) : (
         <DesktopView
-          layout={layout}
           srcDoc={srcDoc}
-          isGuest={true}
+          guestMode={true}
           guestState={{
             head: contentHEAD,
             html: contentHTML,
@@ -183,6 +195,16 @@ as.forEach(a=>{
             setCss: setContentCSS,
             setJs: setContentJS,
           }}
+        />
+      )}
+      {isEditorSettingsModalOpen && (
+        <EditorSettingsModal
+          isOpen={isEditorSettingsModalOpen}
+          onClose={onEditorSettingsModalClose}
+          onOpen={onEditorSettingsModalOpen}
+          guestMode={true}
+          htmlHead={contentHEAD}
+          setHtmlHead={setContentHEAD}
         />
       )}
     </Box>

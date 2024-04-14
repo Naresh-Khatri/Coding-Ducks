@@ -42,7 +42,6 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { debounce, getRandColor } from "lib/utils";
-import useGlobalStore from "stores";
 import { io } from "socket.io-client";
 import {
   useMutateRoom,
@@ -66,10 +65,14 @@ import UserAvatar from "components/utils/UserAvatar";
 import Link from "next/link";
 import SetMeta from "components/SEO/SetMeta";
 import { DesktopView, MobileView } from "components/ducklets/DuckletViews";
+import { SettingsIcon } from "@chakra-ui/icons";
+import EditorSettingsModal from "components/ducklets/EditorSettingsModal";
 
-const yDoc = new Y.Doc();
+import useGlobalStore, { useDuckletStore } from "stores";
 
 function DuckletPage() {
+  const { user, userLoaded } = use(userContext);
+
   const { roomId } = useParams() as { roomId: string };
   const router = useRouter();
   const toast = useToast();
@@ -88,9 +91,12 @@ function DuckletPage() {
       window.location.href = `/ducklets/${roomId}/guest-mode`;
     else router.push(`/ducklets/${roomId}/guest-mode`);
   }
-  const [srcDoc, setSrcDoc] = useState("");
-  const [provider, setProvider] = useState<WebsocketProvider | null>(null);
-  const [layout, setLayout] = useState<"horizontal" | "vertical">("vertical");
+  const yDoc = useDuckletStore((state) => state.yDoc);
+  const provider = useDuckletStore((state) => state.provider);
+  const setProvider = useDuckletStore((state) => state.setProvider);
+  const yjsReady = useDuckletStore((state) => state.yjsReady);
+  const setYjsReady = useDuckletStore((state) => state.setYjsReady);
+  const setSrcDoc = useDuckletStore((state) => state.setSrcDoc);
 
   const { mutate: mutateRoomContents } = useMutateRoomContents(+roomId);
   const { mutate: mutateRoom, isLoading: roomMutationLoading } = useMutateRoom(
@@ -112,6 +118,11 @@ function DuckletPage() {
     onClose: onAllowRequestModalClose,
   } = useDisclosure();
   const {
+    isOpen: isEditorSettingsModalOpen,
+    onOpen: onEditorSettingsModalOpen,
+    onClose: onEditorSettingsModalClose,
+  } = useDisclosure();
+  const {
     isOpen: isDrawerOpen,
     onOpen: onDrawerOpen,
     onClose: onDrawerClose,
@@ -122,8 +133,6 @@ function DuckletPage() {
   );
 
   const { mutate: mutateAllowList } = useUpdateAllowList();
-
-  const { user, userLoaded } = use(userContext);
 
   useEffect(() => {
     if (isLoading || !userLoaded) return;
@@ -247,7 +256,7 @@ function DuckletPage() {
         const _html = doc.getText("contentHTML").toJSON();
         const _css = doc.getText("contentCSS").toJSON();
         const _js = doc.getText("contentJS").toJSON();
-
+        setYjsReady(true);
         renderView({
           contentHEAD: _head,
           contentHTML: _html,
@@ -521,28 +530,38 @@ as.forEach(a=>{
           refetchCurrRoom={refetchCurrRoom}
           roomMutationLoading={roomMutationLoading}
           clients={clients}
-          layout={layout}
-          setLayout={setLayout}
           roomRole={role}
         />
-        <Box
-          width={"100vw"}
-          h={"100%"}
-          overflow={"hidden"}
-          //   bg={"#282A36"}
-        >
-          {isMobile ? (
-            <MobileView provider={provider} srcDoc={srcDoc} yDoc={yDoc} />
-          ) : (
-            <DesktopView
-              layout={layout}
-              provider={provider}
-              srcDoc={srcDoc}
-              yDoc={yDoc}
-            />
-          )}
-        </Box>
+        <HStack w={"100%"} flexDirection={"row-reverse"} mb={2}>
+          <Button
+            leftIcon={<SettingsIcon />}
+            size={"sm"}
+            mr={4}
+            onClick={onEditorSettingsModalOpen}
+          >
+            Editor
+          </Button>
+        </HStack>
+
+        {yjsReady && (
+          <Box
+            width={"100vw"}
+            h={"100%"}
+            overflow={"hidden"}
+            //   bg={"#282A36"}
+          >
+            {isMobile ? <MobileView /> : <DesktopView />}
+          </Box>
+        )}
       </Flex>
+      {isEditorSettingsModalOpen && (
+        <EditorSettingsModal
+          isOpen={isEditorSettingsModalOpen}
+          onClose={onEditorSettingsModalClose}
+          onOpen={onEditorSettingsModalOpen}
+        />
+      )}
+
       <Modal
         isOpen={isAllowRequestModalOpen}
         onClose={onAllowRequestModalClose}
