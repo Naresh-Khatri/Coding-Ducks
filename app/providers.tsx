@@ -8,6 +8,7 @@ import { AuthUserProvider } from "../contexts/userContext";
 import SplashScreen from "../components/SplashScreen";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Analytics } from "@vercel/analytics/react";
+import { usePathname } from "next/navigation";
 
 const colors = {
   brand: {
@@ -22,18 +23,32 @@ const colors = {
 };
 const theme = extendTheme({ colors, config: { initialColorMode: "dark" } });
 
+const pathsWithoutSplash = ["/ducklets"];
+
+const matchPath = (restrictedPaths: string[], path: string | null) => {
+  if (!path) return false;
+  return restrictedPaths.some((restrictedPath) =>
+    restrictedPath.includes(path)
+  );
+};
+
 export default function Providers({ children }) {
   const [queryClient] = useState(() => new QueryClient());
+  const pathName = usePathname();
+
+  const showSplashScreen = !matchPath(pathsWithoutSplash, pathName);
 
   return (
     <QueryClientProvider client={queryClient}>
       <Suspense>
-      <AuthUserProvider>
-        {process.env.NODE_ENV === "production" && <SplashScreen />}
-        <ChakraProvider theme={theme}>{children}</ChakraProvider>
-        <ReactQueryDevtools />
-        <Analytics />
-      </AuthUserProvider>
+        <AuthUserProvider>
+          {process.env.NODE_ENV === "production" && showSplashScreen && (
+            <SplashScreen />
+          )}
+          <ChakraProvider theme={theme}>{children}</ChakraProvider>
+          <ReactQueryDevtools />
+          <Analytics />
+        </AuthUserProvider>
       </Suspense>
     </QueryClientProvider>
   );
