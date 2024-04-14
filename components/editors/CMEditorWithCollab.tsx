@@ -3,26 +3,34 @@ import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { vim } from "@replit/codemirror-vim";
 import { dracula } from "@uiw/codemirror-theme-dracula";
-import ReactCodeMirror, { EditorView } from "@uiw/react-codemirror";
+import ReactCodeMirror, { EditorView, Extension } from "@uiw/react-codemirror";
 import { yCollab } from "y-codemirror.next";
 import * as Y from "yjs";
 import { LanguageSupport } from "@codemirror/language";
 import { WebsocketProvider } from "y-websocket";
+import { Skeleton, Stack } from "@chakra-ui/react";
+import { useEditorSettingsStore } from "../../stores";
 
 type Lang = "head" | "html" | "css" | "js";
 
 const CMEditorWithCollab = ({
+  loading = false,
   yDoc,
   lang,
   provider,
 }: {
+  loading?: boolean;
   yDoc: Y.Doc;
   lang: Lang;
   provider: WebsocketProvider;
 }) => {
+  const fontSize = useEditorSettingsStore((state) => state.fontSize);
+  const vimEnabled = useEditorSettingsStore((state) => state.vimEnabled);
+
   let value: string;
   let placeholder = "";
-  const extensions: LanguageSupport[] = [];
+  const extensions: Extension[] = [];
+  if (vimEnabled) extensions.push(vim());
 
   const undoManager = new Y.UndoManager(
     yDoc.getText(`content${String(lang).toUpperCase()}`)
@@ -52,18 +60,29 @@ const CMEditorWithCollab = ({
       break;
     }
   }
-  // console.log(lang, value);
-  // if (!provider) return <Spinner />;
+  if (loading)
+    return (
+      <Stack w={"100%"} mt={1}>
+        {Array(Math.ceil(Math.random() * 10))
+          .fill(0)
+          .map((_, i) => (
+            <Skeleton
+              key={i}
+              height="20px"
+              width={Math.ceil(Math.random() * 100) + "%"}
+            />
+          ))}
+      </Stack>
+    );
   return (
     <ReactCodeMirror
       value={value}
-      style={{ width: "100%" }}
+      style={{ width: "100%", fontSize: fontSize + "px" }}
       key={lang}
       theme={dracula}
       extensions={[
         ...extensions,
         EditorView.lineWrapping,
-        vim(),
         yCollab(
           yDoc.getText(`content${String(lang).toUpperCase()}`),
           provider.awareness,
