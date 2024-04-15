@@ -3,13 +3,6 @@ import {
   Button,
   Flex,
   HStack,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Tab,
   TabIndicator,
   TabList,
@@ -19,17 +12,11 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import { faCubes } from "@fortawesome/free-solid-svg-icons";
 import CMEditorWithCollab from "components/editors/CMEditorWithCollab";
-import FAIcon from "components/FAIcon";
 import FileIcons from "components/multiplayer/FileIcons";
 import Split from "react-split";
-import { WebsocketProvider } from "y-websocket";
-import * as Y from "yjs";
-import { LangSettingsPopover } from "./LangSettingsPopover";
 import CMEditor from "components/editors/CMEditor";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { SettingsIcon } from "@chakra-ui/icons";
 import { useDuckletStore } from "stores";
 import EditorSettingsModal from "./EditorSettingsModal";
 export const MobileView = ({
@@ -51,7 +38,7 @@ export const MobileView = ({
   srcDoc?: string;
 }) => {
   const yDoc = useDuckletStore((state) => state.yDoc);
-  const yjsReady = useDuckletStore((state) => state.yjsReady);
+  const yjsConnected = useDuckletStore((state) => state.yjsConnected);
   const _srcDoc = useDuckletStore((state) => state.srcDoc);
   const provider = useDuckletStore((state) => state.provider);
   const {
@@ -92,54 +79,42 @@ export const MobileView = ({
             />
             <TabPanels h={"calc(100% - 39px)"}>
               <TabPanel p={0} h={"100%"}>
-                {guestMode && guestState && (
-                  <CMEditor
-                    value={guestState?.html}
-                    setValue={guestState?.setHtml}
-                    lang={"html"}
-                  />
-                )}
-                {yDoc && provider && (
-                  <CMEditorWithCollab
-                    loading={!yjsReady}
-                    yDoc={yDoc}
-                    provider={provider}
-                    lang={"html"}
-                  />
+                {guestMode ? (
+                  guestState && (
+                    <CMEditor
+                      value={guestState?.html}
+                      setValue={guestState?.setHtml}
+                      lang={"html"}
+                    />
+                  )
+                ) : (
+                  <CMEditorWithCollab lang={"html"} />
                 )}
               </TabPanel>
               <TabPanel p={0} h={"100%"}>
-                {guestMode && guestState && (
-                  <CMEditor
-                    value={guestState?.css}
-                    setValue={guestState?.setCss}
-                    lang={"css"}
-                  />
-                )}
-                {yDoc && provider && (
-                  <CMEditorWithCollab
-                    loading={!yjsReady}
-                    yDoc={yDoc}
-                    provider={provider}
-                    lang={"css"}
-                  />
+                {guestMode ? (
+                  guestState && (
+                    <CMEditor
+                      value={guestState?.css}
+                      setValue={guestState?.setCss}
+                      lang={"css"}
+                    />
+                  )
+                ) : (
+                  <CMEditorWithCollab lang={"css"} />
                 )}
               </TabPanel>
               <TabPanel p={0} h={"100%"}>
-                {guestMode && guestState && (
-                  <CMEditor
-                    value={guestState.js}
-                    setValue={guestState.setJs}
-                    lang={"js"}
-                  />
-                )}
-                {yDoc && provider && (
-                  <CMEditorWithCollab
-                    loading={!yjsReady}
-                    yDoc={yDoc}
-                    provider={provider}
-                    lang={"js"}
-                  />
+                {guestMode ? (
+                  guestState && (
+                    <CMEditor
+                      value={guestState.js}
+                      setValue={guestState.setJs}
+                      lang={"js"}
+                    />
+                  )
+                ) : (
+                  <CMEditorWithCollab lang={"js"} />
                 )}
               </TabPanel>
             </TabPanels>
@@ -185,10 +160,7 @@ export const DesktopView = ({
   };
 }) => {
   const layout = useDuckletStore((state) => state.layout);
-  const yDoc = useDuckletStore((state) => state.yDoc);
-  const yjsReady = useDuckletStore((state) => state.yjsReady);
   const _srcDoc = useDuckletStore((state) => state.srcDoc);
-  const provider = useDuckletStore((state) => state.provider);
 
   const {
     isOpen: isEditorSettingsModalOpen,
@@ -239,20 +211,16 @@ export const DesktopView = ({
                 </HStack>
               </Button>
               <Flex flex={1} height={"calc(100% - 30px)"}>
-                {guestMode && guestState && (
-                  <CMEditor
-                    value={guestState.html}
-                    setValue={guestState.setHtml}
-                    lang={"html"}
-                  />
-                )}
-                {yDoc && provider && (
-                  <CMEditorWithCollab
-                    loading={!yjsReady}
-                    yDoc={yDoc}
-                    provider={provider}
-                    lang={"html"}
-                  />
+                {guestMode ? (
+                  guestState && (
+                    <CMEditor
+                      value={guestState.html}
+                      setValue={guestState.setHtml}
+                      lang={"html"}
+                    />
+                  )
+                ) : (
+                  <CMEditorWithCollab lang={"html"} />
                 )}
               </Flex>
             </Flex>
@@ -275,20 +243,16 @@ export const DesktopView = ({
                 </HStack>
               </Button>
               <Flex flex={1} height={"calc(100% - 30px)"}>
-                {guestMode && guestState && (
-                  <CMEditor
-                    value={guestState.css}
-                    setValue={guestState.setCss}
-                    lang={"css"}
-                  />
-                )}
-                {yDoc && provider && (
-                  <CMEditorWithCollab
-                    loading={!yjsReady}
-                    yDoc={yDoc}
-                    provider={provider}
-                    lang={"css"}
-                  />
+                {guestMode ? (
+                  guestState && (
+                    <CMEditor
+                      value={guestState.css}
+                      setValue={guestState.setCss}
+                      lang={"css"}
+                    />
+                  )
+                ) : (
+                  <CMEditorWithCollab lang={"css"} />
                 )}
               </Flex>
             </Flex>
@@ -311,20 +275,16 @@ export const DesktopView = ({
                 </HStack>
               </Button>
               <Flex flex={1} height={"calc(100% - 20px)"}>
-                {guestMode && guestState && (
-                  <CMEditor
-                    value={guestState.js}
-                    setValue={guestState.setJs}
-                    lang={"js"}
-                  />
-                )}
-                {yDoc && provider && (
-                  <CMEditorWithCollab
-                    loading={!yjsReady}
-                    yDoc={yDoc}
-                    provider={provider}
-                    lang={"js"}
-                  />
+                {guestMode ? (
+                  guestState && (
+                    <CMEditor
+                      value={guestState.js}
+                      setValue={guestState.setJs}
+                      lang={"js"}
+                    />
+                  )
+                ) : (
+                  <CMEditorWithCollab lang={"js"} />
                 )}
               </Flex>
             </Flex>
