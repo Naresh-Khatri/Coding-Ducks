@@ -8,22 +8,16 @@ import { yCollab } from "y-codemirror.next";
 import * as Y from "yjs";
 import { LanguageSupport } from "@codemirror/language";
 import { WebsocketProvider } from "y-websocket";
-import { Skeleton, Stack } from "@chakra-ui/react";
-import { useEditorSettingsStore } from "../../stores";
+import { Skeleton, Stack, Text } from "@chakra-ui/react";
+import { useDuckletStore, useEditorSettingsStore } from "../../stores";
 
 type Lang = "head" | "html" | "css" | "js";
 
-const CMEditorWithCollab = ({
-  loading = false,
-  yDoc,
-  lang,
-  provider,
-}: {
-  loading?: boolean;
-  yDoc: Y.Doc;
-  lang: Lang;
-  provider: WebsocketProvider;
-}) => {
+const CMEditorWithCollab = ({ lang }: { lang: Lang }) => {
+  const provider = useDuckletStore((state) => state.provider);
+  const yDoc = useDuckletStore((state) => state.yDoc);
+  const yjsConnected = useDuckletStore((state) => state.yjsConnected);
+
   const fontSize = useEditorSettingsStore((state) => state.fontSize);
   const vimEnabled = useEditorSettingsStore((state) => state.vimEnabled);
 
@@ -60,7 +54,7 @@ const CMEditorWithCollab = ({
       break;
     }
   }
-  if (loading)
+  if (!yjsConnected || !provider)
     return (
       <Stack w={"100%"} mt={1}>
         {Array(Math.ceil(Math.random() * 10))
