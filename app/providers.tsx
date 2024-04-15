@@ -23,12 +23,12 @@ const colors = {
 };
 const theme = extendTheme({ colors, config: { initialColorMode: "dark" } });
 
-const pathsWithoutSplash = ["/ducklets"];
+const pathsWithoutSplash = ["ducklets"];
 
 const matchPath = (restrictedPaths: string[], path: string | null) => {
   if (!path) return false;
   return restrictedPaths.some((restrictedPath) =>
-    restrictedPath.includes(path)
+    path.includes(restrictedPath)
   );
 };
 
@@ -36,15 +36,15 @@ export default function Providers({ children }) {
   const [queryClient] = useState(() => new QueryClient());
   const pathName = usePathname();
 
-  const showSplashScreen = !matchPath(pathsWithoutSplash, pathName);
+  const showSplashScreen =
+    process.env.NODE_ENV === "production" &&
+    !matchPath(pathsWithoutSplash, pathName);
 
   return (
     <QueryClientProvider client={queryClient}>
       <Suspense>
         <AuthUserProvider>
-          {process.env.NODE_ENV === "production" && showSplashScreen && (
-            <SplashScreen />
-          )}
+          {showSplashScreen && <SplashScreen />}
           <ChakraProvider theme={theme}>{children}</ChakraProvider>
           <ReactQueryDevtools />
           <Analytics />
