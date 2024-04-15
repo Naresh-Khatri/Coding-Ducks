@@ -219,8 +219,8 @@ export const useEditorSettingsStore = create<IEditorSettings>()(
   )
 );
 interface IDucketlet {
-  yjsReady: boolean;
-  setYjsReady: (loading: boolean) => void;
+  yjsConnected: boolean;
+  setYjsConnected: (connected: boolean) => void;
   layout: "vertical" | "horizontal";
   setLayout: (layout: "vertical" | "horizontal") => void;
   yDoc: Y.Doc;
@@ -233,8 +233,8 @@ interface IDucketlet {
   setIsGuest?: (isGuest: boolean) => void;
 }
 export const useDuckletStore = create<IDucketlet>()((set, get) => ({
-  yjsReady: true,
-  setYjsReady: (loading: boolean) => set((state) => ({ ...state, loading })),
+  yjsConnected: false,
+  setYjsConnected: (connected: boolean) => set((state) => ({ ...state, yjsConnected: connected })),
   layout: "vertical",
   setLayout: (layout: "vertical" | "horizontal") =>
     set((state) => ({ ...state, layout })),
