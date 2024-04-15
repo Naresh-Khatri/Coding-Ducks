@@ -94,8 +94,7 @@ function DuckletPage() {
   const yDoc = useDuckletStore((state) => state.yDoc);
   const provider = useDuckletStore((state) => state.provider);
   const setProvider = useDuckletStore((state) => state.setProvider);
-  const yjsReady = useDuckletStore((state) => state.yjsReady);
-  const setYjsReady = useDuckletStore((state) => state.setYjsReady);
+  const setYjsConnected = useDuckletStore((state) => state.setYjsConnected);
   const setSrcDoc = useDuckletStore((state) => state.setSrcDoc);
 
   const { mutate: mutateRoomContents } = useMutateRoomContents(+roomId);
@@ -246,9 +245,11 @@ function DuckletPage() {
       );
       setClients(_clients);
     });
-    // yDoc.on("afterTransaction", (tr: Y.Transaction, doc: Y.Doc) => {
-    //   console.log(doc);
-    // });
+    _provider.on("status", (foo: { status: "connected" | "disconnected" }) => {
+      if (foo.status === "connected") {
+        setYjsConnected(true);
+      } else setYjsConnected(false);
+    });
     yDoc.on(
       "updateV2",
       (update: Uint8Array, origin: any, doc: Y.Doc, tr: Y.Transaction) => {
@@ -256,7 +257,6 @@ function DuckletPage() {
         const _html = doc.getText("contentHTML").toJSON();
         const _css = doc.getText("contentCSS").toJSON();
         const _js = doc.getText("contentJS").toJSON();
-        setYjsReady(true);
         renderView({
           contentHEAD: _head,
           contentHTML: _html,
@@ -543,16 +543,14 @@ as.forEach(a=>{
           </Button>
         </HStack>
 
-        {yjsReady && (
-          <Box
-            width={"100vw"}
-            h={"100%"}
-            overflow={"hidden"}
-            //   bg={"#282A36"}
-          >
-            {isMobile ? <MobileView /> : <DesktopView />}
-          </Box>
-        )}
+        <Box
+          width={"100vw"}
+          h={"100%"}
+          overflow={"hidden"}
+          //   bg={"#282A36"}
+        >
+          {isMobile ? <MobileView /> : <DesktopView />}
+        </Box>
       </Flex>
       {isEditorSettingsModalOpen && (
         <EditorSettingsModal
