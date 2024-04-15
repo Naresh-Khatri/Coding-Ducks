@@ -113,8 +113,6 @@ function EditorSettingsModal({
   htmlHead,
   setHtmlHead,
 }: IEditorSettingsModalProps) {
-  const yDoc = useDuckletStore((state) => state.yDoc);
-  const provider = useDuckletStore((state) => state.provider);
   const fontSize = useEditorSettingsStore((state) => state.fontSize);
   const setFontSize = useEditorSettingsStore((state) => state.setFontSize);
   const vimEnabled = useEditorSettingsStore((state) => state.vimEnabled);
@@ -129,7 +127,7 @@ function EditorSettingsModal({
   const handleTabChange = (index: number) => {
     setCurrTabIdx(index);
   };
-  const { setValue, onCopy} = useClipboard("");
+  const { setValue, onCopy } = useClipboard("");
   const toast = useToast();
 
   return (
@@ -231,13 +229,7 @@ function EditorSettingsModal({
                         lang={"html"}
                       />
                     )}
-                    {yDoc && provider && (
-                      <CMEditorWithCollab
-                        yDoc={yDoc}
-                        provider={provider}
-                        lang={"head"}
-                      />
-                    )}
+                    <CMEditorWithCollab lang={"head"} />
                     <Text as={"code"}>&lt;/head&gt;</Text>
                   </Box>
                 </FormControl>
