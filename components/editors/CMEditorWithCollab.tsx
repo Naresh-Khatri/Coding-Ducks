@@ -5,10 +5,11 @@ import { vim } from "@replit/codemirror-vim";
 import { dracula } from "@uiw/codemirror-theme-dracula";
 import ReactCodeMirror, { EditorView, Extension } from "@uiw/react-codemirror";
 import { yCollab } from "y-codemirror.next";
-import * as Y from "yjs";
+// import * as Y from "yjs";
+import Y from "_yjs/index";
 import { LanguageSupport } from "@codemirror/language";
 import { WebsocketProvider } from "y-websocket";
-import { Skeleton, Stack, Text } from "@chakra-ui/react";
+import { Skeleton, Stack, Text, VStack } from "@chakra-ui/react";
 import { useDuckletStore, useEditorSettingsStore } from "../../stores";
 
 type Lang = "head" | "html" | "css" | "js";
@@ -68,23 +69,27 @@ const CMEditorWithCollab = ({ lang }: { lang: Lang }) => {
           ))}
       </Stack>
     );
+  const yText = yDoc.getText(`content${String(lang).toUpperCase()}`);
   return (
-    <ReactCodeMirror
-      value={value}
-      style={{ width: "100%", fontSize: fontSize + "px" }}
-      key={lang}
-      theme={dracula}
-      extensions={[
-        ...extensions,
-        EditorView.lineWrapping,
-        yCollab(
-          yDoc.getText(`content${String(lang).toUpperCase()}`),
-          provider.awareness,
-          { undoManager }
-        ),
-      ]}
-      placeholder={placeholder}
-    />
+    <>
+      <VStack w={"100%"}>
+        {vimEnabled && <div>{yText.toJSON()}</div>}
+
+        <div style={{ height: "100%", width: "100%" }}>
+          <ReactCodeMirror
+            style={{ width: "100%", fontSize: fontSize + "px" }}
+            key={lang}
+            theme={dracula}
+            extensions={[
+              ...extensions,
+              EditorView.lineWrapping,
+              yCollab(yText, provider.awareness, { undoManager }),
+            ]}
+            placeholder={placeholder}
+          />
+        </div>
+      </VStack>
+    </>
   );
 };
 export default CMEditorWithCollab;
