@@ -85,7 +85,7 @@ const CMEditorWithCollab = ({ lang }: { lang: Lang }) => {
               EditorView.lineWrapping,
               yCollab(yText, provider.awareness, { undoManager }),
             ]}
-            placeholder={placeholder}
+            // placeholder={placeholder}
           />
         </div>
       </VStack>
