@@ -45,10 +45,14 @@ import FAIcon from "components/FAIcon";
 import { faCode } from "@fortawesome/free-solid-svg-icons";
 import FileIcons from "components/multiplayer/FileIcons";
 
-import { WebsocketProvider } from "y-websocket";
-import * as Y from "yjs";
 import CMEditor from "components/editors/CMEditor";
-import CMEditorWithCollab from "components/editors/CMEditorWithCollab";
+import dynamic from "next/dynamic";
+const MonacoEditorWithCollab = dynamic(
+  () => import("components/editors/MonacoEditorWithCollab"),
+  {
+    ssr: false,
+  }
+);
 
 const headLibs = [
   {
@@ -229,7 +233,8 @@ function EditorSettingsModal({
                         lang={"html"}
                       />
                     )}
-                    <CMEditorWithCollab lang={"head"} />
+                    {/* <CMEditorWithCollab lang={"head"} /> */}
+                    <MonacoEditorWithCollab lang={"head"} />
                     <Text as={"code"}>&lt;/head&gt;</Text>
                   </Box>
                 </FormControl>
