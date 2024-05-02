@@ -40,6 +40,21 @@ const MonacoEditorWithCollab = ({ lang }: { lang: Lang }) => {
     );
     setLoading(false);
   }
+  if (!yjsConnected || !provider) {
+    return (
+      <Stack w={"100%"} h={"100%"} mt={1} display={loading ? "flex" : "none"}>
+        {Array(Math.ceil(Math.random() * 10))
+          .fill(0)
+          .map((_, i) => (
+            <Skeleton
+              key={i}
+              height="20px"
+              width={Math.ceil(Math.random() * 100) + "%"}
+            />
+          ))}
+      </Stack>
+    );
+  }
 
   return (
     <>
