@@ -19,6 +19,16 @@ import CMEditor from "components/editors/CMEditor";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { useDuckletStore } from "stores";
 import EditorSettingsModal from "./EditorSettingsModal";
+// import MonacoEditorWithCollab from "components/editors/MonacoEditorWithCollab";
+import dynamic from "next/dynamic";
+
+const MonacoEditorWithCollab = dynamic(
+  () => import("components/editors/MonacoEditorWithCollab"),
+  {
+    ssr: false,
+  }
+);
+
 export const MobileView = ({
   guestMode,
   guestState,
@@ -38,9 +48,11 @@ export const MobileView = ({
   srcDoc?: string;
 }) => {
   const yDoc = useDuckletStore((state) => state.yDoc);
-  const yjsConnected = useDuckletStore((state) => state.yjsConnected);
-  const _srcDoc = useDuckletStore((state) => state.srcDoc);
   const provider = useDuckletStore((state) => state.provider);
+  const yjsConnected = useDuckletStore((state) => state.yjsConnected);
+
+  const _srcDoc = useDuckletStore((state) => state.srcDoc);
+
   const {
     isOpen: isEditorSettingsModalOpen,
     onOpen: onEditorSettingsModalOpen,
@@ -88,7 +100,8 @@ export const MobileView = ({
                     />
                   )
                 ) : (
-                  <CMEditorWithCollab lang={"html"} />
+                  // <CMEditorWithCollab lang={"html"} />
+                  <MonacoEditorWithCollab lang={"html"} />
                 )}
               </TabPanel>
               <TabPanel p={0} h={"100%"}>
@@ -101,7 +114,8 @@ export const MobileView = ({
                     />
                   )
                 ) : (
-                  <CMEditorWithCollab lang={"css"} />
+                  // <CMEditorWithCollab lang={"css"} />
+                  <MonacoEditorWithCollab lang={"css"} />
                 )}
               </TabPanel>
               <TabPanel p={0} h={"100%"}>
@@ -114,7 +128,8 @@ export const MobileView = ({
                     />
                   )
                 ) : (
-                  <CMEditorWithCollab lang={"js"} />
+                  // <CMEditorWithCollab lang={"js"} />
+                  <MonacoEditorWithCollab lang={"js"} />
                 )}
               </TabPanel>
             </TabPanels>
@@ -161,7 +176,6 @@ export const DesktopView = ({
 }) => {
   const layout = useDuckletStore((state) => state.layout);
   const _srcDoc = useDuckletStore((state) => state.srcDoc);
-
   const {
     isOpen: isEditorSettingsModalOpen,
     onOpen: onEditorSettingsModalOpen,
@@ -172,6 +186,7 @@ export const DesktopView = ({
   >("editor");
   return (
     <>
+      <p>hi</p>
       <Split
         key={layout}
         style={{ height: "calc(100dvh - 48px - 28px - 7px)", width: "100%" }}
@@ -220,7 +235,8 @@ export const DesktopView = ({
                     />
                   )
                 ) : (
-                  <CMEditorWithCollab lang={"html"} />
+                  // <CMEditorWithCollab lang={"html"} />
+                  <MonacoEditorWithCollab lang={"html"} />
                 )}
               </Flex>
             </Flex>
@@ -252,7 +268,8 @@ export const DesktopView = ({
                     />
                   )
                 ) : (
-                  <CMEditorWithCollab lang={"css"} />
+                  // <CMEditorWithCollab lang={"css"} />
+                  <MonacoEditorWithCollab lang={"css"} />
                 )}
               </Flex>
             </Flex>
@@ -284,7 +301,8 @@ export const DesktopView = ({
                     />
                   )
                 ) : (
-                  <CMEditorWithCollab lang={"js"} />
+                  // <CMEditorWithCollab lang={"js"} />
+                  <MonacoEditorWithCollab lang={"js"} />
                 )}
               </Flex>
             </Flex>
