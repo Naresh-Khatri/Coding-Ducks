@@ -186,7 +186,6 @@ export const DesktopView = ({
   >("editor");
   return (
     <>
-      <p>hi</p>
       <Split
         key={layout}
         style={{ height: "calc(100dvh - 48px - 28px - 7px)", width: "100%" }}
