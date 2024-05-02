@@ -288,9 +288,9 @@ const DuckletsNavbar = ({
           <HStack>
             {/* {!isMobile && <FAIcon icon={faCircle} fontSize={"0.5rem"} />} */}
             {clients &&
-              clients.map((client) => (
+              clients.map((client, idx) => (
                 <UserAvatar
-                  key={client.clientId}
+                  key={idx}
                   src={client.photoURL || ""}
                   name={client.fullname}
                   alt={"profile picture"}
