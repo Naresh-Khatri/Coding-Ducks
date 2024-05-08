@@ -369,16 +369,16 @@ ul {
 
 .cm-ySelectionInfo {
   /* opacity: 1 !important; */
-  margin: 0.5rem;
+  margin: .5rem;
   margin-top: 2rem !important;
   top: -0.9rem !important;
-  left: -0.57rem !important;
-  border-radius: 0 3px 3px 3px !important;
+  left: -.57rem !important;
+  border-radius:0 3px 3px 3px !important;
   padding: 0px 6px !important;
   font-family: "monospace" !important;
   font-weight: bold !important;
   color: #ffffff !important;
-  font-size: 0.9rem !important;
+  font-size: .9rem !important;
 }
 
 .terminal {
@@ -401,4 +401,15 @@ ul {
   border-radius: 4px;
   left: -4px;
   top: -5px;
+}
+
+.line-numbers{
+  width: 30px !important;
+}
+.margin-view-overlays > div {
+  width: 70% !important;
+}
+.monaco-scrollable-element{
+  width: 100% !important;
+  left: 45px !important;
 }

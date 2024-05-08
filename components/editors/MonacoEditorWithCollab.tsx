@@ -74,7 +74,6 @@ const MonacoEditorWithCollab = ({ lang }: { lang: Lang }) => {
           theme="vs-dark"
           options={{
             wordWrap: "on",
-            lineNumbersMinChars: 2,
             minimap: { enabled: false },
           }}
           defaultLanguage={lang === "js" ? "javascript" : lang}
