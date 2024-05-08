@@ -69,10 +69,14 @@ function DuckletsPage() {
       <Container maxW={"container.xl"} minH={"80vh"}>
         {isOpen && <CreateDuckletModal isOpen={isOpen} onClose={onClose} />}
         <HStack>
-          <Text mt={5} fontSize={"2xl"}>
+          <Text
+            mt={5}
+            fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
+            fontWeight={"bold"}
+          >
             My ducklets
           </Text>
-          <Button
+          {/* <Button
             mt={5}
             leftIcon={<AddIcon />}
             size={"sm"}
@@ -82,19 +86,20 @@ function DuckletsPage() {
             onClick={onOpen}
           >
             <Text fontSize={"small"}>New</Text>
-          </Button>
+          </Button> */}
         </HStack>
         <Divider mb={5} />
         {userLoaded && !user ? (
           <Text>Log in to view your ducklets</Text>
         ) : myRoomsLoading ? (
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={10}>
+          <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={10}>
             {Array.from({ length: 7 }).map((_, i) => (
-              <Skeleton w={"100%"} h={"128px"} key={i} borderRadius={"5px"} />
+              <Skeleton w={"100%"} h={"200px"} key={i} borderRadius={"5px"} />
             ))}
           </SimpleGrid>
         ) : (
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={10}>
+          <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={10}>
+            <CreateRoomCard onOpen={onOpen} />
             {myRooms?.map((room) => (
               <RoomCard
                 room={room}
@@ -103,22 +108,25 @@ function DuckletsPage() {
                 isMine
               />
             ))}
-            <CreateRoomCard onOpen={onOpen} />
           </SimpleGrid>
         )}
 
-        <Text mt={"4rem"} fontSize={"2xl"}>
-          Other user&apos;s ducklets
+        <Text
+          mt={"4rem"}
+          fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
+          fontWeight={"bold"}
+        >
+          My ducklets Other user&apos;s ducklets
         </Text>
         <Divider mb={5} />
         {otherRoomsLoading ? (
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={10}>
+          <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={10}>
             {Array.from({ length: 11 }).map((_, i) => (
-              <Skeleton w={"100%"} h={"128px"} key={i} borderRadius={"5px"} />
+              <Skeleton w={"100%"} h={"200px"} key={i} borderRadius={"5px"} />
             ))}
           </SimpleGrid>
         ) : (
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={10}>
+          <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={10}>
             {filteredOtherRooms?.map((room) => (
               <RoomCard room={room} key={room.id} />
             ))}
@@ -139,8 +147,8 @@ const CreateRoomCard = ({ onOpen }: { onOpen: () => void }) => {
         direction={{ base: "column", sm: "row" }}
         overflow="hidden"
         variant="outline"
-        _hover={{ border: "1px dashed #9d4edd", transition: "border .2s" }}
-        border={"1px dashed #ffffff29"}
+        _hover={{ border: "2px dashed #9d4edd", transition: "border .2s" }}
+        border={"2px dashed #ffffff29"}
         onClick={onOpen}
       >
         <CardBody>
