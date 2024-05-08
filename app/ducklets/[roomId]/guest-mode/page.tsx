@@ -82,7 +82,7 @@ function GuestModeDuckletPage() {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [currRoom, toast]);
+  }, [currRoom, toast, user]);
   const setupSocketIO = () => {
     if (!user) return null;
     const _socket = io(
@@ -167,6 +167,7 @@ as.forEach(a=>{
         </Button>
       </HStack>
       {isMobile ? (
+        // @ts-ignore
         <MobileView
           srcDoc={srcDoc}
           guestMode={true}
@@ -182,6 +183,7 @@ as.forEach(a=>{
           }}
         />
       ) : (
+        // @ts-ignore
         <DesktopView
           srcDoc={srcDoc}
           guestMode={true}
