@@ -1,8 +1,10 @@
 import {
   Box,
   Button,
+  CloseButton,
   Divider,
   HStack,
+  Input,
   Spinner,
   Text,
   VStack,
@@ -11,6 +13,7 @@ import { useUserRoomsData } from "../../hooks/useUsersData";
 import { formatDate, getTimeAgo } from "../../lib/formatDate";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 interface IDuckletsListProp {
   userId: number;
@@ -18,13 +21,29 @@ interface IDuckletsListProp {
 function DucksletsList({ userId }: IDuckletsListProp) {
   const { data, isLoading, error } = useUserRoomsData({ userId });
 
+  const [searchText, setSearchText] = useState("");
+
+  const filteredDucklets = data
+    ? data.filter((room) =>
+        room.name.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : [];
+
   const { roomId } = useParams() as { roomId: string };
   if (error) return <p> Something went wrong</p>;
   if (isLoading) return <Spinner />;
   if (data?.length === 0) return <p>No rooms found</p>;
   return (
     <div>
-      {data?.map((room) => (
+      <HStack mb={"2rem"}>
+        <Input
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Search Your Ducklets"
+        />
+        <CloseButton onClick={() => setSearchText("")} />
+      </HStack>
+      {filteredDucklets?.map((room) => (
         <Box key={room.id}>
           <a href={`/ducklets/${room.id}`}>
             <HStack
