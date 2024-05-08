@@ -52,7 +52,8 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { userContext } from "contexts/userContext";
 
-import * as Y from "yjs";
+// import * as Y from "yjs";
+import Y from "_yjs";
 import {
   RoomUpdate,
   RoomUpdated,
@@ -239,12 +240,6 @@ function DuckletPage() {
       yDoc
     );
 
-    _provider.awareness.on("update", (changes) => {
-      const _clients = Array.from(_provider.awareness.getStates().values()).map(
-        (v) => v.user
-      );
-      setClients(_clients);
-    });
     _provider.on("status", (foo: { status: "connected" | "disconnected" }) => {
       if (foo.status === "connected") {
         setYjsConnected(true);
@@ -275,12 +270,54 @@ function DuckletPage() {
     // Initialize provider
     _provider.awareness.setLocalStateField("user", {
       name: user.username,
-      color: getRandColor().value,
+      color: getRandColor(),
       photoURL: user.photoURL,
       username: user.username,
       fullname: user.fullname,
       id: user.id,
       clientId: _provider.awareness.clientID,
+    });
+    _provider.awareness.on("update", (changes) => {
+      const _clients = Array.from(_provider.awareness.getStates().values()).map(
+        (v) => v.user
+      );
+      _clients.forEach((c) => {
+        const alreadyExists = document.getElementById("client-" + c.clientId);
+        if (alreadyExists) return;
+        // create a css class for each user
+        const el = document.createElement("style");
+        el.setAttribute("id", "client-" + c.clientId);
+        // el.innerHTML = `.yRemoteSelection-${c.clientId} {background-color: var(--${c.color.name}-800); border-color: var(--${c.color.name}-800);}`;
+        el.innerHTML = `
+.yRemoteSelection-${c.clientId} {
+  background-color: ${c.color.bg};
+  border-color: ${c.color.bg};
+}
+.yRemoteSelectionHead-${c.clientId}{
+  border-left: ${c.color.value} solid 2px;
+  border-bottom: ${c.color.value} solid 2px;
+}
+.yRemoteSelectionHead:hover::before{
+  opacity: 1;
+}
+.yRemoteSelectionHead-${c.clientId}::before{
+  border: none;
+  background-color: ${c.color.value};
+  color: white;
+  border-radius: 0 3px 3px 0;
+  padding: 0 4px;
+  position: absolute;
+  top: 15px;
+  z-index: 999;
+  font-size: .8rem;
+  content: "${c.username}";
+  opacity: 0;
+}
+`;
+        // add it to the document
+        document.head.appendChild(el);
+      });
+      setClients(_clients);
     });
     // testing: send user pointer pos
     if (typeof window !== "undefined") {
@@ -501,9 +538,9 @@ as.forEach(a=>{
                       width="24"
                       height="24"
                       viewBox="0 0 32 32"
-                      fill={c.color}
+                      fill={c.color.value}
                       xmlns="http://www.w3.org/2000/svg"
-                      style={{ color: c.color }}
+                      style={{ color: c.color.value }}
                     >
                       <path d="m27.34 12.06-22-8a1 1 0 0 0-1.28 1.28l8 22a1 1 0 0 0 1.87.03l3.84-9.6 9.6-3.84a1 1 0 0 0 0-1.87h-.03Zm-10.71 4-.4.16-.16.4L13 24.2 6.67 6.67 24.2 13l-7.57 3.06Z"></path>
                     </svg>
@@ -514,7 +551,7 @@ as.forEach(a=>{
                     left={5}
                     borderRadius={"full"}
                     color={"white"}
-                    bg={c.color}
+                    bg={c.color.value}
                     // w={"100px"}
                     px={2}
                     py={1}
