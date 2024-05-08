@@ -224,7 +224,7 @@ function EditorSettingsModal({
               <TabPanel>
                 <FormControl>
                   <FormLabel fontWeight={"bold"}>Edit Head</FormLabel>
-                  <Box bg={"#282A36"}>
+                  <Box bg={"#282A36"} height={"150px"} mb={"4rem"}>
                     <Text as={"code"}>&lt;head&gt;</Text>
                     {guestMode && htmlHead && setHtmlHead && (
                       <CMEditor
