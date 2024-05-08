@@ -306,7 +306,8 @@ const DuckletsNavbar = ({
         )}
         {userIsGuest && (
           <Tooltip
-            label="Guest mode projects arent synced with cloud"
+            label="Ducklets in guest mode wont sync with cloud"
+            right={"10px"}
             bg={"yellow.400"}
             // defaultIsOpen
             hasArrow
