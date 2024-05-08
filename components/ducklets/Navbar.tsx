@@ -47,6 +47,7 @@ import { useParams } from "next/navigation";
 import { RoomRole } from "types";
 import RequestEditAccess from "./RequestEditAccess";
 import DuckletSettingsMenu from "./DuckletSettingsMenu";
+import ClientsDrawer from "./ClientsDrawer";
 
 interface IDuckeletsNavbarProps {
   room: ISocketRoom;
@@ -113,6 +114,13 @@ const DuckletsNavbar = ({
       position={"relative"}
     >
       <HStack>
+        {!isMobile && (
+          <Link href={"/ducklets"}>
+            <Button variant={"outline"} leftIcon={<ChevronLeftIcon />}>
+              <Text fontWeight={"bold"}>Back</Text>
+            </Button>
+          </Link>
+        )}
         <Box pos={"relative"}>
           <IconButton
             onClick={() => {
@@ -207,13 +215,6 @@ const DuckletsNavbar = ({
             </DrawerBody>
           </DrawerContent>
         </Drawer>
-        {!isMobile && (
-          <Link href={"/ducklets"}>
-            <Button variant={"outline"}>
-              <Text fontWeight={"bold"}>Home</Text>
-            </Button>
-          </Link>
-        )}
       </HStack>
       <HStack
         pos={isMobile ? "inherit" : "absolute"}
@@ -284,25 +285,8 @@ const DuckletsNavbar = ({
             </HStack>
           </Tooltip>
         )}
-        {!userIsGuest && (
-          <HStack>
-            {/* {!isMobile && <FAIcon icon={faCircle} fontSize={"0.5rem"} />} */}
-            {clients &&
-              clients.map((client, idx) => (
-                <UserAvatar
-                  key={idx}
-                  src={client.photoURL || ""}
-                  name={client.fullname}
-                  alt={"profile picture"}
-                  w={40}
-                  h={40}
-                  style={{
-                    borderRadius: "50%",
-                    border: "3px solid " + client.color.value,
-                  }}
-                />
-              ))}
-          </HStack>
+        {!userIsGuest && clients && (
+          <ClientsDrawer clients={clients} room={room} />
         )}
         {userIsGuest && (
           <Tooltip
