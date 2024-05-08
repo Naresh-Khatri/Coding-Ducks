@@ -71,15 +71,15 @@ export const getFileFromFS = (
 };
 
 export const COLORS = [
-  { name: "purple", value: "#9F7AEA" },
-  { name: "pink", value: "#ED64A6" },
-  { name: "green", value: "#48BB78" },
-  { name: "yellow", value: "#ECC94B" },
-  { name: "orange", value: "#ED8936" },
-  { name: "red", value: "#F56565" },
-  { name: "teal", value: "#38B2AC" },
-  { name: "blue", value: "#4299E1" },
-  { name: "cyan", value: "#0BC5EA" },
+  { name: "purple", value: "#9F7AEA", bg: "#553C9A" },
+  { name: "pink", value: "#ED64A6", bg: "#97266D" },
+  { name: "green", value: "#48BB78", bg: "#276749" },
+  { name: "yellow", value: "#ECC94B", bg: "#975A16" },
+  { name: "orange", value: "#ED8936", bg: "#9C4221" },
+  { name: "red", value: "#F56565", bg: "#9B2C2C" },
+  { name: "teal", value: "#38B2AC", bg: "#285E61" },
+  { name: "blue", value: "#4299E1", bg: "#2C5282" },
+  { name: "cyan", value: "#0BC5EA", bg: "#0987A0" },
 ];
 export const getRandColor = () => {
   return COLORS[Math.floor(Math.random() * COLORS.length)];
