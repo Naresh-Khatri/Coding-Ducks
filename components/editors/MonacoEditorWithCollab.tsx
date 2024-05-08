@@ -77,7 +77,7 @@ const MonacoEditorWithCollab = ({ lang }: { lang: Lang }) => {
             lineNumbersMinChars: 2,
             minimap: { enabled: false },
           }}
-          defaultLanguage={lang}
+          defaultLanguage={lang === "js" ? "javascript" : lang}
           onMount={handleEditorDidMount}
         />
       </VStack>
