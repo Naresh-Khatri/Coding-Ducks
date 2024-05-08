@@ -298,7 +298,7 @@ const DuckletsNavbar = ({
                   h={40}
                   style={{
                     borderRadius: "50%",
-                    border: "3px solid " + client.color,
+                    border: "3px solid " + client.color.value,
                   }}
                 />
               ))}
