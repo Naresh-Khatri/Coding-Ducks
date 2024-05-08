@@ -14,7 +14,7 @@ function RequestEditAccess({ currRoom }: { currRoom: ISocketRoom }) {
 
   const toast = useToast();
   const handleRequestAccess = async () => {
-    if (!socket?.emit || !user) return;
+    if (!socket || !user) return;
     setWatingForJoinRequest(true);
     setTimeout(() => {
       setWatingForJoinRequest(false);
