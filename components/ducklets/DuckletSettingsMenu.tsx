@@ -146,7 +146,7 @@ function DuckletSettingsMenu({
         </Button>
       </PopoverTrigger>
       <Portal>
-        <PopoverContent pb={'2rem'}>
+        <PopoverContent pb={"2rem"}>
           <PopoverArrow />
           <PopoverHeader>
             <HStack justifyContent={"space-between"}>
@@ -248,9 +248,13 @@ function DuckletSettingsMenu({
                   <Text fontWeight={"bold"}>Owner:</Text>
                   <UserItem user={room.owner} isOwner />
                 </FormLabel>
-                <FormLabel>
-                  <Text fontWeight={"bold"}>Contributors:</Text>
-                </FormLabel>
+                {room.allowedUsers && room.allowedUsers?.length > 0 && (
+                  <FormLabel>
+                    <Text fontWeight={"bold"} mt={"1rem"}>
+                      Contributors:
+                    </Text>
+                  </FormLabel>
+                )}
                 <Box w={"full"}>
                   {room.allowedUsers?.map((user) => (
                     <UserItem
