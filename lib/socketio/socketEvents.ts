@@ -2,7 +2,7 @@ import { Lang } from "../../types";
 
 export interface IYJsUser {
   clientId: number;
-  color: string;
+  color: { name: string; value: string; bg: string };
   id: number;
   fullname?: string;
   email?: string;
