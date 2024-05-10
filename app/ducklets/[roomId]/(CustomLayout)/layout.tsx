@@ -1,6 +1,5 @@
 import generateMeta from "components/SEO/generateMeta";
 import { getRoom } from "hooks/useRoomsData";
-import axiosInstance from "lib/axios";
 import { ReactNode } from "react";
 
 export async function generateMetadata({ params }) {
@@ -12,6 +11,7 @@ export async function generateMetadata({ params }) {
       title: `${currRoom.name} | Ducklets`,
       description: `Join ${currRoom.name}, created By ${currRoom.owner?.fullname} - ${currRoom.description}`,
       url: `https://www.codingducks.xyz/ducklets/${roomId}`,
+      image: currRoom.previewImage,
     });
     return metaData;
   } catch (err) {
