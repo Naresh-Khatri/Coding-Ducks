@@ -146,6 +146,7 @@ function DuckletPage() {
     }
     return () => {
       // todo: cleanup mousemove listener
+      if (currRoom && currRoom.id === +roomId) return;
       if (provider) {
         provider.awareness.setLocalState(null);
         provider.destroy();
