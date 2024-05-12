@@ -69,12 +69,13 @@ const MonacoEditorWithCollab = ({ lang }: { lang: Lang }) => {
             />
           ))}
       </Stack>
-      <VStack w={"100%"} h={"100%"} display={loading ? "none" : "flex"} mt={1}>
+      <VStack w={"100%"} h={"100%"} display={loading ? "none" : "flex"}>
         <Editor
           theme="vs-dark"
           options={{
             wordWrap: "on",
             minimap: { enabled: false },
+            fontSize,
           }}
           defaultLanguage={lang === "js" ? "javascript" : lang}
           onMount={handleEditorDidMount}
