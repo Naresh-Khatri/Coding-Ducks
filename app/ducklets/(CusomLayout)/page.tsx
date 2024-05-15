@@ -110,7 +110,6 @@ function DuckletsPage() {
             ))}
           </SimpleGrid>
         )}
-
         <Text
           mt={"4rem"}
           fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
@@ -196,8 +195,25 @@ const RoomCard = ({
     );
   };
   return (
-    <SlideFade in={true} offsetY="20px">
+    <SlideFade
+      in={true}
+      offsetY="20px"
+      style={{ position: "relative" }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
       {/* CHANGE IT WITH NEXT LINK LATER */}
+      {isMine && isHovering && (
+        <IconButton
+          style={{ position: "absolute", right: "-8px", top: "-8px" }}
+          aria-label="delete ducklet"
+          onClick={onOpen}
+          colorScheme="red"
+          icon={<DeleteIcon />}
+          size={"sm"}
+          zIndex={99}
+        />
+      )}
       <a href={`/ducklets/${room.id}`}>
         <Card
           direction={{ base: "column", sm: "row" }}
@@ -205,27 +221,12 @@ const RoomCard = ({
           _hover={{
             border: "2px solid #9d4edd",
             transition: "border .2s",
-            transform: "scale(1.02) rotate(-1deg)",
+            transform: "scale(1.02) rotate(-.5deg)",
+            translateY: "5px",
           }}
+          transition={'transform 0.2s ease'}
           position={"relative"}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
         >
-          {isMine && isHovering && (
-            <SlideFade
-              in={true}
-              offsetY="20px"
-              style={{ position: "absolute", right: "-3px", top: "-3px" }}
-            >
-              <IconButton
-                aria-label="delete ducklet"
-                onClick={onOpen}
-                colorScheme="red"
-                icon={<DeleteIcon />}
-                size={"sm"}
-              />
-            </SlideFade>
-          )}
           {isOpen && (
             <Modal isOpen={isOpen} onClose={onClose}>
               <ModalOverlay />
