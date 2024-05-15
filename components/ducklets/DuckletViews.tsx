@@ -17,7 +17,7 @@ import FileIcons from "components/multiplayer/FileIcons";
 import Split from "react-split";
 import CMEditor from "components/editors/CMEditor";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { useDuckletStore } from "stores";
+import { useDuckletStore, useLayoutStore } from "stores";
 import EditorSettingsModal from "./EditorSettingsModal";
 // import MonacoEditorWithCollab from "components/editors/MonacoEditorWithCollab";
 import dynamic from "next/dynamic";
@@ -174,7 +174,7 @@ export const DesktopView = ({
     setJs: Dispatch<SetStateAction<string>>;
   };
 }) => {
-  const layout = useDuckletStore((state) => state.layout);
+  const layout = useLayoutStore((state) => state.layout);
   const _srcDoc = useDuckletStore((state) => state.srcDoc);
   const {
     isOpen: isEditorSettingsModalOpen,
