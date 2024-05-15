@@ -118,11 +118,6 @@ function DuckletPage() {
     onClose: onAllowRequestModalClose,
   } = useDisclosure();
   const {
-    isOpen: isEditorSettingsModalOpen,
-    onOpen: onEditorSettingsModalOpen,
-    onClose: onEditorSettingsModalClose,
-  } = useDisclosure();
-  const {
     isOpen: isDrawerOpen,
     onOpen: onDrawerOpen,
     onClose: onDrawerClose,
@@ -569,17 +564,6 @@ as.forEach(a=>{
           clients={clients}
           roomRole={role}
         />
-        <HStack w={"100%"} flexDirection={"row-reverse"} mb={2}>
-          <Button
-            leftIcon={<SettingsIcon />}
-            size={"sm"}
-            mr={4}
-            onClick={onEditorSettingsModalOpen}
-          >
-            Editor
-          </Button>
-        </HStack>
-
         <Box
           width={"100vw"}
           h={"100%"}
@@ -589,13 +573,6 @@ as.forEach(a=>{
           {isMobile ? <MobileView /> : <DesktopView />}
         </Box>
       </Flex>
-      {isEditorSettingsModalOpen && (
-        <EditorSettingsModal
-          isOpen={isEditorSettingsModalOpen}
-          onClose={onEditorSettingsModalClose}
-          onOpen={onEditorSettingsModalOpen}
-        />
-      )}
 
       <Modal
         isOpen={isAllowRequestModalOpen}

@@ -189,124 +189,228 @@ export const DesktopView = ({
       <Split
         key={layout}
         style={{ height: "calc(100dvh - 48px - 28px - 7px)", width: "100%" }}
-        className={layout === "horizontal" ? "split-h" : "split-v"}
-        direction={layout === "horizontal" ? "horizontal" : "vertical"}
+        // SINCE LAYOUT != SPLIT TYPE
+        className={
+          layout === "vertical" || layout === "file" ? "split-h" : "split-v"
+        }
+        direction={
+          layout === "vertical" || layout === "file" ? "horizontal" : "vertical"
+        }
         minSize={200}
         sizes={[40, 60]}
       >
-        <Box h={"100%"}>
-          <Split
-            className={layout !== "horizontal" ? "split-h" : "split-v"}
-            direction={layout !== "horizontal" ? "horizontal" : "vertical"}
-            minSize={20}
-            snapOffset={50}
-            style={{
-              width: "100%",
-              height: "100%",
-              background: "#282A36 !important",
-            }}
-          >
-            <Flex direction={"column"}>
-              <Button
-                size={"sm"}
-                w={"full"}
-                h={"20px"}
-                borderRadius={"5px 5px 0 0"}
-                onClick={() => {
-                  // setInitTabName("html");
-                  onEditorSettingsModalOpen();
-                }}
-              >
-                <HStack>
-                  <FileIcons fileName={`index.html`} width={20} />
-                  <Text fontWeight={"bold"} textTransform={"uppercase"}>
-                    HTML
-                  </Text>
-                </HStack>
-              </Button>
-              <Flex flex={1} height={"calc(100% - 30px)"}>
-                {guestMode ? (
-                  guestState && (
-                    <CMEditor
-                      value={guestState.html}
-                      setValue={guestState.setHtml}
-                      lang={"html"}
-                    />
-                  )
-                ) : (
-                  // <CMEditorWithCollab lang={"html"} />
-                  <MonacoEditorWithCollab lang={"html"} />
-                )}
+        {layout === "file" ? (
+          <Box h={"100%"} position={"relative"}>
+            <Tabs
+              variant="enclosed"
+              h={"100%"}
+              w={"100%"}
+              position={"absolute"}
+              // top={"-10px"}
+              // bg={}
+            >
+              <TabList>
+                <Tab
+                  _selected={{
+                    color: "purple.400",
+                    fontWeight: "bold",
+                    border: "1px solid #9F7AEA",
+                  }}
+                >
+                  <HStack>
+                    <FileIcons fileName={`index.html`} width={20} />
+                    <Text>HTML</Text>
+                  </HStack>
+                </Tab>
+                <Tab
+                  _selected={{
+                    color: "purple.400",
+                    fontWeight: "bold",
+                    border: "1px solid #9F7AEA",
+                  }}
+                >
+                  <HStack>
+                    <FileIcons fileName={`style.css`} width={20} />
+                    <Text>CSS</Text>
+                  </HStack>
+                </Tab>
+                <Tab
+                  _selected={{
+                    color: "purple.400",
+                    fontWeight: "bold",
+                    border: "1px solid #9F7AEA",
+                  }}
+                >
+                  <HStack>
+                    <FileIcons fileName={`script.js`} width={20} />
+                    <Text>JS</Text>
+                  </HStack>
+                </Tab>
+              </TabList>
+              <TabPanels h={"100%"}>
+                <TabPanel height={"100%"} p={0}>
+                  <Flex flex={1} height={"100%"}>
+                    {guestMode ? (
+                      guestState && (
+                        <CMEditor
+                          value={guestState.html}
+                          setValue={guestState.setHtml}
+                          lang={"html"}
+                        />
+                      )
+                    ) : (
+                      <MonacoEditorWithCollab lang={"html"} />
+                    )}
+                  </Flex>
+                </TabPanel>
+                <TabPanel height={"100%"} p={0}>
+                  <Flex flex={1} height={"calc(100% - 30px)"}>
+                    {guestMode ? (
+                      guestState && (
+                        <CMEditor
+                          value={guestState.css}
+                          setValue={guestState.setCss}
+                          lang={"css"}
+                        />
+                      )
+                    ) : (
+                      <MonacoEditorWithCollab lang={"css"} />
+                    )}
+                  </Flex>
+                </TabPanel>
+                <TabPanel height={"100%"} p={0}>
+                  <Flex flex={1} height={"calc(100% - 20px)"}>
+                    {guestMode ? (
+                      guestState && (
+                        <CMEditor
+                          value={guestState.js}
+                          setValue={guestState.setJs}
+                          lang={"js"}
+                        />
+                      )
+                    ) : (
+                      <MonacoEditorWithCollab lang={"js"} />
+                    )}
+                  </Flex>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </Box>
+        ) : (
+          <Box h={"100%"}>
+            <Split
+              className={layout === "horizontal" ? "split-h" : "split-v"}
+              direction={layout === "horizontal" ? "horizontal" : "vertical"}
+              minSize={20}
+              snapOffset={50}
+              style={{
+                width: "100%",
+                height: "100%",
+                background: "#282A36 !important",
+              }}
+            >
+              <Flex direction={"column"}>
+                <Button
+                  size={"sm"}
+                  w={"full"}
+                  h={"20px"}
+                  borderRadius={"5px 5px 0 0"}
+                  onClick={() => {
+                    // setInitTabName("html");
+                    onEditorSettingsModalOpen();
+                  }}
+                >
+                  <HStack>
+                    <FileIcons fileName={`index.html`} width={20} />
+                    <Text fontWeight={"bold"} textTransform={"uppercase"}>
+                      HTML
+                    </Text>
+                  </HStack>
+                </Button>
+                <Flex flex={1} height={"calc(100% - 30px)"}>
+                  {guestMode ? (
+                    guestState && (
+                      <CMEditor
+                        value={guestState.html}
+                        setValue={guestState.setHtml}
+                        lang={"html"}
+                      />
+                    )
+                  ) : (
+                    // <CMEditorWithCollab lang={"html"} />
+                    <MonacoEditorWithCollab lang={"html"} />
+                  )}
+                </Flex>
               </Flex>
-            </Flex>
-            <Flex direction={"column"}>
-              <Button
-                size={"sm"}
-                w={"full"}
-                h={"20px"}
-                borderRadius={"5px 5px 0 0"}
-                onClick={() => {
-                  // setInitTabName("css");
-                  onEditorSettingsModalOpen();
-                }}
-              >
-                <HStack>
-                  <FileIcons fileName={`style.css`} width={20} />
-                  <Text fontWeight={"bold"} textTransform={"uppercase"}>
-                    CSS
-                  </Text>
-                </HStack>
-              </Button>
-              <Flex flex={1} height={"calc(100% - 30px)"}>
-                {guestMode ? (
-                  guestState && (
-                    <CMEditor
-                      value={guestState.css}
-                      setValue={guestState.setCss}
-                      lang={"css"}
-                    />
-                  )
-                ) : (
-                  // <CMEditorWithCollab lang={"css"} />
-                  <MonacoEditorWithCollab lang={"css"} />
-                )}
+              <Flex direction={"column"}>
+                <Button
+                  size={"sm"}
+                  w={"full"}
+                  h={"20px"}
+                  borderRadius={"5px 5px 0 0"}
+                  onClick={() => {
+                    // setInitTabName("css");
+                    onEditorSettingsModalOpen();
+                  }}
+                >
+                  <HStack>
+                    <FileIcons fileName={`style.css`} width={20} />
+                    <Text fontWeight={"bold"} textTransform={"uppercase"}>
+                      CSS
+                    </Text>
+                  </HStack>
+                </Button>
+                <Flex flex={1} height={"calc(100% - 30px)"}>
+                  {guestMode ? (
+                    guestState && (
+                      <CMEditor
+                        value={guestState.css}
+                        setValue={guestState.setCss}
+                        lang={"css"}
+                      />
+                    )
+                  ) : (
+                    // <CMEditorWithCollab lang={"css"} />
+                    <MonacoEditorWithCollab lang={"css"} />
+                  )}
+                </Flex>
               </Flex>
-            </Flex>
-            <Flex direction={"column"}>
-              <Button
-                size={"sm"}
-                w={"full"}
-                h={"20px"}
-                borderRadius={"5px 5px 0 0"}
-                onClick={() => {
-                  // setInitTabName("css");
-                  onEditorSettingsModalOpen();
-                }}
-              >
-                <HStack>
-                  <FileIcons fileName={`script.js`} width={20} />
-                  <Text fontWeight={"bold"} textTransform={"uppercase"}>
-                    JS
-                  </Text>
-                </HStack>
-              </Button>
-              <Flex flex={1} height={"calc(100% - 20px)"}>
-                {guestMode ? (
-                  guestState && (
-                    <CMEditor
-                      value={guestState.js}
-                      setValue={guestState.setJs}
-                      lang={"js"}
-                    />
-                  )
-                ) : (
-                  // <CMEditorWithCollab lang={"js"} />
-                  <MonacoEditorWithCollab lang={"js"} />
-                )}
+              <Flex direction={"column"}>
+                <Button
+                  size={"sm"}
+                  w={"full"}
+                  h={"20px"}
+                  borderRadius={"5px 5px 0 0"}
+                  onClick={() => {
+                    // setInitTabName("css");
+                    onEditorSettingsModalOpen();
+                  }}
+                >
+                  <HStack>
+                    <FileIcons fileName={`script.js`} width={20} />
+                    <Text fontWeight={"bold"} textTransform={"uppercase"}>
+                      JS
+                    </Text>
+                  </HStack>
+                </Button>
+                <Flex flex={1} height={"calc(100% - 20px)"}>
+                  {guestMode ? (
+                    guestState && (
+                      <CMEditor
+                        value={guestState.js}
+                        setValue={guestState.setJs}
+                        lang={"js"}
+                      />
+                    )
+                  ) : (
+                    // <CMEditorWithCollab lang={"js"} />
+                    <MonacoEditorWithCollab lang={"js"} />
+                  )}
+                </Flex>
               </Flex>
-            </Flex>
-          </Split>
-        </Box>
+            </Split>
+          </Box>
+        )}
         <Box w={"full"} h={"full"} bg={"white"}>
           <iframe
             title="output"

@@ -7,6 +7,7 @@ import {
   DrawerHeader,
   DrawerOverlay,
   HStack,
+  Icon,
   IconButton,
   Tab,
   TabList,
@@ -35,7 +36,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import DucksletsList from "./DucksletsList";
 import Link from "next/link";
-import { ChatIcon, ChevronLeftIcon, WarningTwoIcon } from "@chakra-ui/icons";
+import {
+  ChatIcon,
+  ChevronLeftIcon,
+  SettingsIcon,
+  WarningTwoIcon,
+} from "@chakra-ui/icons";
 import UserAvatar from "../utils/UserAvatar";
 import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
 import ChatMessages from "components/ChatMessage";
@@ -48,6 +54,8 @@ import { RoomRole } from "types";
 import RequestEditAccess from "./RequestEditAccess";
 import DuckletSettingsMenu from "./DuckletSettingsMenu";
 import ClientsDrawer from "./ClientsDrawer";
+import LayoutSwitcher from "./LayoutSwitcher";
+import EditorSettingsModal from "./EditorSettingsModal";
 
 interface IDuckeletsNavbarProps {
   room: ISocketRoom;
@@ -62,6 +70,9 @@ interface IDuckeletsNavbarProps {
   roomMutationLoading?: boolean;
   clients?: IYJsUser[];
   roomRole: RoomRole;
+  guestMode?: boolean;
+  htmlHead?: string;
+  setHtmlHead?: Dispatch<SetStateAction<string>>;
 }
 const DuckletsNavbar = ({
   room,
@@ -70,6 +81,9 @@ const DuckletsNavbar = ({
   roomMutationLoading,
   clients,
   roomRole,
+  guestMode = false,
+  htmlHead,
+  setHtmlHead,
 }: IDuckeletsNavbarProps) => {
   const { user, userLoaded } = use(userContext);
   const userIsGuest = userLoaded && !user;
@@ -80,11 +94,14 @@ const DuckletsNavbar = ({
     onOpen: onDrawerOpen,
     onClose: onDrawerClose,
   } = useDisclosure();
+  const {
+    isOpen: isEditorSettingsModalOpen,
+    onOpen: onEditorSettingsModalOpen,
+    onClose: onEditorSettingsModalClose,
+  } = useDisclosure();
   const [isMobile] = useMediaQuery("(max-width: 650px)");
 
   const socket = useGlobalStore((state) => state.socket);
-  const layout = useDuckletStore((state) => state.layout);
-  const setLayout = useDuckletStore((state) => state.setLayout);
   const msgsList = useGlobalStore((state) => state.msgsList);
   const setMsgsList = useGlobalStore((state) => state.setMsgsList);
   const pushNewMsg = useGlobalStore((state) => state.pushNewMsg);
@@ -107,7 +124,7 @@ const DuckletsNavbar = ({
   }, [socket]);
   return (
     <HStack
-      h={"48px"}
+      h={"4rem"}
       w={"100vw"}
       px={"1rem"}
       justifyContent={"space-between"}
@@ -222,51 +239,6 @@ const DuckletsNavbar = ({
         transform={isMobile ? "" : "translateX(-50%)"}
         h={"full"}
       >
-        <DuckletSettingsMenu
-          isMobile={isMobile}
-          // @ts-ignore
-          handleSettingsChanged={handleSettingsChanged}
-          // @ts-ignore
-          mutationLoading={roomMutationLoading}
-          // @ts-ignore
-          refetchCurrRoom={refetchCurrRoom}
-          room={room}
-        />
-      </HStack>
-
-      <HStack justifyContent={"end"}>
-        {!isMobile && (
-          <>
-            <Tooltip hasArrow label="Change layout">
-              <Button
-                aria-label="change layout"
-                onClick={() => {
-                  setLayout(
-                    layout === "horizontal" ? "vertical" : "horizontal"
-                  );
-                }}
-                variant={"ghost"}
-                position={"relative"}
-              >
-                <Box
-                  position={"absolute"}
-                  left={layout === "horizontal" ? 2 : 10}
-                  transition={"left 0.3s ease"}
-                  right={0}
-                  bg={"purple.400"}
-                  borderRadius={5}
-                  w={8}
-                  h={8}
-                ></Box>
-                <HStack zIndex={1} gap={4}>
-                  <FAIcon icon={faTableColumns} fontSize={"1rem"} />
-                  <FAIcon icon={faWindowMaximize} fontSize={"1rem"} />
-                </HStack>
-              </Button>
-            </Tooltip>
-            {/* <FAIcon icon={faCircle} fontSize={"0.5rem"} /> */}
-          </>
-        )}
         {!userIsGuest && !isMobile && (
           <Tooltip
             hasArrow
@@ -285,9 +257,6 @@ const DuckletsNavbar = ({
             </HStack>
           </Tooltip>
         )}
-        {!userIsGuest && clients && (
-          <ClientsDrawer clients={clients} room={room} />
-        )}
         {userIsGuest && (
           <Tooltip
             label="Ducklets in guest mode wont sync with cloud"
@@ -304,7 +273,42 @@ const DuckletsNavbar = ({
             />
           </Tooltip>
         )}
+        <DuckletSettingsMenu
+          isMobile={isMobile}
+          // @ts-ignore
+          handleSettingsChanged={handleSettingsChanged}
+          // @ts-ignore
+          mutationLoading={roomMutationLoading}
+          // @ts-ignore
+          refetchCurrRoom={refetchCurrRoom}
+          room={room}
+        />
+      </HStack>
+
+      <HStack justifyContent={"end"} alignItems={"center"}>
+        {!isMobile && <LayoutSwitcher />}
+        {!userIsGuest && clients && (
+          <ClientsDrawer clients={clients} room={room} />
+        )}
         {roomRole === "guest" && <RequestEditAccess currRoom={room} />}
+
+        <IconButton
+          icon={<SettingsIcon />}
+          aria-label="Settings"
+          size={"sm"}
+          onClick={onEditorSettingsModalOpen}
+        />
+
+        {isEditorSettingsModalOpen && (
+          <EditorSettingsModal
+            isOpen={isEditorSettingsModalOpen}
+            onClose={onEditorSettingsModalClose}
+            onOpen={onEditorSettingsModalOpen}
+            guestMode={false}
+            htmlHead={htmlHead}
+            setHtmlHead={setHtmlHead}
+          />
+        )}
       </HStack>
     </HStack>
   );

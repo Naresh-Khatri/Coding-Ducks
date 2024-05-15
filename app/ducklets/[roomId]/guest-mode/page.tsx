@@ -52,11 +52,6 @@ function GuestModeDuckletPage() {
 
   const toast = useToast();
   const [isMobile] = useMediaQuery("(max-width: 650px)");
-  const {
-    isOpen: isEditorSettingsModalOpen,
-    onOpen: onEditorSettingsModalOpen,
-    onClose: onEditorSettingsModalClose,
-  } = useDisclosure();
   // init room code when its loaded
   useEffect(() => {
     if (!currRoom) return;
@@ -154,18 +149,14 @@ as.forEach(a=>{
       overflow={"hidden"}
       //   bg={"#282A36"}
     >
-      <DuckletsNavbar room={currRoom} roomRole={role} />
+      <DuckletsNavbar
+        room={currRoom}
+        roomRole={role}
+        guestMode={true}
+        htmlHead={contentHEAD}
+        setHtmlHead={setContentHEAD}
+      />
 
-      <HStack w={"100%"} flexDirection={"row-reverse"} mb={2}>
-        <Button
-          leftIcon={<SettingsIcon />}
-          size={"sm"}
-          mr={4}
-          onClick={onEditorSettingsModalOpen}
-        >
-          Editor
-        </Button>
-      </HStack>
       {isMobile ? (
         // @ts-ignore
         <MobileView
@@ -197,16 +188,6 @@ as.forEach(a=>{
             setCss: setContentCSS,
             setJs: setContentJS,
           }}
-        />
-      )}
-      {isEditorSettingsModalOpen && (
-        <EditorSettingsModal
-          isOpen={isEditorSettingsModalOpen}
-          onClose={onEditorSettingsModalClose}
-          onOpen={onEditorSettingsModalOpen}
-          guestMode={true}
-          htmlHead={contentHEAD}
-          setHtmlHead={setContentHEAD}
         />
       )}
     </Box>
