@@ -2,7 +2,8 @@ import { StateCreator, create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { IDirectory, IFile, IMessage } from "../lib/socketio/socketEventTypes";
 import { ISocketRoom, IYJsUser } from "../lib/socketio/socketEvents";
-import * as Y from "yjs";
+// import * as Y from "yjs";
+import Y from "_yjs/index";
 import { Socket } from "socket.io-client";
 import { WebsocketProvider } from "y-websocket";
 // import Y from 'yjs';
@@ -221,8 +222,6 @@ export const useEditorSettingsStore = create<IEditorSettings>()(
 interface IDucketlet {
   yjsConnected: boolean;
   setYjsConnected: (connected: boolean) => void;
-  layout: "vertical" | "horizontal";
-  setLayout: (layout: "vertical" | "horizontal") => void;
   yDoc: Y.Doc;
   setYDoc: (yDoc: Y.Doc) => void;
   provider: WebsocketProvider | null;
@@ -234,10 +233,8 @@ interface IDucketlet {
 }
 export const useDuckletStore = create<IDucketlet>()((set, get) => ({
   yjsConnected: false,
-  setYjsConnected: (connected: boolean) => set((state) => ({ ...state, yjsConnected: connected })),
-  layout: "vertical",
-  setLayout: (layout: "vertical" | "horizontal") =>
-    set((state) => ({ ...state, layout })),
+  setYjsConnected: (connected: boolean) =>
+    set((state) => ({ ...state, yjsConnected: connected })),
   yDoc: new Y.Doc(),
   setYDoc: (yDoc: Y.Doc) => set((state) => ({ ...state, yDoc })),
   provider: null,
@@ -246,3 +243,22 @@ export const useDuckletStore = create<IDucketlet>()((set, get) => ({
   srcDoc: "",
   setSrcDoc: (srcDoc: string) => set((state) => ({ ...state, srcDoc })),
 }));
+
+interface ILayout {
+  layout: "vertical" | "horizontal" | "file";
+  setLayout: (layout: "vertical" | "horizontal" | "file") => void;
+}
+
+export const useLayoutStore = create<ILayout>()(
+  persist(
+    (set, get) => ({
+      layout: "horizontal",
+      setLayout: (layout: "vertical" | "horizontal" | "file") =>
+        set((state) => ({ ...state, layout })),
+    }),
+    {
+      name: "editor-settings-storage",
+      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
+    }
+  )
+);
