@@ -8,6 +8,7 @@ import {
   Grid,
   GridItem,
   HStack,
+  IconButton,
   Input,
   Spinner,
   Text,
@@ -28,10 +29,17 @@ import EditorSettingsProvider, {
 import dynamic from "next/dynamic";
 import WindowHeader from "../components/WindowHeader";
 import Split from "react-split";
+import Link from "next/link";
+import { ChevronLeftIcon } from "@chakra-ui/icons";
+import Image from "next/image";
+import UserProfile from "components/UserProfile";
 
-const AceCodeEditor = dynamic(() => import("../components/editors/AceCodeEditor"), {
-  ssr: false,
-});
+const AceCodeEditor = dynamic(
+  () => import("../components/editors/AceCodeEditor"),
+  {
+    ssr: false,
+  }
+);
 
 interface OutputType {
   stdout?: string;
@@ -129,35 +137,31 @@ function PlaygroundPage() {
   };
 
   return (
-    <NormalLayout>
+    <>
+      <Flex px={2} w={"full"} justifyContent={"space-between"}>
+        <Link href={"/"}>
+          <Image
+            src={
+              "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
+            }
+            width={175}
+            height={175}
+            alt={"logo"}
+            style={{ width: "100px" }}
+          />
+        </Link>
+        <UserProfile />
+      </Flex>
       <SetMeta
         title="Playground - Coding Ducks"
         description="Practice coding in real-time with our interactive coding playground on Coding Ducks. Experiment, test, and refine your code in Python, JavaScript, C++, and Java."
         keywords="interactive coding playground, code testing, coding experimentation, Python, JavaScript, C++, Java"
         url="https://www.codingducks.xyz/playground"
       />
-      <Container maxW={"5xl"}>
+      <Container maxW={"full"} h={"full"}>
         <Box w={"100%"}>
-          <Box w={"100%"} h={100}>
+          <Flex justifyContent={"space-between"} gap={2}>
             <ToolBar />
-            {isLessThan800 ? (
-              <MobileView
-                input={input}
-                hasError={hasError}
-                running={isLoading}
-                consoleOutput={consoleOutput}
-                handleOnInputTextChange={handleOnInputTextChange}
-              />
-            ) : (
-              <DesktopView
-                input={input}
-                running={isLoading}
-                hasError={hasError}
-                consoleOutput={consoleOutput}
-                handleOnInputTextChange={handleOnInputTextChange}
-              />
-            )}
-
             <HStack justify={"space-between"}>
               <HStack spacing={2}>
                 <Button
@@ -175,15 +179,32 @@ function PlaygroundPage() {
                   Share
                 </Button>
               </HStack>
-              <Box>
-                <Text fontSize={"md"}>Runtime: {runTime} ms</Text>{" "}
-                <Text fontSize={"md"}> Memory: {memory} KB</Text>
-              </Box>
             </HStack>
+          </Flex>
+          {isLessThan800 ? (
+            <MobileView
+              input={input}
+              hasError={hasError}
+              running={isLoading}
+              consoleOutput={consoleOutput}
+              handleOnInputTextChange={handleOnInputTextChange}
+            />
+          ) : (
+            <DesktopView
+              input={input}
+              running={isLoading}
+              hasError={hasError}
+              consoleOutput={consoleOutput}
+              handleOnInputTextChange={handleOnInputTextChange}
+            />
+          )}
+          <Box>
+            <Text fontSize={"md"}>Runtime: {runTime} ms</Text>{" "}
+            <Text fontSize={"md"}> Memory: {memory} KB</Text>
           </Box>
         </Box>
       </Container>
-    </NormalLayout>
+    </>
   );
 }
 
@@ -296,6 +317,7 @@ const DesktopView = ({
         className="split-v"
         minSize={100}
         style={{ height: "100%", width: "100%" }}
+        sizes={[20, 80]}
         direction="vertical"
       >
         <Flex
