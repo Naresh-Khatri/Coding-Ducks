@@ -3,17 +3,12 @@ import {
   Box,
   Button,
   Center,
-  Container,
   Flex,
-  Grid,
-  GridItem,
   HStack,
-  IconButton,
   Input,
   Spinner,
   Text,
   useClipboard,
-  useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
 import NormalLayout from "../layout/NormalLayout";
@@ -27,10 +22,8 @@ import EditorSettingsProvider, {
   EditorSettingsContext,
 } from "../contexts/editorSettingsContext";
 import dynamic from "next/dynamic";
-import WindowHeader from "../components/WindowHeader";
 import Split from "react-split";
 import Link from "next/link";
-import { ChevronLeftIcon } from "@chakra-ui/icons";
 import Image from "next/image";
 import UserProfile from "components/UserProfile";
 
@@ -48,11 +41,6 @@ interface OutputType {
 }
 
 function PlaygroundPage() {
-  const [isLessThan800] = useMediaQuery("(max-width: 800px)", {
-    ssr: true,
-    fallback: false, // return false on the server, and re-evaluate on the client side
-  });
-
   // const [output, setOutput] = useState<OutputType>({});
   const [isLoading, setIsLoading] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState("");
@@ -138,28 +126,33 @@ function PlaygroundPage() {
 
   return (
     <>
-      <Flex px={2} w={"full"} justifyContent={"space-between"}>
-        <Link href={"/"}>
-          <Image
-            src={
-              "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
-            }
-            width={175}
-            height={175}
-            alt={"logo"}
-            style={{ width: "100px" }}
-          />
-        </Link>
-        <UserProfile />
-      </Flex>
       <SetMeta
         title="Playground - Coding Ducks"
         description="Practice coding in real-time with our interactive coding playground on Coding Ducks. Experiment, test, and refine your code in Python, JavaScript, C++, and Java."
         keywords="interactive coding playground, code testing, coding experimentation, Python, JavaScript, C++, Java"
         url="https://www.codingducks.xyz/playground"
       />
-      <Container maxW={"full"} h={"full"}>
-        <Box w={"100%"}>
+      <Flex
+        w={"100vw"}
+        h={"100vh"}
+        direction={"column"}
+        px={{ base: 1, md: 3 }}
+      >
+        <Flex px={2} w={"full"} justifyContent={"space-between"}>
+          <Link href={"/"}>
+            <Image
+              src={
+                "https://ik.imagekit.io/couponluxury/coding_ducks/tr:w-200/logo_E_BOxGUcc.png"
+              }
+              width={175}
+              height={175}
+              alt={"logo"}
+              style={{ width: "100px" }}
+            />
+          </Link>
+          <UserProfile />
+        </Flex>
+        <Flex w={"100%"} direction={"column"} flex={1} position={"relative"}>
           <Flex justifyContent={"space-between"} gap={2}>
             <ToolBar />
             <HStack justify={"space-between"}>
@@ -181,29 +174,28 @@ function PlaygroundPage() {
               </HStack>
             </HStack>
           </Flex>
-          {isLessThan800 ? (
-            <MobileView
-              input={input}
-              hasError={hasError}
-              running={isLoading}
-              consoleOutput={consoleOutput}
-              handleOnInputTextChange={handleOnInputTextChange}
-            />
-          ) : (
-            <DesktopView
-              input={input}
-              running={isLoading}
-              hasError={hasError}
-              consoleOutput={consoleOutput}
-              handleOnInputTextChange={handleOnInputTextChange}
-            />
+          <MobileView
+            input={input}
+            hasError={hasError}
+            running={isLoading}
+            consoleOutput={consoleOutput}
+            handleOnInputTextChange={handleOnInputTextChange}
+          />
+          <DesktopView
+            input={input}
+            running={isLoading}
+            hasError={hasError}
+            consoleOutput={consoleOutput}
+            handleOnInputTextChange={handleOnInputTextChange}
+          />
+          {consoleOutput && (
+            <Box pos={"absolute"} bottom={0} right={0} p={2}>
+              <Text fontSize={"md"}>Runtime: {runTime} ms</Text>{" "}
+              <Text fontSize={"md"}> Memory: {memory} KB</Text>
+            </Box>
           )}
-          <Box>
-            <Text fontSize={"md"}>Runtime: {runTime} ms</Text>{" "}
-            <Text fontSize={"md"}> Memory: {memory} KB</Text>
-          </Box>
-        </Box>
-      </Container>
+        </Flex>
+      </Flex>
     </>
   );
 }
@@ -224,12 +216,13 @@ const MobileView = ({
 }: ViewProps) => {
   return (
     <Flex
+      display={{ base: "flex", md: "none" }}
       w={"100%"}
-      h={"80vh"}
+      h={"100%"}
       direction={"column"}
       justifyContent={"center"}
       alignItems={"center"}
-      gap={5}
+      gap={2}
     >
       <AceCodeEditor problemId={-1} hideHeader />
       <Flex
@@ -266,7 +259,7 @@ const MobileView = ({
         minH={32}
       >
         <Text py={1}>Output:</Text>
-        <Center h={"100%"} w={"100%"}>
+        <Center h={"100%"} w={"100%"} overflowY={"auto"}>
           {running ? (
             <Spinner />
           ) : (
@@ -298,81 +291,91 @@ const DesktopView = ({
   handleOnInputTextChange,
 }: ViewProps) => {
   return (
-    <Split
-      className="split-h"
-      minSize={300}
-      style={{ height: "40rem", width: "100%" }}
+    <Flex
+      display={{ base: "none", md: "flex" }}
+      w={"100%"}
+      h={"100%"}
+      direction={"column"}
+      justifyContent={"center"}
+      alignItems={"center"}
+      gap={5}
     >
-      <Flex
-        w={"100%"}
-        h={"100%"}
-        direction={"column"}
-        justifyContent={"center"}
-        alignItems={"center"}
-        fontSize={"5xl"}
-      >
-        <AceCodeEditor problemId={-1} hideHeader />
-      </Flex>
       <Split
-        className="split-v"
-        minSize={100}
-        style={{ height: "100%", width: "100%" }}
-        sizes={[20, 80]}
-        direction="vertical"
+        className="split-h"
+        minSize={300}
+        style={{ width: "100%", height: "100%" }}
       >
         <Flex
-          borderRadius={"10px"}
-          border={"1px solid rgba(255,255,255,.125)"}
+          w={"100%"}
+          h={"100%"}
           direction={"column"}
+          justifyContent={"center"}
           alignItems={"center"}
+          fontSize={"5xl"}
         >
-          <Text py={1}>Input:</Text>
-          <Input
-            value={input}
-            onChange={handleOnInputTextChange}
-            flex={1}
-            bg={"#1d1d1d"}
-            fontFamily={
-              "Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;"
-            }
-            focusBorderColor="none"
+          <AceCodeEditor problemId={-1} hideHeader />
+        </Flex>
+        <Split
+          className="split-v"
+          minSize={100}
+          style={{ height: "100%", width: "100%" }}
+          sizes={[20, 80]}
+          direction="vertical"
+        >
+          <Flex
             borderRadius={"10px"}
-            as={"textarea"}
-            outline={"none"}
-            border={"none"}
-            type="text"
-          />
-        </Flex>
-        <Flex
-          borderRadius={"10px"}
-          border={"1px solid rgba(255,255,255,.125)"}
-          direction={"column"}
-          alignItems={"center"}
-        >
-          <Text py={1}>Output:</Text>
-          <Center h={"100%"} w={"100%"}>
-            {running ? (
-              <Spinner />
-            ) : (
-              <Box
-                height={"100%"}
-                borderRadius={"10px"}
-                flex={1}
-                bg={"#1d1d1d"}
-                as="pre"
-                p={3}
-                overflow={"auto"}
-                color={hasError ? "red.300" : "white"}
-                dangerouslySetInnerHTML={{
-                  __html: consoleOutput?.replace(/\n/g, "<br />"),
-                }}
-                w={"100%"}
-              ></Box>
-            )}
-          </Center>
-        </Flex>
+            border={"1px solid rgba(255,255,255,.125)"}
+            direction={"column"}
+            alignItems={"center"}
+          >
+            <Text py={1}>Input:</Text>
+            <Input
+              value={input}
+              onChange={handleOnInputTextChange}
+              flex={1}
+              bg={"#1d1d1d"}
+              fontFamily={
+                "Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;"
+              }
+              focusBorderColor="none"
+              borderRadius={"10px"}
+              as={"textarea"}
+              outline={"none"}
+              border={"none"}
+              type="text"
+            />
+          </Flex>
+          <Flex
+            borderRadius={"10px"}
+            border={"1px solid rgba(255,255,255,.125)"}
+            direction={"column"}
+            alignItems={"center"}
+          >
+            <Text py={1}>Output:</Text>
+            <Center h={"100%"} w={"100%"}>
+              {running ? (
+                <Spinner />
+              ) : (
+                <Box
+                  height={"100%"}
+                  borderRadius={"10px"}
+                  flex={1}
+                  bg={"#1d1d1d"}
+                  as="pre"
+                  p={3}
+                  overflow={"auto"}
+                  color={hasError ? "red.300" : "white"}
+                  dangerouslySetInnerHTML={{
+                    __html: consoleOutput?.replace(/\n/g, "<br />"),
+                  }}
+                  w={"100%"}
+                ></Box>
+              )}
+            </Center>
+          </Flex>
+        </Split>
       </Split>
-    </Split>
+    </Flex>
   );
 };
 
