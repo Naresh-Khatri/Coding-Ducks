@@ -31,6 +31,8 @@ import { Flex } from "@chakra-ui/react";
 import WindowHeader from "../WindowHeader";
 import { langToAceModes } from "../../lib/utils";
 import { EditorSettingsContext } from "../../contexts/editorSettingsContext";
+import { useRouter } from "next/router";
+import { Lang } from "types";
 
 interface AceCodeEditorProps {
   problemId: number;
@@ -52,8 +54,22 @@ function AceCodeEditor({
   const { settings, code, setCode, isLoading } = useContext(
     EditorSettingsContext
   );
-  const { lang, theme, keyBindings, allowAutoComplete, fontSize, tabSize } =
-    settings;
+  const router = useRouter();
+
+  /**
+   *
+   * in playground take code from qp
+   * in editor take code from local storage
+   *
+   */
+  let lang: Lang;
+  if (router.pathname === "/playground") {
+    lang = (router.query as { lang: Lang }).lang;
+  } else {
+    lang = settings.lang;
+  }
+
+  const { theme, keyBindings, allowAutoComplete, fontSize, tabSize } = settings;
 
   // set keybindings
   useEffect(() => {
