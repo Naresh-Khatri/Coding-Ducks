@@ -1,4 +1,4 @@
-import { memo, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -25,7 +25,11 @@ import dynamic from "next/dynamic";
 import Split from "react-split";
 import Link from "next/link";
 import Image from "next/image";
+
+import Convert from "ansi-to-html";
+
 import UserProfile from "components/UserProfile";
+import { Lang } from "types";
 
 const AceCodeEditor = dynamic(
   () => import("../components/editors/AceCodeEditor"),
@@ -52,19 +56,22 @@ function PlaygroundPage() {
   const { settings, code, setCode, updateSettings } = useContext(
     EditorSettingsContext
   );
-  const { lang } = settings;
+  // const { lang } = settings;
   const toast = useToast();
   const router = useRouter();
+  const { lang } = router.query as { lang: Lang };
 
   useEffect(() => {
     if (!code) return;
-    localStorage.setItem("playground-code", code);
+    localStorage.setItem("playground-code-" + lang, code);
   }, [code]);
 
   useEffect(() => {
+    if (!lang) router.push("?lang=py");
     const savedInputValue = localStorage.getItem("playground-input");
     if (savedInputValue) setInput(savedInputValue);
-  }, []);
+  }, [router, lang]);
+
   const handleOnInputTextChange = (e) => {
     setInput(e.target.value);
     localStorage.setItem("playground-input", e.target.value);
@@ -137,6 +144,7 @@ function PlaygroundPage() {
         h={"100vh"}
         direction={"column"}
         px={{ base: 1, md: 3 }}
+        pb={2}
       >
         <Flex px={2} w={"full"} justifyContent={"space-between"}>
           <Link href={"/"}>
@@ -179,6 +187,7 @@ function PlaygroundPage() {
             hasError={hasError}
             running={isLoading}
             consoleOutput={consoleOutput}
+            setConsoleOutput={setConsoleOutput}
             handleOnInputTextChange={handleOnInputTextChange}
           />
           <DesktopView
@@ -186,6 +195,7 @@ function PlaygroundPage() {
             running={isLoading}
             hasError={hasError}
             consoleOutput={consoleOutput}
+            setConsoleOutput={setConsoleOutput}
             handleOnInputTextChange={handleOnInputTextChange}
           />
           {consoleOutput && (
@@ -205,6 +215,7 @@ interface ViewProps {
   running: boolean;
   hasError: boolean;
   consoleOutput: string;
+  setConsoleOutput: (output: string) => void;
   handleOnInputTextChange: (e) => void;
 }
 const MobileView = ({
@@ -212,6 +223,7 @@ const MobileView = ({
   running,
   hasError,
   consoleOutput,
+  setConsoleOutput,
   handleOnInputTextChange,
 }: ViewProps) => {
   return (
@@ -229,11 +241,14 @@ const MobileView = ({
         borderRadius={"10px"}
         border={"1px solid rgba(255,255,255,.125)"}
         direction={"column"}
-        alignItems={"center"}
         w={"100%"}
         minH={32}
       >
-        <Text py={1}>Input:</Text>
+        <HStack justifyContent={"space-between"}>
+          <Text py={1} pl={6} fontWeight={"bold"}>
+            Input
+          </Text>
+        </HStack>
         <Input
           value={input}
           onChange={handleOnInputTextChange}
@@ -254,11 +269,19 @@ const MobileView = ({
         borderRadius={"10px"}
         border={"1px solid rgba(255,255,255,.125)"}
         direction={"column"}
-        alignItems={"center"}
         w={"100%"}
         minH={32}
       >
-        <Text py={1}>Output:</Text>
+        <HStack justifyContent={"space-between"}>
+          <Text py={1} pl={6} fontWeight={"bold"}>
+            Output
+          </Text>
+          {consoleOutput && (
+            <Button variant={"ghost"} onClick={() => setConsoleOutput("")}>
+              Clear
+            </Button>
+          )}
+        </HStack>
         <Center h={"100%"} w={"100%"} overflowY={"auto"}>
           {running ? (
             <Spinner />
@@ -272,7 +295,9 @@ const MobileView = ({
               overflow={"auto"}
               color={hasError ? "red.300" : "white"}
               dangerouslySetInnerHTML={{
-                __html: consoleOutput?.replace(/\n/g, "<br />"),
+                __html: new Convert().toHtml(
+                  consoleOutput?.replace(/\n/g, "<br />")
+                ),
               }}
               w={"100%"}
               h={"100%"}
@@ -288,6 +313,7 @@ const DesktopView = ({
   running,
   hasError,
   consoleOutput,
+  setConsoleOutput,
   handleOnInputTextChange,
 }: ViewProps) => {
   return (
@@ -319,16 +345,57 @@ const DesktopView = ({
           className="split-v"
           minSize={100}
           style={{ height: "100%", width: "100%" }}
-          sizes={[20, 80]}
+          sizes={[80, 20]}
           direction="vertical"
         >
           <Flex
             borderRadius={"10px"}
             border={"1px solid rgba(255,255,255,.125)"}
             direction={"column"}
-            alignItems={"center"}
           >
-            <Text py={1}>Input:</Text>
+            <HStack justifyContent={"space-between"}>
+              <Text py={1} pl={6} fontWeight={"bold"}>
+                Output
+              </Text>
+              {consoleOutput && (
+                <Button variant={"ghost"} onClick={() => setConsoleOutput("")}>
+                  Clear
+                </Button>
+              )}
+            </HStack>
+            <Center h={"100%"} w={"100%"}>
+              {running ? (
+                <Spinner />
+              ) : (
+                <Box
+                  height={"100%"}
+                  borderRadius={"10px"}
+                  flex={1}
+                  bg={"#1d1d1d"}
+                  as="pre"
+                  p={3}
+                  overflow={"auto"}
+                  color={hasError ? "red.300" : "white"}
+                  dangerouslySetInnerHTML={{
+                    __html: new Convert().toHtml(
+                      consoleOutput?.replace(/\n/g, "<br />")
+                    ),
+                  }}
+                  w={"100%"}
+                ></Box>
+              )}
+            </Center>
+          </Flex>
+          <Flex
+            borderRadius={"10px"}
+            border={"1px solid rgba(255,255,255,.125)"}
+            direction={"column"}
+          >
+            <HStack justifyContent={"space-between"}>
+              <Text py={1} pl={6} fontWeight={"bold"}>
+                Input:
+              </Text>
+            </HStack>
             <Input
               value={input}
               onChange={handleOnInputTextChange}
@@ -344,34 +411,6 @@ const DesktopView = ({
               border={"none"}
               type="text"
             />
-          </Flex>
-          <Flex
-            borderRadius={"10px"}
-            border={"1px solid rgba(255,255,255,.125)"}
-            direction={"column"}
-            alignItems={"center"}
-          >
-            <Text py={1}>Output:</Text>
-            <Center h={"100%"} w={"100%"}>
-              {running ? (
-                <Spinner />
-              ) : (
-                <Box
-                  height={"100%"}
-                  borderRadius={"10px"}
-                  flex={1}
-                  bg={"#1d1d1d"}
-                  as="pre"
-                  p={3}
-                  overflow={"auto"}
-                  color={hasError ? "red.300" : "white"}
-                  dangerouslySetInnerHTML={{
-                    __html: consoleOutput?.replace(/\n/g, "<br />"),
-                  }}
-                  w={"100%"}
-                ></Box>
-              )}
-            </Center>
           </Flex>
         </Split>
       </Split>
