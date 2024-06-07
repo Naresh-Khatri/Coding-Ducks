@@ -219,7 +219,7 @@ function UserProfile() {
                               </Text>
                             </VStack>
                           </Box>
-                          <Spacer />
+                          {/* <Spacer />
                           <Box>
                             <VStack>
                               <Text fontSize="md" fontWeight="extrabold">
@@ -233,7 +233,7 @@ function UserProfile() {
                                 pulihora
                               </Text>
                             </VStack>
-                          </Box>
+                          </Box> */}
                         </Flex>
                       </HStack>
                     </>
