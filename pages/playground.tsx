@@ -53,9 +53,7 @@ function PlaygroundPage() {
   const [memory, setMemory] = useState(0);
   const [input, setInput] = useState("");
 
-  const { settings, code, setCode, updateSettings } = useContext(
-    EditorSettingsContext
-  );
+  const { code } = useContext(EditorSettingsContext);
   // const { lang } = settings;
   const toast = useToast();
   const router = useRouter();
@@ -68,6 +66,29 @@ function PlaygroundPage() {
 
   useEffect(() => {
     if (!lang) router.push("?lang=py");
+    // hack to replace empty code with starter code
+    const pyCode = localStorage.getItem(`code--1-py`);
+    const jsCode = localStorage.getItem(`code--1-js`);
+    const cppCode = localStorage.getItem(`code--1-cpp`);
+    const javaCode = localStorage.getItem(`code--1-java`);
+    if (!pyCode || pyCode?.trim() === "") {
+      localStorage.setItem(`code--1-py`, "print('hello world')");
+    }
+    if (!jsCode || jsCode?.trim() === "") {
+      localStorage.setItem(`code--1-js`, "console.log('hello world')");
+    }
+    if (!cppCode || cppCode?.trim() === "") {
+      localStorage.setItem(
+        `code--1-cpp`,
+        '#include <iostream>\n\nint main(){\n\tstd::cout << "hello world";\n\treturn 0;\n}'
+      );
+    }
+    if (!javaCode || javaCode?.trim() === "") {
+      localStorage.setItem(
+        `code--1-java`,
+        'public class Main{\n\tpublic static void main(String[] args){\n\t\tSystem.out.println("hello world");\n\t}\n}'
+      );
+    }
     const savedInputValue = localStorage.getItem("playground-input");
     if (savedInputValue) setInput(savedInputValue);
   }, [router, lang]);
@@ -134,7 +155,15 @@ function PlaygroundPage() {
   return (
     <>
       <SetMeta
-        title="Playground - Coding Ducks"
+        title={`${
+          lang === "js"
+            ? "JavaScript"
+            : lang === "cpp"
+            ? "C++"
+            : lang === "java"
+            ? "Java"
+            : "Python"
+        } Compiler - Coding Ducks`}
         description="Practice coding in real-time with our interactive coding playground on Coding Ducks. Experiment, test, and refine your code in Python, JavaScript, C++, and Java."
         keywords="interactive coding playground, code testing, coding experimentation, Python, JavaScript, C++, Java"
         url="https://www.codingducks.xyz/playground"
