@@ -49,8 +49,8 @@ function UserAvatar({
         style={{
           ...style,
           borderRadius: "50%",
-          width: w || width || "auto",
-          height: h || height || "2.5rem",
+          width: w - 2 || width || "auto",
+          height: h - 2 || height || "2.5rem",
         }}
       />
     );
