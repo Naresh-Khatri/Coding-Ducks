@@ -81,7 +81,3 @@ export default async function AttemptPage({ params }) {
     </Flex>
   );
 }
-export const getSrcDoc = ({ css, html, head, js }: any) => {
-  return `
-<html><style>${css}</style><body>${html}<script>${js}</script></body></html>`;
-};
