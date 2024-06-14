@@ -1,3 +1,4 @@
+import { LINKEDIN_SHARE_TEMPLATES, LINKEDIN_HASHTAGS } from "../constants";
 import { IDirectory, IFile } from "./socketio/socketEventTypes";
 
 export const DESCRIPTION_TAB_INDEX = 0;
@@ -83,4 +84,32 @@ export const COLORS = [
 ];
 export const getRandColor = () => {
   return COLORS[Math.floor(Math.random() * COLORS.length)];
+};
+
+export const generateLinkedInPostText = ({
+  challengeName,
+  score,
+  url,
+}: {
+  challengeName: string;
+  score: number;
+  url: string;
+}) => {
+  const templates: string[] = LINKEDIN_SHARE_TEMPLATES;
+  const hashTags: string[][] = LINKEDIN_HASHTAGS;
+
+  const randomTemplate =
+    templates[Math.floor(Math.random() * templates.length)];
+  const text = encodeURIComponent(
+    randomTemplate
+      .replaceAll("[name]", `"${challengeName}"`)
+      .replaceAll("[url]", url)
+      .replaceAll("[score]", score.toString() + "%") +
+      `#CodingDucks ${
+        hashTags[0][Math.floor(Math.random() * hashTags[0].length)]
+      } ${hashTags[1][Math.floor(Math.random() * hashTags[1].length)]} ${
+        hashTags[2][Math.floor(Math.random() * hashTags[2].length)]
+      }`
+  );
+  return text;
 };
