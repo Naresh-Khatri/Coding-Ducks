@@ -425,13 +425,13 @@ const ScoreCard = ({
       `https://www.linkedin.com/shareArticle?mini=true&url=${
         process.env.NODE_ENV === "production"
           ? window.location.href
-          : "https://dev3000.codingducks.xyz/ui-challenges/hello-world" +
+          : "https://www.codingducks.xyz/ui-challenges/hello-world" +
             "/attempts/" +
             result.id
       }&text=${generateLinkedInPostText({
         challengeName: result?.challenge?.title || "",
         score,
-        url: `https://dev3000.codingducks.xyz/ui-challenges/hello-world/attemps/${result.id}`,
+        url: `https://www.codingducks.xyz/ui-challenges/hello-world/attempts/${result.id}`,
       })}`,
     [result.id]
   );
