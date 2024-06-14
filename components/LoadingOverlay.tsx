@@ -6,13 +6,14 @@ function LoadingOverlay() {
   const [isLoading, setIsLoading] = useState(false);
   const { loading: userIsLoading } = useContext(userContext);
 
-  const RoutesWithLoadingHidden = ["/multiplayer"];
+  const RoutesWithLoadingHidden = ["/multiplayer", "/playground"];
 
   useEffect(() => {
     setIsLoading(userIsLoading);
   }, [userIsLoading]);
   Router.events.on("routeChangeStart", (route) => {
-    if (!RoutesWithLoadingHidden.includes(route)) {
+    if (!RoutesWithLoadingHidden.some((r) => route.includes(r))) {
+      console.log("routeChangeStart", route);
       setIsLoading(true);
     }
   });
