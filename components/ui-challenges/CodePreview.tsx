@@ -328,6 +328,11 @@ const Switcher = ({
 };
 
 export const getSrcDoc = ({ css, html, head, js }: IContent) => {
+  const origin =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:3000"
+      : "https://www.codingducks.xyz";
+
   return `
 <html>
     <style>${css}</style>
@@ -337,15 +342,15 @@ export const getSrcDoc = ({ css, html, head, js }: IContent) => {
         <script>
 document.addEventListener('mouseenter', function(event) {
  const message = { type: 'mouseenter' };
- window.parent.postMessage(message, 'http://localhost:3000'); 
+ window.parent.postMessage(message, '${origin}'); 
 });
 document.addEventListener('mouseleave', function(event) {
  const message = { type: 'mouseleave' };
- window.parent.postMessage(message, 'http://localhost:3000'); 
+ window.parent.postMessage(message, '${origin}'); 
 });
 document.addEventListener('mousemove', function(event) {
  const message = { type: 'mousemove', x: event.clientX, y: event.clientY };
- window.parent.postMessage(message, 'http://localhost:3000'); 
+ window.parent.postMessage(message, '${origin}'); 
 });
         </script>
     </body>
