@@ -112,11 +112,7 @@ const SubmissionModal = ({
             ) : (
               <>
                 <VStack gap={4} px={{ base: 0, md: 10 }}>
-                  <ScoreCard
-                    result={result}
-                    // score={result.score / 10}
-                    score={90}
-                  />
+                  <ScoreCard result={result} score={result.score / 10} />
                   <VStack
                     alignItems={"start"}
                     justifyContent={"start"}
