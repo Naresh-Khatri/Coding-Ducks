@@ -33,6 +33,7 @@ import {
   Text,
   Tooltip,
   useClipboard,
+  useDisclosure,
   useMediaQuery,
   useToast,
 } from "@chakra-ui/react";
@@ -133,170 +134,165 @@ function EditorSettingsModal({
   };
   const { setValue, onCopy } = useClipboard("");
   const toast = useToast();
+  const {
+    isOpen: isAdvanceModalOpen,
+    onOpen: onAdvanceModalOpen,
+    onClose: onAdvanceModalClose,
+  } = useDisclosure();
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
-      <ModalOverlay />
-      <ModalContent minH="600px" maxW={"700px"}>
-        <ModalHeader>{TABS[currTabIdx].label} Settings</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Tabs
-            // orientation={isMobile ? "horizontal" : "vertical"}
-            orientation={"horizontal"}
-            colorScheme="purple"
-            variant={"unstyled"}
-            onChange={handleTabChange}
-          >
-            <TabList
-              bg={"gray.800"}
-              style={{ borderRadius: "5px" }}
-              h={"100%"}
-              // w={"200px"}
-            >
-              {TABS.map((tab) => (
-                <Box key={tab.id} w={"100%"}>
-                  <Tab
-                    w={"100%"}
-                    fontWeight={"bold"}
-                    // isDisabled={tab.disabled}
-                    justifyContent={"start"}
-                    _selected={{ bg: "purple.700", borderRadius: "md" }}
+    <>
+      {isOpen && (
+        <Modal isOpen={isOpen} onClose={onClose} size={"lg"}>
+          <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
+          <ModalContent minH="400px">
+            <ModalHeader>
+              <Text fontSize={"2rem"}>Editor Settings</Text>
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <FormControl>
+                <FormLabel fontWeight={"bold"}>Font Size</FormLabel>
+                <Slider
+                  id="slider"
+                  defaultValue={fontSize}
+                  min={12}
+                  max={36}
+                  colorScheme="purple"
+                  onChange={(v) => setFontSize(v)}
+                  onMouseEnter={() => setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                >
+                  <SliderMark value={18} mt="2" ml="-2.5" fontSize="sm">
+                    18px
+                  </SliderMark>
+                  <SliderMark value={24} mt="2" ml="-2.5" fontSize="sm">
+                    24px
+                  </SliderMark>
+                  <SliderMark value={30} mt="2" ml="-2.5" fontSize="sm">
+                    30px
+                  </SliderMark>
+                  <SliderTrack>
+                    <SliderFilledTrack />
+                  </SliderTrack>
+                  <Tooltip
+                    hasArrow
+                    bg="purple.500"
+                    color="white"
+                    placement="top"
+                    isOpen={showTooltip}
+                    label={`${fontSize}px`}
                   >
-                    <HStack>
-                      {tab.Icon}
-                      <Text>{tab.labelShort}</Text>
-                    </HStack>
-                  </Tab>
-                  <Divider />
+                    <SliderThumb />
+                  </Tooltip>
+                </Slider>
+              </FormControl>
+              <FormControl
+                display="flex"
+                justifyContent={"space-between"}
+                alignItems="center"
+                mt={"3rem"}
+              >
+                <FormLabel htmlFor="enable-vim" mb="0" fontWeight={"bold"}>
+                  VIM bindings? (only for experts)
+                </FormLabel>
+                <Switch
+                  id="enable-vim"
+                  isChecked={vimEnabled}
+                  onChange={(e) => setVimEnabled(e.target.checked)}
+                />
+              </FormControl>
+            </ModalBody>
+            <ModalFooter justifyContent={"space-between"}>
+              <Button onClick={onAdvanceModalOpen} colorScheme="purple">
+                Edit Head
+              </Button>
+              <Button mr={3} variant="ghost" onClick={onClose}>
+                Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
+      {isAdvanceModalOpen && (
+        <Modal
+          isOpen={isAdvanceModalOpen}
+          onClose={onAdvanceModalClose}
+          size={"lg"}
+        >
+          <ModalOverlay />
+          <ModalContent minH="600px" minW={"700px"}>
+            <ModalHeader>
+              <Text fontSize={"2rem"}>Edit Head</Text>
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <FormControl>
+                <Box bg={"#282A36"} height={"150px"} mb={"4rem"}>
+                  <Text as={"code"}>&lt;head&gt;</Text>
+                  {guestMode && htmlHead && setHtmlHead && (
+                    <CMEditor
+                      value={htmlHead}
+                      setValue={setHtmlHead}
+                      lang={"html"}
+                    />
+                  )}
+                  {/* <CMEditorWithCollab lang={"head"} /> */}
+                  <MonacoEditorWithCollab lang={"head"} />
+                  <Text as={"code"}>&lt;/head&gt;</Text>
                 </Box>
+              </FormControl>
+              <Text fontWeight={"bold"}> Examples: </Text>
+              {headLibs.map((lib) => (
+                <Accordion key={lib.name} allowToggle>
+                  <AccordionItem>
+                    <h2>
+                      <AccordionButton>
+                        <HStack as="span" flex="1" textAlign="left">
+                          <Text>{lib.name}</Text>
+                        </HStack>
+                        <AccordionIcon />
+                      </AccordionButton>
+                    </h2>
+                    <AccordionPanel pb={4}>
+                      <Text
+                        fontWeight={"bold"}
+                        as="code"
+                        p={"1"}
+                        _hover={{
+                          bg: "gray.600",
+                          cursor: "clipboard",
+                          borderRadius: "3px",
+                        }}
+                        _active={{ bg: "gray.500" }}
+                        onMouseEnter={() => {
+                          setValue(lib.value);
+                        }}
+                        onClick={() => {
+                          onCopy();
+                          toast({
+                            title: "Tag copied!",
+                            status: "success",
+                            position: "top",
+                          });
+                        }}
+                      >
+                        {lib.value}
+                      </Text>
+                    </AccordionPanel>
+                  </AccordionItem>
+                </Accordion>
               ))}
-            </TabList>
-            <TabPanels>
-              <TabPanel>
-                <FormControl>
-                  <FormLabel fontWeight={"bold"}>Font Size</FormLabel>
-                  <Slider
-                    id="slider"
-                    defaultValue={fontSize}
-                    min={12}
-                    max={36}
-                    colorScheme="purple"
-                    onChange={(v) => setFontSize(v)}
-                    onMouseEnter={() => setShowTooltip(true)}
-                    onMouseLeave={() => setShowTooltip(false)}
-                  >
-                    <SliderMark value={18} mt="2" ml="-2.5" fontSize="sm">
-                      18px
-                    </SliderMark>
-                    <SliderMark value={24} mt="2" ml="-2.5" fontSize="sm">
-                      24px
-                    </SliderMark>
-                    <SliderMark value={30} mt="2" ml="-2.5" fontSize="sm">
-                      30px
-                    </SliderMark>
-                    <SliderTrack>
-                      <SliderFilledTrack />
-                    </SliderTrack>
-                    <Tooltip
-                      hasArrow
-                      bg="teal.500"
-                      color="white"
-                      placement="top"
-                      isOpen={showTooltip}
-                      label={`${fontSize}px`}
-                    >
-                      <SliderThumb />
-                    </Tooltip>
-                  </Slider>
-                </FormControl>
-                <FormControl display="flex" alignItems="center" mt={"3rem"}>
-                  <FormLabel htmlFor="enable-vim" mb="0" fontWeight={"bold"}>
-                    VIM bindings?
-                  </FormLabel>
-                  <Switch
-                    id="enable-vim"
-                    isChecked={vimEnabled}
-                    onChange={(e) => setVimEnabled(e.target.checked)}
-                  />
-                </FormControl>
-              </TabPanel>
-              <TabPanel>
-                <FormControl>
-                  <FormLabel fontWeight={"bold"}>Edit Head</FormLabel>
-                  <Box bg={"#282A36"} height={"150px"} mb={"4rem"}>
-                    <Text as={"code"}>&lt;head&gt;</Text>
-                    {guestMode && htmlHead && setHtmlHead && (
-                      <CMEditor
-                        value={htmlHead}
-                        setValue={setHtmlHead}
-                        lang={"html"}
-                      />
-                    )}
-                    {/* <CMEditorWithCollab lang={"head"} /> */}
-                    <MonacoEditorWithCollab lang={"head"} />
-                    <Text as={"code"}>&lt;/head&gt;</Text>
-                  </Box>
-                </FormControl>
-                <Text fontWeight={"bold"}> Examples: </Text>
-
-                {headLibs.map((lib) => (
-                  <Accordion key={lib.name} allowToggle>
-                    <AccordionItem>
-                      <h2>
-                        <AccordionButton>
-                          <HStack as="span" flex="1" textAlign="left">
-                            <Text>{lib.name}</Text>
-                          </HStack>
-                          <AccordionIcon />
-                        </AccordionButton>
-                      </h2>
-                      <AccordionPanel pb={4}>
-                        <Text
-                          fontWeight={"bold"}
-                          as="code"
-                          p={"1"}
-                          _hover={{
-                            bg: "gray.600",
-                            cursor: "clipboard",
-                            borderRadius: "3px",
-                          }}
-                          _active={{ bg: "gray.500" }}
-                          onMouseEnter={() => {
-                            setValue(lib.value);
-                          }}
-                          onClick={() => {
-                            onCopy();
-                            toast({
-                              title: "Tag copied!",
-                              status: "success",
-                              position: "top",
-                            });
-                          }}
-                        >
-                          {lib.value}
-                        </Text>
-                      </AccordionPanel>
-                    </AccordionItem>
-                  </Accordion>
-                ))}
-              </TabPanel>
-              <TabPanel>
-                <p>coming soon!</p>
-              </TabPanel>
-              <TabPanel>
-                <p>coming soon!</p>
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
-        </ModalBody>
-        <ModalFooter>
-          {/* <Button mr={3} variant="ghost" onClick={onClose}>
+            </ModalBody>
+            <ModalFooter>
+              {/* <Button mr={3} variant="ghost" onClick={onClose}>
             Close
           </Button> */}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
+    </>
   );
 }
 
