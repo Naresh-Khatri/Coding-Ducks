@@ -304,9 +304,62 @@ export interface ISubmissionsQuery {
   asc: boolean;
 }
 
-export type RoomRole =
-  | "owner"
-  | "contributor"
-  | "requester"
-  | "guest"
-  | "none";
+export type RoomRole = "owner" | "contributor" | "requester" | "guest" | "none";
+
+export type UIChallengeDifficulty =
+  | "newbie"
+  | "junior"
+  | "intermediate"
+  | "advanced"
+  | "master";
+export interface IUIChallenge {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  difficulty: UIChallengeDifficulty;
+  isPublic: boolean;
+  desktopPreview: string;
+  mobilePreview: string;
+
+  contentHEAD: string;
+  contentHTML: string;
+  contentCSS: string;
+  contentJS: string;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IUIChallengeAttempt {
+  id: number;
+  challengeId: number;
+  challenge?: {
+    title: string;
+  };
+  userId: number;
+  isPublic: boolean;
+  status: "submitted" | "notSubmitted";
+  lastSubmitted: Date;
+  score: number;
+
+  // desktopPreview: string;
+  // mobilePreview: string;
+
+  imgCode?: string;
+  imgTarget?: string;
+  imgAfter?: string;
+  imgBefore?: string;
+  imgDiff?: string;
+  imgFilledAfter?: string;
+  imgMask?: string;
+  ogImage?: string;
+
+  contentHEAD: string;
+  contentHTML: string;
+  contentCSS: string;
+  contentJS: string;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
