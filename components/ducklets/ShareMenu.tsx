@@ -1,24 +1,11 @@
-import {
-  Button,
-  Flex,
-  Icon,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  Select,
-  Stack,
-  Text,
-  VStack,
-  useClipboard,
-  useToast,
-} from "@chakra-ui/react";
+"use client";
+import { Button, useClipboard, useToast } from "@chakra-ui/react";
 import React from "react";
 import FAIcon from "../FAIcon";
 import { faArrowUpFromBracket } from "@fortawesome/free-solid-svg-icons";
 
 function ShareMenu() {
-  const { hasCopied, onCopy } = useClipboard(window.location.href);
+  const { hasCopied, onCopy } = useClipboard(window?.location?.href);
   const toast = useToast();
   return (
     <>
@@ -33,7 +20,7 @@ function ShareMenu() {
             position: "top",
           });
         }}
-        variant={"ghost"}
+        variant={hasCopied ? "solid" : "outline"}
         size={"sm"}
         aria-label="share button"
         leftIcon={<FAIcon icon={faArrowUpFromBracket} />}
@@ -41,32 +28,6 @@ function ShareMenu() {
         Share
       </Button>
     </>
-  );
-  return (
-    <Menu>
-      <MenuButton
-        as={Button}
-        colorScheme="purple"
-        leftIcon={<FAIcon icon={faArrowUpFromBracket} />}
-      >
-        Share
-      </MenuButton>
-      <MenuList p={"1rem"}>
-        <Text fontWeight={"bold"}> Share this ducklet</Text>
-        {/* 
-        <VStack>
-          <Text> People with access (WIP)</Text>
-        </VStack>
-        <VStack>
-          <Text fontWeight={"bold"}> Collaboration Link</Text>
-
-          <Select value={"everyone"} onChange={() => {}}>
-            <option value="everyone">Everyone</option>
-            <option value="private"> Only you and your friends</option> 
-          </Select> 
-        </VStack> */}
-      </MenuList>
-    </Menu>
   );
 }
 
