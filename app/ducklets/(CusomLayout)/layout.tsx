@@ -1,4 +1,3 @@
-import { Box } from "@chakra-ui/react";
 import { ReactNode } from "react";
 import NormalLayout from "../../../layout/NormalLayout";
 import generateMeta from "components/SEO/generateMeta";

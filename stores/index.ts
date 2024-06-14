@@ -1,12 +1,9 @@
 import { StateCreator, create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import { IDirectory, IFile, IMessage } from "../lib/socketio/socketEventTypes";
-import { ISocketRoom, IYJsUser } from "../lib/socketio/socketEvents";
-// import * as Y from "yjs";
-import Y from "_yjs/index";
+import { Doc } from "yjs";
 import { Socket } from "socket.io-client";
 import { WebsocketProvider } from "y-websocket";
-// import Y from 'yjs';
 
 interface IWebsocketState {
   // ROOM
@@ -34,7 +31,7 @@ interface IFSState {
 }
 
 type IYJState = Partial<IFSState> & {
-  yDoc: Y.Doc;
+  yDoc: Doc;
   // clients: IYJsUser[];
   // setClients: (clients: IYJsUser[]) => void;
 
@@ -50,7 +47,7 @@ const createYjsSlice: StateCreator<
   [],
   IYJState
 > = (set) => ({
-  yDoc: new Y.Doc(),
+  yDoc: new Doc(),
   // clients: [],
   // setClients: (clients: IYJsUser[]) => {
   //   set((state) => {
@@ -222,8 +219,8 @@ export const useEditorSettingsStore = create<IEditorSettings>()(
 interface IDucketlet {
   yjsConnected: boolean;
   setYjsConnected: (connected: boolean) => void;
-  yDoc: Y.Doc;
-  setYDoc: (yDoc: Y.Doc) => void;
+  yDoc: Doc;
+  setYDoc: (yDoc: Doc) => void;
   provider: WebsocketProvider | null;
   setProvider: (provider: WebsocketProvider | null) => void;
   srcDoc: string;
@@ -235,8 +232,8 @@ export const useDuckletStore = create<IDucketlet>()((set, get) => ({
   yjsConnected: false,
   setYjsConnected: (connected: boolean) =>
     set((state) => ({ ...state, yjsConnected: connected })),
-  yDoc: new Y.Doc(),
-  setYDoc: (yDoc: Y.Doc) => set((state) => ({ ...state, yDoc })),
+  yDoc: new Doc(),
+  setYDoc: (yDoc: Doc) => set((state) => ({ ...state, yDoc })),
   provider: null,
   setProvider: (provider: WebsocketProvider | null) =>
     set((state) => ({ ...state, provider })),

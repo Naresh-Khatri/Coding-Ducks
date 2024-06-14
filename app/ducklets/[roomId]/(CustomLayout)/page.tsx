@@ -52,8 +52,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { userContext } from "contexts/userContext";
 
-// import * as Y from "yjs";
-import Y from "_yjs";
+import { Doc, Transaction } from "yjs";
 import {
   RoomUpdate,
   RoomUpdated,
@@ -242,7 +241,7 @@ function DuckletPage() {
     });
     yDoc.on(
       "updateV2",
-      (update: Uint8Array, origin: any, doc: Y.Doc, tr: Y.Transaction) => {
+      (update: Uint8Array, origin: any, doc: Doc, tr: Transaction) => {
         const _head = doc.getText("contentHEAD").toJSON();
         const _html = doc.getText("contentHTML").toJSON();
         const _css = doc.getText("contentCSS").toJSON();

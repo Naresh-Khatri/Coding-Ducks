@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import * as Y from "yjs";
+import { Doc, Transaction } from "yjs";
 
 import { ISocketRoom } from "../../../lib/socketio/socketEvents";
-import { Box, Button, Center, Flex, HStack, Text } from "@chakra-ui/react";
+import { Box, Flex, HStack, Text } from "@chakra-ui/react";
 import Split from "react-split";
 import FileIcons from "../FileIcons";
 
@@ -54,7 +54,7 @@ function MultiplayerWeb({ room }: IMultiplayerWebProps) {
 
     yDoc.on(
       "update",
-      (update: Uint8Array, origin: any, doc: Y.Doc, tr: Y.Transaction) => {
+      (update: Uint8Array, origin: any, doc: Doc, tr: Transaction) => {
         const _html = doc.getText("contentHTML").toJSON();
         const _css = doc.getText("contentCSS").toJSON();
         const _js = doc.getText("contentJS").toJSON();
@@ -176,7 +176,7 @@ const CMEditor = ({
   lang,
   provider,
 }: {
-  yDoc: Y.Doc;
+  yDoc: Doc;
   lang: Lang;
   provider: WebsocketProvider;
 }) => {

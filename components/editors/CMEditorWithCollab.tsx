@@ -5,10 +5,7 @@ import { vim } from "@replit/codemirror-vim";
 import { dracula } from "@uiw/codemirror-theme-dracula";
 import ReactCodeMirror, { EditorView, Extension } from "@uiw/react-codemirror";
 import { yCollab } from "y-codemirror.next";
-// import * as Y from "yjs";
-import Y from "_yjs/index";
-import { LanguageSupport } from "@codemirror/language";
-import { WebsocketProvider } from "y-websocket";
+import { UndoManager } from "yjs";
 import { Skeleton, Stack, Text, VStack } from "@chakra-ui/react";
 import { useDuckletStore, useEditorSettingsStore } from "../../stores";
 
@@ -27,7 +24,7 @@ const CMEditorWithCollab = ({ lang }: { lang: Lang }) => {
   const extensions: Extension[] = [];
   if (vimEnabled) extensions.push(vim());
 
-  const undoManager = new Y.UndoManager(
+  const undoManager = new UndoManager(
     yDoc.getText(`content${String(lang).toUpperCase()}`)
   );
   switch (lang) {
@@ -75,19 +72,21 @@ const CMEditorWithCollab = ({ lang }: { lang: Lang }) => {
       <VStack w={"100%"}>
         {vimEnabled && <div>{yText.toJSON()}</div>}
 
-        <div style={{ height: "100%", width: "100%" }}>
-          <ReactCodeMirror
-            style={{ width: "100%", fontSize: fontSize + "px" }}
-            key={lang}
-            theme={dracula}
-            extensions={[
-              ...extensions,
-              EditorView.lineWrapping,
-              yCollab(yText, provider.awareness, { undoManager }),
-            ]}
-            // placeholder={placeholder}
-          />
-        </div>
+        {yText.toJSON() !== "" && (
+          <div style={{ height: "100%", width: "100%" }}>
+            <ReactCodeMirror
+              style={{ width: "100%", fontSize: fontSize + "px" }}
+              key={lang}
+              theme={dracula}
+              extensions={[
+                ...extensions,
+                EditorView.lineWrapping,
+                yCollab(yText, provider.awareness, { undoManager }),
+              ]}
+              placeholder={placeholder}
+            />
+          </div>
+        )}
       </VStack>
     </>
   );
