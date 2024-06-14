@@ -1,3 +1,8 @@
+import pythonLogo from "../assets/lang-icons/python.svg";
+import cppLogo from "../assets/lang-icons/cpp.svg";
+import javascriptLogo from "../assets/lang-icons/javascript.svg";
+import javaLogo from "../assets/lang-icons/java.svg";
+
 export const EDITOR_THEMES = [
   {
     value: "dracula",
@@ -49,14 +54,17 @@ export const EDITOR_LANGUAGES = [
   {
     label: "Python",
     value: "py",
+    iconPath: pythonLogo,
   },
   {
     label: "JavaScript",
     value: "js",
+    iconPath: javascriptLogo,
   },
   {
     label: "C++",
     value: "cpp",
+    iconPath: cppLogo,
   },
   //   {
   //     label: "C",
@@ -65,5 +73,6 @@ export const EDITOR_LANGUAGES = [
   {
     label: "Java",
     value: "java",
+    iconPath: javaLogo,
   },
 ];
