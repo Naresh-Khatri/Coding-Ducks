@@ -253,10 +253,10 @@ export function WebsocketProvider({ children }: { children: ReactNode }) {
         isClosable: true,
       });
     });
-    socketInstance.on(MESSAGE_RECEIVE, (newMsg) => {
-      console.log(newMsg);
-      setMsgsList((p) => [newMsg, ...p]);
-    });
+    // socketInstance.on(MESSAGE_RECEIVE, (newMsg) => {
+    //   console.log(newMsg);
+    //   setMsgsList((p) => [newMsg, ...p]);
+    // });
     // socketInstance.on(ROOM_UPDATE, (payload) => {
     //   console.log("room-update", payload);
     //   setRoomInfo((p) => {
