@@ -48,8 +48,6 @@ function GuestModeDuckletPage() {
   const [contentJS, setContentJS] = useState("");
   const [srcDoc, setSrcDoc] = useState("");
 
-  const [layout, setLayout] = useState<"horizontal" | "vertical">("vertical");
-
   const toast = useToast();
   const [isMobile] = useMediaQuery("(max-width: 650px)");
   // init room code when its loaded
