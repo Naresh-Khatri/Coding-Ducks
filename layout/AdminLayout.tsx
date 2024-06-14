@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Flex,
   HStack,
   IconButton,
@@ -14,6 +15,49 @@ import ThemeToggler from "../components/ThemeToggler";
 import UserProfile from "../components/UserProfile";
 import { userContext } from "../contexts/userContext";
 
+const LINKS = [
+  {
+    name: "dashboard",
+    label: "Dashboard",
+    link: "/dashboard",
+  },
+  {
+    name: "exams",
+    label: "Exams",
+    link: "/dashboard/exams",
+  },
+  {
+    name: "problems",
+    label: "Problems",
+    link: "/dashboard/problems",
+  },
+  {
+    name: "add-problem",
+    label: "Add Problems",
+    link: "/dashboard/add-problem",
+  },
+  {
+    name: "submissions",
+    label: "Problem Submissions",
+    link: "/dashboard/problem-submissions",
+  },
+  {
+    name: "exercises",
+    label: "Exercises",
+    link: "/dashboard/exercises",
+    disabled: true,
+  },
+  {
+    name: "challenges",
+    label: "UI Challenges",
+    link: "/dashboard/ui-challenges",
+  },
+  {
+    name: "add-hallenges",
+    label: "Add UI Challenges",
+    link: "/dashboard/add-ui-challenge",
+  },
+];
 function AdminLayout({ children }) {
   const { user } = useContext(userContext);
 
@@ -68,62 +112,19 @@ function AdminLayout({ children }) {
           px={5}
           w={"250px"}
         >
-          <Link href={"/dashboard"}>
-            <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
-              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
-                Dashboard
-              </Text>
-            </Box>
-          </Link>
-          <Link href={"/dashboard/exams"}>
-            <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
-              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
-                Exams
-              </Text>
-            </Box>
-          </Link>
-          <Link href={"/dashboard/problems"}>
-            <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
-              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
-                Problems
-              </Text>
-            </Box>
-          </Link>
-          <Link href={"/dashboard/add-problem"}>
-            <Box bg={"purple.800"} px={8} py={5} borderRadius={20} my={2}>
-              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
-                Add problem
-              </Text>
-            </Box>
-          </Link>
-          <Link href={"/dashboard/exercises"}>
-            <Box
-              bg={"purple.800"}
-              px={8}
-              py={5}
-              borderRadius={20}
-              my={2}
-              _disabled={{ bg: "purple.800" }}
-            >
-              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
-                Exercises
-              </Text>
-            </Box>
-          </Link>
-          <Link href={"/dashboard/submissions"}>
-            <Box
-              bg={"purple.800"}
-              px={8}
-              py={5}
-              borderRadius={20}
-              my={2}
-              _disabled={{ bg: "purple.800" }}
-            >
-              <Text fontWeight={"extrabold"} fontSize={"1xl"}>
-                Submissions
-              </Text>
-            </Box>
-          </Link>
+          {LINKS.map((link) => (
+            <Link href={link.link} key={link.name}>
+              <Button
+                disabled={link.disabled}
+                colorScheme="purple"
+                variant={router.pathname === link.link ? "solid" : "ghost"}
+                fontWeight={"extrabold"}
+                fontSize={"1xl"}
+              >
+                {link.label}
+              </Button>
+            </Link>
+          ))}
         </Flex>
         {children}
       </Flex>
