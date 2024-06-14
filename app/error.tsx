@@ -23,7 +23,7 @@ function ErrorPage404() {
             h={"100%"}
           >
             <Text fontSize={"9xl"} lineHeight={1} fontWeight={"extrabold"}>
-              500
+              404
             </Text>
           </Flex>
         </Flex>
