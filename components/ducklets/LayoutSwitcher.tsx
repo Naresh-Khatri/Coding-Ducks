@@ -1,6 +1,6 @@
 import { Box, Button, HStack, IconButton, Tooltip } from "@chakra-ui/react";
 import React from "react";
-import { useDuckletStore, useLayoutStore } from "stores";
+import { useLayoutStore } from "stores";
 
 function LayoutSwitcher() {
   const layout = useLayoutStore((state) => state.layout);
