@@ -1,16 +1,23 @@
 "use client";
+import { ChevronDownIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
   Checkbox,
   HStack,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Popover,
   PopoverArrow,
   PopoverBody,
   PopoverContent,
   PopoverTrigger,
+  Select,
   Text,
   useMediaQuery,
+  VStack,
 } from "@chakra-ui/react";
 import React, {
   Dispatch,
@@ -33,8 +40,10 @@ interface ICodePreviewProps {
   target: IContent;
   source: IContent;
 }
+
 function CodePreview({ source, target }: ICodePreviewProps) {
   const [view, setView] = useState<TView>("code");
+  const [magnificaton, setMagnification] = useState(100);
   const previewRef = useRef<HTMLIFrameElement>(null);
   const initialFocusRef = useRef(null);
   const [mouseEntered, setMouseEntered] = useState(false);
@@ -86,106 +95,115 @@ function CodePreview({ source, target }: ICodePreviewProps) {
       window.removeEventListener("message", () => {});
     };
   }, []);
-  const targetSrcDoc = getSrcDoc(target);
+  const targetSrcDoc = getSrcDoc(target, magnificaton / 100);
   // TODO: add debouncing
-  const sourceSrcDoc = getSrcDoc(source);
+  const sourceSrcDoc = getSrcDoc(source, magnificaton / 100);
   return (
-    <Box w={"full"} h={"full"} bg={"white"} pos={"relative"}>
-      <Box w={"full"} h={"full"}>
-        <iframe
-          style={{
-            position: "absolute",
-          }}
-          title="output"
-          sandbox="allow-scripts"
-          width={"100%"}
-          height={"100%"}
-          ref={previewRef}
-          srcDoc={targetSrcDoc}
-        ></iframe>
-        <Box
-          h={"full"}
-          pos={"absolute"}
-          width={
-            view === "target"
-              ? "0%"
-              : mouseEntered && allowPeeking && view === "code"
-              ? mousePos.x + "px"
-              : "100%"
-          }
-          transition={!mouseEntered && allowPeeking ? `width 0.5s ease` : ""}
-          overflow={"hidden"}
-        >
+    <>
+      <Box
+        w={"full"}
+        h={"full"}
+        bg={"white"}
+        pos={"relative"}
+        overflow={"hidden"}
+      >
+        <Box w={"full"} h={"full"}>
           <iframe
             style={{
-              display: view !== "target" ? "block" : "none",
-              opacity:
-                mouseEntered && allowPeeking && view === "code" ? 0.8 : 1,
-              // filter: view === "diff" ? "invert(100%) opacity(50%)" : "none",
-              mixBlendMode: view === "diff" ? "difference" : "unset",
               position: "absolute",
-              transition: `width ${
-                !mouseEntered && allowPeeking ? "0.5s" : "0s"
-              } ease`,
             }}
-            width={
-              previewRef.current?.clientWidth
-                ? previewRef.current?.clientWidth + "px"
-                : "100%"
-            }
             title="output"
             sandbox="allow-scripts"
+            width={"100%"}
             height={"100%"}
-            srcDoc={sourceSrcDoc}
+            ref={previewRef}
+            srcDoc={targetSrcDoc}
           ></iframe>
+          <Box
+            h={"full"}
+            pos={"absolute"}
+            width={
+              view === "target"
+                ? "0%"
+                : mouseEntered && allowPeeking && view === "code"
+                ? mousePos.x + "px"
+                : "100%"
+            }
+            transition={!mouseEntered && allowPeeking ? `width 0.5s ease` : ""}
+            overflow={"hidden"}
+          >
+            <iframe
+              style={{
+                display: view !== "target" ? "block" : "none",
+                opacity:
+                  mouseEntered && allowPeeking && view === "code" ? 0.8 : 1,
+                // filter: view === "diff" ? "invert(100%) opacity(50%)" : "none",
+                mixBlendMode: view === "diff" ? "difference" : "unset",
+                position: "absolute",
+                transition: `width ${
+                  !mouseEntered && allowPeeking ? "0.5s" : "0s"
+                } ease`,
+              }}
+              width={
+                previewRef.current?.clientWidth
+                  ? previewRef.current?.clientWidth + "px"
+                  : "100%"
+              }
+              title="output"
+              sandbox="allow-scripts"
+              height={"100%"}
+              srcDoc={sourceSrcDoc}
+            ></iframe>
 
-          {mouseEntered && allowPeeking && view === "code" && (
-            <Box
-              pos={"absolute"}
-              h={"full"}
-              w={"2px"}
-              bg={"red.400"}
-              // left={mouseEntered && allowPeeking ? mousePos.x + "px" : "100%"}
-              right={0}
-              top={0}
-              pointerEvents={"none"}
-            >
-              <Popover
-                isOpen={mouseEntered}
-                placement="right"
-                initialFocusRef={initialFocusRef}
+            {mouseEntered && allowPeeking && view === "code" && (
+              <Box
+                pos={"absolute"}
+                h={"full"}
+                w={"2px"}
+                bg={"red.400"}
+                // left={mouseEntered && allowPeeking ? mousePos.x + "px" : "100%"}
+                right={0}
+                top={0}
+                pointerEvents={"none"}
               >
-                <PopoverTrigger>
-                  <Box
-                    pos={"absolute"}
-                    left={0}
-                    top={mousePos.y + "px"}
-                    zIndex={3}
-                    pointerEvents={"none"}
-                  ></Box>
-                </PopoverTrigger>
-                <PopoverContent
-                  w={"fit-content"}
-                  bg={"red.400"}
-                  color={"white"}
+                <Popover
+                  isOpen={mouseEntered}
+                  placement="right"
+                  initialFocusRef={initialFocusRef}
                 >
-                  <PopoverArrow bg={"red.400"} />
-                  <PopoverBody>
-                    <Text ref={initialFocusRef}>{mousePos.x}px</Text>
-                  </PopoverBody>
-                </PopoverContent>
-              </Popover>
-            </Box>
-          )}
+                  <PopoverTrigger>
+                    <Box
+                      pos={"absolute"}
+                      left={0}
+                      top={mousePos.y + "px"}
+                      zIndex={3}
+                      pointerEvents={"none"}
+                    ></Box>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    w={"fit-content"}
+                    bg={"red.400"}
+                    color={"white"}
+                  >
+                    <PopoverArrow bg={"red.400"} />
+                    <PopoverBody>
+                      <Text ref={initialFocusRef}>{mousePos.x}px</Text>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Popover>
+              </Box>
+            )}
+          </Box>
         </Box>
-      </Box>
-      <PreviewSettings
-        view={view}
-        setView={setView}
-        allowPeeking={allowPeeking}
-        setAllowPeeking={setAllowPeeking}
-      />
-      {/* {mouseEntered && !showPreview && allowPeeking && ( <Box
+        <PreviewSettings
+          view={view}
+          setView={setView}
+          magnification={magnificaton}
+          setMagnification={setMagnification}
+          allowPeeking={allowPeeking}
+          setAllowPeeking={setAllowPeeking}
+        />
+        {/* {mouseEntered && !showPreview && allowPeeking && ( <Box
             pos={"absolute"}
             h={"full"}
             w={"2px"}
@@ -217,7 +235,8 @@ function CodePreview({ source, target }: ICodePreviewProps) {
             </Popover>
           </Box>
         )} */}
-    </Box>
+      </Box>
+    </>
   );
 }
 
@@ -225,11 +244,15 @@ export default CodePreview;
 const PreviewSettings = ({
   view,
   setView,
+  magnification,
+  setMagnification,
   allowPeeking,
   setAllowPeeking,
 }: {
   view: TView;
   setView: Dispatch<SetStateAction<TView>>;
+  magnification: number;
+  setMagnification: Dispatch<SetStateAction<number>>;
   allowPeeking: boolean;
   setAllowPeeking: Dispatch<SetStateAction<boolean>>;
 }) => {
@@ -253,17 +276,35 @@ const PreviewSettings = ({
         <Switcher view={view} setView={setView} />
       </HStack>
       {!isMobile && (
-        <HStack alignItems={"center"} mt={2}>
-          <Checkbox
-            id="allow-peeking"
-            colorScheme="purple"
-            defaultChecked={allowPeeking}
-            isInvalid
-            onChange={(e) => setAllowPeeking(e.target.checked)}
-          >
-            Slide to compare
-          </Checkbox>
-        </HStack>
+        <VStack>
+          <HStack alignItems={"center"} mt={2}>
+            <Checkbox
+              id="allow-peeking"
+              colorScheme="purple"
+              defaultChecked={allowPeeking}
+              isInvalid
+              onChange={(e) => setAllowPeeking(e.target.checked)}
+            >
+              Slide to compare
+            </Checkbox>
+          </HStack>
+          <Menu>
+            <MenuButton
+              as={Button}
+              rightIcon={<ChevronDownIcon />}
+              color={"black"}
+            >
+              Zoom: {magnification}%
+            </MenuButton>
+            <MenuList color={"white"}>
+              <MenuItem onClick={() => setMagnification(75)}>75%</MenuItem>
+              <MenuItem onClick={() => setMagnification(100)}>100%</MenuItem>
+              <MenuItem onClick={() => setMagnification(125)}>125%</MenuItem>
+              <MenuItem onClick={() => setMagnification(150)}>150%</MenuItem>
+              <MenuItem onClick={() => setMagnification(175)}>175%</MenuItem>
+            </MenuList>
+          </Menu>
+        </VStack>
       )}
     </Box>
   );
@@ -327,7 +368,7 @@ const Switcher = ({
   );
 };
 
-export const getSrcDoc = ({ css, html, head, js }: IContent) => {
+export const getSrcDoc = ({ css, html, head, js }: IContent, scale: number) => {
   const origin =
     process.env.NODE_ENV === "development"
       ? "http://localhost:3000"
@@ -336,7 +377,7 @@ export const getSrcDoc = ({ css, html, head, js }: IContent) => {
   return `
 <html>
     <style>${css}</style>
-    <body>
+    <body style="scale: ${scale}; overflow: hidden">
         ${html}
         <script>${js}</script>
         <script>
