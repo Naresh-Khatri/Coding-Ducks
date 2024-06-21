@@ -73,8 +73,8 @@ function EditorsWithPreview({
           <Tab>HEAD</Tab>
         </TabList>
 
-        <TabPanels h={height}>
-          <TabPanel p={0}>
+        <TabPanels minH={height}>
+          <TabPanel p={0} h={height}>
             <ReactCodeMirror
               theme={dracula}
               height="100%"
@@ -83,7 +83,7 @@ function EditorsWithPreview({
               extensions={[html()]}
             />
           </TabPanel>
-          <TabPanel p={0}>
+          <TabPanel p={0} h={height}>
             <ReactCodeMirror
               theme={dracula}
               height="100%"
@@ -92,7 +92,7 @@ function EditorsWithPreview({
               extensions={[css()]}
             />
           </TabPanel>
-          <TabPanel p={0}>
+          <TabPanel p={0} h={height}>
             <ReactCodeMirror
               theme={dracula}
               height="100%"
@@ -101,7 +101,7 @@ function EditorsWithPreview({
               extensions={[javascript()]}
             />
           </TabPanel>
-          <TabPanel p={0}>
+          <TabPanel p={0} h={height}>
             <ReactCodeMirror
               theme={dracula}
               height="100%"
