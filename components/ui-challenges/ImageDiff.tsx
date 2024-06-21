@@ -83,20 +83,20 @@ function ImageDiff({
     >
       <Image
         src={targetImage}
-        width={2000}
-        height={2000}
+        width={4000}
+        height={4000}
         draggable={false}
         alt="sourceImage image"
         style={{ width: "100%", height: "auto" }}
       />
       <Box pos={"absolute"} top={2} right={2} zIndex={0} className="hint">
-        <SlideFade in={showHints} offsetX={"10px"} >
+        <SlideFade in={showHints} offsetX={"10px"}>
           <Text
             fontSize={"lg"}
             fontWeight={"bold"}
             borderRadius={"10px"}
             backdropBlur={"5px"}
-            background={"#ffffff44"}
+            background={"#66666644"}
             p={2}
             px={4}
           >
@@ -112,6 +112,7 @@ function ImageDiff({
         top={0}
         left={diffWidth + "px"}
         cursor={"col-resize"}
+        background={"purple.400"}
       >
         <Flex
           pos={"relative"}
@@ -122,7 +123,7 @@ function ImageDiff({
           <Box
             w={"2rem"}
             h={"3rem"}
-            background={"#ffffffaa"}
+            background={"#99999944"}
             backdropFilter={"blur(3px)"}
             borderRadius={"full"}
             zIndex={3}
@@ -152,7 +153,7 @@ function ImageDiff({
                 fontWeight={"bold"}
                 borderRadius={"10px"}
                 backdropBlur={"5px"}
-                background={"#ffffff44"}
+                background={"#66666644"}
                 p={2}
                 px={4}
               >
@@ -162,8 +163,8 @@ function ImageDiff({
           </Box>
           <Image
             src={sourceImage}
-            width={2000}
-            height={2000}
+            width={4000}
+            height={4000}
             alt="source image"
             draggable={false}
             style={{ width: "100%", height: "auto" }}
