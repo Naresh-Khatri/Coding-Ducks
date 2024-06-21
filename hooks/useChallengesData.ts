@@ -11,7 +11,6 @@ export const getChallenges = async () => {
   const { data } = await axiosInstance.get("/ui-challenges");
   return data.data as IUIChallenge[];
 };
-
 export const getChallenge = async (challengeSlug: string) => {
   const { data } = await axiosInstance.get(`/ui-challenges/${challengeSlug}`);
   return data.data as IUIChallenge;
@@ -43,14 +42,33 @@ export const updateChallenge = async ({
     throw error;
   }
 };
+export const getChallengeAttempts = async (challengeId: number) => {
+  const { data } = await axiosInstance.get(
+    `/ui-challenges/${challengeId}/attempts`
+  );
+  return data.data;
+};
+export const recalculateAttemptScores = async ({
+  challengeId,
+  attemptId,
+}: {
+  challengeId: number;
+  attemptId?: number;
+}) => {
+  const { data } = await axiosInstance.post(
+    `/ui-challenges/recalculate-scores`,
+    { challengeId, attemptId }
+  );
+  return data.data;
+};
 export const deleteChallege = async (challengeId: number) => {
   const { data } = await axiosInstance.delete(`/ui-challenges/${challengeId}`);
   return data as IUIChallenge;
 };
 
-export const getChallengeAttempts = async (challengeId: number) => {
+export const getChallengeHighScores = async (challengeId: number) => {
   const { data } = await axiosInstance.get(
-    `/ui-challenges/${challengeId}/attempts`
+    `/ui-challenges/${challengeId}/highscores`
   );
   return data.data;
 };
@@ -63,7 +81,7 @@ export const getChallengeAttempt = async (
   );
   return data.data;
 };
-export const getUserChallengeAttempt = async ({
+export const getUserChallengeHighscore = async ({
   challengeId,
   userId,
 }: {
@@ -71,7 +89,7 @@ export const getUserChallengeAttempt = async ({
   userId?: number;
 }) => {
   const { data } = await axiosInstance.get(
-    `/ui-challenges/${challengeId}/attempts?userId=${userId}`
+    `/ui-challenges/${challengeId}/highscores?userId=${userId}`
   );
   return data.data as IUIChallengeAttempt;
 };
@@ -131,18 +149,28 @@ export const useChallengeData = (challengeSlug: string) => {
     }
   );
 };
-export const useUpdateChallenge = () => {
+export const useAUpdateChallenge = () => {
   return useMutation(["challenge", "update", Date()], updateChallenge);
 };
-export const useRemoveChallenge = () => {
+export const useARecalcScores = () =>
+  useMutation({ mutationFn: recalculateAttemptScores });
+
+export const useARemoveChallenge = () => {
   return useMutation(deleteChallege);
 };
-
-// attempts
-export const useChallengeAttemptsData = (challengeId: number) => {
+export const useAChallengeAttemptsData = (challengeId: number) => {
   return useQuery(
     ["challenge attempts", challengeId],
     () => getChallengeAttempts(challengeId),
+    { cacheTime: 0 }
+  );
+};
+
+// attempts
+export const useChallengeHighscoreData = (challengeId: number) => {
+  return useQuery(
+    ["challenge attempts", challengeId],
+    () => getChallengeHighScores(challengeId),
     { enabled: !!challengeId, cacheTime: 0 }
   );
 };
@@ -155,7 +183,7 @@ export const useUserChallengeAttemptsData = ({
 }) => {
   return useQuery(
     ["user attempts", challengeId],
-    () => getUserChallengeAttempt({ challengeId, userId }),
+    () => getUserChallengeHighscore({ challengeId, userId }),
     { enabled: !!challengeId && !!userId }
   );
 };
