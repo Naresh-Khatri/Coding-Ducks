@@ -5204,6 +5204,11 @@ monaco-vim@^0.4.1:
   resolved "https://registry.yarnpkg.com/monaco-vim/-/monaco-vim-0.4.1.tgz#1113a2ca3d97a87b1d21a9b655879e6e97cd7ae9"
   integrity sha512-+cy0TE9xarjLIgUexqxIEbat3K1l7WbiFSLZKAO2kYl1qFRvkeWn4ro/C4c6dK0i9+WQKUC4Dhu/nyCbZfA37w==
 
+monocart-formatter@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/monocart-formatter/-/monocart-formatter-3.0.0.tgz#da587413223ea62f6f52d3b1cbfb4a0aa5d96d63"
+  integrity sha512-91OQpUb/9iDqvrblUv6ki11Jxi1d3Fp5u2jfVAPl3UdNp9TM+iBleLzXntUS51W0o+zoya3CJjZZ01z2XWn25g==
+
 mrmime@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/mrmime/-/mrmime-2.0.0.tgz#151082a6e06e59a9a39b46b3e14d5cfe92b3abb4"
