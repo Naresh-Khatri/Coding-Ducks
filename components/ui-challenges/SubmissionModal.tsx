@@ -26,6 +26,12 @@ import {
   FormLabel,
   Switch,
   ModalOverlay,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  Progress,
+  useClipboard,
 } from "@chakra-ui/react";
 import React, { use, useEffect, useMemo, useRef, useState } from "react";
 import { IUIChallengeAttempt } from "types";
@@ -35,7 +41,7 @@ import Confetti from "react-confetti";
 import PositionConfetti from "canvas-confetti";
 import Image from "next/image";
 import { InfoIcon } from "@chakra-ui/icons";
-import { useChallengeAttemptsData } from "hooks/useChallengesData";
+import { useChallengeHighscoreData } from "hooks/useChallengesData";
 import UserAvatar from "components/utils/UserAvatar";
 import { getTimeAgo } from "lib/formatDate";
 import { userContext } from "contexts/userContext";
@@ -43,8 +49,15 @@ import Link from "next/link";
 import animatedDucks from "constants/animated-ducks";
 import FAIcon from "components/FAIcon";
 import { faLinkedin, faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { useRouter } from "next/navigation";
 import { generateLinkedInPostText } from "lib/utils";
+import { faClipboard, faCopy } from "@fortawesome/free-solid-svg-icons";
+
+const LOADING_DUCKS = [
+  animatedDucks.ball_rolling,
+  animatedDucks.wat,
+  animatedDucks.sleeping,
+  animatedDucks.scared,
+];
 
 const SubmissionModal = ({
   onClose,
@@ -52,21 +65,23 @@ const SubmissionModal = ({
   isLoading,
   isMobile,
   result,
+  hasError,
 }: {
   onClose: () => void;
   isOpen: boolean;
   isLoading: boolean;
   isMobile: boolean;
   result: IUIChallengeAttempt;
+  hasError: boolean;
 }) => {
   const { user } = use(userContext);
   const { data: attemptsData, isLoading: attemptsLoading } =
-    useChallengeAttemptsData(result?.challengeId);
+    useChallengeHighscoreData(result?.challengeId);
   const [tabIndex, setTabIndex] = useState(0);
   const [showRectangles, setShowRectangles] = useState(true);
 
   useEffect(() => {
-    if (!result) return;
+    if (!result || hasError) return;
     if (result && result.score >= 900) {
       PositionConfetti({
         particleCount: 300,
@@ -83,7 +98,7 @@ const SubmissionModal = ({
   }, [isLoading]);
   return (
     <>
-      {!isLoading && result.score >= 900 && <Confetti />}
+      {!isLoading && result?.score >= 900 && <Confetti />}
       <Modal
         isOpen={isOpen}
         onClose={onClose}
@@ -93,22 +108,44 @@ const SubmissionModal = ({
       >
         <ModalOverlay />
         <ModalContent minW={isMobile ? "" : "900px"}>
-          {/* <ModalHeader>Submission Details</ModalHeader> */}
           {!isLoading && <ModalCloseButton />}
           <ModalBody minH={"400px"} h={"400px"} mt={10}>
             {isLoading ? (
               <Flex
                 justifyContent={"center"}
                 alignItems={"center"}
-                mt={"10rem"}
                 h={"full"}
                 w={"full"}
               >
-                <HStack>
-                  <Spinner />
-                  <Text> Performing various checks on your code</Text>
-                </HStack>
+                <VStack>
+                  <Image
+                    width={500}
+                    height={500}
+                    style={{ height: "250px", width: "auto" }}
+                    src={
+                      LOADING_DUCKS[
+                        Math.floor(Math.random() * LOADING_DUCKS.length)
+                      ].image
+                    }
+                    alt="loading"
+                  />
+                  <Progress mt={10} size="xs" w={"100%"} isIndeterminate />
+                  <Heading> Performing various checks </Heading>
+                  <HStack>
+                    <Spinner />
+                    <Text>This takes around 15 seconds</Text>
+                  </HStack>
+                </VStack>
               </Flex>
+            ) : hasError ? (
+              <Alert status="error">
+                <AlertIcon />
+                <AlertTitle>Something went Wrong!</AlertTitle>
+                <AlertDescription>
+                  There was an internal error on the server. Please try after
+                  some time.
+                </AlertDescription>
+              </Alert>
             ) : (
               <>
                 <VStack gap={4} px={{ base: 0, md: 10 }}>
@@ -216,8 +253,8 @@ const SubmissionModal = ({
                                   <Image
                                     src={result.ogImage}
                                     loading="lazy"
-                                    width={500}
-                                    height={400}
+                                    width={3000}
+                                    height={3000}
                                     alt="'diff"
                                     style={{ width: "100%" }}
                                   />
@@ -233,8 +270,8 @@ const SubmissionModal = ({
                                   <Image
                                     loading="lazy"
                                     src={result.imgDiff}
-                                    width={500}
-                                    height={400}
+                                    width={3000}
+                                    height={3000}
                                     style={{ width: "100%" }}
                                     alt="'diff"
                                   />
@@ -250,8 +287,8 @@ const SubmissionModal = ({
                                   <Image
                                     loading="lazy"
                                     src={result.imgMask}
-                                    width={500}
-                                    height={400}
+                                    width={3000}
+                                    height={3000}
                                     style={{ width: "100%" }}
                                     alt="'diff"
                                   />
@@ -412,25 +449,42 @@ const ScoreCard = ({
         position: "top",
         duration: 15000,
       });
-    }, 1000);
+    }, 3000);
   }, []);
 
   console.log(result);
+  const attemptLink = `${
+    process.env.NODE_ENV === "development"
+      ? "https://www.codingducks.xyz"
+      : window.location.origin
+  }/ui-challenges/${result.challenge?.slug}/attempts/${result.id}`;
   const linkedInShareUrl = useMemo(
     () =>
-      `https://www.linkedin.com/shareArticle?mini=true&url=${
-        process.env.NODE_ENV === "production"
-          ? window.location.href
-          : "https://www.codingducks.xyz/ui-challenges/hello-world" +
-            "/attempts/" +
-            result.id
-      }&text=${generateLinkedInPostText({
-        challengeName: result?.challenge?.title || "",
-        score,
-        url: `https://www.codingducks.xyz/ui-challenges/hello-world/attempts/${result.id}`,
-      })}`,
+      `https://www.linkedin.com/shareArticle?mini=true&url=${attemptLink}&text=${generateLinkedInPostText(
+        {
+          challengeName: result?.challenge?.title || "",
+          score,
+          url: attemptLink,
+        }
+      )}`,
     [result.id]
   );
+  const WhatsAppShareUrl = useMemo(
+    () =>
+      `whatsapp://send?text=Hey there! I just completed ${
+        result?.challenge?.title || ""
+      } on codingducks.xyz and scored ${score}% on the UI Challenges. Check it out: ${attemptLink}`,
+    [result.id]
+  );
+  const { onCopy, hasCopied } = useClipboard(attemptLink);
+  const handleCopyLink = () => {
+    onCopy();
+    toast({
+      title: "Copied to clipboard!",
+      position: "top",
+      duration: 1500,
+    });
+  };
 
   return (
     <>
@@ -463,12 +517,22 @@ const ScoreCard = ({
               Share on LinkedIn
             </Button>
           </Link>
+          <Link href={WhatsAppShareUrl} target="_blank">
+            <Button
+              w={"200px"}
+              leftIcon={<FAIcon icon={faWhatsapp} />}
+              colorScheme="green"
+            >
+              Share on WhatsApp
+            </Button>
+          </Link>
           <Button
             w={"200px"}
-            leftIcon={<FAIcon icon={faWhatsapp} />}
-            colorScheme="green"
+            leftIcon={<FAIcon icon={faCopy} />}
+            onClick={handleCopyLink}
+            colorScheme={hasCopied ? "green" : "gray"}
           >
-            Share on WhatsApp
+            Copy Share Link
           </Button>
         </VStack>
       </SimpleGrid>
