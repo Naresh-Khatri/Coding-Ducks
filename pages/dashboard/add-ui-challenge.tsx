@@ -36,11 +36,12 @@ const AddProblemPage = () => {
   const [desc, setDesc] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [diffLevel, setDiffLevel] = useState(CHALLENGE_DIFFICULTIES[0].name);
+  const [ogImageScale, setOgImageScale] = useState(0);
 
   const [content, setContent] = useState({
     head: "",
     html: "",
-    css: "",
+    css: "body{\n  font-family: Montserrat,sans-serif;\n  margin:0px;\n  height: 100vh;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n",
     js: "",
   });
 
@@ -73,6 +74,7 @@ const AddProblemPage = () => {
       css: content.css,
       js: content.js,
       isPublic,
+      ogImageScale: ogImageScale,
     };
 
     try {
@@ -178,6 +180,28 @@ const AddProblemPage = () => {
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
                 />
+              </FormControl>
+              <FormControl>
+                <FormLabel
+                  htmlFor="og-img-scale"
+                  display={"flex"}
+                  gap={2}
+                  justifyContent={"space-between"}
+                  alignItems={"center"}
+                >
+                  OG Image Scale
+                </FormLabel>
+                <Select
+                  id="og-img-scale"
+                  value={ogImageScale}
+                  onChange={(e) => setOgImageScale(+e.target.value)}
+                >
+                  <option value="0">Ignore</option>
+                  <option value="1">1x</option>
+                  <option value="2">2x</option>
+                  <option value="3">3x</option>
+                  <option value="4">4x</option>
+                </Select>
               </FormControl>
             </HStack>
 
