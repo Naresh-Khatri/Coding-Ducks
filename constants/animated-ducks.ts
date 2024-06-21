@@ -17,7 +17,7 @@ const animatedDucks = {
   },
   scared: {
     image:
-      "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/0959c570936397.5bb439fbde3d2_lGsUwk-M9.gif",
+      "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/scared_OLLte0GVn2.gif",
   },
   sayNo: {
     image:
@@ -38,6 +38,30 @@ const animatedDucks = {
   bamboozled: {
     image:
       "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/sticker_21_WTFwUxilg.gif",
+  },
+  ball_rolling: {
+    image:
+      "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/ball_rolling_A9b51hogN.gif",
+  },
+  crying: {
+    image:
+      "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/crying_2KiF8VKHw.gif",
+  },
+  wat: {
+    image:
+      "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/wat_3jXCLgRknP.gif",
+  },
+  angry_jumping: {
+    image:
+      "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/angry_IrdCNWtBLM.gif",
+  },
+  sleeping: {
+    image:
+      "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/sleeping_OcQBC0ubl2.gif",
+  },
+  angry_breaks: {
+    image:
+      "https://ik.imagekit.io/couponluxury/coding_ducks/gifs/angry_breaks_KNWVV20pb.gif",
   },
 };
 export default animatedDucks;
