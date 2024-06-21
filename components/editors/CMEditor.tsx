@@ -1,5 +1,9 @@
 import { Dispatch, SetStateAction } from "react";
-import ReactCodeMirror, { EditorView, Extension } from "@uiw/react-codemirror";
+import ReactCodeMirror, {
+  EditorView,
+  Extension,
+  keymap,
+} from "@uiw/react-codemirror";
 import { dracula } from "@uiw/codemirror-theme-dracula";
 import { LanguageSupport, indentUnit } from "@codemirror/language";
 import { html } from "@codemirror/lang-html";
@@ -13,10 +17,14 @@ const CMEditor = ({
   value,
   setValue,
   lang,
+  onSave,
+  setTabIdx,
 }: {
   value: string;
   setValue: Dispatch<SetStateAction<string>>;
   lang: Lang;
+  setTabIdx?: Dispatch<SetStateAction<number>>;
+  onSave?: (lang: Lang) => void;
 }) => {
   const fontSize = useEditorSettingsStore((state) => state.fontSize);
   const vimEnabled = useEditorSettingsStore((state) => state.vimEnabled);
@@ -39,7 +47,18 @@ const CMEditor = ({
       style={{ width: "100%", fontSize: fontSize + "px" }}
       value={value}
       onChange={(e) => setValue(e)}
-      extensions={extensions}
+      extensions={[
+        ...extensions,
+        keymap.of([
+          {
+            key: "Ctrl-s",
+            run: () => {
+              if (onSave) onSave(lang);
+              return true;
+            },
+          },
+        ]),
+      ]}
       theme={dracula}
       key={lang}
     />
