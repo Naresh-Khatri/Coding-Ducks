@@ -321,6 +321,8 @@ export interface IUIChallenge {
   isPublic: boolean;
   desktopPreview: string;
   mobilePreview: string;
+  ogImage: string;
+  ogImageScale: 0 | 1 | 2 | 3 | 4;
 
   contentHEAD: string;
   contentHTML: string;
@@ -336,6 +338,7 @@ export interface IUIChallengeAttempt {
   challengeId: number;
   challenge?: {
     title: string;
+    slug: string;
   };
   userId: number;
   isPublic: boolean;
