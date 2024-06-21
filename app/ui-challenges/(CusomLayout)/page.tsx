@@ -33,7 +33,7 @@ function UIChallengespage() {
     refetch: refetchChallenge,
   } = useChallengesData();
 
-  let filteredChallenges = challenges;
+  let filteredChallenges = challenges?.filter((c) => c.isPublic);
 
   return (
     <>
@@ -75,7 +75,7 @@ const ChallengeCard = ({ challenge }: { challenge: IUIChallenge }) => {
             // transition: "all .2s",
             // transform: "scale(1.02) rotate(-1deg)",
           }}
-          height={"450px"}
+          height={"470px"}
           position={"relative"}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
@@ -84,7 +84,8 @@ const ChallengeCard = ({ challenge }: { challenge: IUIChallenge }) => {
           <Stack w={"full"}>
             <CardBody p={0}>
               <ImageCarousel
-                images={[challenge.desktopPreview, challenge.mobilePreview]}
+                // images={[challenge.desktopPreview, challenge.mobilePreview]}
+                images={[challenge.ogImage]}
                 isHovering={isHovering}
               />
               <Box p={"2rem"}>
@@ -160,11 +161,7 @@ const ImageCarousel = ({
   //   if (isHovering) setFoo((p) => !p);
   // };
   return (
-    <Box
-      w={"100%"}
-      position={"relative"}
-      // overflow={"hidden"}
-    >
+    <Box w={"100%"} position={"relative"}>
       <Flex
         flexDirection={"row"}
         transition={"all .2s ease-out"}
@@ -182,27 +179,11 @@ const ImageCarousel = ({
               scale: isHovering ? "1.15" : "1",
               width: "100%",
               height: "auto",
-              aspectRatio: "16/9",
+              aspectRatio: "1.6/1",
               borderRadius: isHovering ? "20px" : "20px 20px 0 0",
             }}
           />
         </Flex>
-        {/* <Flex w={"100%"} justifyContent={"center"} basis={"100%"}>
-          <Image
-            src={images[1]}
-            alt="challenge preview"
-            width={200}
-            height={200}
-            style={{
-              transition: "all .2s",
-              scale: isHovering ? "1.1" : "1",
-              width: "auto",
-              height: "215px",
-              marginTop: "10px",
-              borderRadius: "10px",
-            }}
-          />
-        </Flex> */}
       </Flex>
     </Box>
   );
