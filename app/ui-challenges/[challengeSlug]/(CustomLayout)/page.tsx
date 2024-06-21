@@ -56,6 +56,9 @@ import React, {
   useState,
 } from "react";
 import Split from "react-split";
+
+import { format } from "monocart-formatter";
+
 import { useLayoutStore } from "stores";
 import { IUIChallenge } from "types";
 
@@ -84,6 +87,7 @@ function UIChallengePage({ params }) {
 
   const {
     mutate: submitAttempt,
+    isError: submitHasError,
     isLoading: isSubmitting,
     data: submitAttemptData,
   } = useSubmitChallengeAttempt();
@@ -102,7 +106,19 @@ function UIChallengePage({ params }) {
   const [contentHTML, setContentHTML] = useState("");
   const [contentCSS, setContentCSS] = useState("");
   const [contentJS, setContentJS] = useState("");
-  const [srcDoc, setSrcDoc] = useState("");
+  const formatCode = async (lang: "html" | "css" | "js") => {
+    console.log(lang);
+    if (lang === "html") {
+      const formatted = await format(contentHTML, "html");
+      setContentHTML(formatted.content);
+    } else if (lang === "css") {
+      const formatted = await format(contentCSS, "css");
+      setContentCSS(formatted.content);
+    } else {
+      const formatted = await format(contentJS, "js");
+      setContentJS(formatted.content);
+    }
+  };
 
   useEffect(() => {
     if (!attemptData) return;
@@ -113,32 +129,6 @@ function UIChallengePage({ params }) {
   }, [attemptData]);
   useEffect(() => {
     const timer: NodeJS.Timeout = setTimeout(() => {
-      //       setSrcDoc(`
-      //     <html>
-      //       <head>${contentHEAD}</head>
-      //       <body>${contentHTML}</body>
-      //       <style>${contentCSS}</style>
-      //       <script>${contentJS}</script>
-      //   <script>const as = document.querySelectorAll('a')
-      // as.forEach(a=>{
-      //   a.href = "javascript:void(0)"
-      // })</script>
-      // <script>
-      // document.addEventListener('mouseenter', function(event) {
-      //  const message = { type: 'mouseenter' };
-      //  window.parent.postMessage(message, 'http://localhost:3000');
-      // });
-      // document.addEventListener('mouseleave', function(event) {
-      //  const message = { type: 'mouseleave' };
-      //  window.parent.postMessage(message, 'http://localhost:3000');
-      // });
-      // document.addEventListener('mousemove', function(event) {
-      //  const message = { type: 'mousemove', x: event.clientX, y: event.clientY };
-      //  window.parent.postMessage(message, 'http://localhost:3000');
-      // });
-      // </script>
-      // </html>
-      //       `);
       if (attemptData && attemptData.id)
         updateAttempt({
           challengeId: challengeData?.id || 0,
@@ -180,7 +170,9 @@ function UIChallengePage({ params }) {
   if (challengeDataLoading || attemptDataLoading) return <div>Loading...</div>;
 
   const handleSubmission = () => {
-    if (!challengeData) return;
+    if (!challengeData) {
+      return;
+    }
     onSubmissionModalOpen();
     const payload = {
       head: contentHEAD,
@@ -213,6 +205,7 @@ function UIChallengePage({ params }) {
           onClose={onSubmissionModalClose}
           isMobile={isMobile}
           result={submitAttemptData?.data}
+          hasError={submitHasError}
         />
       )}
 
@@ -229,6 +222,7 @@ function UIChallengePage({ params }) {
             setCss: setContentCSS,
             setJs: setContentJS,
           }}
+          formatCode={formatCode}
         />
       ) : (
         <DesktopView
@@ -243,6 +237,7 @@ function UIChallengePage({ params }) {
             setCss: setContentCSS,
             setJs: setContentJS,
           }}
+          formatCode={formatCode}
         />
       )}
     </>
@@ -322,6 +317,7 @@ const NavBar = ({
 const MobileView = ({
   challenge,
   state,
+  formatCode,
 }: {
   challenge?: IUIChallenge;
   state: {
@@ -334,6 +330,7 @@ const MobileView = ({
     setCss: Dispatch<SetStateAction<string>>;
     setJs: Dispatch<SetStateAction<string>>;
   };
+  formatCode: (lang: "html" | "css" | "js") => void;
 }) => {
   return (
     <Split
@@ -371,6 +368,7 @@ const MobileView = ({
                 value={state?.html}
                 setValue={state?.setHtml}
                 lang={"html"}
+                onSave={formatCode}
               />
             </TabPanel>
             <TabPanel p={0} h={"100%"}>
@@ -378,10 +376,16 @@ const MobileView = ({
                 value={state?.css}
                 setValue={state?.setCss}
                 lang={"css"}
+                onSave={formatCode}
               />
             </TabPanel>
             <TabPanel p={0} h={"100%"}>
-              <CMEditor value={state.js} setValue={state.setJs} lang={"js"} />
+              <CMEditor
+                value={state.js}
+                setValue={state.setJs}
+                lang={"js"}
+                onSave={formatCode}
+              />
             </TabPanel>
           </TabPanels>
         </Tabs>
@@ -417,6 +421,7 @@ const MobileView = ({
 const DesktopView = ({
   challenge,
   state,
+  formatCode,
 }: {
   challenge?: IUIChallenge;
   state: {
@@ -429,6 +434,7 @@ const DesktopView = ({
     setCss: Dispatch<SetStateAction<string>>;
     setJs: Dispatch<SetStateAction<string>>;
   };
+  formatCode: (lang: "html" | "css" | "js") => void;
 }) => {
   const layout = useLayoutStore((state) => state.layout);
 
@@ -496,6 +502,7 @@ const DesktopView = ({
                     value={state.html}
                     setValue={state.setHtml}
                     lang={"html"}
+                    onSave={formatCode}
                   />
                 </Flex>
               </TabPanel>
@@ -505,6 +512,7 @@ const DesktopView = ({
                     value={state.css}
                     setValue={state.setCss}
                     lang={"css"}
+                    onSave={formatCode}
                   />
                 </Flex>
               </TabPanel>
@@ -514,6 +522,7 @@ const DesktopView = ({
                     value={state.js}
                     setValue={state.setJs}
                     lang={"js"}
+                    onSave={formatCode}
                   />
                 </Flex>
               </TabPanel>
@@ -545,6 +554,7 @@ const DesktopView = ({
                   value={state.html}
                   setValue={state.setHtml}
                   lang={"html"}
+                  onSave={formatCode}
                 />
               </Flex>
             </Flex>
@@ -560,6 +570,7 @@ const DesktopView = ({
                   value={state.css}
                   setValue={state.setCss}
                   lang={"css"}
+                  onSave={formatCode}
                 />
               </Flex>
             </Flex>
@@ -571,7 +582,12 @@ const DesktopView = ({
                 </Text>
               </HStack>
               <Flex flex={1} height={"calc(100% - 20px)"}>
-                <CMEditor value={state.js} setValue={state.setJs} lang={"js"} />
+                <CMEditor
+                  value={state.js}
+                  setValue={state.setJs}
+                  lang={"js"}
+                  onSave={formatCode}
+                />
               </Flex>
             </Flex>
           </Split>
