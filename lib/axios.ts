@@ -1,17 +1,20 @@
 import axios from "axios";
 import { auth } from "../firebase/firebase";
 
+const urls = {
+  local: "http://localhost:3333",
+  tunnel: "https://dev3333.codingducks.xyz",
+  prod: "https://api2.codingducks.xyz",
+  local_network: "http://192.168.31.197:3333",
+};
 export const baseURL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3333"
-    : // ? "https://dev3333.codingducks.xyz"
-      // "http://192.168.31.197:3333"
-      "https://api2.codingducks.xyz";
+  process.env.NODE_ENV == "development" ? urls.local : urls.prod;
 
 const axiosInstance = axios.create({
   baseURL,
   transformResponse: [
     (response) => {
+      // parse JSON response
       const res = JSON.parse(response);
       if (res.code == 401 && typeof window !== "undefined") {
         window.location.href = "/login?from=" + window.location.pathname;
