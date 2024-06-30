@@ -60,10 +60,11 @@ import Split from "react-split";
 import { format } from "monocart-formatter";
 
 import { useLayoutStore } from "stores";
-import { IUIChallenge } from "types";
+import { IUIChallenge, IUIChallengeAttempt } from "types";
 
 import SubmissionModal from "components/ui-challenges/SubmissionModal";
 import CodePreview from "components/ui-challenges/CodePreview";
+import { useStreamingFetch } from "lib/StreamingFetch";
 
 function UIChallengePage({ params }) {
   const { user, userLoaded } = use(userContext);
@@ -85,12 +86,24 @@ function UIChallengePage({ params }) {
   const { mutate: updateAttempt, isLoading } =
     useMutateChallengeAttemptContents();
 
+  // const {
+  //   mutate: submitAttempt,
+  //   isError: submitHasError,
+  //   isLoading: isSubmitting,
+  //   data: submitAttemptData,
+  // } = useSubmitChallengeAttempt();
+  
   const {
-    mutate: submitAttempt,
-    isError: submitHasError,
     isLoading: isSubmitting,
+    error: submitError,
     data: submitAttemptData,
-  } = useSubmitChallengeAttempt();
+    streamingFetch,
+  } = useStreamingFetch<{
+    score?: number;
+    stage?: number;
+    data: IUIChallengeAttempt;
+  }>();
+  console.log(submitAttemptData);
 
   const {
     isOpen: isSubmissionModalOpen,
@@ -173,21 +186,20 @@ function UIChallengePage({ params }) {
     if (!challengeData) {
       return;
     }
+
     onSubmissionModalOpen();
-    const payload = {
-      head: contentHEAD,
-      html: contentHTML,
-      css: contentCSS,
-      js: contentJS,
-    };
-    submitAttempt(
-      { challengeId: challengeData.id, contents: payload },
-      {
-        onSuccess: (data) => {
-          console.log(data);
+    streamingFetch({
+      method: "POST",
+      url: `/ui-challenges/${challengeData.id}/submit`,
+      body: {
+        contents: {
+          head: contentHEAD,
+          html: contentHTML,
+          css: contentCSS,
+          js: contentJS,
         },
-      }
-    );
+      },
+    });
   };
   return (
     <>
@@ -204,8 +216,8 @@ function UIChallengePage({ params }) {
           isOpen={isSubmissionModalOpen}
           onClose={onSubmissionModalClose}
           isMobile={isMobile}
-          result={submitAttemptData?.data}
-          hasError={submitHasError}
+          result={submitAttemptData}
+          hasError={submitAttemptData.error}
         />
       )}
 
@@ -245,6 +257,7 @@ function UIChallengePage({ params }) {
 }
 
 export default UIChallengePage;
+
 const NavBar = ({
   head,
   setHead,
