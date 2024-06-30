@@ -217,7 +217,7 @@ function UIChallengePage({ params }) {
           onClose={onSubmissionModalClose}
           isMobile={isMobile}
           result={submitAttemptData}
-          hasError={submitAttemptData.error}
+          hasError={!!submitError}
         />
       )}
 
