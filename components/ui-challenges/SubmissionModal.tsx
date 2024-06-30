@@ -32,8 +32,9 @@ import {
   AlertDescription,
   Progress,
   useClipboard,
+  Skeleton,
 } from "@chakra-ui/react";
-import React, { use, useEffect, useMemo, useRef, useState } from "react";
+import React, { use, useEffect, useMemo, useState } from "react";
 import { IUIChallengeAttempt } from "types";
 import ImageDiff from "./ImageDiff";
 
@@ -42,15 +43,14 @@ import PositionConfetti from "canvas-confetti";
 import Image from "next/image";
 import { InfoIcon } from "@chakra-ui/icons";
 import { useChallengeHighscoreData } from "hooks/useChallengesData";
-import UserAvatar from "components/utils/UserAvatar";
-import { getTimeAgo } from "lib/formatDate";
 import { userContext } from "contexts/userContext";
 import Link from "next/link";
 import animatedDucks from "constants/animated-ducks";
 import FAIcon from "components/FAIcon";
 import { faLinkedin, faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { generateLinkedInPostText } from "lib/utils";
-import { faClipboard, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { faCopy } from "@fortawesome/free-solid-svg-icons";
+import UISubmissionCard from "./UISubmissionCard";
 
 const LOADING_DUCKS = [
   animatedDucks.ball_rolling,
@@ -71,18 +71,26 @@ const SubmissionModal = ({
   isOpen: boolean;
   isLoading: boolean;
   isMobile: boolean;
-  result: IUIChallengeAttempt;
+  result: {
+    data: IUIChallengeAttempt;
+    score?: number;
+    stage?: number;
+    status: string;
+    error?: any;
+  };
   hasError: boolean;
 }) => {
+  const { status, score, stage, data: resultData, error } = result;
   const { user } = use(userContext);
   const { data: attemptsData, isLoading: attemptsLoading } =
-    useChallengeHighscoreData(result?.challengeId);
+    useChallengeHighscoreData(resultData?.challengeId);
+  console.log(result);
   const [tabIndex, setTabIndex] = useState(0);
   const [showRectangles, setShowRectangles] = useState(true);
 
   useEffect(() => {
-    if (!result || hasError) return;
-    if (result && result.score >= 900) {
+    if (isLoading || (!isLoading && (!attemptsLoading || hasError))) return;
+    if (score && score >= 900) {
       PositionConfetti({
         particleCount: 300,
         spread: 270,
@@ -96,9 +104,10 @@ const SubmissionModal = ({
       });
     }
   }, [isLoading]);
+
   return (
     <>
-      {!isLoading && result?.score >= 900 && <Confetti />}
+      {!isLoading && score && score >= 900 && <Confetti />}
       <Modal
         isOpen={isOpen}
         onClose={onClose}
@@ -110,7 +119,9 @@ const SubmissionModal = ({
         <ModalContent minW={isMobile ? "" : "900px"}>
           {!isLoading && <ModalCloseButton />}
           <ModalBody minH={"400px"} h={"400px"} mt={10}>
-            {isLoading ? (
+            {/* {isLoading && <Spinner />} */}
+            {/* <pre>{JSON.stringify(result, null, 2)}</pre> */}
+            {!resultData && !error ? (
               <Flex
                 justifyContent={"center"}
                 alignItems={"center"}
@@ -129,11 +140,19 @@ const SubmissionModal = ({
                     }
                     alt="loading"
                   />
-                  <Progress mt={10} size="xs" w={"100%"} isIndeterminate />
+                  <Text mt={10} as={"code"}>
+                    {status}
+                  </Text>
+                  <Progress size="xs" w={"100%"} isIndeterminate />
                   <Heading> Performing various checks </Heading>
                   <HStack>
-                    <Spinner />
-                    <Text>This takes around 15 seconds</Text>
+                    <Text
+                      fontSize={"sm"}
+                      fontWeight={"bold"}
+                      color={"gray.500"}
+                    >
+                      This takes around 15 seconds
+                    </Text>
                   </HStack>
                 </VStack>
               </Flex>
@@ -149,7 +168,11 @@ const SubmissionModal = ({
             ) : (
               <>
                 <VStack gap={4} px={{ base: 0, md: 10 }}>
-                  <ScoreCard result={result} score={result.score / 10} />
+                  <ScoreCard
+                    isLoading={isLoading}
+                    result={resultData}
+                    score={score ? score : 0}
+                  />
                   <VStack
                     alignItems={"start"}
                     justifyContent={"start"}
@@ -197,14 +220,14 @@ const SubmissionModal = ({
                         )}
                       </TabList>
 
-                      {result.imgBefore &&
-                        result.imgAfter &&
-                        result.imgTarget &&
-                        result.imgCode &&
-                        result.imgDiff &&
-                        result.ogImage &&
-                        result.imgFilledAfter &&
-                        result.imgMask && (
+                      {resultData.imgBefore &&
+                        resultData.imgAfter &&
+                        resultData.imgTarget &&
+                        resultData.imgCode &&
+                        resultData.imgDiff &&
+                        resultData.ogImage &&
+                        resultData.imgFilledAfter &&
+                        resultData.imgMask && (
                           <>
                             <TabPanels>
                               <TabPanel p={0} py={2}>
@@ -212,13 +235,13 @@ const SubmissionModal = ({
                                   <Center w="full">
                                     {showRectangles ? (
                                       <ImageDiff
-                                        sourceImage={result.imgAfter}
-                                        targetImage={result.imgBefore}
+                                        sourceImage={resultData.imgAfter}
+                                        targetImage={resultData.imgBefore}
                                       />
                                     ) : (
                                       <ImageDiff
-                                        sourceImage={result.imgCode}
-                                        targetImage={result.imgTarget}
+                                        sourceImage={resultData.imgCode}
+                                        targetImage={resultData.imgTarget}
                                       />
                                     )}
                                   </Center>
@@ -251,7 +274,7 @@ const SubmissionModal = ({
                               >
                                 <Center w={"full"}>
                                   <Image
-                                    src={result.ogImage}
+                                    src={resultData.ogImage}
                                     loading="lazy"
                                     width={3000}
                                     height={3000}
@@ -269,7 +292,7 @@ const SubmissionModal = ({
                                 <Center w={"full"}>
                                   <Image
                                     loading="lazy"
-                                    src={result.imgDiff}
+                                    src={resultData.imgDiff}
                                     width={3000}
                                     height={3000}
                                     style={{ width: "100%" }}
@@ -286,7 +309,7 @@ const SubmissionModal = ({
                                 <Center w={"full"}>
                                   <Image
                                     loading="lazy"
-                                    src={result.imgMask}
+                                    src={resultData.imgMask}
                                     width={3000}
                                     height={3000}
                                     style={{ width: "100%" }}
@@ -320,68 +343,19 @@ const SubmissionModal = ({
                       <Spinner />
                     ) : (
                       <SimpleGrid
-                        columns={{ base: 1, md: 2 }}
+                        columns={{ base: 1, md: 2, lg: 3 }}
                         gap={10}
                         w={"full"}
                       >
                         {attemptsData &&
                           attemptsData.map((attempt) => (
-                            <Flex direction={"column"} key={attempt.id}>
-                              <Image
-                                src={attempt.imgCode}
-                                alt="attempt screenshot"
-                                width={500}
-                                height={400}
-                                style={{ width: "100%", borderRadius: "10px" }}
-                              />
-                              <HStack
-                                w={"full"}
-                                justifyContent={"space-between"}
-                              >
-                                <HStack>
-                                  <UserAvatar
-                                    src={attempt.user.photoURL}
-                                    alt="user avatar"
-                                    h={40}
-                                    w={40}
-                                  />
-                                  <Flex
-                                    flexDirection={"column"}
-                                    alignItems={"start"}
-                                  >
-                                    <HStack>
-                                      <Link
-                                        href={`/users/${attempt.user.username}`}
-                                        target="_blank"
-                                      >
-                                        <Text
-                                          fontWeight={"bold"}
-                                          _hover={{
-                                            textDecoration: "underline",
-                                          }}
-                                        >
-                                          {attempt.user.username}
-                                        </Text>
-                                      </Link>
-                                      {attempt.user.id === user?.id && (
-                                        <Text color={"green.500"}>(You)</Text>
-                                      )}
-                                    </HStack>
-                                    <Text color={"gray.500"}>
-                                      {getTimeAgo(attempt.createdAt)}
-                                    </Text>
-                                  </Flex>
-                                </HStack>
-                                <ChakraCircularProgress
-                                  value={attempt.score / 10}
-                                  color="green.400"
-                                >
-                                  <CircularProgressLabel>
-                                    {Math.round(attempt.score / 10)}%
-                                  </CircularProgressLabel>
-                                </ChakraCircularProgress>
-                              </HStack>
-                            </Flex>
+                            <UISubmissionCard
+                              key={attempt.id}
+                              attempt={attempt}
+                              isSelf={attempt.user.id === user?.id}
+                              // TODO: Fix this
+                              url={`/ui-challenges/hello-world/submissions/${attempt.id}`}
+                            />
                           ))}
                       </SimpleGrid>
                     )}
@@ -409,37 +383,14 @@ export default SubmissionModal;
 
 const ScoreCard = ({
   score,
+  isLoading,
   result,
 }: {
   score: number;
+  isLoading: boolean;
   result: IUIChallengeAttempt;
 }) => {
-  let color: string;
-  let label: string;
-  let bg: string;
-  let duckSrc: string;
-  if (score < 65) {
-    color = "#F56565";
-    bg = "#FEB2B2";
-    label = "Not Quite";
-    duckSrc = animatedDucks.slap.image;
-  } else if (score < 80) {
-    color = "#D69E2E";
-    bg = "#F6E05E";
-    label = "Almost There";
-    duckSrc = animatedDucks.motivate.image;
-  } else {
-    color = "#48BB78";
-    bg = "#9AE6B4";
-    label = "Almost Perfect";
-    duckSrc = animatedDucks.impressive.image;
-  }
-  if (score === 100) {
-    label = "Perfect!";
-    duckSrc = animatedDucks.bamboozled.image;
-  }
   const toast = useToast();
-
   useEffect(() => {
     if (process.env.NODE_ENV === "development") return;
     setTimeout(() => {
@@ -451,8 +402,6 @@ const ScoreCard = ({
       });
     }, 3000);
   }, []);
-
-  console.log(result);
   const attemptLink = `${
     process.env.NODE_ENV === "development"
       ? "https://www.codingducks.xyz"
@@ -486,6 +435,31 @@ const ScoreCard = ({
     });
   };
 
+  let color: string;
+  let label: string;
+  let bg: string;
+  let duckSrc: string;
+  if (score < 65) {
+    color = "#F56565";
+    bg = "#FEB2B2";
+    label = "Not Quite";
+    duckSrc = animatedDucks.slap.image;
+  } else if (score < 80) {
+    color = "#D69E2E";
+    bg = "#F6E05E";
+    label = "Almost There";
+    duckSrc = animatedDucks.motivate.image;
+  } else {
+    color = "#48BB78";
+    bg = "#9AE6B4";
+    label = "Almost Perfect";
+    duckSrc = animatedDucks.impressive.image;
+  }
+  if (score === 100) {
+    label = "Perfect!";
+    duckSrc = animatedDucks.bamboozled.image;
+  }
+
   return (
     <>
       <Heading alignSelf={"start"} fontSize={"3xl"}>
@@ -494,48 +468,59 @@ const ScoreCard = ({
           <InfoIcon ml={2} h={4} w={4} color={"gray.500"} />
         </Tooltip>
       </Heading>
-      <SimpleGrid w={"full"} columns={3}>
-        <VStack h="full" justifyContent={"start"}>
-          <CircularProgress
-            size={"150px"}
-            value={score}
-            bg={bg}
-            color={color}
-            label={label}
-          />
-        </VStack>
-        <Center>
-          <Image src={duckSrc} alt="duck" width={150} height={150} />
+      {isLoading ? (
+        <Center h="150px" w={"full"} pos={"relative"}>
+          <HStack>
+            <Spinner />
+            <Text fontSize={"2xl"} fontWeight={"bold"}>
+              Calculating score...
+            </Text>
+          </HStack>
         </Center>
-        <VStack justifyContent={"center"}>
-          <Link href={linkedInShareUrl} target="_blank">
+      ) : (
+        <SimpleGrid w={"full"} columns={3} h={"150px"}>
+          <VStack h="full" justifyContent={"start"}>
+            <CircularProgress
+              size={"150px"}
+              value={score}
+              bg={bg}
+              color={color}
+              label={label}
+            />
+          </VStack>
+          <Center>
+            <Image src={duckSrc} alt="duck" width={150} height={150} />
+          </Center>
+          <VStack justifyContent={"center"}>
+            <Link href={linkedInShareUrl} target="_blank">
+              <Button
+                w={"200px"}
+                leftIcon={<FAIcon icon={faLinkedin} display="none" />}
+                colorScheme="messenger"
+              >
+                Share on LinkedIn
+              </Button>
+            </Link>
+            <Link href={WhatsAppShareUrl} target="_blank">
+              <Button
+                w={"200px"}
+                leftIcon={<FAIcon icon={faWhatsapp} />}
+                colorScheme="green"
+              >
+                Share on WhatsApp
+              </Button>
+            </Link>
             <Button
               w={"200px"}
-              leftIcon={<FAIcon icon={faLinkedin} display="none" />}
-              colorScheme="messenger"
+              leftIcon={<FAIcon icon={faCopy} />}
+              onClick={handleCopyLink}
+              colorScheme={hasCopied ? "green" : "gray"}
             >
-              Share on LinkedIn
+              Copy Share Link
             </Button>
-          </Link>
-          <Link href={WhatsAppShareUrl} target="_blank">
-            <Button
-              w={"200px"}
-              leftIcon={<FAIcon icon={faWhatsapp} />}
-              colorScheme="green"
-            >
-              Share on WhatsApp
-            </Button>
-          </Link>
-          <Button
-            w={"200px"}
-            leftIcon={<FAIcon icon={faCopy} />}
-            onClick={handleCopyLink}
-            colorScheme={hasCopied ? "green" : "gray"}
-          >
-            Copy Share Link
-          </Button>
-        </VStack>
-      </SimpleGrid>
+          </VStack>
+        </SimpleGrid>
+      )}
     </>
   );
 };
