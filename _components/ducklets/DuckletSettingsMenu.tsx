@@ -38,8 +38,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { faGlobe, faLock } from "@fortawesome/free-solid-svg-icons";
-import FAIcon from "components/FAIcon";
-import UserAvatar from "components/utils/UserAvatar";
+import FAIcon from "_components/FAIcon";
+import UserAvatar from "_components/utils/UserAvatar";
 import { userContext } from "contexts/userContext";
 import { useUpdateAllowList } from "hooks/useRoomsData";
 import { useUsersSearch } from "hooks/useUsersData";

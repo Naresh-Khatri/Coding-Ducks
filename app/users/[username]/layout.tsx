@@ -1,4 +1,4 @@
-import generateMeta from "components/SEO/generateMeta";
+import generateMeta from "_components/SEO/generateMeta";
 import { getUser } from "hooks/useUsersData";
 import { ReactNode } from "react";
 export async function generateMetadata({ params }) {

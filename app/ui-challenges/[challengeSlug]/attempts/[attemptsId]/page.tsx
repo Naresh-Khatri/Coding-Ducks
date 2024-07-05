@@ -1,8 +1,8 @@
 "use server";
 
 import { Button, Flex, HStack, Link, Text, VStack } from "@chakra-ui/react";
-import CodePreview from "components/ui-challenges/CodePreview";
-import UserAvatar from "components/utils/UserAvatar";
+import CodePreview from "_components/ui-challenges/CodePreview";
+import UserAvatar from "_components/utils/UserAvatar";
 import { getChallengeAttempt } from "hooks/useChallengesData";
 import NextLink from "next/link";
 import type { Metadata } from "next";

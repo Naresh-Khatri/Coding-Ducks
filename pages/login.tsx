@@ -23,8 +23,8 @@ import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 import { userContext } from "../contexts/userContext";
-import ForgotPassword from "../components/ForgotPassword";
-import SocialLogin from "../components/social/SocialLogin";
+import ForgotPassword from "../_components/ForgotPassword";
+import SocialLogin from "../_components/social/SocialLogin";
 
 export const LoginPage = () => {
   const toast = useToast();

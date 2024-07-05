@@ -12,23 +12,23 @@ import Split from "react-split";
 import axios from "../../lib/axios";
 
 import { useLastSubmissionDataV2 } from "../../hooks/useSubmissionsData";
-import ConfirmModal from "../../components/modals/ConfirmModal";
+import ConfirmModal from "../../_components/modals/ConfirmModal";
 import { useProblemData } from "../../hooks/useProblemsData";
 import ProblemLayout from "../../layout/ProblemLayout";
 import { Output } from "../../types";
-import LeftTabsContainer from "../../components/problem/LeftTabsContainer";
-import ViewSubmissionModal from "../../components/problem/ViewSubmissionModal";
+import LeftTabsContainer from "../../_components/problem/LeftTabsContainer";
+import ViewSubmissionModal from "../../_components/problem/ViewSubmissionModal";
 import { SUBMISSION_TAB_INDEX } from "../../lib/utils";
 import EditorSettingsProvider, {
   EditorSettingsContext,
 } from "../../contexts/editorSettingsContext";
-import UserUpgradeModal from "../../components/problem/UserUpgradeModal";
+import UserUpgradeModal from "../../_components/problem/UserUpgradeModal";
 import { userContext } from "../../contexts/userContext";
 import {
   BottomEditorContainer,
   RightEditorContainer,
-} from "../../components/problem/EditorContainer";
-import SetMeta from "../../components/SEO/SetMeta";
+} from "../../_components/problem/EditorContainer";
+import SetMeta from "../../_components/SEO/SetMeta";
 
 function ProblemPage() {
   const { loadUser } = useContext(userContext);

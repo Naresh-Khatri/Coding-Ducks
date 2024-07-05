@@ -17,8 +17,8 @@ import { useRoomData } from "../../../../hooks/useRoomsData";
 import { useParams, useRouter } from "next/navigation";
 import { userContext } from "../../../../contexts/userContext";
 
-import DuckletsNavbar from "components/ducklets/Navbar";
-import { DesktopView, MobileView } from "components/ducklets/DuckletViews";
+import DuckletsNavbar from "_components/ducklets/Navbar";
+import { DesktopView, MobileView } from "_components/ducklets/DuckletViews";
 import Link from "next/link";
 import { io } from "socket.io-client";
 import {
@@ -26,7 +26,7 @@ import {
   USER_JOIN_REQUEST_ACCEPTED,
 } from "lib/socketio/socketEvents";
 import useGlobalStore from "stores";
-import EditorSettingsModal from "components/ducklets/EditorSettingsModal";
+import EditorSettingsModal from "_components/ducklets/EditorSettingsModal";
 import { SettingsIcon } from "@chakra-ui/icons";
 
 function GuestModeDuckletPage() {

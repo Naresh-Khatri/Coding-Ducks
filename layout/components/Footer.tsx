@@ -18,7 +18,7 @@ import {
   faLinkedin,
   faTwitter,
 } from "@fortawesome/free-brands-svg-icons";
-import FAIcon from "../../components/FAIcon";
+import FAIcon from "../../_components/FAIcon";
 
 const Footer = () => (
   <Box

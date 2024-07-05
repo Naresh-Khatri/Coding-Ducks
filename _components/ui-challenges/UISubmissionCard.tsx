@@ -6,7 +6,7 @@ import {
   CircularProgressLabel,
 } from "@chakra-ui/react";
 
-import UserAvatar from "components/utils/UserAvatar";
+import UserAvatar from "_components/utils/UserAvatar";
 import { getTimeAgo } from "lib/formatDate";
 import Image from "next/image";
 import Link from "next/link";

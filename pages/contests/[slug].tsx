@@ -5,9 +5,9 @@ import { useRouter } from "next/router";
 import Split from "react-split";
 import axios from "../../lib/axios";
 
-import LeftProblemsList from "../../components/LeftProblemsList";
+import LeftProblemsList from "../../_components/LeftProblemsList";
 import MainLayout from "../../layout/MainLayout";
-import SubmissionModal from "../../components/modals/Submission";
+import SubmissionModal from "../../_components/modals/Submission";
 
 import {
   useExamData,
@@ -15,16 +15,16 @@ import {
   useExamSubmissionsData,
 } from "../../hooks/useExamsData";
 import { useLastSubmissionData } from "../../hooks/useSubmissionsData";
-import WarnOnTabLeave from "../../components/WarnOnTabLeave";
-import ConfirmModal from "../../components/modals/ConfirmModal";
+import WarnOnTabLeave from "../../_components/WarnOnTabLeave";
+import ConfirmModal from "../../_components/modals/ConfirmModal";
 import { Output } from "../../types";
-import SetMeta from "../../components/SEO/SetMeta";
+import SetMeta from "../../_components/SEO/SetMeta";
 import EditorSettingsProvider, {
   EditorSettingsContext,
 } from "../../contexts/editorSettingsContext";
-import { RightEditorContainer } from "../../components/problem/EditorContainer";
-import ProblemStatement from "../../components/ProblemStatement";
-import ProblemDeleteModle from "../../components/admin/ProblemDeleteModal";
+import { RightEditorContainer } from "../../_components/problem/EditorContainer";
+import ProblemStatement from "../../_components/ProblemStatement";
+import ProblemDeleteModle from "../../_components/admin/ProblemDeleteModal";
 
 function TakeTest() {
   const router = useRouter();

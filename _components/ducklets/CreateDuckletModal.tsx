@@ -18,7 +18,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { faGlobe, faLock } from "@fortawesome/free-solid-svg-icons";
-import FAIcon from "components/FAIcon";
+import FAIcon from "_components/FAIcon";
 import { useCreateRoom } from "hooks/useRoomsData";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";

@@ -19,8 +19,8 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { useContext, useState } from "react";
 import { getProblems } from "../../hooks/useProblemsData";
 import { userContext } from "../../contexts/userContext";
-import ProblemRow from "../../components/problem/ProblemRow";
-import SetMeta from "../../components/SEO/SetMeta";
+import ProblemRow from "../../_components/problem/ProblemRow";
+import SetMeta from "../../_components/SEO/SetMeta";
 import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 
 function ProblemsPage() {

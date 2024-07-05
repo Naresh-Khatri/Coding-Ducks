@@ -10,16 +10,16 @@ import {
   Tabs,
   Text,
 } from "@chakra-ui/react";
-import FileIcons from "components/multiplayer/FileIcons";
+import FileIcons from "_components/multiplayer/FileIcons";
 import Split from "react-split";
-import CMEditor from "components/editors/CMEditor";
+import CMEditor from "_components/editors/CMEditor";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { useDuckletStore, useLayoutStore } from "stores";
 // import MonacoEditorWithCollab from "components/editors/MonacoEditorWithCollab";
 import dynamic from "next/dynamic";
 
 const MonacoEditorWithCollab = dynamic(
-  () => import("components/editors/MonacoEditorWithCollab"),
+  () => import("_components/editors/MonacoEditorWithCollab"),
   {
     ssr: false,
   }

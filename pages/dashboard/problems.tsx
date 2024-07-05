@@ -18,10 +18,10 @@ import {
 import Link from "next/link";
 import AdminLayout from "../../layout/AdminLayout";
 import { useAllProblemsData } from "../../hooks/useProblemsData";
-import CustomTable from "../../components/CustomTable";
+import CustomTable from "../../_components/CustomTable";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-import FAIcon from "../../components/FAIcon";
+import FAIcon from "../../_components/FAIcon";
 
 const COLUMNS = [
   {

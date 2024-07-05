@@ -51,7 +51,7 @@ import {
 } from "hooks/useChallengesData";
 import Image from "next/image";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
-import FAIcon from "components/FAIcon";
+import FAIcon from "_components/FAIcon";
 import { faEdit, faStar, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { IUIChallenge, UIChallengeDifficulty } from "types";
 import { useEffect, useRef, useState } from "react";
@@ -59,11 +59,11 @@ import { CHALLENGE_DIFFICULTIES } from "constants/index";
 import { useRouter } from "next/router";
 import axiosInstance from "lib/axios";
 import dynamic from "next/dynamic";
-import EditorsWithPreview from "components/editors/EditorsWithPreview";
+import EditorsWithPreview from "_components/editors/EditorsWithPreview";
 
 import "react-quill/dist/quill.snow.css";
 import { getTimeAgo } from "lib/formatDate";
-import UserAvatar from "components/utils/UserAvatar";
+import UserAvatar from "_components/utils/UserAvatar";
 const QuillNoSSRWrapper = dynamic(() => import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,

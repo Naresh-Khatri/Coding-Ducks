@@ -1,4 +1,4 @@
-import generateMeta from "components/SEO/generateMeta";
+import generateMeta from "_components/SEO/generateMeta";
 import { getRoom } from "hooks/useRoomsData";
 import { ReactNode } from "react";
 

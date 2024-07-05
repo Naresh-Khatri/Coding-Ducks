@@ -34,10 +34,10 @@ import {
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import EditorSettingsModal from "components/ducklets/EditorSettingsModal";
-import LayoutSwitcher from "components/ducklets/LayoutSwitcher";
-import CMEditor from "components/editors/CMEditor";
-import FileIcons from "components/multiplayer/FileIcons";
+import EditorSettingsModal from "_components/ducklets/EditorSettingsModal";
+import LayoutSwitcher from "_components/ducklets/LayoutSwitcher";
+import CMEditor from "_components/editors/CMEditor";
+import FileIcons from "_components/multiplayer/FileIcons";
 import { userContext } from "contexts/userContext";
 import {
   useChallengeData,
@@ -62,8 +62,8 @@ import { format } from "monocart-formatter";
 import { useLayoutStore } from "stores";
 import { IUIChallenge, IUIChallengeAttempt } from "types";
 
-import SubmissionModal from "components/ui-challenges/SubmissionModal";
-import CodePreview from "components/ui-challenges/CodePreview";
+import SubmissionModal from "_components/ui-challenges/SubmissionModal";
+import CodePreview from "_components/ui-challenges/CodePreview";
 import { useStreamingFetch } from "lib/StreamingFetch";
 
 function UIChallengePage({ params }) {

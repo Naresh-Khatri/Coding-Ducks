@@ -1,7 +1,7 @@
 import { Button, Container, Flex } from "@chakra-ui/react";
 import Link from "next/link";
 import AdminLayout from "../../layout/AdminLayout";
-import SubmissionsTable from "../../components/SubmissionsTable";
+import SubmissionsTable from "../../_components/SubmissionsTable";
 import { useSubmissionsData } from "../../hooks/useSubmissionsData";
 import { useState } from "react";
 import { ISubmissionsQuery } from "../../types";

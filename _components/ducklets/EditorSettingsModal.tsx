@@ -42,14 +42,14 @@ import useGlobalStore, {
   useEditorSettingsStore,
 } from "../../stores";
 import { Dispatch, SetStateAction, useState } from "react";
-import FAIcon from "components/FAIcon";
+import FAIcon from "_components/FAIcon";
 import { faCode } from "@fortawesome/free-solid-svg-icons";
-import FileIcons from "components/multiplayer/FileIcons";
+import FileIcons from "_components/multiplayer/FileIcons";
 
-import CMEditor from "components/editors/CMEditor";
+import CMEditor from "_components/editors/CMEditor";
 import dynamic from "next/dynamic";
 const MonacoEditorWithCollab = dynamic(
-  () => import("components/editors/MonacoEditorWithCollab"),
+  () => import("_components/editors/MonacoEditorWithCollab"),
   {
     ssr: false,
   }

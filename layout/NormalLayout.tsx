@@ -14,8 +14,8 @@ import {
 
 import Footer from "./components/Footer";
 import Link from "next/link";
-import ThemeToggler from "../components/ThemeToggler";
-import UserProfile from "../components/UserProfile";
+import ThemeToggler from "../_components/ThemeToggler";
+import UserProfile from "../_components/UserProfile";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";

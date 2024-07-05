@@ -13,12 +13,12 @@ import {
   Skeleton,
 } from "@chakra-ui/react";
 import { useContext } from "react";
-import ExamCard from "../../components/ExamCard";
+import ExamCard from "../../_components/ExamCard";
 import { userContext } from "../../contexts/userContext";
 import { getExams } from "../../hooks/useExamsData";
 
 import NormalLayout from "../../layout/NormalLayout";
-import SetMeta from "../../components/SEO/SetMeta";
+import SetMeta from "../../_components/SEO/SetMeta";
 import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 
 export default function ExamPage() {

@@ -28,7 +28,7 @@ import "react-advanced-cropper/dist/style.css";
 
 import dynamic from "next/dynamic";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import FAIcon from "../../components/FAIcon";
+import FAIcon from "../../_components/FAIcon";
 const QuillNoSSRWrapper = dynamic(() => import("react-quill"), {
   ssr: false,
   loading: () => <p>Loading ...</p>,

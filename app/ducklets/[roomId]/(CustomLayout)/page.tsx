@@ -59,14 +59,14 @@ import {
   UserJoinDucklet,
   UserJoinRequest,
 } from "lib/socketio/socketEventTypes";
-import DucksletsList from "components/ducklets/DucksletsList";
-import DuckletsNavbar from "components/ducklets/Navbar";
-import UserAvatar from "components/utils/UserAvatar";
+import DucksletsList from "_components/ducklets/DucksletsList";
+import DuckletsNavbar from "_components/ducklets/Navbar";
+import UserAvatar from "_components/utils/UserAvatar";
 import Link from "next/link";
-import SetMeta from "components/SEO/SetMeta";
-import { DesktopView, MobileView } from "components/ducklets/DuckletViews";
+import SetMeta from "_components/SEO/SetMeta";
+import { DesktopView, MobileView } from "_components/ducklets/DuckletViews";
 import { SettingsIcon } from "@chakra-ui/icons";
-import EditorSettingsModal from "components/ducklets/EditorSettingsModal";
+import EditorSettingsModal from "_components/ducklets/EditorSettingsModal";
 
 import useGlobalStore, { useDuckletStore } from "stores";
 

@@ -14,10 +14,10 @@ import {
 import NormalLayout from "../layout/NormalLayout";
 import axios from "../lib/axios";
 import { faPlay, faShare } from "@fortawesome/free-solid-svg-icons";
-import ToolBar from "../components/ToolBar";
+import ToolBar from "../_components/ToolBar";
 import { useRouter } from "next/router";
-import SetMeta from "../components/SEO/SetMeta";
-import FAIcon from "../components/FAIcon";
+import SetMeta from "../_components/SEO/SetMeta";
+import FAIcon from "../_components/FAIcon";
 import EditorSettingsProvider, {
   EditorSettingsContext,
 } from "../contexts/editorSettingsContext";
@@ -28,11 +28,11 @@ import Image from "next/image";
 
 import Convert from "ansi-to-html";
 
-import UserProfile from "components/UserProfile";
+import UserProfile from "_components/UserProfile";
 import { Lang } from "types";
 
 const AceCodeEditor = dynamic(
-  () => import("../components/editors/AceCodeEditor"),
+  () => import("../_components/editors/AceCodeEditor"),
   {
     ssr: false,
   }
@@ -65,6 +65,7 @@ function PlaygroundPage() {
   }, [code]);
 
   useEffect(() => {
+    if (!router.isReady) return;
     if (!lang) router.push("?lang=py");
     // hack to replace empty code with starter code
     const pyCode = localStorage.getItem(`code--1-py`);
@@ -91,7 +92,7 @@ function PlaygroundPage() {
     }
     const savedInputValue = localStorage.getItem("playground-input");
     if (savedInputValue) setInput(savedInputValue);
-  }, [router, lang]);
+  }, [router.query, lang]);
 
   const handleOnInputTextChange = (e) => {
     setInput(e.target.value);
@@ -170,7 +171,7 @@ function PlaygroundPage() {
       />
       <Flex
         w={"100vw"}
-        h={"100vh"}
+        h={"100dvh"}
         direction={"column"}
         px={{ base: 1, md: 3 }}
         pb={2}
@@ -189,7 +190,7 @@ function PlaygroundPage() {
           </Link>
           <UserProfile />
         </Flex>
-        <Flex w={"100%"} direction={"column"} flex={1} position={"relative"}>
+        <Flex w={"100%"} direction={"column"} position={"relative"}>
           <Flex justifyContent={"space-between"} gap={2}>
             <ToolBar />
             <HStack justify={"space-between"}>
@@ -211,6 +212,8 @@ function PlaygroundPage() {
               </HStack>
             </HStack>
           </Flex>
+        </Flex>
+        <Flex flex={1} overflow={"hidden"}>
           <MobileView
             input={input}
             hasError={hasError}
@@ -397,7 +400,8 @@ const DesktopView = ({
                 <Spinner />
               ) : (
                 <Box
-                  height={"100%"}
+                  h={"100%"}
+                  maxH={"calc(100%-35px)"}
                   borderRadius={"10px"}
                   flex={1}
                   bg={"#1d1d1d"}

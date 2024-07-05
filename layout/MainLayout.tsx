@@ -17,12 +17,12 @@ import {
 } from "@chakra-ui/react";
 import { faHome, faLeftLong } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-import ThemeToggler from "../components/ThemeToggler";
-import UserProfile from "../components/UserProfile";
+import ThemeToggler from "../_components/ThemeToggler";
+import UserProfile from "../_components/UserProfile";
 import { useExamSubmissionsData } from "../hooks/useExamsData";
-import Timer from "../components/Timer";
+import Timer from "../_components/Timer";
 import { useRouter } from "next/router";
-import FAIcon from "../components/FAIcon";
+import FAIcon from "../_components/FAIcon";
 
 interface MainLayoutProps {
   children: React.ReactNode;

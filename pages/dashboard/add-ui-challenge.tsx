@@ -23,7 +23,7 @@ import { useRouter } from "next/router";
 import axios from "../../lib/axios";
 import { UIChallengeDifficulty } from "../../types";
 import { CHALLENGE_DIFFICULTIES } from "constants/index";
-import EditorsWithPreview from "components/editors/EditorsWithPreview";
+import EditorsWithPreview from "_components/editors/EditorsWithPreview";
 
 const QuillNoSSRWrapper = dynamic(() => import("react-quill"), {
   ssr: false,

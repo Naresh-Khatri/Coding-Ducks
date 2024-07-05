@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { AuthUserProvider } from "../contexts/userContext";
-import SplashScreen from "../components/SplashScreen";
+import SplashScreen from "../_components/SplashScreen";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Analytics } from "@vercel/analytics/react";
 import { usePathname } from "next/navigation";

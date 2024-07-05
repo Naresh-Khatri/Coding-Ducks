@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useContext } from "react";
 import { userContext } from "../contexts/userContext";
-import ThemeToggler from "../components/ThemeToggler";
+import ThemeToggler from "../_components/ThemeToggler";
 import Image from "next/image";
 
 import axios from "../lib/axios";

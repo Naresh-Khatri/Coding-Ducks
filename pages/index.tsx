@@ -13,8 +13,8 @@ import {
 
 import NormalLayout from "../layout/NormalLayout";
 import Link from "next/link";
-import CodeTyper from "../components/CodeTyper";
-import SetMeta from "../components/SEO/SetMeta";
+import CodeTyper from "../_components/CodeTyper";
+import SetMeta from "../_components/SEO/SetMeta";
 
 const gradientAnimation = keyframes`
   0% {

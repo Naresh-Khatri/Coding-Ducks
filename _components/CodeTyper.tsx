@@ -22,6 +22,7 @@ const styles = {
   backgroundColor: "#111928bf",
   borderRadius: "12px",
   border: "1px solid rgba(255,255,255,.125)",
+  willChange: "transform",
 };
 
 const glowKeyframes = keyframes`
@@ -155,6 +156,15 @@ function CodeTyper() {
           borderRadius: "10px",
         }}
       >
+        <Box
+          w={"100px"}
+          h={"100px"}
+          bg={"green.400"}
+          position={"absolute"}
+          left={"-20px"}
+          top={"-50px"}
+          style={{ transform: "translateZ(40px)" }}
+        ></Box>
         <Flex
           alignItems={"center"}
           bg={"gray.700"}

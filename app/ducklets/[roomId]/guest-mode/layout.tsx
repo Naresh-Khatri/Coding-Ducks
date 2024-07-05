@@ -1,5 +1,5 @@
 import { getRoom } from "../../../../hooks/useRoomsData";
-import generateMeta from "components/SEO/generateMeta";
+import generateMeta from "_components/SEO/generateMeta";
 
 export async function generateMetadata({ params }) {
   const { roomId } = params;

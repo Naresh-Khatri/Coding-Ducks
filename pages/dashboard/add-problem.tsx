@@ -41,7 +41,7 @@ import "react-quill/dist/quill.snow.css";
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import TestCaseRow from "../../components/admin/TestCaseRow";
+import TestCaseRow from "../../_components/admin/TestCaseRow";
 import axios from "../../lib/axios";
 import { useTagsData } from "../../hooks/useProblemsData";
 import { useExamsData } from "../../hooks/useExamsData";
@@ -49,7 +49,7 @@ import { IProblemTag, IStarterCode } from "../../types";
 import { INITIAL_STARTER_CODES } from "../../data/starterCodeData";
 
 const StarterCodeEditor = dynamic(
-  () => import("../../components/StarterCodeEditor"),
+  () => import("../../_components/StarterCodeEditor"),
   { ssr: false }
 );
 

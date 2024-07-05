@@ -47,7 +47,7 @@ import { INITIAL_STARTER_CODES } from "../../data/starterCodeData";
 
 const Quill = dynamic(() => import("./QuillEditor"), { ssr: false });
 const StarterCodeEditor = dynamic(
-  () => import("../../components/StarterCodeEditor"),
+  () => import("../StarterCodeEditor"),
   { ssr: false }
 );
 type IAction = { type: string; payload: IStarterCode };

@@ -22,7 +22,7 @@ import { useState } from "react";
 import axiosInstance from "../../lib/axios";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import SetMeta from "../../components/SEO/SetMeta";
+import SetMeta from "../../_components/SEO/SetMeta";
 
 type Rating = null | 1 | 2 | 3 | 4 | 5;
 interface Ratings {

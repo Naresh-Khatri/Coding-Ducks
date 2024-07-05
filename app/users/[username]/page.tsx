@@ -14,15 +14,15 @@ import {
 import NormalLayout from "../../../layout/NormalLayout";
 
 import { getUser, getUserStats } from "../../../hooks/useUsersData";
-import SetMeta from "../../../components/SEO/SetMeta";
-import OverallStatsCard from "../../../components/profile/OverallStatsCard";
-import BadgesCard from "../../../components/profile/BadgesCard";
-import UserInfo from "../../../components/profile/UserInfo";
-import ExamStatsCard from "../../../components/profile/ExamStatsCard";
-import SubmissionsCalenderCard from "../../../components/profile/SubmissionsCalenderCard";
+import SetMeta from "../../../_components/SEO/SetMeta";
+import OverallStatsCard from "../../../_components/profile/OverallStatsCard";
+import BadgesCard from "../../../_components/profile/BadgesCard";
+import UserInfo from "../../../_components/profile/UserInfo";
+import ExamStatsCard from "../../../_components/profile/ExamStatsCard";
+import SubmissionsCalenderCard from "../../../_components/profile/SubmissionsCalenderCard";
 import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import generateMeta from "components/SEO/generateMeta";
+import generateMeta from "_components/SEO/generateMeta";
 
 function UsersPage() {
   const [isMobile] = useMediaQuery("(max-width: 768px)", {

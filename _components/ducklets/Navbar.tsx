@@ -44,7 +44,7 @@ import {
 } from "@chakra-ui/icons";
 import UserAvatar from "../utils/UserAvatar";
 import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
-import ChatMessages from "components/ChatMessage";
+import ChatMessages from "_components/ChatMessage";
 import useGlobalStore, { useDuckletStore } from "stores";
 import { userContext } from "contexts/userContext";
 import { IMessage } from "lib/socketio/socketEventTypes";

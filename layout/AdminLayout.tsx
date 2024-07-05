@@ -11,8 +11,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useEffect } from "react";
-import ThemeToggler from "../components/ThemeToggler";
-import UserProfile from "../components/UserProfile";
+import ThemeToggler from "../_components/ThemeToggler";
+import UserProfile from "../_components/UserProfile";
 import { userContext } from "../contexts/userContext";
 
 const LINKS = [

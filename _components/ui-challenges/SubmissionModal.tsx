@@ -46,7 +46,7 @@ import { useChallengeHighscoreData } from "hooks/useChallengesData";
 import { userContext } from "contexts/userContext";
 import Link from "next/link";
 import animatedDucks from "constants/animated-ducks";
-import FAIcon from "components/FAIcon";
+import FAIcon from "_components/FAIcon";
 import { faLinkedin, faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { generateLinkedInPostText } from "lib/utils";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";

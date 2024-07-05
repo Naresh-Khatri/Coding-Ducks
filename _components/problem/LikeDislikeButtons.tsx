@@ -18,7 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FAIcon from "../FAIcon";
 import { IRatingUser } from "../../types";
-import UserAvatar from "components/utils/UserAvatar";
+import UserAvatar from "_components/utils/UserAvatar";
 
 interface LikeDislikeButtonsProps {
   problemId: number;

@@ -36,12 +36,12 @@ import { useUserRoomsData } from "hooks/useUsersData";
 import Link from "next/link";
 import { ISocketRoom } from "lib/socketio/socketEvents";
 import { useRemoveRoom, useRoomsData } from "hooks/useRoomsData";
-import FAIcon from "components/FAIcon";
+import FAIcon from "_components/FAIcon";
 import { faGlobe, faLock } from "@fortawesome/free-solid-svg-icons";
 import { getTimeAgo } from "lib/formatDate";
-import UserAvatar from "components/utils/UserAvatar";
+import UserAvatar from "_components/utils/UserAvatar";
 import { AddIcon, CloseIcon, DeleteIcon } from "@chakra-ui/icons";
-import CreateDuckletModal from "components/ducklets/CreateDuckletModal";
+import CreateDuckletModal from "_components/ducklets/CreateDuckletModal";
 import Image from "next/image";
 
 function DuckletsPage() {

@@ -19,7 +19,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { faArrowsLeftRight, faExpand } from "@fortawesome/free-solid-svg-icons";
-import FAIcon from "components/FAIcon";
+import FAIcon from "_components/FAIcon";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 

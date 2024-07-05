@@ -1,7 +1,7 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { extendTheme } from "@chakra-ui/react";
 import { useContext, useState } from "react";
-import LoadingOverlay from "../components/LoadingOverlay";
+import LoadingOverlay from "../_components/LoadingOverlay";
 import LoadingContext from "../contexts/loadingContext";
 import { AuthUserProvider } from "../contexts/userContext";
 
@@ -14,7 +14,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import "../styles/globals.css";
 import "../styles/split.css";
-import SplashScreen from "../components/SplashScreen";
+import SplashScreen from "../_components/SplashScreen";
 import { WebsocketProvider } from "../contexts/websocketContext";
 
 const colors = {

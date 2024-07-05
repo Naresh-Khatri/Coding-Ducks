@@ -28,12 +28,12 @@ import NormalLayout from "../../layout/NormalLayout";
 import { userContext } from "../../contexts/userContext";
 import { AddIcon } from "@chakra-ui/icons";
 import axiosInstance from "../../lib/axios";
-import SetMeta from "../../components/SEO/SetMeta";
+import SetMeta from "../../_components/SEO/SetMeta";
 import { websocketContext } from "../../contexts/websocketContext";
 import Link from "next/link";
 import Image from "next/image";
-import ChakraNextImage from "../../components/utils/ChakraNextImage";
-import RoomCard from "../../components/multiplayer/RoomCard";
+import ChakraNextImage from "../../_components/utils/ChakraNextImage";
+import RoomCard from "../../_components/multiplayer/RoomCard";
 
 function MultiplayerPage() {
   const { user } = useContext(userContext);

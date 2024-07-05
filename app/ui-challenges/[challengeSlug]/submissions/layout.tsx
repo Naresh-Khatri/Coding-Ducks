@@ -1,4 +1,4 @@
-import generateMeta from "components/SEO/generateMeta";
+import generateMeta from "_components/SEO/generateMeta";
 import { getChallenge } from "hooks/useChallengesData";
 import NormalLayout from "layout/NormalLayout";
 import { ReactNode } from "react";

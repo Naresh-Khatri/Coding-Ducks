@@ -1,11 +1,11 @@
 import { Button, Flex, HStack, IconButton, Spacer } from "@chakra-ui/react";
 import { faBars, faCode, faLeftLong } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-import ThemeToggler from "../components/ThemeToggler";
-import UserProfile from "../components/UserProfile";
+import ThemeToggler from "../_components/ThemeToggler";
+import UserProfile from "../_components/UserProfile";
 import { useContext } from "react";
 import { EditorSettingsContext } from "../contexts/editorSettingsContext";
-import FAIcon from "../components/FAIcon";
+import FAIcon from "../_components/FAIcon";
 
 interface ProblemLayoutProps {
   children: React.ReactNode;

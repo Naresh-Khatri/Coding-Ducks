@@ -3,7 +3,7 @@ import Link from "next/link";
 import AdminLayout from "../../layout/AdminLayout";
 
 import { useExamsData } from "../../hooks/useExamsData";
-import CustomTable from "../../components/CustomTable";
+import CustomTable from "../../_components/CustomTable";
 
 const COLUMNS = [
   {

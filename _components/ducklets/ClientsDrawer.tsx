@@ -15,7 +15,7 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import UserAvatar from "components/utils/UserAvatar";
+import UserAvatar from "_components/utils/UserAvatar";
 import { ISocketRoom, ISocketUser, IYJsUser } from "lib/socketio/socketEvents";
 import React from "react";
 
