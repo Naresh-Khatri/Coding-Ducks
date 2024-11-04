@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 
 export async function generateMetadata({ params }) {
   const { challengeSlug } = params;
+  console.log(challengeSlug);
   try {
     const data = await getChallenge(challengeSlug);
     // console.log(data);
