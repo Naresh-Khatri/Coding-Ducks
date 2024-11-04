@@ -15,6 +15,13 @@ import {
   HStack,
   Icon,
   IconButton,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -63,8 +70,10 @@ import { useLayoutStore } from "stores";
 import { IUIChallenge, IUIChallengeAttempt } from "types";
 
 import SubmissionModal from "_components/ui-challenges/SubmissionModal";
-import CodePreview from "_components/ui-challenges/CodePreview";
+import CodePreview, { getSrcDoc } from "_components/ui-challenges/CodePreview";
 import { useStreamingFetch } from "lib/StreamingFetch";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Converter } from "showdown";
 
 function UIChallengePage({ params }) {
   const { user, userLoaded } = use(userContext);
@@ -92,7 +101,7 @@ function UIChallengePage({ params }) {
   //   isLoading: isSubmitting,
   //   data: submitAttemptData,
   // } = useSubmitChallengeAttempt();
-  
+
   const {
     isLoading: isSubmitting,
     error: submitError,
@@ -103,7 +112,7 @@ function UIChallengePage({ params }) {
     stage?: number;
     data: IUIChallengeAttempt;
   }>();
-  console.log(submitAttemptData);
+  // console.log(submitAttemptData);
 
   const {
     isOpen: isSubmissionModalOpen,
@@ -209,6 +218,8 @@ function UIChallengePage({ params }) {
         isSyncing={isLoading}
         isSubmitting={isSubmitting}
         handleSubmission={handleSubmission}
+        userSrcDoc={getHTML({ html: contentHTML, css: contentCSS })}
+        targetSrcDoc={getHTML({ html: contentHTML, css: contentCSS })}
       />
       {isSubmissionModalOpen && (
         <SubmissionModal
@@ -264,18 +275,27 @@ const NavBar = ({
   isSyncing,
   handleSubmission,
   isSubmitting,
+  userSrcDoc,
+  targetSrcDoc,
 }: {
   head: string;
   setHead: Dispatch<SetStateAction<string>>;
   isSyncing: boolean;
   handleSubmission: () => void;
   isSubmitting: boolean;
+  userSrcDoc: string;
+  targetSrcDoc: string;
 }) => {
   const [isMobile] = useMediaQuery("(max-width: 650px)");
   const {
     isOpen: isEditorSettingsModalOpen,
     onOpen: onEditorSettingsModalOpen,
     onClose: onEditorSettingsModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isAIHelpOpen,
+    onClose: onAIHelpClose,
+    onOpen: onAIHelpOpen,
   } = useDisclosure();
   return (
     <HStack
@@ -297,6 +317,13 @@ const NavBar = ({
       </HStack>
 
       <HStack justifyContent={"end"} alignItems={"center"}>
+        <Button
+          colorScheme="purple"
+          isLoading={isSubmitting}
+          onClick={onAIHelpOpen}
+        >
+          AI help
+        </Button>
         {!isMobile && <LayoutSwitcher />}
 
         <IconButton
@@ -315,6 +342,14 @@ const NavBar = ({
             setHtmlHead={setHead}
           />
         )}
+        {isAIHelpOpen && (
+          <AIHelpModal
+            isOpen={isAIHelpOpen}
+            onClose={onAIHelpClose}
+            targetSrcDoc={targetSrcDoc}
+            userSrcDoc={userSrcDoc}
+          />
+        )}
         <Button
           colorScheme="purple"
           rightIcon={<ChevronRightIcon />}
@@ -325,6 +360,85 @@ const NavBar = ({
         </Button>
       </HStack>
     </HStack>
+  );
+};
+const AIHelpModal = ({
+  isOpen,
+  onClose,
+  targetSrcDoc,
+  userSrcDoc,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  targetSrcDoc: string;
+  userSrcDoc: string;
+}) => {
+  const [response, setResponse] = useState("Thinking...");
+  useEffect(() => {
+    (async () => {
+      const KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+      // import { GoogleGenerativeAI } from "@google/generative-ai";
+      const genAI = new GoogleGenerativeAI(KEY!);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const prompt = `Analyze the Target Code:
+
+${targetSrcDoc}
+
+Your Task:
+Recreate a similar UI component using your HTML and CSS skills.
+
+Here are some tips to help you:
+
+Understand the Structure:
+
+Break down the target component into its basic HTML elements (e.g., divs, spans, etc.).
+Pay attention to how these elements are nested and organized.
+Analyze the Styling:
+
+Identify the key CSS properties used to style the component.
+Consider factors like colors, fonts, spacing, and layout.
+Test and Refine:
+
+Continuously test your code to ensure it matches the target design as closely as possible.
+Use browser developer tools to inspect the target code and compare it to your own.
+Here’s your current code:
+
+${userSrcDoc}
+
+Specific Feedback:
+
+Layout: [Specific feedback on the layout, e.g., element positioning, spacing]
+Styling: [Specific feedback on the styling, e.g., color usage, font choices]
+Responsiveness: [Specific feedback on how the component adapts to different screen sizes]
+Remember, the goal is to recreate the visual appearance and behavior of the target component. Don’t worry about replicating the exact code structure. Focus on the end result. AND KEEP YOUR RESPONVE VERY SHORT AND TELL THEM THEIR MISTAKES THATS IT!! `;
+
+      const result = await model.generateContent(prompt);
+      const converter = new Converter(),
+        html = converter.makeHtml(result.response.text());
+
+      setResponse(html);
+    })();
+  }, []);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Coding Ducks AI</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <div dangerouslySetInnerHTML={{ __html: response }}></div>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button colorScheme="blue" mr={3} onClick={onClose}>
+            Close
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 };
 const MobileView = ({
@@ -622,4 +736,11 @@ const DesktopView = ({
       />
     </Split>
   );
+};
+const getHTML = ({ html, css }) => {
+  return `<html>
+    <style>${css}</style>
+    <body>${html}</body>
+</html>
+`;
 };
