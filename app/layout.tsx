@@ -3,6 +3,7 @@ import Providers from "./providers";
 
 import "../styles/globals.css";
 import "../styles/split.css";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://acme.com"),
@@ -26,6 +27,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <Script
+        defer
+        src="https://umami.nareshkhatri.site/script.js"
+        data-website-id="c5ea4040-1455-4934-bc4e-038269b490ff"
+      ></Script>
+
       <body style={{ margin: 0 }}>
         <Providers>{children}</Providers>
       </body>
