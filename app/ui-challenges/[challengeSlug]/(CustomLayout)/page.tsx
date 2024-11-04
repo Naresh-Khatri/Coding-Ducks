@@ -319,6 +319,7 @@ const NavBar = ({
       <HStack justifyContent={"end"} alignItems={"center"}>
         <Button
           colorScheme="purple"
+          variant="outline"
           isLoading={isSubmitting}
           onClick={onAIHelpOpen}
         >
