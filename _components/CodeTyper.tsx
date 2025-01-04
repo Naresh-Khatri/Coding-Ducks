@@ -156,15 +156,6 @@ function CodeTyper() {
           borderRadius: "10px",
         }}
       >
-        <Box
-          w={"100px"}
-          h={"100px"}
-          bg={"green.400"}
-          position={"absolute"}
-          left={"-20px"}
-          top={"-50px"}
-          style={{ transform: "translateZ(40px)" }}
-        ></Box>
         <Flex
           alignItems={"center"}
           bg={"gray.700"}
