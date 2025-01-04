@@ -62,6 +62,8 @@ const links = [
   { label: "Playground", href: "/playground" },
   // { label: "Multiplayer", href: "/multiplayer" },
   { label: "Ducklets", href: "/ducklets" },
+  { label: "UI Challenges", href: "/ui-challenges" },
+
 ];
 
 function MobileNavBar() {
