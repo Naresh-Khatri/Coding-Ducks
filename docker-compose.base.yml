@@ -1,14 +1,14 @@
 services:
   db:
     image: postgres:15-alpine
-    container_name: cd-judge-db
+    container_name: codingducks-db
     restart: unless-stopped
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev -d cd-judge"]
+      test: ["CMD-SHELL", "pg_isready -U dev -d codingducks"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -16,11 +16,11 @@ services:
     environment:
       - POSTGRES_USER=dev
       - POSTGRES_PASSWORD=dev
-      - POSTGRES_DB=cd-judge
+      - POSTGRES_DB=codingducks
 
   redis:
     image: redis:7-alpine
-    container_name: cd-judge-redis
+    container_name: codingducks-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -38,5 +38,5 @@ volumes:
   redis_data:
 
 networks:
-  cd-judge-network:
+  codingducks-network:
     driver: bridge

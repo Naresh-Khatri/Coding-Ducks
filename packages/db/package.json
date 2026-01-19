@@ -7,10 +7,6 @@
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
     },
-    "./client": {
-      "types": "./dist/src/client.d.ts",
-      "default": "./dist/src/client.js"
-    },
     "./schema": {
       "types": "./dist/src/schema/index.d.ts",
       "default": "./dist/src/schema/index.js"
@@ -20,7 +16,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "tsc",
+    "dev": "tsc --watch",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint --flag unstable_native_nodejs_ts_config",
     "push": "pnpm with-env drizzle-kit push",
@@ -47,3 +43,4 @@
   },
   "prettier": "@acme/prettier-config"
 }
+

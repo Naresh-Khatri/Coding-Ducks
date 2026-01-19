@@ -3,7 +3,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { oAuthProxy } from "better-auth/plugins";
 
-import { db } from "@acme/db/client";
+import { db, eq, user as userTable, userProfile } from "@acme/db";
 
 export function initAuth<
   TExtraPlugins extends BetterAuthPlugin[] = [],
@@ -47,6 +47,33 @@ export function initAuth<
     onAPIError: {
       onError(error, ctx) {
         console.error("BETTER AUTH API ERROR", error, ctx);
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (createdUser) => {
+            const baseUsername =
+              createdUser.name?.toLowerCase().replace(/\s+/g, "_") ||
+              createdUser.email.split("@")[0]?.toLowerCase().replace(/[^a-z0-9]/g, "") ||
+              "user";
+            const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+            const username = `${baseUsername}_${randomSuffix}`;
+
+            await db.insert(userProfile).values({
+              userId: createdUser.id,
+              username,
+              fullname: createdUser.name,
+              photoURL: createdUser.image,
+            });
+
+            // Also update the user's username field in the main user table
+            await db
+              .update(userTable)
+              .set({ username })
+              .where(eq(userTable.id, createdUser.id));
+          },
+        },
       },
     },
   } satisfies BetterAuthOptions;

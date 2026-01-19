@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    container_name: cd-judge-app
+    container_name: codingducks-app
     restart: unless-stopped
     privileged: true
     ports:
@@ -16,7 +16,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - cd-judge-network
+      - codingducks-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
@@ -24,20 +24,20 @@ services:
       retries: 3
       start_period: 40s
 
-  # Overrides for production if needed (environment is already handled by env_file in base if we wanted, 
+  # Overrides for production if needed (environment is already handled by env_file in base if we wanted,
   # but here we might want to ensure specific restart policies or just inherit)
   db:
     restart: unless-stopped
     env_file:
       - .env.production
     networks:
-      - cd-judge-network
+      - codingducks-network
 
   redis:
     restart: unless-stopped
     networks:
-      - cd-judge-network
+      - codingducks-network
 
 networks:
-  cd-judge-network:
+  codingducks-network:
     driver: bridge
