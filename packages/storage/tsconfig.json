@@ -1,0 +1,15 @@
+{
+  "extends": "@acme/tsconfig/compiled-package.json",
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "module": "ESNext",
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "outDir": "dist"
+  }
+}
