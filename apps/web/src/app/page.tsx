@@ -72,7 +72,7 @@ export default function HomePage() {
           <div className="flex">
             <GitHubStarsButton
               username={"naresh-khatri"}
-              repo={"cd-judge-api"}
+              repo={"coding-ducks"}
               className="mr-4"
             />
 

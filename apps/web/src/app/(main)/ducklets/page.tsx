@@ -1,0 +1,384 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Calendar,
+  ExternalLink,
+  Globe,
+  Lock,
+  MoreVertical,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { motion } from "motion/react";
+import * as Y from "yjs";
+
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { useTRPC } from "~/trpc/react";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+};
+
+export default function DuckletsPage() {
+  const router = useRouter();
+  const utils = useTRPC();
+  const queryClient = useQueryClient();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [newDuckletName, setNewDuckletName] = useState("");
+
+  const { data: ducklets, isLoading } = useQuery(
+    utils.ducklet.list.queryOptions({
+      limit: 50,
+    }),
+  );
+
+  const createDuckletMutation = useMutation(
+    utils.ducklet.create.mutationOptions({
+      onSuccess: (ducklet) => {
+        setIsCreateOpen(false);
+        setNewDuckletName("");
+        if (ducklet) {
+          void router.push(`/ducklets/${ducklet.id}`);
+        }
+      },
+    }),
+  );
+
+  const handleCreate = () => {
+    if (!newDuckletName.trim()) return;
+
+    const htmlContent = `
+<div class="container">
+  <h1>Hello World</h1>
+  <p>Start coding!</p>
+</div>
+`.trim();
+
+    const cssContent = `
+.container {
+  padding: 2rem;
+  font-family: sans-serif;
+}
+h1 {
+  color: #3b82f6;
+}
+`.trim();
+
+    const jsContent = `console.log('Hello from your new Ducklet!');`;
+
+    // Create YJS doc and populate it
+    const doc = new Y.Doc();
+    doc.getText("html").insert(0, htmlContent);
+    doc.getText("css").insert(0, cssContent);
+    doc.getText("js").insert(0, jsContent);
+
+    // Encode state
+    const yjsData = Buffer.from(Y.encodeStateAsUpdate(doc)).toString("base64");
+
+    createDuckletMutation.mutate({
+      name: newDuckletName,
+      isPublic: true,
+      type: "normal",
+
+      yjsData,
+    });
+  };
+
+  const deleteDuckletMutation = useMutation(
+    utils.ducklet.delete.mutationOptions({
+      onSuccess: () => {
+        void queryClient.invalidateQueries(utils.ducklet.list.queryFilter());
+      },
+    }),
+  );
+
+  const handleDelete = (id: number) => {
+    if (confirm("Are you sure you want to delete this Ducklet?")) {
+      deleteDuckletMutation.mutate({ id });
+    }
+  };
+
+  return (
+    <div className="container mx-auto py-12">
+      <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
+            Ducklets
+          </h1>
+          <p className="text-muted-foreground mt-3 text-lg">
+            Collaborative coding rooms for pair programming and interviews.
+          </p>
+        </div>
+
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button
+              size="lg"
+              className="shadow-lg transition-all hover:scale-[1.01]"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              New Ducklet
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Create a Ducklet</DialogTitle>
+              <DialogDescription>
+                Create a new room to start coding with others.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-6 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name" className="text-left">
+                  Ducklet Name
+                </Label>
+                <Input
+                  id="name"
+                  value={newDuckletName}
+                  onChange={(e) => setNewDuckletName(e.target.value)}
+                  placeholder="e.g. Interview with John"
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateOpen(false)}
+                disabled={createDuckletMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreate}
+                disabled={
+                  createDuckletMutation.isPending || !newDuckletName.trim()
+                }
+              >
+                {createDuckletMutation.isPending
+                  ? "Creating..."
+                  : "Create Ducklet"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i} className="overflow-hidden border-none shadow-md">
+              <div className="bg-muted aspect-video w-full animate-pulse" />
+              <CardHeader className="space-y-2">
+                <div className="bg-muted h-6 w-3/4 animate-pulse rounded" />
+                <div className="bg-muted h-4 w-1/2 animate-pulse rounded" />
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted h-10 w-full animate-pulse rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : ducklets?.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-muted/30 flex flex-col items-center justify-center rounded-2xl border border-dashed py-24 text-center"
+        >
+          <div className="bg-muted mb-6 flex h-20 w-20 items-center justify-center rounded-full">
+            <Plus className="text-muted-foreground h-10 w-10" />
+          </div>
+          <h3 className="text-2xl font-semibold">No ducklets found</h3>
+          <p className="text-muted-foreground mt-2 mb-8 max-w-sm">
+            You haven't created any Ducklets yet. Start your first collaborative
+            coding session now!
+          </p>
+          <Button size="lg" onClick={() => setIsCreateOpen(true)}>
+            Create Your First Ducklet
+          </Button>
+        </motion.div>
+      ) : (
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {ducklets?.map((ducklet) => (
+            <DuckletCard
+              key={ducklet.id}
+              ducklet={ducklet}
+              onDelete={() => handleDelete(ducklet.id)}
+            />
+          ))}
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+function DuckletCard({
+  ducklet,
+  onDelete,
+}: {
+  ducklet: any;
+  onDelete: () => void;
+}) {
+  const router = useRouter();
+
+  return (
+    <motion.div variants={item}>
+      <Card className="group border-muted/40 hover:border-primary/40 flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl">
+        <Link href={`/ducklets/${ducklet.id}`} className="relative block">
+          <div className="aspect-[1200/630] w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+            {ducklet.previewImage ? (
+              <Image
+                src={ducklet.previewImage}
+                fill
+                alt={`Preview of ${ducklet.name}`}
+                className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center opacity-20 transition-opacity group-hover:opacity-30">
+                <Plus className="h-12 w-12" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
+            <div className="absolute top-3 right-3 flex gap-2">
+              <Badge
+                variant={ducklet.isPublic ? "secondary" : "outline"}
+                className="bg-background/80 backdrop-blur-md"
+              >
+                {ducklet.isPublic ? (
+                  <Globe className="mr-1 h-3 w-3" />
+                ) : (
+                  <Lock className="mr-1 h-3 w-3" />
+                )}
+                {ducklet.isPublic ? "Public" : "Private"}
+              </Badge>
+              {ducklet.type === "web" && (
+                <Badge className="bg-blue-500/80 text-white backdrop-blur-md hover:bg-blue-600/80">
+                  Web
+                </Badge>
+              )}
+            </div>
+          </div>
+        </Link>
+
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1 overflow-hidden">
+              <CardTitle className="truncate text-xl">
+                <Link
+                  href={`/ducklets/${ducklet.id}`}
+                  className="hover:text-primary transition-colors"
+                >
+                  {ducklet.name}
+                </Link>
+              </CardTitle>
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={ducklet.owner?.photoURL} />
+                  <AvatarFallback className="text-[10px]">
+                    {ducklet.owner?.username?.charAt(0).toUpperCase() ?? "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate">{ducklet.owner?.username}</span>
+                <span>•</span>
+                <span className="flex items-center">
+                  {new Date(ducklet.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => router.push(`/ducklets/${ducklet.id}`)}
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Open Ducklet
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive font-medium"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardHeader>
+
+        <CardFooter className="bg-muted/5 mt-auto border-t p-4 sm:px-6">
+          <Button
+            asChild
+            className="group/btn w-full font-semibold"
+            variant="default"
+          >
+            <Link href={`/ducklets/${ducklet.id}`}>
+              Join Session
+              <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+            </Link>
+          </Button>
+        </CardFooter>
+      </Card>
+    </motion.div>
+  );
+}
