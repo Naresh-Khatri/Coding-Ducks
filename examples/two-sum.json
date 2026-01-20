@@ -1,0 +1,68 @@
+{
+  "title": "Two Sum",
+  "slug": "two-sum",
+  "description": "# Two Sum\n\nGiven an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have **exactly one solution**, and you may not use the same element twice.\n\nYou can return the answer in any order.\n\n## Example 1:\n\n```\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExplanation: Because nums[0] + nums[1] == 9, we return [0, 1].\n```\n\n## Example 2:\n\n```\nInput: nums = [3,2,4], target = 6\nOutput: [1,2]\n```\n\n## Example 3:\n\n```\nInput: nums = [3,3], target = 6\nOutput: [0,1]\n```\n\n## Constraints:\n\n- `2 <= nums.length <= 10^4`\n- `-10^9 <= nums[i] <= 10^9`\n- `-10^9 <= target <= 10^9`\n- Only one valid answer exists.\n\n## Follow-up\n\nCan you come up with an algorithm that is less than O(n²) time complexity?",
+  "difficulty": "easy",
+  "tags": [
+    "array",
+    "hash-table"
+  ],
+  "displayOrder": 1,
+  "isActive": true,
+  "functionSignature": {
+    "fnName": "twoSum",
+    "params": [
+      {
+        "name": "nums",
+        "type": "integer[]"
+      },
+      {
+        "name": "target",
+        "type": "integer"
+      }
+    ],
+    "returnType": "integer[]"
+  },
+  "testCases": [
+    {
+      "args": [
+        "[2,7,11,15]",
+        "9"
+      ],
+      "expected": "[0,1]",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "[3,2,4]",
+        "6"
+      ],
+      "expected": "[1,2]",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "[3,3]",
+        "6"
+      ],
+      "expected": "[0,1]",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "[-1,-2,-3,-4,-5]",
+        "-8"
+      ],
+      "expected": "[2,4]",
+      "isPublic": false
+    },
+    {
+      "args": [
+        "[1,5,3,7,9,2]",
+        "10"
+      ],
+      "expected": "[0,4]",
+      "isPublic": false
+    }
+  ]
+}

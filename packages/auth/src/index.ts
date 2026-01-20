@@ -1,9 +1,9 @@
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { oAuthProxy } from "better-auth/plugins";
+import { customSession, oAuthProxy } from "better-auth/plugins";
 
-import { db, eq, user as userTable, userProfile } from "@acme/db";
+import { db, eq, userProfile, user as userTable } from "@acme/db";
 
 export function initAuth<
   TExtraPlugins extends BetterAuthPlugin[] = [],
@@ -30,6 +30,20 @@ export function initAuth<
         productionURL: options.productionUrl,
         currentURL: options.baseUrl,
       }),
+      customSession(async ({ user, session }) => {
+        const [dbUser] = await db
+          .select()
+          .from(userTable)
+          .where(eq(userTable.id, user.id))
+          .limit(1);
+        return {
+          user: {
+            ...user,
+            isAdmin: dbUser?.isAdmin,
+          },
+          session,
+        };
+      }),
       ...(options.extraPlugins ?? []),
     ],
     socialProviders: {
@@ -55,7 +69,10 @@ export function initAuth<
           after: async (createdUser) => {
             const baseUsername =
               createdUser.name?.toLowerCase().replace(/\s+/g, "_") ||
-              createdUser.email.split("@")[0]?.toLowerCase().replace(/[^a-z0-9]/g, "") ||
+              createdUser.email
+                .split("@")[0]
+                ?.toLowerCase()
+                .replace(/[^a-z0-9]/g, "") ||
               "user";
             const randomSuffix = Math.floor(1000 + Math.random() * 9000);
             const username = `${baseUsername}_${randomSuffix}`;

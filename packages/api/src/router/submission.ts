@@ -24,34 +24,31 @@ interface JudgeResult {
 async function executeCode(
   code: string,
   lang: string,
-  testCases: Array<{ input: string; output: string }>
+  testCases: Array<{ input?: string; output?: string; args?: string[]; expected?: string }>
 ): Promise<JudgeResult> {
+  // Convert test cases to the format expected by judge API
+  const formattedTestCases = testCases.map(tc => {
+    // For structured test cases (args/expected), convert to input/output format
+    if (tc.args && tc.expected !== undefined) {
+      return {
+        input: tc.args.join('\n'),
+        output: tc.expected
+      };
+    }
+    // For legacy test cases (input/output)
+    return {
+      input: tc.input ?? '',
+      output: tc.output ?? ''
+    };
+  });
   const response = await fetch(`${JUDGE_API_URL}/execute`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       code,
       lang,
-      testCases: testCases.map((tc) => ({
-        input: tc.input,
-        expectedOutput: tc.output
-        // Note: key might be expectedOutput or output depending on judge api. 
-        // migration docs said "expectedOutputs" as array.
-        // Let's recheck docs in a sec, but common sense says input/output per test case or array of inputs + array of outputs.
-        // Doc said: 
-        /* 
-        body: JSON.stringify({
-          code,
-          lang,
-          inputs: testCases.map((tc) => tc.input),
-          expectedOutputs: testCases.map((tc) => tc.output),
-        }),
-        */
-        // I will follow the doc's structure exactly.
-      })),
-      // Actually docs used separated arrays. Let's stick to that if that's what the doc proposed.
-      inputs: testCases.map((tc) => tc.input),
-      expectedOutputs: testCases.map((tc) => tc.output),
+      inputs: formattedTestCases.map((tc) => tc.input),
+      expectedOutputs: formattedTestCases.map((tc) => tc.output),
     }),
   });
 
@@ -135,8 +132,8 @@ export const submissionRouter = createTRPCRouter({
             // Only show input/expected for public tests
             ...(tc?.isPublic
               ? {
-                input: tc.input,
-                expected: tc.output,
+                input: tc.input ?? (tc.args ? tc.args.join(', ') : ''),
+                expected: tc.output ?? tc.expected ?? '',
                 actual: r.stdout || r.stderr, // Show stderr as actual if failed? usually stdout. 
               }
               : {}),
@@ -223,8 +220,8 @@ export const submissionRouter = createTRPCRouter({
           const tc = publicTestCases[i];
           return {
             passed: r.passed,
-            input: tc?.input,
-            expected: tc?.output,
+            input: tc?.input ?? (tc?.args ? tc.args.join(', ') : ''),
+            expected: tc?.output ?? tc?.expected ?? '',
             actual: r.stdout,
             error: r.stderr || undefined,
             runtime: r.runtime,

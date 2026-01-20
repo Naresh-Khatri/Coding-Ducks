@@ -32,6 +32,35 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Check if the route is an admin route
+  if (pathname.startsWith("/admin")) {
+    try {
+      const session = await auth.api.getSession({
+        headers: request.headers,
+      });
+      console.log({ session });
+
+      // If no session, redirect to landing page
+      if (!session) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/";
+        return NextResponse.redirect(url);
+      }
+
+      // Check if user is admin
+      if (!(session.user as any).isAdmin) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/";
+        return NextResponse.redirect(url);
+      }
+    } catch (error) {
+      console.error("Admin session check error:", error);
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Allow the request to proceed
   return NextResponse.next();
 }

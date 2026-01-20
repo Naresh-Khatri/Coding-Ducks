@@ -217,12 +217,16 @@ export const problemRouter = createTRPCRouter({
         difficulty: z.enum(["easy", "medium", "hard"]),
         testCases: z.array(
           z.object({
-            input: z.string(),
-            output: z.string(),
+            input: z.string().optional(),
+            output: z.string().optional(),
+            args: z.array(z.string()).optional(),
+            expected: z.string().optional(),
             isPublic: z.boolean(),
           }),
         ),
         starterCode: z.record(z.string(), z.string()).optional(),
+        functionSignature: z.record(z.string(), z.any()).optional(),
+        driverCode: z.record(z.string(), z.string()).optional(),
         tags: z.array(z.string()).default([]),
         displayOrder: z.number().default(0),
       }),
@@ -240,9 +244,12 @@ export const problemRouter = createTRPCRouter({
         .insert(problem)
         .values({
           ...input,
-          // Cast input tags and starterCode to satisfy drizzle inference
+          // Cast inputs
           tags: input.tags as string[],
           starterCode: input.starterCode as Record<string, string> | undefined,
+          functionSignature: input.functionSignature as Record<string, any> | undefined,
+          driverCode: input.driverCode as Record<string, string> | undefined,
+          testCases: input.testCases as any,
         })
         .returning();
 
@@ -263,13 +270,17 @@ export const problemRouter = createTRPCRouter({
         testCases: z
           .array(
             z.object({
-              input: z.string(),
-              output: z.string(),
+              input: z.string().optional(),
+              output: z.string().optional(),
+              args: z.array(z.string()).optional(),
+              expected: z.string().optional(),
               isPublic: z.boolean(),
             }),
           )
           .optional(),
         starterCode: z.record(z.string(), z.string()).optional(),
+        functionSignature: z.record(z.string(), z.any()).optional(),
+        driverCode: z.record(z.string(), z.string()).optional(),
         tags: z.array(z.string()).optional(),
         isActive: z.boolean().optional(),
         displayOrder: z.number().optional(),
@@ -294,10 +305,121 @@ export const problemRouter = createTRPCRouter({
           starterCode: updates.starterCode as
             | Record<string, string>
             | undefined,
+          functionSignature: updates.functionSignature as
+            | Record<string, any>
+            | undefined,
+          driverCode: updates.driverCode as Record<string, string> | undefined,
         })
         .where(eq(problem.id, id))
         .returning();
 
       return updated;
+    }),
+
+  /**
+   * Get problem by ID (Admin only - returns full data including private test cases)
+   */
+  getById: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      // Check admin
+      if (!(ctx.session.user as any).isAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Admin access required",
+        });
+      }
+
+      const result = await ctx.db
+        .select()
+        .from(problem)
+        .where(eq(problem.id, input.id))
+        .limit(1);
+
+      if (!result[0]) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Problem not found",
+        });
+      }
+
+      return result[0];
+    }),
+
+  /**
+   * Delete problem (Admin only)
+   */
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check admin
+      if (!(ctx.session.user as any).isAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Admin access required",
+        });
+      }
+
+      // Delete the problem (submissions will cascade delete due to FK constraint)
+      const [deleted] = await ctx.db
+        .delete(problem)
+        .where(eq(problem.id, input.id))
+        .returning();
+
+      if (!deleted) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Problem not found",
+        });
+      }
+
+      return { success: true };
+    }),
+
+  /**
+   * Duplicate problem (Admin only)
+   */
+  duplicate: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check admin
+      if (!(ctx.session.user as any).isAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Admin access required",
+        });
+      }
+
+      // Get the original problem
+      const [original] = await ctx.db
+        .select()
+        .from(problem)
+        .where(eq(problem.id, input.id))
+        .limit(1);
+
+      if (!original) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Problem not found",
+        });
+      }
+
+      // Create a copy with modified slug and title
+      const [duplicated] = await ctx.db
+        .insert(problem)
+        .values({
+          slug: `${original.slug}-copy-${Date.now()}`,
+          title: `${original.title} (Copy)`,
+          description: original.description,
+          difficulty: original.difficulty,
+          tags: original.tags,
+          testCases: original.testCases,
+          starterCode: original.starterCode,
+          displayOrder: original.displayOrder,
+          isActive: false, // Start as draft
+        })
+        .returning();
+
+      return duplicated;
     }),
 });
