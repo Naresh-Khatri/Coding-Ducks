@@ -22,7 +22,7 @@ const plans = [
     name: "Free",
     price: "$0",
     period: "/month",
-    description: "Perfect for trying out cd judge",
+    description: "Perfect for trying out Coding Ducks",
     features: [
       "500k executions/month",
       "Basic support",
@@ -80,11 +80,10 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
           {plans.map((plan) => (
             <Card
               key={plan.name}
-              className={`flex flex-col p-6 ${
-                plan.highlighted
+              className={`flex flex-col p-6 ${plan.highlighted
                   ? "border-primary shadow-primary/20 shadow-lg"
                   : ""
-              }`}
+                }`}
             >
               <div>
                 <h3 className="text-lg font-semibold">{plan.name}</h3>

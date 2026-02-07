@@ -48,8 +48,8 @@ export function SidebarNav({ onOpenPlans }: SidebarNavProps) {
           />
         </div>
         <div>
-          <h1 className="text-lg font-bold tracking-tight">cd judge</h1>
-          <p className="text-muted-foreground text-xs">Execution Engine</p>
+          <h1 className="text-lg font-bold tracking-tight">Coding Ducks</h1>
+          <p className="text-muted-foreground text-xs">Practice & Improve</p>
         </div>
       </div>
 

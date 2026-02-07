@@ -59,7 +59,7 @@ export default function DashboardView() {
       {/* Welcome Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h2 className="mb-1 text-2xl font-bold">Welcome to cd judge! 👋</h2>
+          <h2 className="mb-1 text-2xl font-bold">Welcome to Coding Ducks! 🦆</h2>
           <p className="text-muted-foreground">
             You're running on the{" "}
             <span className="text-foreground font-medium">Free Tier</span>.
@@ -221,11 +221,10 @@ export default function DashboardView() {
             ].map((step, idx) => (
               <div key={idx} className="flex items-start gap-3">
                 <div
-                  className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs ${
-                    step.done
+                  className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs ${step.done
                       ? "bg-primary/20 text-primary"
                       : "bg-muted text-muted-foreground"
-                  }`}
+                    }`}
                 >
                   {step.done ? <CheckCircle size={12} /> : idx + 1}
                 </div>

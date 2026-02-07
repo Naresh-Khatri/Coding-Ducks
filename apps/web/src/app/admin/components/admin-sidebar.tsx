@@ -34,7 +34,7 @@ export function AdminSidebar() {
           <Shield className="h-5 w-5 text-destructive" />
         </div>
         <div>
-          <h1 className="text-sm font-semibold">Admin Panel</h1>
+          <h1 className="text-sm font-semibold">Coding Ducks Admin</h1>
           <p className="text-xs text-muted-foreground">Manage content</p>
         </div>
       </div>
@@ -69,9 +69,9 @@ export function AdminSidebar() {
       {/* Footer */}
       <div className="border-t border-border p-3">
         <Button variant="ghost" size="sm" className="w-full justify-start gap-2" asChild>
-          <Link href="/dashboard">
+          <Link href="/problems">
             <ChevronLeft className="h-4 w-4" />
-            Back to Dashboard
+            Back to Problems
           </Link>
         </Button>
       </div>

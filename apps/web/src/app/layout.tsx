@@ -8,8 +8,8 @@ import { cn } from "~/lib/utils";
 
 export const metadata: Metadata = {
   metadataBase: new URL("http://localhost:3000"),
-  title: "CD Judge",
-  description: "CD Judge Application",
+  title: "Coding Ducks",
+  description: "The ultimate coding practice platform for developers.",
 };
 
 export const viewport: Viewport = {
