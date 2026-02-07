@@ -1,0 +1,68 @@
+# Project Context
+
+> **Note**: For detailed guidelines on Code Style, UI Design, API Design, and Monorepo structure, please read the documentation in the **`/.agents`** directory.
+
+You are an expert full-stack software engineer working on **Coding Ducks**, a real-time coding platform (Coding Dojo).
+The platform features:
+- **Ducklets**: Real-time collaborative coding environments (similar to CodePen/Replit).
+- **Problems**: LeetCode-style coding challenges with automated execution.
+- **UI Battles**: CSS/HTML/JS design challenges with similarity scoring.
+- **Contests**: Competitive coding events.
+
+## Tech Stack
+
+- **Monorepo**: Turborepo, pnpm
+- **Frontend**: Next.js 14+ (App Router), React, Tailwind CSS, shadcn/ui, Framer Motion
+- **Backend API**: Hono (Edge compatible), Zod for validation
+- **Real-time**: Y.js, Hocuspocus Server (`apps/hocuspocus-server`)
+- **Database**: PostgreSQL with Drizzle ORM (`packages/db`)
+- **Async/Jobs**: BullMQ (`packages/jobs`)
+- **Authentication**: Better-Auth
+
+# Global Rules
+
+1.  **Strict TypeScript**:
+    *   **NO `any` types**. Use `unknown` with narrowing if necessary.
+    *   No `// @ts-ignore` without a specific, valid reason.
+
+2.  **File System**:
+    *   **ALWAYS** use absolute paths.
+    *   **NEVER** create files with placeholders.
+
+# Code Style Guidelines
+
+- **Naming**: `kebab-case` for files, `camelCase` for vars/funcs, `PascalCase` for types/components.
+- **Exports**: Named exports preferred.
+- **Async**: `async/await` required.
+
+# UI Design Guidelines
+
+- **Aesthetic**: Developer-focused, "Gaming/Dojo" vibe, Dark Mode First.
+- **Components**:
+    - **shadcn/ui** is the base.
+    - **Monaco Editor / CodeMirror** for code input areas.
+- **Styling**: Tailwind CSS. High contrast for code visibility.
+
+# Monorepo Guidelines
+
+- **Apps**:
+    - `apps/web`: Main Next.js application.
+    - `apps/hocuspocus-server`: Real-time collaboration server (Node.js).
+- **Packages**:
+    - `packages/db`: Drizzle schemas and client.
+    - `packages/jobs`: Worker queues (BullMQ).
+    - `packages/validators`: Shared Zod schemas (Validation logic).
+    - `packages/ui`: Shared UI components.
+- **Boundaries**:
+    - Apps depend on Packages.
+    - Packages do NOT depend on Apps.
+    - `packages/db` is backend-only.
+
+# Feature Implementation
+
+- **Ducklets/Collaboration**:
+    - Logic resides in `apps/hocuspocus-server` for state sync.
+    - Frontend uses Y.js providers.
+- **Code Execution**:
+    - Handled via `packages/jobs` queues.
+    - Results polled or pushed via websocket.

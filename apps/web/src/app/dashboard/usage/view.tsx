@@ -18,7 +18,6 @@ import {
 } from "recharts";
 
 import { Card } from "~/components/ui/card";
-import { USAGE_DATA } from "~/lib/mock-data";
 import { useTRPC } from "~/trpc/react";
 
 const languageData = [
@@ -67,7 +66,9 @@ export default function UsageView() {
   );
 
   const errorRate =
-    totalRequests > 0 ? ((totalFailed / totalRequests) * 100).toFixed(1) : "0.0";
+    totalRequests > 0
+      ? ((totalFailed / totalRequests) * 100).toFixed(1)
+      : "0.0";
 
   // Data formatting for charts
   const statusChartData = usageHistory?.map((item) => ({
@@ -153,7 +154,9 @@ export default function UsageView() {
           <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
             <div
               className="bg-primary h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.min((totalRequests / 10000) * 100, 100)}%` }} // Arbitrary scale for visual
+              style={{
+                width: `${Math.min((totalRequests / 10000) * 100, 100)}%`,
+              }} // Arbitrary scale for visual
             ></div>
           </div>
           <p className="text-muted-foreground mt-3 text-xs">
@@ -210,21 +213,31 @@ export default function UsageView() {
             <tbody>
               {filteredKeys.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
+                  <td
+                    colSpan={6}
+                    className="text-muted-foreground px-6 py-4 text-center"
+                  >
                     No keys found.
                   </td>
                 </tr>
               ) : (
                 filteredKeys.map((key) => (
-                  <tr key={key.id} className="border-b last:border-0 hover:bg-muted/50">
+                  <tr
+                    key={key.id}
+                    className="hover:bg-muted/50 border-b last:border-0"
+                  >
                     <td className="px-6 py-3 font-medium">{key.name}</td>
-                    <td className="px-6 py-3 font-mono text-xs">{key.prefix}</td>
+                    <td className="px-6 py-3 font-mono text-xs">
+                      {key.prefix}
+                    </td>
                     <td className="px-6 py-3">{key.totalRequests || 0}</td>
-                    <td className="px-6 py-3 text-emerald-600 font-medium">
+                    <td className="px-6 py-3 font-medium text-emerald-600">
                       {key.successfulRequests || 0}
                     </td>
-                    <td className="px-6 py-3 text-red-600 font-medium">{key.failedRequests || 0}</td>
-                    <td className="px-6 py-3 text-muted-foreground">
+                    <td className="px-6 py-3 font-medium text-red-600">
+                      {key.failedRequests || 0}
+                    </td>
+                    <td className="text-muted-foreground px-6 py-3">
                       {key.lastUsedAt
                         ? new Date(key.lastUsedAt).toLocaleString()
                         : "Never"}
@@ -244,17 +257,54 @@ export default function UsageView() {
           {statusChartData && statusChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="85%">
               <BarChart data={statusChartData} barSize={20}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} dx={-10} />
-                <Tooltip cursor={{ fill: "var(--muted)", opacity: 0.4 }} contentStyle={{ backgroundColor: "var(--popover)", borderColor: "var(--border)", borderRadius: "8px", color: "var(--popover-foreground)" }} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--border)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="date"
+                  stroke="var(--muted-foreground)"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  dy={10}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  dx={-10}
+                />
+                <Tooltip
+                  cursor={{ fill: "var(--muted)", opacity: 0.4 }}
+                  contentStyle={{
+                    backgroundColor: "var(--popover)",
+                    borderColor: "var(--border)",
+                    borderRadius: "8px",
+                    color: "var(--popover-foreground)",
+                  }}
+                />
                 <Legend wrapperStyle={{ paddingTop: "20px" }} />
-                <Bar dataKey="successful" stackId="a" fill="var(--primary)" name="Successful" radius={[0, 0, 4, 4]} />
-                <Bar dataKey="failed" stackId="a" fill="var(--destructive)" name="Failed" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="successful"
+                  stackId="a"
+                  fill="var(--primary)"
+                  name="Successful"
+                  radius={[0, 0, 4, 4]}
+                />
+                <Bar
+                  dataKey="failed"
+                  stackId="a"
+                  fill="var(--destructive)"
+                  name="Failed"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
+            <div className="text-muted-foreground flex h-full items-center justify-center">
               No history data available yet.
             </div>
           )}
@@ -262,21 +312,48 @@ export default function UsageView() {
 
         <Card className="h-[400px] p-6">
           <h3 className="mb-2 text-lg font-semibold">Top Languages</h3>
-          <p className="text-muted-foreground mb-6 text-sm">Distribution of runtimes used in your requests.</p>
+          <p className="text-muted-foreground mb-6 text-sm">
+            Distribution of runtimes used in your requests.
+          </p>
           {languageUsage && languageUsage.length > 0 ? (
             <ResponsiveContainer width="100%" height="80%">
               <PieChart>
-                <Pie data={languageUsage} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" nameKey="language">
+                <Pie
+                  data={languageUsage}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                  nameKey="language"
+                >
                   {languageUsage.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} stroke="rgba(0,0,0,0)" />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={chartColors[index % chartColors.length]}
+                      stroke="rgba(0,0,0,0)"
+                    />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "var(--popover)", borderColor: "var(--border)", borderRadius: "8px", color: "var(--popover-foreground)" }} />
-                <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--popover)",
+                    borderColor: "var(--border)",
+                    borderRadius: "8px",
+                    color: "var(--popover-foreground)",
+                  }}
+                />
+                <Legend
+                  verticalAlign="middle"
+                  align="right"
+                  layout="vertical"
+                  iconType="circle"
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
+            <div className="text-muted-foreground flex h-full items-center justify-center">
               No language data available yet.
             </div>
           )}

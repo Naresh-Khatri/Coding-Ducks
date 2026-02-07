@@ -58,4 +58,4 @@ dist/
 .tanstack
 
 # dashboard (ignore for now)
-apps/web/src/app/dashboard/
+# apps/web/src/app/dashboard/

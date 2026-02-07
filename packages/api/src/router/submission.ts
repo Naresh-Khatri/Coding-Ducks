@@ -1,81 +1,306 @@
-import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { and, desc, eq } from "drizzle-orm";
+import { z } from "zod";
+
+import type { TestCase } from "@acme/db/schema";
+import { problem, submission } from "@acme/db/schema";
+
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { submission, problem } from "@acme/db/schema";
-import { eq, desc, and, ne, sql } from "drizzle-orm";
 
-// cd-judge-api client
-const JUDGE_API_URL = process.env.JUDGE_API_URL ?? "http://localhost:3001";
+const JUDGE_API_URL =
+  process.env.JUDGE_API_URL ?? "https://judge.codingducks.xyz/api/v1";
+const JUDGE_API_TOKEN =
+  process.env.JUDGE_API_TOKEN ??
+  "sk_live_f132093395599bd810a8f8474bf8a96cbe6e50d9e3af655f51bcf22fec3d7774";
 
-interface JudgeResult {
-  results: Array<{
-    passed: boolean;
-    stdout: string;
-    stderr: string;
-    runtime: number; // ms
-    memory: number; // KB
-  }>;
-  totalRuntime: number;
-  passedCount: number;
-  totalCount: number;
+interface JudgeJobResponse {
+  id: string;
 }
 
-// Helper to call judge API
-async function executeCode(
-  code: string,
+interface JudgeStatusResponse {
+  id: string;
+  status: "waiting" | "active" | "completed" | "failed";
+  result?: {
+    verdict: string;
+    stdout: string;
+    stderr: string;
+    exitCode: number;
+    time: number;
+    memory: number;
+  };
+}
+
+/**
+ * Generate driver code that embeds all test cases and loops through them
+ */
+function generateDriverWithTestCases(
+  userCode: string,
   lang: string,
-  testCases: Array<{ input?: string; output?: string; args?: string[]; expected?: string }>
-): Promise<JudgeResult> {
-  // Convert test cases to the format expected by judge API
-  const formattedTestCases = testCases.map(tc => {
-    // For structured test cases (args/expected), convert to input/output format
-    if (tc.args && tc.expected !== undefined) {
-      return {
-        input: tc.args.join('\n'),
-        output: tc.expected
-      };
-    }
-    // For legacy test cases (input/output)
+  functionName: string,
+  testCases: TestCase[],
+  hidePrivate: boolean = false,
+): string {
+  // Prepare test case data
+  const testData = testCases.map((tc, index) => {
+    const args = tc.args || [];
+    const expected = tc.expected || tc.output || "";
+    const isPublic = tc.isPublic;
+
     return {
-      input: tc.input ?? '',
-      output: tc.output ?? ''
+      index,
+      args,
+      expected,
+      isPublic: hidePrivate ? isPublic : true, // For run mutation, all are public
     };
   });
-  const response = await fetch(`${JUDGE_API_URL}/execute`, {
+
+  switch (lang) {
+    case "py":
+      return `
+import sys, json
+
+# User code
+${userCode}
+
+if __name__ == "__main__":
+    test_cases = ${JSON.stringify(testData)}
+    
+    results = []
+    sol = Solution()
+    
+    for tc in test_cases:
+        try:
+            args = tc["args"]
+            expected = tc["expected"]
+            actual = sol.${functionName}(*args)
+            passed = (actual == expected)
+            results.append({
+                "index": tc["index"],
+                "passed": passed,
+                "actual": json.dumps(actual) if tc["isPublic"] else None,
+                "isPublic": tc["isPublic"]
+            })
+        except Exception as e:
+            results.append({
+                "index": tc["index"],
+                "passed": False,
+                "error": str(e),
+                "isPublic": tc["isPublic"]
+            })
+    
+    print(json.dumps(results))
+`;
+
+    case "js":
+      return `
+const testCases = ${JSON.stringify(testData)};
+
+// User code
+${userCode}
+
+const results = [];
+const sol = new Solution();
+
+for (const tc of testCases) {
+    try {
+        const args = tc.args;
+        const expected = tc.expected;
+        const actual = sol.${functionName}(...args);
+        const passed = JSON.stringify(actual) === JSON.stringify(expected);
+        results.push({
+            index: tc.index,
+            passed: passed,
+            actual: tc.isPublic ? JSON.stringify(actual) : undefined,
+            isPublic: tc.isPublic
+        });
+    } catch (e) {
+        results.push({
+            index: tc.index,
+            passed: false,
+            error: e.message,
+            isPublic: tc.isPublic
+        });
+    }
+}
+
+console.log(JSON.stringify(results));
+`;
+
+    case "java":
+      return `
+import java.util.*;
+import com.google.gson.*;
+
+// User code
+${userCode}
+
+public class Main {
+    public static void main(String[] args) {
+        String testDataJson = ${JSON.stringify(JSON.stringify(testData))};
+        Gson gson = new Gson();
+        TestCase[] testCases = gson.fromJson(testDataJson, TestCase[].class);
+        
+        List<Map<String, Object>> results = new ArrayList<>();
+        Solution sol = new Solution();
+        
+        for (TestCase tc : testCases) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("index", tc.index);
+            result.put("isPublic", tc.isPublic);
+            
+            try {
+                // Note: This is simplified - real implementation needs proper type handling
+                Object actual = sol.${functionName}(/* args */);
+                boolean passed = actual.equals(tc.expected);
+                result.put("passed", passed);
+                if (tc.isPublic) {
+                    result.put("actual", gson.toJson(actual));
+                }
+            } catch (Exception e) {
+                result.put("passed", false);
+                result.put("error", e.getMessage());
+            }
+            
+            results.add(result);
+        }
+        
+        System.out.println(gson.toJson(results));
+    }
+    
+    static class TestCase {
+        int index;
+        Object[] args;
+        Object expected;
+        boolean isPublic;
+    }
+}
+`;
+
+    case "cpp":
+      return `
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include "json.hpp"
+
+using json = nlohmann::json;
+using namespace std;
+
+// User code
+${userCode}
+
+int main() {
+    string testDataJson = R"(${JSON.stringify(testData)})";
+    auto testCases = json::parse(testDataJson);
+    
+    json results = json::array();
+    Solution sol;
+    
+    for (const auto& tc : testCases) {
+        json result;
+        result["index"] = tc["index"];
+        result["isPublic"] = tc["isPublic"];
+        
+        try {
+            // Note: Simplified - needs proper type handling
+            auto args = tc["args"];
+            auto expected = tc["expected"];
+            // auto actual = sol.${functionName}(/* args */);
+            // bool passed = (actual == expected);
+            result["passed"] = false; // Placeholder
+        } catch (const exception& e) {
+            result["passed"] = false;
+            result["error"] = e.what();
+        }
+        
+        results.push_back(result);
+    }
+    
+    cout << results.dump() << endl;
+    return 0;
+}
+`;
+
+    default:
+      throw new Error(`Unsupported language: ${lang}`);
+  }
+}
+
+async function submitToJudge(code: string, lang: string): Promise<string> {
+  const response = await fetch(`${JUDGE_API_URL}/submissions`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      code,
-      lang,
-      inputs: formattedTestCases.map((tc) => tc.input),
-      expectedOutputs: formattedTestCases.map((tc) => tc.output),
-    }),
+    headers: {
+      "Content-Type": "application/json",
+      ...(JUDGE_API_TOKEN
+        ? { Authorization: `Bearer ${JUDGE_API_TOKEN}` }
+        : {}),
+    },
+    body: JSON.stringify({ code, lang }),
   });
 
   if (!response.ok) {
-    // Try to get error text
     const text = await response.text();
-    console.error("Judge API Error:", text);
-    throw new Error(`Judge API error: ${response.statusText}`);
+    throw new Error(`Judge submission failed: ${text}`);
   }
 
-  return response.json() as Promise<JudgeResult>;
+  const data = (await response.json()) as JudgeJobResponse;
+  return data.id;
+}
+
+async function getJobStatus(jobId: string): Promise<JudgeStatusResponse> {
+  const response = await fetch(`${JUDGE_API_URL}/submissions/${jobId}`, {
+    headers: {
+      ...(JUDGE_API_TOKEN
+        ? { Authorization: `Bearer ${JUDGE_API_TOKEN}` }
+        : {}),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch job status: ${jobId}`);
+  }
+
+  return response.json() as Promise<JudgeStatusResponse>;
+}
+
+function parseTestResults(stdout: string, testCases: TestCase[]) {
+  try {
+    const results = JSON.parse(stdout);
+    return results.map((r: any, i: number) => ({
+      passed: r.passed || false,
+      runtime: r.runtime as number | undefined,
+      memory: r.memory as number | undefined,
+      input:
+        r.isPublic && testCases[i]
+          ? testCases[i].args?.join(", ") || testCases[i].input
+          : undefined,
+      expected:
+        r.isPublic && testCases[i]
+          ? testCases[i].expected || testCases[i].output
+          : undefined,
+      actual: r.isPublic ? (r.actual as string | undefined) : undefined,
+      error: r.error as string | undefined,
+    }));
+  } catch (e) {
+    // If parsing fails, return error for all test cases
+    return testCases.map(() => ({
+      passed: false,
+      error: "Failed to parse test results",
+    }));
+  }
 }
 
 export const submissionRouter = createTRPCRouter({
-  /**
-   * Submit code for a problem
-   */
   submit: protectedProcedure
     .input(
       z.object({
         problemId: z.number(),
         code: z.string(),
         lang: z.enum(["py", "js", "java", "cpp", "c"]),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Get problem with test cases
       const [prob] = await ctx.db
         .select()
         .from(problem)
@@ -83,10 +308,29 @@ export const submissionRouter = createTRPCRouter({
         .limit(1);
 
       if (!prob) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Problem not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Problem not found",
+        });
       }
 
-      // Create pending submission
+      // Get function name from function signature or driver code
+      const functionSig = (prob.functionSignature as any)?.[input.lang];
+      const functionName = functionSig?.name || "solve";
+
+      // Generate driver code with all test cases embedded
+      const driverCode = generateDriverWithTestCases(
+        input.code,
+        input.lang,
+        functionName,
+        prob.testCases,
+        true, // Hide private test case details
+      );
+
+      // Submit to judge
+      const jobId = await submitToJudge(driverCode, input.lang);
+
+      // Create submission record
       const [newSubmission] = await ctx.db
         .insert(submission)
         .values({
@@ -96,104 +340,27 @@ export const submissionRouter = createTRPCRouter({
           lang: input.lang,
           status: "running",
           testsTotal: prob.testCases.length,
-          createdAt: undefined, // Let defaultNow() handle it
+          results: [{ jobId }] as any,
         })
         .returning();
 
       if (!newSubmission) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create submission" });
-      }
-
-      try {
-        // FIX: do later
-        // Execute code against test cases - in background? 
-        // For simple setup, we await. Phase 2 goal is simple.
-
-        const result = await executeCode(
-          input.code,
-          input.lang,
-          prob.testCases
-        );
-
-        // Determine status
-        const status =
-          result.passedCount === result.totalCount
-            ? "accepted"
-            : "wrong_answer"; // Or runtime_error if any? Judge usually reports simple passed/failed. We can refine logic.
-        // If any result has error, it might be runtime error. 
-        // Simplified logic as per plan.
-
-        // Prepare results (hide private test case details)
-        const results = result.results.map((r, i) => {
-          const tc = prob.testCases[i];
-          return {
-            passed: r.passed,
-            runtime: r.runtime,
-            // Only show input/expected for public tests
-            ...(tc?.isPublic
-              ? {
-                input: tc.input ?? (tc.args ? tc.args.join(', ') : ''),
-                expected: tc.output ?? tc.expected ?? '',
-                actual: r.stdout || r.stderr, // Show stderr as actual if failed? usually stdout. 
-              }
-              : {}),
-            error: r.stderr || undefined,
-          };
-        });
-
-        // Helper to map string to enum
-        let dbStatus: "accepted" | "wrong_answer" | "runtime_error" = "wrong_answer";
-        if (result.passedCount === result.totalCount) dbStatus = "accepted";
-        // Check if any error exists to maybe call it runtime_error?
-        // Optional refinement.
-
-        // Update submission
-        const [updated] = await ctx.db
-          .update(submission)
-          .set({
-            status: dbStatus,
-            testsPassed: result.passedCount,
-            runtime: result.totalRuntime, // Total valid? Or max? Usually max or sum. Schema says integer.
-            results: results as any, // Cast to any or helper type if schema is strict
-          })
-          .where(eq(submission.id, newSubmission.id))
-          .returning();
-
-        // Award points logic (optional for basic ticket, but good to have)
-        /*
-        if (status === "accepted") {
-             // ... logic to verify if previously accepted ...
-        }
-        */
-
-        return updated;
-      } catch (error) {
-        // Update submission with error
-        await ctx.db
-          .update(submission)
-          .set({
-            status: "runtime_error",
-            errorMessage: error instanceof Error ? error.message : "Unknown error",
-          })
-          .where(eq(submission.id, newSubmission.id));
-
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Code execution failed",
+          message: "Failed to create submission",
         });
       }
+
+      return { id: newSubmission.id, jobId };
     }),
 
-  /**
-   * Run code without submitting (just for testing)
-   */
   run: protectedProcedure
     .input(
       z.object({
         problemId: z.number(),
         code: z.string(),
         lang: z.enum(["py", "js", "java", "cpp", "c"]),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [prob] = await ctx.db
@@ -202,46 +369,153 @@ export const submissionRouter = createTRPCRouter({
         .where(eq(problem.id, input.problemId))
         .limit(1);
 
-      if (!prob) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
+      if (!prob) throw new TRPCError({ code: "NOT_FOUND" });
 
-      // Only run against public test cases
       const publicTestCases = prob.testCases.filter((tc) => tc.isPublic);
 
       if (publicTestCases.length === 0) {
-        return { results: [], passedCount: 0, totalCount: 0 };
+        return { id: 0, jobId: null, results: [] };
       }
 
-      const result = await executeCode(input.code, input.lang, publicTestCases);
+      const functionSig = (prob.functionSignature as any)?.[input.lang];
+      const functionName = functionSig?.name || "solve";
 
-      return {
-        results: result.results.map((r, i) => {
-          const tc = publicTestCases[i];
-          return {
-            passed: r.passed,
-            input: tc?.input ?? (tc?.args ? tc.args.join(', ') : ''),
-            expected: tc?.output ?? tc?.expected ?? '',
-            actual: r.stdout,
-            error: r.stderr || undefined,
-            runtime: r.runtime,
-          };
-        }),
-        passedCount: result.passedCount,
-        totalCount: result.totalCount,
-      };
+      const driverCode = generateDriverWithTestCases(
+        input.code,
+        input.lang,
+        functionName,
+        publicTestCases,
+        false, // All are public for run
+      );
+
+      const jobId = await submitToJudge(driverCode, input.lang);
+
+      const [newSubmission] = await ctx.db
+        .insert(submission)
+        .values({
+          userId: ctx.session.user.id,
+          problemId: input.problemId,
+          code: input.code,
+          lang: input.lang,
+          status: "running",
+          testsTotal: publicTestCases.length,
+          results: [{ jobId }] as any,
+        })
+        .returning();
+
+      if (!newSubmission) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create submission",
+        });
+      }
+
+      return { id: newSubmission.id, jobId };
     }),
 
-  /**
-   * List submissions for a problem
-   */
+  getResults: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const [sub] = await ctx.db
+        .select()
+        .from(submission)
+        .where(
+          and(
+            eq(submission.id, input.id),
+            eq(submission.userId, ctx.session.user.id),
+          ),
+        )
+        .limit(1);
+
+      if (!sub) throw new TRPCError({ code: "NOT_FOUND" });
+      if (sub.status !== "running") return sub;
+
+      const resultsData = sub.results as any;
+      const jobId = resultsData?.[0]?.jobId;
+
+      if (!jobId) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "No job ID found",
+        });
+      }
+
+      try {
+        const statusResponse = await getJobStatus(jobId);
+
+        if (
+          statusResponse.status === "completed" ||
+          statusResponse.status === "failed"
+        ) {
+          // Get problem to access test cases
+          const [prob] = await ctx.db
+            .select()
+            .from(problem)
+            .where(eq(problem.id, sub.problemId))
+            .limit(1);
+
+          if (!prob) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Problem not found",
+            });
+          }
+
+          const testCases = prob.testCases;
+          const parsedResults = parseTestResults(
+            statusResponse.result?.stdout || "",
+            testCases,
+          );
+          const testsPassed = parsedResults.filter(
+            (r: { passed: boolean }) => r.passed,
+          ).length;
+
+          let finalStatus:
+            | "pending"
+            | "running"
+            | "accepted"
+            | "wrong_answer"
+            | "runtime_error"
+            | "time_limit"
+            | "compile_error" = "wrong_answer";
+          if (
+            statusResponse.status === "failed" ||
+            statusResponse.result?.stderr
+          ) {
+            finalStatus = "runtime_error";
+          } else if (testsPassed === testCases.length) {
+            finalStatus = "accepted";
+          }
+
+          const [updatedSub] = await ctx.db
+            .update(submission)
+            .set({
+              status: finalStatus,
+              testsPassed,
+              runtime: statusResponse.result?.time,
+              results: parsedResults as any,
+              errorMessage: statusResponse.result?.stderr || undefined,
+            })
+            .where(eq(submission.id, sub.id))
+            .returning();
+
+          return updatedSub;
+        }
+      } catch (error) {
+        console.error("Error fetching job status:", error);
+        // Keep status as running, frontend will retry
+      }
+
+      return sub;
+    }),
+
   list: protectedProcedure
     .input(
       z.object({
         problemId: z.number().optional(),
         limit: z.number().min(1).max(50).default(10),
         offset: z.number().default(0),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const conditions = [eq(submission.userId, ctx.session.user.id)];
@@ -261,9 +535,6 @@ export const submissionRouter = createTRPCRouter({
       return submissions;
     }),
 
-  /**
-   * Get submission by ID
-   */
   byId: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -273,8 +544,8 @@ export const submissionRouter = createTRPCRouter({
         .where(
           and(
             eq(submission.id, input.id),
-            eq(submission.userId, ctx.session.user.id)
-          )
+            eq(submission.userId, ctx.session.user.id),
+          ),
         )
         .limit(1);
 

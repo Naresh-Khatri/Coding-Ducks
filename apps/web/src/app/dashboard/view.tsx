@@ -18,7 +18,6 @@ import { StatsCard } from "~/components/stats-card";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { useTRPC } from "~/trpc/react";
-import { CHART_DATA } from "../../lib/mock-data";
 
 export default function DashboardView() {
   const trpc = useTRPC();
@@ -199,7 +198,7 @@ export default function DashboardView() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground">
+              <div className="text-muted-foreground flex h-full items-center justify-center">
                 No usage data available for this period.
               </div>
             )}
@@ -222,10 +221,11 @@ export default function DashboardView() {
             ].map((step, idx) => (
               <div key={idx} className="flex items-start gap-3">
                 <div
-                  className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs ${step.done
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground"
-                    }`}
+                  className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs ${
+                    step.done
+                      ? "bg-primary/20 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  }`}
                 >
                   {step.done ? <CheckCircle size={12} /> : idx + 1}
                 </div>
