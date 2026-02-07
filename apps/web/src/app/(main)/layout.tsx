@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-// We can add a Navbar here later. For now, just a wrapper.
-// import { Navbar } from "~/components/navbar";
+import { Navbar } from "~/components/navbar";
 
 export default function MainLayout({
   children,
@@ -9,7 +8,7 @@ export default function MainLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      {/* <Navbar /> */}
+      <Navbar />
       <div className="flex-1">
         <Suspense fallback={<div>Loading...</div>}>
           {children}
