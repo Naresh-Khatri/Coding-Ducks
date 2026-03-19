@@ -9,6 +9,7 @@
   ],
   "displayOrder": 1,
   "isActive": true,
+  "editorial": "## Approach 1: Brute Force\n\nThe simplest approach is to check every pair of numbers.\n\n```python\ndef twoSum(self, nums, target):\n    for i in range(len(nums)):\n        for j in range(i + 1, len(nums)):\n            if nums[i] + nums[j] == target:\n                return [i, j]\n```\n\n**Time:** O(n²) | **Space:** O(1)\n\n## Approach 2: Hash Map (Optimal)\n\nUse a hash map to store each number's index as you iterate. For each number, check if `target - num` already exists in the map.\n\n```python\ndef twoSum(self, nums, target):\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n```\n\n**Time:** O(n) | **Space:** O(n)\n\n### Key Insight\n\nInstead of searching for a pair, reframe it: for each element, ask \"have I already seen the number that would complete this pair?\" A hash map answers this in O(1).",
   "functionSignature": {
     "fnName": "twoSum",
     "params": [

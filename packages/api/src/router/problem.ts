@@ -214,6 +214,7 @@ export const problemRouter = createTRPCRouter({
         slug: z.string().min(1).max(100),
         title: z.string().min(1).max(256),
         description: z.string().min(1),
+        editorial: z.string().optional(),
         difficulty: z.enum(["easy", "medium", "hard"]),
         testCases: z.array(
           z.object({
@@ -269,6 +270,7 @@ export const problemRouter = createTRPCRouter({
         slug: z.string().min(1).max(100).optional(),
         title: z.string().min(1).max(256).optional(),
         description: z.string().min(1).optional(),
+        editorial: z.string().nullable().optional(),
         difficulty: z.enum(["easy", "medium", "hard"]).optional(),
         testCases: z
           .array(

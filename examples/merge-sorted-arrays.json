@@ -1,0 +1,70 @@
+{
+  "title": "Merge Two Sorted Arrays",
+  "slug": "merge-sorted-arrays",
+  "description": "# Merge Two Sorted Arrays\n\nYou are given two integer arrays `nums1` and `nums2`, sorted in **non-decreasing order**. Merge `nums2` into `nums1` as one sorted array and return it.\n\n## Example 1:\n\n```\nInput: nums1 = [1,2,3], nums2 = [2,5,6]\nOutput: [1,2,2,3,5,6]\n```\n\n## Example 2:\n\n```\nInput: nums1 = [1], nums2 = []\nOutput: [1]\n```\n\n## Example 3:\n\n```\nInput: nums1 = [], nums2 = [1]\nOutput: [1]\n```\n\n## Constraints:\n\n- `0 <= nums1.length, nums2.length <= 200`\n- `-10^9 <= nums1[i], nums2[i] <= 10^9`\n- `nums1` and `nums2` are sorted in non-decreasing order.",
+  "difficulty": "easy",
+  "tags": [
+    "array",
+    "two-pointers",
+    "sorting"
+  ],
+  "displayOrder": 4,
+  "isActive": true,
+  "editorial": "## Approach: Two Pointers Merge\n\nSince both arrays are already sorted, use two pointers to compare elements from each array and build the result in order.\n\n```python\ndef mergeSorted(self, nums1, nums2):\n    result = []\n    i, j = 0, 0\n    while i < len(nums1) and j < len(nums2):\n        if nums1[i] <= nums2[j]:\n            result.append(nums1[i])\n            i += 1\n        else:\n            result.append(nums2[j])\n            j += 1\n    result.extend(nums1[i:])\n    result.extend(nums2[j:])\n    return result\n```\n\n**Time:** O(n + m) | **Space:** O(n + m)\n\n### Key Insight\n\nBecause both inputs are sorted, we only ever need to compare the two smallest unprocessed elements. This is the merge step from merge sort. After one array is exhausted, append the remainder of the other.",
+  "functionSignature": {
+    "fnName": "mergeSorted",
+    "params": [
+      {
+        "name": "nums1",
+        "type": "integer[]"
+      },
+      {
+        "name": "nums2",
+        "type": "integer[]"
+      }
+    ],
+    "returnType": "integer[]"
+  },
+  "testCases": [
+    {
+      "args": [
+        "[1,2,3]",
+        "[2,5,6]"
+      ],
+      "expected": "[1,2,2,3,5,6]",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "[1]",
+        "[]"
+      ],
+      "expected": "[1]",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "[]",
+        "[1]"
+      ],
+      "expected": "[1]",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "[-3,-1,0]",
+        "[-2,4,5]"
+      ],
+      "expected": "[-3,-2,-1,0,4,5]",
+      "isPublic": false
+    },
+    {
+      "args": [
+        "[1,1,1]",
+        "[1,1,1]"
+      ],
+      "expected": "[1,1,1,1,1,1]",
+      "isPublic": false
+    }
+  ]
+}

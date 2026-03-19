@@ -18,6 +18,9 @@ export const problem = pgTable("problem", {
   // Starter code: {py: string, js: string, cpp: string, java: string}
   starterCode: jsonb("starter_code").$type<Record<string, string>>(),
 
+  // Editorial (Markdown content explaining the solution)
+  editorial: text("editorial"),
+
   // Function signature definition (language-agnostic)
   functionSignature: jsonb("function_signature").$type<FunctionSignature>(),
 

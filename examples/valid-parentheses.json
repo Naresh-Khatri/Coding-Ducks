@@ -1,0 +1,67 @@
+{
+  "title": "Valid Parentheses",
+  "slug": "valid-parentheses",
+  "description": "# Valid Parentheses\n\nGiven a string `s` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid.\n\nAn input string is valid if:\n\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.\n\n## Example 1:\n\n```\nInput: s = \"()\"\nOutput: true\n```\n\n## Example 2:\n\n```\nInput: s = \"()[]{}\"\nOutput: true\n```\n\n## Example 3:\n\n```\nInput: s = \"(]\"\nOutput: false\n```\n\n## Example 4:\n\n```\nInput: s = \"([)]\"\nOutput: false\n```\n\n## Constraints:\n\n- `1 <= s.length <= 10^4`\n- `s` consists of parentheses only `'()[]{}'`.",
+  "difficulty": "easy",
+  "tags": [
+    "string",
+    "stack"
+  ],
+  "displayOrder": 3,
+  "isActive": true,
+  "editorial": "## Approach: Stack\n\nUse a stack to track opening brackets. When you encounter a closing bracket, check if the top of the stack is the matching opening bracket.\n\n```python\ndef isValid(self, s):\n    stack = []\n    pairs = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in pairs:\n            if not stack or stack[-1] != pairs[char]:\n                return False\n            stack.pop()\n        else:\n            stack.append(char)\n    return len(stack) == 0\n```\n\n**Time:** O(n) | **Space:** O(n)\n\n### Key Insight\n\nA stack naturally models the nesting structure of brackets. Every opening bracket pushes onto the stack, and every closing bracket must match the most recent unmatched opening bracket (the stack top). If the stack is empty at the end, all brackets were matched.",
+  "functionSignature": {
+    "fnName": "isValid",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "returnType": "boolean"
+  },
+  "testCases": [
+    {
+      "args": [
+        "\"()\""
+      ],
+      "expected": "true",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "\"()[]{}\""
+      ],
+      "expected": "true",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "\"(]\""
+      ],
+      "expected": "false",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "\"([)]\""
+      ],
+      "expected": "false",
+      "isPublic": false
+    },
+    {
+      "args": [
+        "\"{[]}\""
+      ],
+      "expected": "true",
+      "isPublic": false
+    },
+    {
+      "args": [
+        "\"\""
+      ],
+      "expected": "true",
+      "isPublic": false
+    }
+  ]
+}

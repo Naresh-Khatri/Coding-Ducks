@@ -1,0 +1,53 @@
+{
+  "title": "Reverse String",
+  "slug": "reverse-string",
+  "description": "# Reverse String\n\nWrite a function that reverses a string. The input string is given as an array of characters `s`.\n\nYou must do this by modifying the input array **in-place** with O(1) extra memory.\n\n## Example 1:\n\n```\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\n```\n\n## Example 2:\n\n```\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n```\n\n## Constraints:\n\n- `1 <= s.length <= 10^5`\n- `s[i]` is a printable ASCII character.",
+  "difficulty": "easy",
+  "tags": [
+    "string",
+    "two-pointers"
+  ],
+  "displayOrder": 2,
+  "isActive": true,
+  "editorial": "## Approach: Two Pointers\n\nUse two pointers starting at the beginning and end of the array. Swap the elements at these pointers and move them inward until they meet.\n\n```python\ndef reverseString(self, s):\n    left, right = 0, len(s) - 1\n    while left < right:\n        s[left], s[right] = s[right], s[left]\n        left += 1\n        right -= 1\n    return s\n```\n\n**Time:** O(n) | **Space:** O(1)\n\n### Key Insight\n\nThis is the classic two-pointer swap pattern. No extra space is needed because we swap in-place. Each element is visited at most once, giving us linear time.",
+  "functionSignature": {
+    "fnName": "reverseString",
+    "params": [
+      {
+        "name": "s",
+        "type": "string[]"
+      }
+    ],
+    "returnType": "string[]"
+  },
+  "testCases": [
+    {
+      "args": [
+        "[\"h\",\"e\",\"l\",\"l\",\"o\"]"
+      ],
+      "expected": "[\"o\",\"l\",\"l\",\"e\",\"h\"]",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "[\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]"
+      ],
+      "expected": "[\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "[\"a\"]"
+      ],
+      "expected": "[\"a\"]",
+      "isPublic": false
+    },
+    {
+      "args": [
+        "[\"A\",\"b\",\"C\",\"d\"]"
+      ],
+      "expected": "[\"d\",\"C\",\"b\",\"A\"]",
+      "isPublic": false
+    }
+  ]
+}

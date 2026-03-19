@@ -13,6 +13,7 @@ interface ExampleProblem {
   title: string;
   slug: string;
   description: string;
+  editorial?: string;
   difficulty: "easy" | "medium" | "hard";
   tags: string[];
   displayOrder: number;
@@ -90,6 +91,7 @@ function transformProblem(example: ExampleProblem): NewProblem {
     slug: example.slug,
     title: example.title,
     description: example.description,
+    editorial: example.editorial ?? null,
     difficulty: example.difficulty,
     tags: example.tags,
     testCases: example.testCases,
@@ -140,6 +142,7 @@ async function seed() {
         set: {
           title: data.title,
           description: data.description,
+          editorial: data.editorial,
           difficulty: data.difficulty,
           tags: data.tags,
           testCases: data.testCases,

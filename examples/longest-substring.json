@@ -1,0 +1,68 @@
+{
+  "title": "Longest Substring Without Repeating Characters",
+  "slug": "longest-substring-without-repeating-characters",
+  "description": "# Longest Substring Without Repeating Characters\n\nGiven a string `s`, find the length of the **longest substring** without repeating characters.\n\n## Example 1:\n\n```\nInput: s = \"abcabcbb\"\nOutput: 3\nExplanation: The answer is \"abc\", with the length of 3.\n```\n\n## Example 2:\n\n```\nInput: s = \"bbbbb\"\nOutput: 1\nExplanation: The answer is \"b\", with the length of 1.\n```\n\n## Example 3:\n\n```\nInput: s = \"pwwkew\"\nOutput: 3\nExplanation: The answer is \"wke\", with the length of 3.\nNotice that the answer must be a substring, \"pwke\" is a subsequence and not a substring.\n```\n\n## Constraints:\n\n- `0 <= s.length <= 5 * 10^4`\n- `s` consists of English letters, digits, symbols and spaces.",
+  "difficulty": "medium",
+  "tags": [
+    "string",
+    "hash-table",
+    "sliding-window"
+  ],
+  "displayOrder": 5,
+  "isActive": true,
+  "editorial": "## Approach 1: Brute Force\n\nCheck every possible substring and verify if it has all unique characters.\n\n**Time:** O(n³) | **Space:** O(min(n, m))\n\n## Approach 2: Sliding Window (Optimal)\n\nMaintain a window `[left, right]` with a set of characters in the current window. Expand `right` to include new characters. When a duplicate is found, shrink from `left` until the duplicate is removed.\n\n```python\ndef lengthOfLongestSubstring(self, s):\n    seen = set()\n    left = 0\n    max_len = 0\n    for right in range(len(s)):\n        while s[right] in seen:\n            seen.remove(s[left])\n            left += 1\n        seen.add(s[right])\n        max_len = max(max_len, right - left + 1)\n    return max_len\n```\n\n**Time:** O(n) | **Space:** O(min(n, m)) where m is the character set size\n\n### Key Insight\n\nThe sliding window technique works because if a substring `s[left..right]` contains a duplicate, no substring starting at `left` and ending beyond `right` can be valid either. So we advance `left` past the duplicate rather than restarting from scratch.",
+  "functionSignature": {
+    "fnName": "lengthOfLongestSubstring",
+    "params": [
+      {
+        "name": "s",
+        "type": "string"
+      }
+    ],
+    "returnType": "integer"
+  },
+  "testCases": [
+    {
+      "args": [
+        "\"abcabcbb\""
+      ],
+      "expected": "3",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "\"bbbbb\""
+      ],
+      "expected": "1",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "\"pwwkew\""
+      ],
+      "expected": "3",
+      "isPublic": true
+    },
+    {
+      "args": [
+        "\"\""
+      ],
+      "expected": "0",
+      "isPublic": false
+    },
+    {
+      "args": [
+        "\"abcdef\""
+      ],
+      "expected": "6",
+      "isPublic": false
+    },
+    {
+      "args": [
+        "\"aab\""
+      ],
+      "expected": "2",
+      "isPublic": false
+    }
+  ]
+}
