@@ -225,8 +225,13 @@ export const problemRouter = createTRPCRouter({
           }),
         ),
         starterCode: z.record(z.string(), z.string()).optional(),
-        functionSignature: z.record(z.string(), z.any()).optional(),
-        driverCode: z.record(z.string(), z.string()).optional(),
+        functionSignature: z
+          .object({
+            fnName: z.string(),
+            params: z.array(z.object({ name: z.string(), type: z.string() })),
+            returnType: z.string(),
+          })
+          .optional(),
         tags: z.array(z.string()).default([]),
         displayOrder: z.number().default(0),
       }),
@@ -244,11 +249,9 @@ export const problemRouter = createTRPCRouter({
         .insert(problem)
         .values({
           ...input,
-          // Cast inputs
           tags: input.tags as string[],
           starterCode: input.starterCode as Record<string, string> | undefined,
-          functionSignature: input.functionSignature as Record<string, any> | undefined,
-          driverCode: input.driverCode as Record<string, string> | undefined,
+          functionSignature: input.functionSignature as any,
           testCases: input.testCases as any,
         })
         .returning();
@@ -279,8 +282,13 @@ export const problemRouter = createTRPCRouter({
           )
           .optional(),
         starterCode: z.record(z.string(), z.string()).optional(),
-        functionSignature: z.record(z.string(), z.any()).optional(),
-        driverCode: z.record(z.string(), z.string()).optional(),
+        functionSignature: z
+          .object({
+            fnName: z.string(),
+            params: z.array(z.object({ name: z.string(), type: z.string() })),
+            returnType: z.string(),
+          })
+          .optional(),
         tags: z.array(z.string()).optional(),
         isActive: z.boolean().optional(),
         displayOrder: z.number().optional(),
@@ -305,10 +313,7 @@ export const problemRouter = createTRPCRouter({
           starterCode: updates.starterCode as
             | Record<string, string>
             | undefined,
-          functionSignature: updates.functionSignature as
-            | Record<string, any>
-            | undefined,
-          driverCode: updates.driverCode as Record<string, string> | undefined,
+          functionSignature: updates.functionSignature as any,
         })
         .where(eq(problem.id, id))
         .returning();

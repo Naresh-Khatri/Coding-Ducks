@@ -76,7 +76,6 @@ const problemFormSchema = z.object({
     .default([]),
   starterCode: z.record(z.string(), z.string()).optional(),
   functionSignature: z.any().optional(),
-  driverCode: z.record(z.string(), z.string()).optional(),
 });
 
 type ProblemFormData = z.infer<typeof problemFormSchema>;
@@ -104,8 +103,8 @@ const TYPE_MAP = {
     string: "str",
     boolean: "bool",
     float: "float",
-    "integer[]": "List[int]",
-    "string[]": "List[str]",
+    "integer[]": "list[int]",
+    "string[]": "list[str]",
   },
   js: {
     integer: "number",
@@ -154,178 +153,6 @@ const generateStarterCode = (sig: FunctionSignature) => {
   return codes;
 };
 
-// Helper to generate driver code based on signature (Simplified for now)
-const generateDriverCode = (sig: FunctionSignature) => {
-  // Logic to parse inputs and call function based on language
-  // This is a simplified template. In a real system you'd have more robust templates.
-  return {
-    py: `
-import sys, json
-
-# User code will be concatenated here
-{{USER_CODE}}
-
-if __name__ == "__main__":
-    lines = sys.stdin.read().splitlines()
-    # Assuming inputs are one per line matching params
-    # This needs to be robust for arrays usage
-${sig.params.map((p, i) => `    ${p.name} = json.loads(lines[${i}])`).join("\n")}
-    
-    sol = Solution()
-    ret = sol.${sig.fnName}(${sig.params.map((p) => p.name).join(", ")})
-    print(json.dumps(ret))
-`,
-    js: `
-const fs = require('fs');
-
-// User code
-{{USER_CODE}}
-
-const lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');
-${sig.params.map((p, i) => `const ${p.name} = JSON.parse(lines[${i}]);`).join("\n")}
-
-const sol = new Solution();
-const ret = sol.${sig.fnName}(${sig.params.map((p) => p.name).join(", ")});
-console.log(JSON.stringify(ret));
-`,
-    java: `
-import java.util.*;
-import java.io.*;
-import java.util.stream.*;
-
-// User code (must be class Solution)
-{{USER_CODE}}
-
-public class Main {
-    public static void main(String[] args) throws Exception {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        // Simple parsing logic
-        ${sig.params
-        .map((p) => {
-          if (p.type === "integer")
-            return `int ${p.name} = Integer.parseInt(br.readLine());`;
-          if (p.type === "string") return `String ${p.name} = br.readLine();`; // JSON parse needed broadly
-          if (p.type === "integer[]")
-            return `int[] ${p.name} = Arrays.stream(br.readLine().replace("[","").replace("]","").split(",")).mapToInt(String::trim).mapToInt(Integer::parseInt).toArray();`;
-          return `// Parsing for ${p.type} not fully implemented in template`;
-        })
-        .join("\n        ")}
-        
-        Solution sol = new Solution();
-        ${TYPE_MAP.java?.[sig.returnType] || "Object"} ret = sol.${sig.fnName}(${sig.params.map((p) => p.name).join(", ")});
-        
-        // Output formatting
-        ${sig.returnType.includes("[]") ? "System.out.println(Arrays.toString(ret));" : "System.out.println(ret);"}
-    }
-}
-`,
-    cpp: `
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <algorithm>
-
-using namespace std;
-
-// Helpers for input parsing
-vector<int> parseIntArray(string s) {
-    if (s.length() < 2) return {};
-    s = s.substr(1, s.length() - 2);
-    replace(s.begin(), s.end(), ',', ' ');
-    stringstream ss(s);
-    int val;
-    vector<int> res;
-    while (ss >> val) res.push_back(val);
-    return res;
-}
-
-// User code
-{{USER_CODE}}
-
-int main() {
-    string line;
-${sig.params
-        .map((p) => {
-          if (p.type === "integer")
-            return `    getline(cin, line); int ${p.name} = stoi(line);`;
-          if (p.type === "string")
-            return `    getline(cin, line); string ${p.name} = line; if(line.length() >= 2 && line.front() == '"') ${p.name} = line.substr(1, line.length()-2);`;
-          if (p.type === "integer[]")
-            return `    getline(cin, line); vector<int> ${p.name} = parseIntArray(line);`;
-          return `    // Parsing for ${p.type} not implemented`;
-        })
-        .join("\n")}
-
-    Solution sol;
-    ${TYPE_MAP.cpp?.[sig.returnType] || "auto"} ret = sol.${sig.fnName}(${sig.params.map((p) => p.name).join(", ")});
-
-    // Output
-    ${sig.returnType === "integer[]"
-        ? `cout << "["; for(size_t i=0; i<ret.size(); ++i) cout << (i==0?"":",") << ret[i]; cout << "]" << endl;`
-        : `cout << ret << endl;`
-      }
-
-    return 0;
-}
-`,
-    c: `
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-
-// Helpers
-int* parseIntArray(char* s, int* size) {
-    *size = 0;
-    if (!s || strlen(s) < 2) return NULL;
-    int count = 1;
-    for(int i=0; s[i]; i++) if(s[i] == ',') count++;
-    
-    int* arr = (int*)malloc(count * sizeof(int));
-    char* token = strtok(s + 1, ",]");
-    int i = 0;
-    while(token) {
-        arr[i++] = atoi(token);
-        token = strtok(NULL, ",]");
-    }
-    *size = i;
-    return arr;
-}
-
-// User code
-{{USER_CODE}}
-
-int main() {
-    char line[2048];
-${sig.params
-        .map((p) => {
-          if (p.type === "integer")
-            return `    if(fgets(line, 2048, stdin)) { int ${p.name} = atoi(line);`;
-          if (p.type === "integer[]")
-            return `    if(fgets(line, 2048, stdin)) { int ${p.name}_size; int* ${p.name} = parseIntArray(line, &${p.name}_size);`;
-          if (p.type === "string")
-            return `    if(fgets(line, 2048, stdin)) { line[strcspn(line, "\\n")] = 0; char* ${p.name} = line;`;
-          return `    // Parsing for ${p.type} not implemented`;
-        })
-        .join("\n    ") + sig.params.map(() => " }").join("")
-      }
-
-    ${TYPE_MAP.c?.[sig.returnType] || "void"} ret = ${sig.fnName}(${sig.params.map((p) => p.name).join(", ")});
-
-    // Output
-    ${sig.returnType === "integer"
-        ? `printf("%d\\n", ret);`
-        : sig.returnType === "integer[]"
-          ? `printf("[Array Output - Size Unknown]\\n"); /* C return arrays need returnSize pointer in signature (not yet supported) */`
-          : `printf("%s\\n", ret); /* Check type */`
-      }
-
-    return 0;
-}
-`,
-  };
-};
 
 interface ProblemFormDialogProps {
   open: boolean;
@@ -436,12 +263,8 @@ export function ProblemFormDialog({
     setSignature(newSig);
     form.setValue("functionSignature", newSig);
 
-    // Generate code
     const newStarterCode = generateStarterCode(newSig);
-    const newDriverCode = generateDriverCode(newSig);
-
     form.setValue("starterCode", newStarterCode);
-    form.setValue("driverCode", newDriverCode);
   };
 
   const form = useForm<ProblemFormData>({
@@ -482,7 +305,6 @@ export function ProblemFormDialog({
           testCases: existingProblem.testCases as any[],
           starterCode: existingProblem.starterCode as Record<string, string>,
           functionSignature: existingProblem.functionSignature as any,
-          driverCode: existingProblem.driverCode as any,
         });
         if (existingProblem.functionSignature) {
           setSignature(existingProblem.functionSignature as any);

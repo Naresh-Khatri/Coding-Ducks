@@ -18,11 +18,8 @@ export const problem = pgTable("problem", {
   // Starter code: {py: string, js: string, cpp: string, java: string}
   starterCode: jsonb("starter_code").$type<Record<string, string>>(),
 
-  // Function signature definition per language
-  functionSignature: jsonb("function_signature").$type<Record<string, FunctionSignature>>(),
-
-  // Driver code templates per language (contains input parsing + function call)
-  driverCode: jsonb("driver_code").$type<Record<string, string>>(),
+  // Function signature definition (language-agnostic)
+  functionSignature: jsonb("function_signature").$type<FunctionSignature>(),
 
   // Display order (for sorting)
   displayOrder: integer("display_order").default(0),
@@ -46,7 +43,7 @@ export interface TestCase {
 }
 
 export interface FunctionSignature {
-  name: string;
+  fnName: string;
   params: Array<{
     name: string;
     type: string;

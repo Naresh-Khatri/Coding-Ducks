@@ -1,24 +1,39 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useTRPC } from "~/trpc/react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ChevronLeft, Clock, Cpu, EyeOff, Loader2, Lock, Play, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { toast } from "sonner";
+
+import type { Language } from "~/components/code-editor";
+import { authClient } from "~/auth/client";
+import { CodeEditor } from "~/components/code-editor";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { CodeEditor, type Language } from "~/components/code-editor";
-import { Loader2, Play, Send, ChevronLeft, EyeOff } from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { cn } from "~/lib/utils";
+import { useTRPC } from "~/trpc/react";
 
 const LANGUAGES: Array<{ key: string; label: string }> = [
   { key: "py", label: "Python" },
@@ -32,6 +47,8 @@ export default function ProblemDetailPage() {
   const trpc = useTRPC();
   const params = useParams();
   const slug = params.slug as string;
+  const { data: session } = authClient.useSession();
+  const isAuthenticated = !!session;
 
   const [codes, setCodes] = useState<Record<string, string>>({});
   const [language, setLanguage] = useState<Language>("py"); // Start with py default
@@ -41,20 +58,26 @@ export default function ProblemDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastProblemId, setLastProblemId] = useState<number | null>(null);
   const [pollingId, setPollingId] = useState<number | null>(null);
+  const [selectedTestCase, setSelectedTestCase] = useState(0);
+  const [selectedOutputCase, setSelectedOutputCase] = useState(0);
+  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
 
   // Fetch problem
   const { data: problem, isLoading } = useQuery(
-    trpc.problem.bySlug.queryOptions({ slug })
+    trpc.problem.bySlug.queryOptions({ slug }),
   );
 
   // Fetch submissions history
   const { data: submissions, refetch: refetchSubmissions } = useQuery(
-    trpc.submission.list.queryOptions({
-      problemId: problem?.id,
-      limit: 10
-    }, {
-      enabled: !!problem?.id
-    })
+    trpc.submission.list.queryOptions(
+      {
+        problemId: problem?.id,
+        limit: 10,
+      },
+      {
+        enabled: !!problem?.id,
+      },
+    ),
   );
 
   // Poll for results
@@ -67,14 +90,15 @@ export default function ProblemDetailPage() {
           if (query.state.data?.status !== "running") return false;
           return 1000;
         },
-      }
-    )
+      },
+    ),
   );
 
   // Handle polling completion
   useEffect(() => {
     if (resultsQuery.data && resultsQuery.data.status !== "running") {
       const data = resultsQuery.data;
+      console.log({ data });
       if (isRunning) {
         setConsoleOutput(data.results || []);
         setActiveTab("console");
@@ -114,12 +138,13 @@ export default function ProblemDetailPage() {
   const currentCode = codes[language] || "";
 
   const setCode = (newCode: string) => {
-    setCodes(prev => ({ ...prev, [language]: newCode }));
+    setCodes((prev) => ({ ...prev, [language]: newCode }));
   };
 
   const runMutation = useMutation(
     trpc.submission.run.mutationOptions({
       onSuccess: (data) => {
+        console.log(data);
         if (!data) return;
         setPollingId(data.id);
         // isRunning is already set in handleRun
@@ -128,7 +153,7 @@ export default function ProblemDetailPage() {
         toast.error(err.message || "Execution failed");
         setIsRunning(false);
       },
-    })
+    }),
   );
 
   const submitMutation = useMutation(
@@ -142,7 +167,7 @@ export default function ProblemDetailPage() {
         toast.error(err.message || "Submission failed");
         setIsSubmitting(false);
       },
-    })
+    }),
   );
 
   const handleRun = () => {
@@ -167,10 +192,12 @@ export default function ProblemDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div className="bg-background flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading problem details...</p>
+          <Loader2 className="text-primary h-10 w-10 animate-spin" />
+          <p className="text-muted-foreground animate-pulse text-sm font-medium">
+            Loading problem details...
+          </p>
         </div>
       </div>
     );
@@ -178,12 +205,15 @@ export default function ProblemDetailPage() {
 
   if (!problem) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-6 bg-background p-4 text-center">
+      <div className="bg-background flex h-screen flex-col items-center justify-center gap-6 p-4 text-center">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">404</h1>
-          <p className="text-xl font-medium text-muted-foreground">Problem not found</p>
-          <p className="max-w-md text-sm text-muted-foreground/60">
-            The problem you're looking for might have been moved, renamed, or is currently unpublished.
+          <p className="text-muted-foreground text-xl font-medium">
+            Problem not found
+          </p>
+          <p className="text-muted-foreground/60 max-w-md text-sm">
+            The problem you're looking for might have been moved, renamed, or is
+            currently unpublished.
           </p>
         </div>
         <Button asChild size="lg" className="rounded-full px-8">
@@ -197,25 +227,35 @@ export default function ProblemDetailPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col bg-background font-inter selection:bg-primary/20">
+    <div className="bg-background font-inter selection:bg-primary/20 flex h-[calc(100vh-64px)] flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b bg-card/50 px-6 py-3 backdrop-blur-md">
+      <div className="bg-card/50 flex items-center justify-between border-b px-6 py-3 backdrop-blur-md">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild className="hover:bg-accent/50 rounded-full">
+          <Button
+            variant="ghost"
+            size="icon"
+            asChild
+            className="hover:bg-accent/50 rounded-full"
+          >
             <Link href="/problems">
               <ChevronLeft className="h-5 w-5" />
             </Link>
           </Button>
           <div className="flex flex-col">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold tracking-tight text-foreground">{problem.title}</h1>
+              <h1 className="text-foreground text-xl font-bold tracking-tight">
+                {problem.title}
+              </h1>
               <Badge
                 variant="outline"
                 className={cn(
-                  "capitalize border-none px-2.5 py-0.5 text-[10px] font-bold tracking-wider",
-                  problem.difficulty === "easy" && "bg-emerald-500/10 text-emerald-500",
-                  problem.difficulty === "medium" && "bg-amber-500/10 text-amber-500",
-                  problem.difficulty === "hard" && "bg-rose-500/10 text-rose-500"
+                  "border-none px-2.5 py-0.5 text-[10px] font-bold tracking-wider capitalize",
+                  problem.difficulty === "easy" &&
+                    "bg-emerald-500/10 text-emerald-500",
+                  problem.difficulty === "medium" &&
+                    "bg-amber-500/10 text-amber-500",
+                  problem.difficulty === "hard" &&
+                    "bg-rose-500/10 text-rose-500",
                 )}
               >
                 {problem.difficulty}
@@ -224,25 +264,74 @@ export default function ProblemDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRun}
-            disabled={isRunning || isSubmitting}
-            className="h-9 rounded-full px-5 border-primary/20 hover:border-primary/50 transition-all duration-300"
-          >
-            {isRunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" /> : <Play className="mr-2 h-4 w-4 fill-primary text-primary" />}
-            <span className="font-semibold text-xs tracking-wide">RUN CODE</span>
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={isRunning || isSubmitting}
-            className="h-9 rounded-full px-6 shadow-lg shadow-primary/20 active:scale-95 transition-all duration-300"
-          >
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4 fill-current" />}
-            <span className="font-bold text-xs tracking-wider uppercase">Submit</span>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRun}
+                  disabled={!isAuthenticated || isRunning || isSubmitting}
+                  className="border-primary/20 hover:border-primary/50 h-9 rounded-full px-5 transition-all duration-300"
+                >
+                  {isRunning ? (
+                    <Loader2 className="text-primary mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Play className="fill-primary text-primary mr-2 h-4 w-4" />
+                  )}
+                  <span className="text-xs font-semibold tracking-wide">
+                    RUN CODE
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-popover border-border animate-in zoom-in-95 duration-200"
+              >
+                {!isAuthenticated && (
+                  <div className="animate-in fade-in zoom-in mr-2 flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 duration-500">
+                    <Lock className="h-3 w-3 text-amber-500" />
+                    <span className="text-[10px] font-bold tracking-wider text-amber-500 uppercase">
+                      Login to Participate
+                    </span>
+                  </div>
+                )}
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  onClick={handleSubmit}
+                  disabled={!isAuthenticated || isRunning || isSubmitting}
+                  className="shadow-primary/20 h-9 rounded-full px-6 shadow-lg transition-all duration-300 active:scale-95"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4 fill-current" />
+                  )}
+                  <span className="text-xs font-bold tracking-wider uppercase">
+                    Submit
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-popover border-border animate-in zoom-in-95 duration-200"
+              >
+                {!isAuthenticated && (
+                  <div className="animate-in fade-in zoom-in mr-2 flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 duration-500">
+                    <Lock className="h-3 w-3 text-amber-500" />
+                    <span className="text-[10px] font-bold tracking-wider text-amber-500 uppercase">
+                      Login to Participate
+                    </span>
+                  </div>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
@@ -251,23 +340,51 @@ export default function ProblemDetailPage() {
         <ResizablePanelGroup direction="horizontal">
           {/* Left Panel: Problem Description */}
           <ResizablePanel defaultSize={40} minSize={20} className="bg-card/30">
-            <div className="h-full overflow-y-auto custom-scrollbar">
+            <div className="custom-scrollbar h-full overflow-y-auto">
               <div className="p-8 pb-32">
                 <div className="prose prose-invert prose-slate max-w-none">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      h1: ({ node, ...props }) => <h1 className="text-3xl font-extrabold tracking-tight mb-6 mt-0" {...props} />,
-                      h2: ({ node, ...props }) => <h2 className="text-xl font-bold tracking-tight mb-4 mt-8 text-foreground/90 border-b border-white/5 pb-2" {...props} />,
-                      p: ({ node, ...props }) => <p className="text-foreground/70 leading-relaxed mb-4 text-sm" {...props} />,
+                      h1: ({ node, ...props }) => (
+                        <h1
+                          className="mt-0 mb-6 text-3xl font-extrabold tracking-tight"
+                          {...props}
+                        />
+                      ),
+                      h2: ({ node, ...props }) => (
+                        <h2
+                          className="text-foreground/90 mt-8 mb-4 border-b border-white/5 pb-2 text-xl font-bold tracking-tight"
+                          {...props}
+                        />
+                      ),
+                      p: ({ node, ...props }) => (
+                        <p
+                          className="text-foreground/70 mb-4 text-sm leading-relaxed"
+                          {...props}
+                        />
+                      ),
                       code: ({ node, inline, ...props }: any) =>
                         inline ? (
-                          <code className="bg-accent/40 rounded px-1.5 py-0.5 text-xs font-mono text-primary font-medium" {...props} />
+                          <code
+                            className="bg-accent/40 text-primary rounded px-1.5 py-0.5 font-mono text-xs font-medium"
+                            {...props}
+                          />
                         ) : (
-                          <code className="block bg-accent/20 p-4 rounded-lg overflow-x-auto text-xs font-mono my-4 border border-white/5" {...props} />
+                          <code
+                            className="bg-accent/20 my-4 block overflow-x-auto rounded-lg border border-white/5 p-4 font-mono text-xs"
+                            {...props}
+                          />
                         ),
-                      ul: ({ node, ...props }) => <ul className="list-disc list-outside ml-5 space-y-2 mb-6 text-sm text-foreground/70" {...props} />,
-                      li: ({ node, ...props }) => <li className="pl-1" {...props} />,
+                      ul: ({ node, ...props }) => (
+                        <ul
+                          className="text-foreground/70 mb-6 ml-5 list-outside list-disc space-y-2 text-sm"
+                          {...props}
+                        />
+                      ),
+                      li: ({ node, ...props }) => (
+                        <li className="pl-1" {...props} />
+                      ),
                     }}
                   >
                     {problem.description}
@@ -275,11 +392,17 @@ export default function ProblemDetailPage() {
                 </div>
 
                 {problem.tags && problem.tags.length > 0 && (
-                  <div className="mt-12 pt-8 border-t border-white/5">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Related Topics</h3>
+                  <div className="mt-12 border-t border-white/5 pt-8">
+                    <h3 className="text-muted-foreground mb-4 text-xs font-bold tracking-widest uppercase">
+                      Related Topics
+                    </h3>
                     <div className="flex flex-wrap gap-2">
-                      {problem.tags.map(tag => (
-                        <Badge key={tag} variant="secondary" className="bg-white/5 hover:bg-white/10 text-[10px] font-medium transition-colors cursor-pointer border-none px-2 py-0.5">
+                      {problem.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="cursor-pointer border-none bg-white/5 px-2 py-0.5 text-[10px] font-medium transition-colors hover:bg-white/10"
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -290,34 +413,48 @@ export default function ProblemDetailPage() {
             </div>
           </ResizablePanel>
 
-          <ResizableHandle withHandle className="w-1 bg-border/50 hover:bg-primary/30 transition-colors" />
+          <ResizableHandle
+            withHandle
+            className="bg-border/50 hover:bg-primary/30 w-1 transition-colors"
+          />
 
           {/* Right Panel: Code Editor & Console */}
           <ResizablePanel defaultSize={60} minSize={30}>
             <ResizablePanelGroup direction="vertical">
               <ResizablePanel defaultSize={65} minSize={30}>
                 <div className="flex h-full flex-col">
-                  <div className="border-b px-4 py-2 bg-card/50 flex justify-between items-center text-xs backdrop-blur-sm">
+                  <div className="bg-card/50 flex items-center justify-between border-b px-4 py-2 text-xs backdrop-blur-sm">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-2 w-2 rounded-full bg-primary/80 animate-pulse" />
-                      <span className="font-bold tracking-wider uppercase text-muted-foreground/80">Code Editor</span>
+                      <div className="bg-primary/80 flex h-2 w-2 animate-pulse rounded-full" />
+                      <span className="text-muted-foreground/80 font-bold tracking-wider uppercase">
+                        Code Editor
+                      </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="h-4 w-px bg-border" />
+                      <div className="bg-border h-4 w-px" />
                       <select
-                        className="bg-transparent border-none outline-none font-bold text-xs cursor-pointer hover:text-primary transition-colors pr-2"
+                        className="hover:text-primary cursor-pointer border-none bg-transparent pr-2 text-xs font-bold transition-colors outline-none"
                         value={language}
-                        onChange={(e) => setLanguage(e.target.value as Language)}
+                        onChange={(e) =>
+                          setLanguage(e.target.value as Language)
+                        }
                       >
-                        {Object.keys(problem.starterCode as Record<string, string> || {}).map(lang => (
-                          <option key={lang} value={lang} className="bg-popover text-foreground">
-                            {LANGUAGES.find((l) => l.key === lang)?.label || lang}
+                        {Object.keys(
+                          (problem.starterCode as Record<string, string>) || {},
+                        ).map((lang) => (
+                          <option
+                            key={lang}
+                            value={lang}
+                            className="bg-popover text-foreground"
+                          >
+                            {LANGUAGES.find((l) => l.key === lang)?.label ||
+                              lang}
                           </option>
                         ))}
                       </select>
                     </div>
                   </div>
-                  <div className="flex-1 relative bg-[#1e1e1e]">
+                  <div className="relative flex-1 bg-[#1e1e1e]">
                     <CodeEditor
                       value={currentCode}
                       onChange={setCode}
@@ -329,174 +466,307 @@ export default function ProblemDetailPage() {
                 </div>
               </ResizablePanel>
 
-              <ResizableHandle withHandle className="h-1 bg-border/50 hover:bg-primary/30 transition-colors" />
+              <ResizableHandle
+                withHandle
+                className="bg-border/50 hover:bg-primary/30 h-1 transition-colors"
+              />
 
               <ResizablePanel defaultSize={35} minSize={10}>
-                <div className="flex h-full flex-col bg-card/10">
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+                <div className="bg-card/10 flex h-full flex-col">
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="flex h-full flex-col"
+                  >
                     <div className="bg-card/30 border-b px-4 backdrop-blur-sm">
-                      <TabsList className="bg-transparent h-11 p-0 gap-8">
-                        <TabsTrigger value="problem" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 font-bold text-xs tracking-wider uppercase text-muted-foreground data-[state=active]:text-foreground transition-all">Test Cases</TabsTrigger>
-                        <TabsTrigger value="console" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 font-bold text-xs tracking-wider uppercase text-muted-foreground data-[state=active]:text-foreground transition-all">
-                          Output {consoleOutput.length > 0 && <span className="ml-2 px-1.5 py-0.5 bg-primary/10 text-primary rounded-full text-[10px]">{consoleOutput.length}</span>}
+                      <TabsList className="h-11 gap-8 bg-transparent p-0">
+                        <TabsTrigger
+                          value="problem"
+                          className="data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-foreground h-full rounded-none border-b-2 border-transparent px-0 text-xs font-bold tracking-wider uppercase transition-all data-[state=active]:bg-transparent"
+                        >
+                          Test Cases
                         </TabsTrigger>
-                        <TabsTrigger value="submissions" className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 font-bold text-xs tracking-wider uppercase text-muted-foreground data-[state=active]:text-foreground transition-all">Submissions</TabsTrigger>
+                        <TabsTrigger
+                          value="console"
+                          className="data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-foreground h-full rounded-none border-b-2 border-transparent px-0 text-xs font-bold tracking-wider uppercase transition-all data-[state=active]:bg-transparent"
+                        >
+                          Output{" "}
+                          {consoleOutput.length > 0 && (
+                            <span className="bg-primary/10 text-primary ml-2 rounded-full px-1.5 py-0.5 text-[10px]">
+                              {consoleOutput.length}
+                            </span>
+                          )}
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="submissions"
+                          className="data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-foreground h-full rounded-none border-b-2 border-transparent px-0 text-xs font-bold tracking-wider uppercase transition-all data-[state=active]:bg-transparent"
+                        >
+                          Submissions
+                        </TabsTrigger>
                       </TabsList>
                     </div>
 
-                    <TabsContent value="problem" className="flex-1 p-6 overflow-y-auto custom-scrollbar m-0">
-                      <div className="space-y-6">
-                        {problem.testCases?.filter((tc: any) => tc.isPublic).map((tc: any, i: number) => {
-                          // Handle structured or legacy test cases
-                          const input = tc.input ?? (tc.args ? tc.args.join("\n") : "");
-                          const output = tc.output ?? tc.expected ?? "";
-
+                    <TabsContent
+                      value="problem"
+                      className="custom-scrollbar m-0 flex-1 overflow-y-auto"
+                    >
+                      {(() => {
+                        const publicCases = problem.testCases?.filter((tc: any) => tc.isPublic) || [];
+                        if (publicCases.length === 0) {
                           return (
-                            <div key={i} className="group transition-all duration-300">
-                              <div className="flex items-center gap-2 mb-3">
-                                <div className="h-5 w-5 rounded-full bg-accent/50 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
-                                  {i + 1}
-                                </div>
-                                <div className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">Test Case</div>
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                              <div className="bg-accent/20 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+                                <EyeOff className="text-muted-foreground/40 h-6 w-6" />
                               </div>
-                              <div className="grid gap-3 sm:grid-cols-2">
-                                <div className="space-y-1.5">
-                                  <div className="text-[10px] font-semibold text-muted-foreground ml-1">INPUT</div>
-                                  <div className="bg-black/20 border border-white/5 p-3 rounded-lg text-xs font-mono whitespace-pre-wrap text-foreground/80 min-h-[44px]">
-                                    {input}
-                                  </div>
-                                </div>
-                                <div className="space-y-1.5">
-                                  <div className="text-[10px] font-semibold text-muted-foreground ml-1">EXPECTED OUTPUT</div>
-                                  <div className="bg-black/20 border border-white/5 p-3 rounded-lg text-xs font-mono whitespace-pre-wrap text-emerald-500/80 min-h-[44px]">
-                                    {output}
-                                  </div>
-                                </div>
-                              </div>
+                              <p className="text-muted-foreground text-sm font-medium">
+                                No public test cases available
+                              </p>
                             </div>
                           );
-                        })}
-                        {(!problem.testCases || problem.testCases.filter((tc: any) => tc.isPublic).length === 0) && (
-                          <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
-                              <EyeOff className="h-6 w-6 text-muted-foreground/40" />
+                        }
+                        const sig = problem.functionSignature as any;
+                        const tc = publicCases[selectedTestCase] ?? publicCases[0];
+                        if (!tc) return null;
+                        return (
+                          <div className="p-4">
+                            {/* Case tabs */}
+                            <div className="mb-4 flex items-center gap-2">
+                              {publicCases.map((_: any, i: number) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setSelectedTestCase(i)}
+                                  className={cn(
+                                    "rounded-lg px-3 py-1 text-xs font-medium transition-colors",
+                                    selectedTestCase === i
+                                      ? "bg-accent text-foreground"
+                                      : "text-muted-foreground hover:text-foreground",
+                                  )}
+                                >
+                                  Case {i + 1}
+                                </button>
+                              ))}
                             </div>
-                            <p className="text-sm font-medium text-muted-foreground">No public test cases available</p>
+                            {/* Params */}
+                            <div className="space-y-3">
+                              {tc.args && sig?.params ? (
+                                sig.params.map((param: any, j: number) => (
+                                  <div key={j}>
+                                    <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                      {param.name} =
+                                    </div>
+                                    <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
+                                      {tc.args?.[j]}
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div>
+                                  <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                    Input
+                                  </div>
+                                  <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm whitespace-pre-wrap">
+                                    {tc.input ?? ""}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
+                        );
+                      })()}
                     </TabsContent>
 
-                    <TabsContent value="console" className="flex-1 p-6 overflow-y-auto custom-scrollbar m-0">
+                    <TabsContent
+                      value="console"
+                      className="custom-scrollbar m-0 flex-1 overflow-y-auto"
+                    >
                       {consoleOutput.length > 0 ? (
-                        <div className="space-y-4">
-                          {consoleOutput.map((res: any, i: number) => (
-                            <div key={i} className={cn(
-                              "relative group overflow-hidden rounded-xl border transition-all duration-300",
-                              res.passed
-                                ? "bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40"
-                                : "bg-rose-500/5 border-rose-500/20 hover:border-rose-500/40"
-                            )}>
-                              <div className="flex items-center justify-between p-4 bg-white/5">
-                                <div className="flex items-center gap-3">
-                                  <div className={cn(
-                                    "px-2 py-0.5 rounded-full text-[9px] font-black tracking-tighter uppercase",
-                                    res.passed ? "bg-emerald-500 text-black" : "bg-rose-500 text-white"
-                                  )}>
-                                    {res.passed ? "PASSED" : "FAILED"}
-                                  </div>
-                                  <span className="text-xs font-bold font-mono text-muted-foreground">TC#{i + 1}</span>
-                                </div>
-                                <div className="flex items-center gap-4 text-[10px] font-mono text-muted-foreground/60">
-                                  <span>{res.runtime}ms</span>
-                                </div>
-                              </div>
-
-                              <div className="p-4 space-y-4">
-                                {res.error ? (
-                                  <div className="bg-black/20 p-3 rounded-lg border border-rose-500/20">
-                                    <div className="text-[10px] font-bold text-rose-500 mb-2 uppercase tracking-wider">Error Runtime</div>
-                                    <div className="text-xs font-mono text-rose-400 whitespace-pre-wrap">{res.error}</div>
-                                  </div>
+                        (() => {
+                          const allPassed = consoleOutput.every((r: any) => r.passed);
+                          const res = consoleOutput[selectedOutputCase] || consoleOutput[0];
+                          const sig = problem.functionSignature as any;
+                          const publicCases = problem.testCases?.filter((tc: any) => tc.isPublic) || [];
+                          const tc = publicCases[selectedOutputCase];
+                          return (
+                            <div className="p-4">
+                              {/* Verdict header */}
+                              <div className="mb-4 flex items-center gap-2">
+                                {allPassed ? (
+                                  <span className="text-sm font-semibold text-emerald-500">
+                                    Accepted
+                                  </span>
                                 ) : (
-                                  <div className="grid gap-4 sm:grid-cols-3">
-                                    <div className="space-y-1.5">
-                                      <div className="text-[10px] font-bold text-muted-foreground/60 tracking-wider">INPUT</div>
-                                      <div className="bg-black/10 p-2 rounded-md font-mono text-[11px] text-foreground/70 overflow-x-auto truncate">{res.input || "N/A"}</div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                      <div className="text-[10px] font-bold text-muted-foreground/60 tracking-wider">EXPECTED</div>
-                                      <div className="bg-black/10 p-2 rounded-md font-mono text-[11px] text-emerald-500/60 overflow-x-auto truncate">{res.expected || "N/A"}</div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                      <div className="text-[10px] font-bold text-muted-foreground/60 tracking-wider">ACTUAL</div>
-                                      <div className={cn(
-                                        "bg-black/10 p-2 rounded-md font-mono text-[11px] overflow-x-auto truncate",
-                                        res.passed ? "text-emerald-500" : "text-rose-500 font-bold"
-                                      )}>{res.actual || (res.passed ? "✓" : "NULL")}</div>
-                                    </div>
-                                  </div>
+                                  <span className="text-sm font-semibold text-rose-500">
+                                    Wrong Answer
+                                  </span>
                                 )}
                               </div>
+                              {/* Case tabs */}
+                              <div className="mb-4 flex items-center gap-2">
+                                {consoleOutput.map((r: any, i: number) => (
+                                  <button
+                                    key={i}
+                                    onClick={() => setSelectedOutputCase(i)}
+                                    className={cn(
+                                      "flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-medium transition-colors",
+                                      selectedOutputCase === i
+                                        ? "bg-accent text-foreground"
+                                        : "text-muted-foreground hover:text-foreground",
+                                    )}
+                                  >
+                                    <div
+                                      className={cn(
+                                        "h-1.5 w-1.5 rounded-full",
+                                        r.passed ? "bg-emerald-500" : "bg-rose-500",
+                                      )}
+                                    />
+                                    Case {i + 1}
+                                  </button>
+                                ))}
+                              </div>
+                              {/* Selected case details */}
+                              {res.error ? (
+                                <div className="space-y-3">
+                                  <div>
+                                    <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                      Error
+                                    </div>
+                                    <div className="rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm whitespace-pre-wrap text-rose-400">
+                                      {res.error}
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="space-y-3">
+                                  {/* Input params */}
+                                  {tc?.args && sig?.params ? (
+                                    sig.params.map((param: any, j: number) => (
+                                      <div key={j}>
+                                        <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                          {param.name} =
+                                        </div>
+                                        <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
+                                          {tc?.args?.[j]}
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : res.input ? (
+                                    <div>
+                                      <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                        Input
+                                      </div>
+                                      <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
+                                        {res.input}
+                                      </div>
+                                    </div>
+                                  ) : null}
+                                  {/* Output */}
+                                  <div>
+                                    <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                      Output
+                                    </div>
+                                    <div
+                                      className={cn(
+                                        "rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm",
+                                        res.passed ? "text-foreground" : "text-rose-500",
+                                      )}
+                                    >
+                                      {res.actual || "null"}
+                                    </div>
+                                  </div>
+                                  {/* Expected */}
+                                  <div>
+                                    <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                      Expected
+                                    </div>
+                                    <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
+                                      {res.expected || tc?.expected || "N/A"}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          ))}
-                        </div>
+                          );
+                        })()
                       ) : (
-                        <div className="flex flex-col items-center justify-center py-16 text-center opacity-50 grayscale transition-all duration-700 hover:opacity-80 hover:grayscale-0">
-                          <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-6 relative">
-                            <div className="absolute inset-0 animate-ping rounded-full bg-primary/5" />
-                            <Play className="h-8 w-8 text-primary fill-primary ml-1" />
-                          </div>
-                          <h3 className="text-sm font-bold tracking-widest uppercase mb-2">Editor Standby</h3>
-                          <p className="max-w-[200px] text-[10px] font-medium text-muted-foreground leading-relaxed">
-                            Write your solution above and hit <span className="text-primary font-bold">RUN</span> to execute test cases.
+                        <div className="flex flex-col items-center justify-center py-16 text-center opacity-50">
+                          <Play className="text-muted-foreground mb-4 h-8 w-8" />
+                          <p className="text-muted-foreground text-xs font-medium">
+                            Run your code to see results
                           </p>
                         </div>
                       )}
                     </TabsContent>
 
-                    <TabsContent value="submissions" className="flex-1 p-6 overflow-y-auto custom-scrollbar m-0">
+                    <TabsContent
+                      value="submissions"
+                      className="custom-scrollbar m-0 flex-1 overflow-y-auto"
+                    >
                       {submissions && submissions.length > 0 ? (
-                        <div className="space-y-3">
-                          {submissions.map((sub) => (
-                            <div key={sub.id} className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all group">
-                              <div className="flex items-center gap-4">
-                                <div className={cn(
-                                  "h-2 w-2 rounded-full",
-                                  sub.status === "accepted" ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
-                                )} />
-                                <div className="flex flex-col gap-0.5">
-                                  <div className={cn(
-                                    "text-xs font-black uppercase tracking-tight",
-                                    sub.status === "accepted" ? "text-emerald-500" : "text-rose-500"
-                                  )}>
-                                    {sub.status.replace("_", " ")}
-                                  </div>
-                                  <div className="text-[10px] text-muted-foreground/60 font-medium">
-                                    {new Date(sub.createdAt).toLocaleDateString()} at {new Date(sub.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-6">
-                                <div className="flex flex-col items-end gap-0.5">
-                                  <div className="text-[11px] font-mono font-bold text-foreground/80 lowercase">{sub.lang}</div>
-                                  <div className="text-[10px] text-muted-foreground/40 font-mono tracking-tighter">
-                                    {sub.testsPassed}/{sub.testsTotal} tests
-                                  </div>
-                                </div>
-                                <div className="h-8 w-8 rounded-lg bg-accent/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                  <ChevronLeft className="h-4 w-4 rotate-180" />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                        <table className="w-full text-left text-xs">
+                          <thead>
+                            <tr className="text-muted-foreground border-b border-white/5 text-[11px]">
+                              <th className="px-4 py-2 font-medium">Status</th>
+                              <th className="px-4 py-2 font-medium">Language</th>
+                              <th className="px-4 py-2 font-medium">Runtime</th>
+                              <th className="px-4 py-2 font-medium">Memory</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {submissions.map((sub) => {
+                              const langLabel =
+                                LANGUAGES.find((l) => l.key === sub.lang)?.label || sub.lang;
+                              return (
+                                <tr
+                                  key={sub.id}
+                                  onClick={() => setSelectedSubmission(sub)}
+                                  className="cursor-pointer transition-colors hover:bg-white/[0.03]"
+                                >
+                                  <td className="px-4 py-2.5">
+                                    <div className="flex flex-col gap-0.5">
+                                      <span
+                                        className={cn(
+                                          "text-xs font-semibold capitalize",
+                                          sub.status === "accepted"
+                                            ? "text-emerald-500"
+                                            : sub.status === "time_limit"
+                                              ? "text-amber-500"
+                                              : "text-rose-500",
+                                        )}
+                                      >
+                                        {sub.status.replace(/_/g, " ")}
+                                      </span>
+                                      <span className="text-muted-foreground/60 text-[10px]">
+                                        {new Date(sub.createdAt).toLocaleDateString(
+                                          undefined,
+                                          { month: "short", day: "numeric", year: "numeric" },
+                                        )}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="text-muted-foreground px-4 py-2.5">
+                                    {langLabel}
+                                  </td>
+                                  <td className="text-muted-foreground px-4 py-2.5 font-mono">
+                                    {sub.runtime != null ? `${sub.runtime} ms` : "N/A"}
+                                  </td>
+                                  <td className="text-muted-foreground px-4 py-2.5 font-mono">
+                                    {sub.memory != null
+                                      ? sub.memory >= 1024
+                                        ? `${(sub.memory / 1024).toFixed(1)} MB`
+                                        : `${sub.memory} KB`
+                                      : "N/A"}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       ) : (
-                        <div className="flex flex-col items-center justify-center py-16 text-center opacity-40">
-                          <div className="h-14 w-14 border-2 border-dashed border-muted rounded-full flex items-center justify-center mb-6">
-                            <Send className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                          <p className="text-sm font-medium text-muted-foreground">No submissions yet for this problem</p>
+                        <div className="flex flex-col items-center justify-center py-16 text-center opacity-50">
+                          <Send className="text-muted-foreground mb-4 h-8 w-8" />
+                          <p className="text-muted-foreground text-xs font-medium">
+                            No submissions yet
+                          </p>
                         </div>
                       )}
                     </TabsContent>
@@ -507,6 +777,148 @@ export default function ProblemDetailPage() {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
+
+      {/* Submission Detail Dialog */}
+      <Dialog
+        open={!!selectedSubmission}
+        onOpenChange={(open) => !open && setSelectedSubmission(null)}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          {selectedSubmission && (() => {
+            const sub = selectedSubmission;
+            const langLabel =
+              LANGUAGES.find((l) => l.key === sub.lang)?.label || sub.lang;
+            const results = sub.results as any[] | null;
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        "text-lg font-bold capitalize",
+                        sub.status === "accepted"
+                          ? "text-emerald-500"
+                          : sub.status === "time_limit"
+                            ? "text-amber-500"
+                            : "text-rose-500",
+                      )}
+                    >
+                      {sub.status.replace(/_/g, " ")}
+                    </span>
+                    <span className="text-muted-foreground text-sm font-normal">
+                      #{sub.id}
+                    </span>
+                  </DialogTitle>
+                </DialogHeader>
+
+                {/* Stats row */}
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="rounded-lg bg-accent/40 p-3">
+                    <div className="text-muted-foreground mb-1 text-[10px] font-medium uppercase">
+                      Language
+                    </div>
+                    <div className="text-foreground text-sm font-medium">{langLabel}</div>
+                  </div>
+                  <div className="rounded-lg bg-accent/40 p-3">
+                    <div className="text-muted-foreground mb-1 text-[10px] font-medium uppercase">
+                      Runtime
+                    </div>
+                    <div className="text-foreground text-sm font-medium">
+                      {sub.runtime != null ? `${sub.runtime} ms` : "N/A"}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-accent/40 p-3">
+                    <div className="text-muted-foreground mb-1 text-[10px] font-medium uppercase">
+                      Memory
+                    </div>
+                    <div className="text-foreground text-sm font-medium">
+                      {sub.memory != null
+                        ? sub.memory >= 1024
+                          ? `${(sub.memory / 1024).toFixed(1)} MB`
+                          : `${sub.memory} KB`
+                        : "N/A"}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-accent/40 p-3">
+                    <div className="text-muted-foreground mb-1 text-[10px] font-medium uppercase">
+                      Tests
+                    </div>
+                    <div className="text-foreground text-sm font-medium">
+                      {sub.testsPassed}/{sub.testsTotal} passed
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-muted-foreground text-xs">
+                  Submitted{" "}
+                  {new Date(sub.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}{" "}
+                  at{" "}
+                  {new Date(sub.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+
+                {/* Error message */}
+                {sub.errorMessage && (
+                  <div>
+                    <div className="text-muted-foreground mb-1 text-xs font-medium">
+                      Error
+                    </div>
+                    <div className="max-h-32 overflow-auto rounded-lg bg-accent/40 px-3 py-2 font-mono text-xs whitespace-pre-wrap text-rose-400">
+                      {sub.errorMessage}
+                    </div>
+                  </div>
+                )}
+
+                {/* Test results */}
+                {results && results.length > 0 && (
+                  <div>
+                    <div className="text-muted-foreground mb-2 text-xs font-medium">
+                      Test Results
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {results.map((r: any, i: number) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "flex h-6 w-6 items-center justify-center rounded text-[10px] font-bold",
+                            r.passed
+                              ? "bg-emerald-500/15 text-emerald-500"
+                              : "bg-rose-500/15 text-rose-500",
+                          )}
+                        >
+                          {i + 1}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Code */}
+                <div>
+                  <div className="text-muted-foreground mb-1 text-xs font-medium">
+                    Code
+                  </div>
+                  <div className="max-h-64 overflow-auto rounded-lg border border-white/5 bg-[#1e1e1e]">
+                    <CodeEditor
+                      value={sub.code}
+                      onChange={() => {}}
+                      language={sub.lang as Language}
+                      height="250px"
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
