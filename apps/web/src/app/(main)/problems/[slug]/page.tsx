@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Clock, Cpu, EyeOff, Loader2, Lock, Play, Send } from "lucide-react";
+import { ChevronLeft, EyeOff, Loader2, Lock, Play, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
@@ -61,10 +61,21 @@ export default function ProblemDetailPage() {
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [selectedOutputCase, setSelectedOutputCase] = useState(0);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const draftsLoadedRef = useRef(false);
 
   // Fetch problem
   const { data: problem, isLoading } = useQuery(
     trpc.problem.bySlug.queryOptions({ slug }),
+  );
+
+  // Fetch saved drafts
+  const { data: savedDrafts } = useQuery(
+    trpc.codeDraft.get.queryOptions(
+      { problemId: problem?.id! },
+      { enabled: !!problem?.id && isAuthenticated },
+    ),
   );
 
   // Fetch submissions history
@@ -118,28 +129,70 @@ export default function ProblemDetailPage() {
     }
   }, [resultsQuery.data, isRunning, isSubmitting, refetchSubmissions]);
 
-  // Set initial language and starter codes
+  // Set initial language and starter codes, merging with saved drafts
   useEffect(() => {
-    if (problem && problem.id !== lastProblemId) {
-      if (problem.starterCode) {
-        const starterCodes = problem.starterCode as Record<string, string>;
-        setCodes(starterCodes);
+    if (!problem) return;
+    // Wait for drafts query to settle (undefined = still loading, null = no drafts)
+    if (isAuthenticated && savedDrafts === undefined) return;
 
-        // Auto-select first available language if current isn't available
-        const availableLangs = Object.keys(starterCodes);
-        if (availableLangs.length > 0 && !availableLangs.includes(language)) {
-          setLanguage(availableLangs[0] as Language);
-        }
+    if (problem.id !== lastProblemId || (!draftsLoadedRef.current && savedDrafts)) {
+      const starterCodes = (problem.starterCode as Record<string, string>) || {};
+      const mergedCodes = { ...starterCodes, ...(savedDrafts || {}) };
+      setCodes(mergedCodes);
+
+      // Auto-select first available language if current isn't available
+      const availableLangs = Object.keys(mergedCodes);
+      if (availableLangs.length > 0 && !availableLangs.includes(language)) {
+        setLanguage(availableLangs[0] as Language);
       }
+
       setLastProblemId(problem.id);
+      draftsLoadedRef.current = true;
     }
-  }, [problem, lastProblemId, language]);
+  }, [problem, lastProblemId, language, savedDrafts, isAuthenticated]);
 
   const currentCode = codes[language] || "";
 
   const setCode = (newCode: string) => {
     setCodes((prev) => ({ ...prev, [language]: newCode }));
   };
+
+  // Autosave
+  const saveDraftMutation = useMutation(
+    trpc.codeDraft.save.mutationOptions({
+      onSuccess: () => setSaveStatus("saved"),
+      onError: () => setSaveStatus("error"),
+    }),
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated || !problem || !currentCode) return;
+
+    // Don't save if code matches starter code
+    const starterCode = (problem.starterCode as Record<string, string>)?.[language];
+    if (currentCode === starterCode) return;
+
+    setSaveStatus("saving");
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveDraftMutation.mutate({
+        problemId: problem.id,
+        lang: language as any,
+        code: currentCode,
+      });
+    }, 2000);
+
+    return () => clearTimeout(saveTimerRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCode, language, problem?.id, isAuthenticated]);
+
+  // Auto-hide "Saved" after 3s
+  useEffect(() => {
+    if (saveStatus === "saved") {
+      const timer = setTimeout(() => setSaveStatus("idle"), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveStatus]);
 
   const runMutation = useMutation(
     trpc.submission.run.mutationOptions({
@@ -431,6 +484,21 @@ export default function ProblemDetailPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
+                      {saveStatus === "saving" && (
+                        <span className="text-muted-foreground animate-pulse text-[10px]">
+                          Saving...
+                        </span>
+                      )}
+                      {saveStatus === "saved" && (
+                        <span className="text-emerald-500/70 text-[10px]">
+                          Saved
+                        </span>
+                      )}
+                      {saveStatus === "error" && (
+                        <span className="text-rose-500/70 text-[10px]">
+                          Save failed
+                        </span>
+                      )}
                       <div className="bg-border h-4 w-px" />
                       <select
                         className="hover:text-primary cursor-pointer border-none bg-transparent pr-2 text-xs font-bold transition-colors outline-none"

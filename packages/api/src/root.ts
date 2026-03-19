@@ -1,6 +1,8 @@
 // import { apiKeyRouter } from "./router/api-key";
 import { authRouter } from "./router/auth";
+import { codeDraftRouter } from "./router/code-draft";
 import { duckletRouter } from "./router/ducklet";
+import { playgroundRouter } from "./router/playground";
 import { problemRouter } from "./router/problem";
 import { storageRouter } from "./router/storage";
 import { submissionRouter } from "./router/submission";
@@ -15,6 +17,8 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   problem: problemRouter,
   submission: submissionRouter,
+  codeDraft: codeDraftRouter,
+  playground: playgroundRouter,
   storage: storageRouter,
   ducklet: duckletRouter,
 });
