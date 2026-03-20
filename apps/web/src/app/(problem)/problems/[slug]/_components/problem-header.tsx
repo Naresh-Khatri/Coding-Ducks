@@ -131,6 +131,9 @@ export function ProblemHeader({
             <Play className="h-3.5 w-3.5" />
           )}
           Run
+          <kbd className="text-muted-foreground/50 ml-1 hidden text-[10px] sm:inline">
+            ⌘↵
+          </kbd>
         </Button>
         <Button
           size="sm"
@@ -144,6 +147,9 @@ export function ProblemHeader({
             <Send className="h-3.5 w-3.5" />
           )}
           Submit
+          <kbd className="ml-1 hidden text-[10px] text-white/40 sm:inline">
+            ⌘⇧↵
+          </kbd>
         </Button>
       </div>
 

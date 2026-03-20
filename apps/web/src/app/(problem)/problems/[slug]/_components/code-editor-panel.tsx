@@ -36,6 +36,8 @@ interface CodeEditorPanelProps {
   onRetrieveLastSubmission?: () => void;
   onResetToDefault?: () => void;
   hasLastSubmission?: boolean;
+  onRun?: () => void;
+  onSubmit?: () => void;
 }
 
 export function CodeEditorPanel({
@@ -48,6 +50,8 @@ export function CodeEditorPanel({
   onRetrieveLastSubmission,
   onResetToDefault,
   hasLastSubmission,
+  onRun,
+  onSubmit,
 }: CodeEditorPanelProps) {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
 
@@ -201,6 +205,8 @@ export function CodeEditorPanel({
           height="100%"
           className="absolute inset-0"
           onSave={() => toast.success("Code formatted & saved")}
+          onRun={onRun}
+          onSubmit={onSubmit}
         />
       </div>
     </div>

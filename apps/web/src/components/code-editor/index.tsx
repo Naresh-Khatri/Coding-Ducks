@@ -35,6 +35,8 @@ interface CodeEditorProps {
   className?: string;
   editorRef?: React.RefObject<ReactCodeMirrorRef | null>;
   onSave?: () => void;
+  onRun?: () => void;
+  onSubmit?: () => void;
 }
 
 const languageExtensions = {
@@ -59,6 +61,8 @@ export function CodeEditor({
   className,
   editorRef,
   onSave,
+  onRun,
+  onSubmit,
 }: CodeEditorProps) {
   const extensions = useMemo(() => {
     const langExt = languageExtensions[language];
@@ -80,9 +84,23 @@ export function CodeEditor({
             return true;
           },
         },
+        {
+          key: "Mod-Enter",
+          run: () => {
+            onRun?.();
+            return true;
+          },
+        },
+        {
+          key: "Mod-Shift-Enter",
+          run: () => {
+            onSubmit?.();
+            return true;
+          },
+        },
       ]),
     ];
-  }, [language, height, onSave]);
+  }, [language, height, onSave, onRun, onSubmit]);
 
   const handleChange = useCallback(
     (val: string) => {

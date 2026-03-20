@@ -320,6 +320,8 @@ export default function ProblemDetailPage() {
                     setCode(starterCode);
                     toast.success("Code reset to default");
                   }}
+                  onRun={handleRun}
+                  onSubmit={handleSubmit}
                 />
               </ResizablePanel>
 
