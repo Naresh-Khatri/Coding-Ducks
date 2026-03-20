@@ -48,6 +48,14 @@ const TYPE_MAP: Record<string, Record<string, string>> = {
     "integer[]": "number[]",
     "string[]": "string[]",
   },
+  ts: {
+    integer: "number",
+    string: "string",
+    boolean: "boolean",
+    float: "number",
+    "integer[]": "number[]",
+    "string[]": "string[]",
+  },
   java: {
     integer: "int",
     string: "String",
@@ -72,15 +80,59 @@ const TYPE_MAP: Record<string, Record<string, string>> = {
     "integer[]": "int*",
     "string[]": "char**",
   },
+  rs: {
+    integer: "i32",
+    string: "String",
+    boolean: "bool",
+    float: "f64",
+    "integer[]": "Vec<i32>",
+    "string[]": "Vec<String>",
+  },
+  go: {
+    integer: "int",
+    string: "string",
+    boolean: "bool",
+    float: "float64",
+    "integer[]": "[]int",
+    "string[]": "[]string",
+  },
+  rb: {
+    integer: "Integer",
+    string: "String",
+    boolean: "Boolean",
+    float: "Float",
+    "integer[]": "Array<Integer>",
+    "string[]": "Array<String>",
+  },
+  php: {
+    integer: "int",
+    string: "string",
+    boolean: "bool",
+    float: "float",
+    "integer[]": "array",
+    "string[]": "array",
+  },
 };
 
 function generateStarterCode(sig: ExampleProblem["functionSignature"]): Record<string, string> {
+  const goRetType = TYPE_MAP.go?.[sig.returnType] || "interface{}";
+  const goParams = sig.params.map((p) => `${p.name} ${TYPE_MAP.go?.[p.type] || "interface{}"}`).join(", ");
+  const rsRetType = TYPE_MAP.rs?.[sig.returnType] || "i32";
+  const rsParams = sig.params.map((p) => `${p.name}: ${TYPE_MAP.rs?.[p.type] || "i32"}`).join(", ");
+  const phpRetType = TYPE_MAP.php?.[sig.returnType] || "mixed";
+  const phpParams = sig.params.map((p) => `${TYPE_MAP.php?.[p.type] || "mixed"} $${p.name}`).join(", ");
+
   return {
     py: `class Solution:\n    def ${sig.fnName}(self, ${sig.params.map((p) => `${p.name}: ${TYPE_MAP.py?.[p.type] || "Any"}`).join(", ")}) -> ${TYPE_MAP.py?.[sig.returnType] || "Any"}:\n        # Your code here\n        pass`,
     js: `class Solution {\n    /**\n${sig.params.map((p) => `     * @param {${TYPE_MAP.js?.[p.type] || "any"}} ${p.name}`).join("\n")}\n     * @return {${TYPE_MAP.js?.[sig.returnType] || "any"}}\n     */\n    ${sig.fnName}(${sig.params.map((p) => p.name).join(", ")}) {\n        // Your code here\n    }\n}`,
+    ts: `class Solution {\n    ${sig.fnName}(${sig.params.map((p) => `${p.name}: ${TYPE_MAP.ts?.[p.type] || "any"}`).join(", ")}): ${TYPE_MAP.ts?.[sig.returnType] || "any"} {\n        // Your code here\n    }\n}`,
     java: `class Solution {\n    public ${TYPE_MAP.java?.[sig.returnType] || "void"} ${sig.fnName}(${sig.params.map((p) => `${TYPE_MAP.java?.[p.type] || "Object"} ${p.name}`).join(", ")}) {\n        // Your code here\n        return ${sig.returnType.includes("[]") && TYPE_MAP.java?.[sig.returnType] ? "new " + (TYPE_MAP.java[sig.returnType] ?? "Object[]").replace("[]", "[0]") : sig.returnType === "boolean" ? "false" : "0"};\n    }\n}`,
     cpp: `class Solution {\npublic:\n    ${TYPE_MAP.cpp?.[sig.returnType] || "void"} ${sig.fnName}(${sig.params.map((p) => `${TYPE_MAP.cpp?.[p.type] || "auto"} ${p.name}`).join(", ")}) {\n        // Your code here\n    }\n};`,
     c: `${TYPE_MAP.c?.[sig.returnType] || "void"} ${sig.fnName}(${sig.params.map((p) => `${TYPE_MAP.c?.[p.type] || "void*"} ${p.name}`).join(", ")}) {\n    // Your code here\n}`,
+    rs: `struct Solution;\n\nimpl Solution {\n    pub fn ${sig.fnName}(&self, ${rsParams}) -> ${rsRetType} {\n        todo!()\n    }\n}`,
+    go: `func ${sig.fnName}(${goParams}) ${goRetType} {\n\t// Your code here\n\treturn ${goRetType === "int" ? "0" : goRetType === "bool" ? "false" : goRetType === "float64" ? "0.0" : goRetType === "string" ? `""` : "nil"}\n}`,
+    rb: `class Solution\n    def ${sig.fnName}(${sig.params.map((p) => p.name).join(", ")})\n        # Your code here\n    end\nend`,
+    php: `class Solution {\n    public function ${sig.fnName}(${phpParams}): ${phpRetType} {\n        // Your code here\n    }\n}`,
   };
 }
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { userCodeDraft } from "@acme/db/schema";
 
+import { SUPPORTED_LANGS } from "../drivers";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const codeDraftRouter = createTRPCRouter({
@@ -10,7 +11,7 @@ export const codeDraftRouter = createTRPCRouter({
     .input(
       z.object({
         problemId: z.number(),
-        lang: z.enum(["py", "js", "java", "cpp", "c"]),
+        lang: z.enum(SUPPORTED_LANGS),
         code: z.string(),
       }),
     )

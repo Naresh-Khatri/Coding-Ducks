@@ -7,7 +7,9 @@ export const memberStatusEnum = pgEnum("member_status", [
 ]);
 
 export const difficultyEnum = pgEnum("difficulty", ["easy", "medium", "hard"]);
-export const langEnum = pgEnum("lang", ["py", "js", "java", "cpp", "c"]);
+export const langEnum = pgEnum("lang", [
+  "py", "js", "ts", "java", "cpp", "c", "rs", "go", "rb", "php",
+]);
 export const submissionStatusEnum = pgEnum("submission_status", [
   "pending",
   "running",

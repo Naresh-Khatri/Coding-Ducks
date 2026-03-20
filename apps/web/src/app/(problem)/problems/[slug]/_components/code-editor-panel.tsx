@@ -9,9 +9,14 @@ import { cn } from "~/lib/utils";
 const LANGUAGES: Array<{ key: string; label: string }> = [
   { key: "py", label: "Python" },
   { key: "js", label: "JavaScript" },
+  { key: "ts", label: "TypeScript" },
   { key: "cpp", label: "C++" },
   { key: "java", label: "Java" },
   { key: "c", label: "C" },
+  { key: "rs", label: "Rust" },
+  { key: "go", label: "Go" },
+  { key: "rb", label: "Ruby" },
+  { key: "php", label: "PHP" },
 ];
 
 interface CodeEditorPanelProps {
