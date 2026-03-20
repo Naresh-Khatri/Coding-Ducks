@@ -26,15 +26,26 @@ import { AnimatedThemeToggler } from "~/components/ui/animated-theme-toggler";
 import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
-import { useProblemActions } from "./problem-context";
 
-export function ProblemHeader() {
+interface ProblemHeaderProps {
+  isRunning: boolean;
+  isSubmitting: boolean;
+  isAuthenticated: boolean;
+  onRun: () => void;
+  onSubmit: () => void;
+}
+
+export function ProblemHeader({
+  isRunning,
+  isSubmitting,
+  isAuthenticated,
+  onRun,
+  onSubmit,
+}: ProblemHeaderProps) {
   const trpc = useTRPC();
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const user = session?.user;
-  const { isRunning, isSubmitting, isAuthenticated, onRun, onSubmit } =
-    useProblemActions();
 
   const userInitials = user?.name
     ? user.name

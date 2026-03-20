@@ -78,7 +78,8 @@
     "y-codemirror.next": "^0.3.5",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.29",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@acme/eslint-config": "workspace:*",

@@ -19,7 +19,6 @@ import { useTRPC } from "~/trpc/react";
 
 import { CodeEditorPanel } from "./_components/code-editor-panel";
 import { LeftPanel } from "./_components/left-panel";
-import { ProblemActionsProvider } from "./_components/problem-context";
 import { ProblemHeader } from "./_components/problem-header";
 import { SubmissionDetailDialog } from "./_components/submission-detail-dialog";
 import { TestCasePanel } from "./_components/test-case-panel";
@@ -36,10 +35,9 @@ export default function ProblemDetailPage() {
   const [leftTab, setLeftTab] = useState("description");
   const [activeTab, setActiveTab] = useState("problem");
   const [consoleOutput, setConsoleOutput] = useState<any[]>([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastProblemId, setLastProblemId] = useState<number | null>(null);
   const [pollingId, setPollingId] = useState<number | null>(null);
+  const [pollingType, setPollingType] = useState<"run" | "submit" | null>(null);
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [selectedOutputCase, setSelectedOutputCase] = useState(0);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(
@@ -90,12 +88,11 @@ export default function ProblemDetailPage() {
   useEffect(() => {
     if (resultsQuery.data && resultsQuery.data.status !== "running") {
       const data = resultsQuery.data;
-      if (isRunning) {
+      if (pollingType === "run") {
         setConsoleOutput(data.results || []);
         setActiveTab("console");
-        setIsRunning(false);
         toast.success("Execution completed");
-      } else if (isSubmitting) {
+      } else if (pollingType === "submit") {
         if (data.status === "accepted") {
           toast.success("Submission Accepted!");
         } else {
@@ -103,11 +100,12 @@ export default function ProblemDetailPage() {
         }
         refetchSubmissions();
         setLeftTab("submissions");
-        setIsSubmitting(false);
+        setSelectedSubmission(data);
       }
       setPollingId(null);
+      setPollingType(null);
     }
-  }, [resultsQuery.data, isRunning, isSubmitting, refetchSubmissions]);
+  }, [resultsQuery.data, pollingType, refetchSubmissions]);
 
   // Merge starter code with saved drafts
   useEffect(() => {
@@ -185,7 +183,7 @@ export default function ProblemDetailPage() {
       },
       onError: (err) => {
         toast.error(err.message || "Execution failed");
-        setIsRunning(false);
+        setPollingType(null);
       },
     }),
   );
@@ -198,14 +196,17 @@ export default function ProblemDetailPage() {
       },
       onError: (err) => {
         toast.error(err.message || "Submission failed");
-        setIsSubmitting(false);
+        setPollingType(null);
       },
     }),
   );
 
+  const isRunning = runMutation.isPending || pollingType === "run";
+  const isSubmitting = submitMutation.isPending || pollingType === "submit";
+
   const handleRun = () => {
     if (!problem || !currentCode) return;
-    setIsRunning(true);
+    setPollingType("run");
     runMutation.mutate({
       problemId: problem.id,
       code: currentCode,
@@ -215,7 +216,7 @@ export default function ProblemDetailPage() {
 
   const handleSubmit = () => {
     if (!problem || !currentCode) return;
-    setIsSubmitting(true);
+    setPollingType("submit");
     submitMutation.mutate({
       problemId: problem.id,
       code: currentCode,
@@ -259,10 +260,14 @@ export default function ProblemDetailPage() {
   // --- Render ---
 
   return (
-    <ProblemActionsProvider
-      value={{ isRunning, isSubmitting, isAuthenticated, onRun: handleRun, onSubmit: handleSubmit }}
-    >
-      <ProblemHeader />
+    <>
+      <ProblemHeader
+        isRunning={isRunning}
+        isSubmitting={isSubmitting}
+        isAuthenticated={isAuthenticated}
+        onRun={handleRun}
+        onSubmit={handleSubmit}
+      />
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
@@ -342,6 +347,6 @@ export default function ProblemDetailPage() {
           background: rgba(255, 255, 255, 0.2);
         }
       `}</style>
-    </ProblemActionsProvider>
+    </>
   );
 }
