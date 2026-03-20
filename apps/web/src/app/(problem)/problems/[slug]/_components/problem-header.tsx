@@ -147,7 +147,7 @@ export function ProblemHeader({
           )}
           Run
           <kbd className="text-muted-foreground/50 ml-1 hidden text-[10px] sm:inline">
-            ⌘↵
+            Ctrl+↵
           </kbd>
         </Button>
         <Button
@@ -163,7 +163,7 @@ export function ProblemHeader({
           )}
           Submit
           <kbd className="ml-1 hidden text-[10px] text-white/40 sm:inline">
-            ⌘⇧↵
+            Ctrl+⇧+↵
           </kbd>
         </Button>
         {isBusy && (

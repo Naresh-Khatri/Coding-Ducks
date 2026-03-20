@@ -9,10 +9,11 @@ import { java } from "@codemirror/lang-java";
 import { rust } from "@codemirror/lang-rust";
 import { go } from "@codemirror/lang-go";
 import { php } from "@codemirror/lang-php";
-import { indentRange, StreamLanguage } from "@codemirror/language";
+import { indentRange, indentUnit, StreamLanguage } from "@codemirror/language";
 import { ruby } from "@codemirror/legacy-modes/mode/ruby";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView, keymap, lineNumbers } from "@codemirror/view";
+import { vim } from "@replit/codemirror-vim";
 
 export type Language =
   | "py"
@@ -33,6 +34,12 @@ interface CodeEditorProps {
   readOnly?: boolean;
   height?: string;
   className?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  fontLigatures?: boolean;
+  tabSize?: number;
+  relativeLineNumbers?: boolean;
+  vimMode?: boolean;
   editorRef?: React.RefObject<ReactCodeMirrorRef | null>;
   onSave?: () => void;
   onRun?: () => void;
@@ -59,6 +66,12 @@ export function CodeEditor({
   readOnly = false,
   height = "400px",
   className,
+  fontSize = 14,
+  fontFamily = "monospace",
+  fontLigatures = false,
+  tabSize = 2,
+  relativeLineNumbers: relLineNums = false,
+  vimMode = false,
   editorRef,
   onSave,
   onRun,
@@ -66,12 +79,24 @@ export function CodeEditor({
 }: CodeEditorProps) {
   const extensions = useMemo(() => {
     const langExt = languageExtensions[language];
-    return [
+    const exts = [
+      ...(vimMode ? [vim()] : []),
       langExt(),
       EditorView.lineWrapping,
+      indentUnit.of(" ".repeat(tabSize)),
       EditorView.theme({
         "&": { height },
         ".cm-scroller": { overflow: "auto" },
+        ".cm-content": {
+          fontSize: `${fontSize}px`,
+          fontFamily,
+          fontVariantLigatures: fontLigatures ? "normal" : "none",
+        },
+        ".cm-gutters": {
+          fontSize: `${fontSize}px`,
+          fontFamily,
+        },
+        ".cm-vim-panel": { display: "none" },
       }),
       keymap.of([
         {
@@ -100,13 +125,27 @@ export function CodeEditor({
         },
       ]),
     ];
-  }, [language, height, onSave, onRun, onSubmit]);
+
+    if (relLineNums) {
+      exts.push(
+        lineNumbers({
+          formatNumber: (lineNo, state) => {
+            const curLine = state.doc.lineAt(state.selection.main.head).number;
+            if (lineNo === curLine) return String(lineNo);
+            return String(Math.abs(lineNo - curLine));
+          },
+        }),
+      );
+    }
+
+    return exts;
+  }, [language, height, fontSize, fontFamily, fontLigatures, tabSize, relLineNums, vimMode, onSave, onRun, onSubmit]);
 
   const handleChange = useCallback(
     (val: string) => {
       onChange(val);
     },
-    [onChange]
+    [onChange],
   );
 
   return (
@@ -119,7 +158,7 @@ export function CodeEditor({
       readOnly={readOnly}
       className={className}
       basicSetup={{
-        lineNumbers: true,
+        lineNumbers: !relLineNums,
         highlightActiveLineGutter: true,
         highlightActiveLine: true,
         foldGutter: true,

@@ -31,6 +31,12 @@ const geistMono = Geist_Mono({
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Code+Pro:wght@400;500;700&display=swap"
+        />
+      </head>
       <body
         className={cn(
           "bg-background text-foreground min-h-screen font-sans antialiased",

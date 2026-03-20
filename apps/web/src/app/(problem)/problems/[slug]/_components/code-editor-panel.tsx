@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { indentRange } from "@codemirror/language";
+import { getCM } from "@replit/codemirror-vim";
 import { Cloud, History, RotateCcw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,8 +24,10 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { useConfirm } from "~/hooks/use-confirm";
+import { useEditorSettings } from "~/hooks/use-editor-settings";
 import { LANGUAGES } from "~/lib/languages";
 import { cn } from "~/lib/utils";
+import { EditorSettingsDialog } from "./editor-settings-dialog";
 
 interface CodeEditorPanelProps {
   code: string;
@@ -54,6 +57,28 @@ export function CodeEditorPanel({
   onSubmit,
 }: CodeEditorPanelProps) {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
+  const {
+    fontSize, fontFamily, fontLigatures, tabSize,
+    relativeLineNumbers, keymap, runShortcut, submitShortcut,
+  } = useEditorSettings();
+  const isVim = keymap === "vim";
+  const [vimModeLabel, setVimModeLabel] = useState("NORMAL");
+
+  useEffect(() => {
+    if (!isVim) return;
+    const id = setInterval(() => {
+      const view = editorRef.current?.view;
+      if (!view) return;
+      const cm = getCM(view);
+      if (!cm) return;
+      const state = (cm as any).state?.vim;
+      if (!state) return;
+      if (state.insertMode) setVimModeLabel("INSERT");
+      else if (state.visualMode) setVimModeLabel("VISUAL");
+      else setVimModeLabel("NORMAL");
+    }, 100);
+    return () => clearInterval(id);
+  }, [isVim]);
 
   const handleFormat = () => {
     const view = editorRef.current?.view;
@@ -193,6 +218,16 @@ export function CodeEditorPanel({
                 <p>Reset to default</p>
               </TooltipContent>
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <EditorSettingsDialog />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Editor settings</p>
+              </TooltipContent>
+            </Tooltip>
           </TooltipProvider>
         </div>
       </div>
@@ -202,13 +237,35 @@ export function CodeEditorPanel({
           value={code}
           onChange={onCodeChange}
           language={language}
+          fontSize={fontSize}
+          fontFamily={fontFamily}
+          fontLigatures={fontLigatures}
+          tabSize={tabSize}
+          relativeLineNumbers={relativeLineNumbers}
+          vimMode={isVim}
           height="100%"
           className="absolute inset-0"
           onSave={() => toast.success("Code formatted & saved")}
-          onRun={onRun}
-          onSubmit={onSubmit}
+          onRun={runShortcut ? onRun : undefined}
+          onSubmit={submitShortcut ? onSubmit : undefined}
         />
       </div>
+      {isVim && (
+        <div className="flex h-6 items-center border-t bg-[#1e1e1e] px-3">
+          <span
+            className={cn(
+              "rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider",
+              vimModeLabel === "INSERT"
+                ? "bg-emerald-500/20 text-emerald-400"
+                : vimModeLabel === "VISUAL"
+                  ? "bg-amber-500/20 text-amber-400"
+                  : "bg-blue-500/20 text-blue-400",
+            )}
+          >
+            -- {vimModeLabel} --
+          </span>
+        </div>
+      )}
     </div>
   );
 }
