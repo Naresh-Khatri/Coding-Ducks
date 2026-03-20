@@ -12,6 +12,7 @@
     "clean:workspaces": "turbo run clean",
     "auth:generate": "pnpm -F @acme/auth generate",
     "db:push": "turbo -F @acme/db push",
+    "db:seed": "pnpm -F @acme/db seed",
     "db:studio": "turbo -F @acme/db studio",
     "dev": "turbo watch dev --continue",
     "dev:next": "turbo watch dev -F @acme/nextjs...",
@@ -37,5 +38,11 @@
       "@sinclair/typebox": "0.32.4"
     }
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@acme/prettier-config",
+  "dependencies": {
+    "@codemirror/lang-go": "^6.0.1",
+    "@codemirror/lang-php": "^6.0.2",
+    "@codemirror/lang-rust": "^6.0.2",
+    "@codemirror/legacy-modes": "^6.5.2"
+  }
 }
