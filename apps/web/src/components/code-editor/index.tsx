@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { cpp } from "@codemirror/lang-cpp";
@@ -9,10 +9,10 @@ import { java } from "@codemirror/lang-java";
 import { rust } from "@codemirror/lang-rust";
 import { go } from "@codemirror/lang-go";
 import { php } from "@codemirror/lang-php";
-import { StreamLanguage } from "@codemirror/language";
+import { indentRange, StreamLanguage } from "@codemirror/language";
 import { ruby } from "@codemirror/legacy-modes/mode/ruby";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { EditorView } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 
 export type Language =
   | "py"
@@ -33,6 +33,8 @@ interface CodeEditorProps {
   readOnly?: boolean;
   height?: string;
   className?: string;
+  editorRef?: React.RefObject<ReactCodeMirrorRef | null>;
+  onSave?: () => void;
 }
 
 const languageExtensions = {
@@ -55,6 +57,8 @@ export function CodeEditor({
   readOnly = false,
   height = "400px",
   className,
+  editorRef,
+  onSave,
 }: CodeEditorProps) {
   const extensions = useMemo(() => {
     const langExt = languageExtensions[language];
@@ -65,8 +69,20 @@ export function CodeEditor({
         "&": { height },
         ".cm-scroller": { overflow: "auto" },
       }),
+      keymap.of([
+        {
+          key: "Mod-s",
+          run: (view) => {
+            const { doc } = view.state;
+            const changes = indentRange(view.state, 0, doc.length);
+            if (changes) view.dispatch({ changes });
+            onSave?.();
+            return true;
+          },
+        },
+      ]),
     ];
-  }, [language, height]);
+  }, [language, height, onSave]);
 
   const handleChange = useCallback(
     (val: string) => {
@@ -77,6 +93,7 @@ export function CodeEditor({
 
   return (
     <CodeMirror
+      ref={editorRef}
       value={value}
       onChange={handleChange}
       extensions={extensions}
