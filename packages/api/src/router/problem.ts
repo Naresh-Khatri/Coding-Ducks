@@ -74,12 +74,30 @@ export const problemRouter = createTRPCRouter({
 
       const total = Number(countResult[0]?.count ?? 0);
 
+      // Get acceptance rates for these problems
+      const problemIds = problems.map((p) => p.id);
+      let acceptanceRates: Record<number, { total: number; accepted: number }> = {};
+
+      if (problemIds.length > 0) {
+        const stats = await ctx.db
+          .select({
+            problemId: submission.problemId,
+            total: sql<number>`count(*)`,
+            accepted: sql<number>`count(*) filter (where ${submission.status} = 'accepted')`,
+          })
+          .from(submission)
+          .where(inArray(submission.problemId, problemIds))
+          .groupBy(submission.problemId);
+
+        for (const s of stats) {
+          acceptanceRates[s.problemId] = { total: Number(s.total), accepted: Number(s.accepted) };
+        }
+      }
+
       // If user is logged in, get their submission status for each problem
       let userStatuses: Record<number, "solved" | "attempted" | null> = {};
 
       if (ctx.session?.user) {
-        const problemIds = problems.map((p) => p.id);
-
         if (problemIds.length > 0) {
           const userSubmissions = await ctx.db
             .select({
@@ -109,10 +127,16 @@ export const problemRouter = createTRPCRouter({
       }
 
       return {
-        items: problems.map((p) => ({
-          ...p,
-          userStatus: userStatuses[p.id] ?? null,
-        })),
+        items: problems.map((p) => {
+          const rate = acceptanceRates[p.id];
+          return {
+            ...p,
+            userStatus: userStatuses[p.id] ?? null,
+            acceptanceRate: rate && rate.total > 0
+              ? Math.round((rate.accepted / rate.total) * 100)
+              : null,
+          };
+        }),
         total,
         hasMore: offset + problems.length < total,
       };

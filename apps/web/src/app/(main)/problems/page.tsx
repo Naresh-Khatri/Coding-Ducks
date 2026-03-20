@@ -133,7 +133,7 @@ export default function ProblemsPage() {
                   </Badge>
                 </div>
                 <div className="w-20 text-center text-sm text-muted-foreground">
-                  -
+                  {problem.acceptanceRate != null ? `${problem.acceptanceRate}%` : "-"}
                 </div>
               </Link>
             ))}

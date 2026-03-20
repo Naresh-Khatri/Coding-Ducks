@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, List, Loader2, Play, Send } from "lucide-react";
+import { ChevronLeft, List, Loader2, Play, Send, Timer } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { authClient } from "~/auth/client";
@@ -54,6 +55,20 @@ export function ProblemHeader({
         .join("")
         .toUpperCase()
     : "??";
+
+  // Execution timer
+  const isBusy = isRunning || isSubmitting;
+  const [elapsed, setElapsed] = useState(0);
+  const startRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (isBusy) {
+      startRef.current = Date.now();
+      setElapsed(0);
+      const id = setInterval(() => setElapsed(Date.now() - startRef.current), 100);
+      return () => clearInterval(id);
+    }
+  }, [isBusy]);
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -151,6 +166,12 @@ export function ProblemHeader({
             ⌘⇧↵
           </kbd>
         </Button>
+        {isBusy && (
+          <span className="text-muted-foreground flex items-center gap-1 text-xs font-mono tabular-nums">
+            <Timer className="h-3 w-3" />
+            {(elapsed / 1000).toFixed(1)}s
+          </span>
+        )}
       </div>
 
       {/* Right: theme + auth */}
