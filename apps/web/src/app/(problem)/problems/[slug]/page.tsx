@@ -300,6 +300,26 @@ export default function ProblemDetailPage() {
                   onLanguageChange={setLanguage}
                   availableLanguages={availableLanguages}
                   saveStatus={saveStatus}
+                  hasLastSubmission={
+                    !!submissions?.some((s) => s.lang === language)
+                  }
+                  onRetrieveLastSubmission={() => {
+                    const lastSub = submissions?.find(
+                      (s) => s.lang === language,
+                    );
+                    if (lastSub?.code) {
+                      setCode(lastSub.code);
+                      toast.success("Last submission loaded");
+                    }
+                  }}
+                  onResetToDefault={() => {
+                    const starterCode =
+                      (problem.starterCode as Record<string, string>)?.[
+                        language
+                      ] ?? "";
+                    setCode(starterCode);
+                    toast.success("Code reset to default");
+                  }}
                 />
               </ResizablePanel>
 
