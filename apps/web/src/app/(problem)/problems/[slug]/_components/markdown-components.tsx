@@ -17,20 +17,20 @@ export const markdownComponents: Components = {
     <h3 className="text-foreground/80 mt-6 mb-3 text-lg font-bold" {...props} />
   ),
   p: ({ node, ...props }) => (
-    <p
-      className="text-foreground/70 mb-4 text-sm leading-relaxed"
+    <p className="text-foreground/70 mb-4 text-sm leading-relaxed" {...props} />
+  ),
+  pre: ({ node, ...props }) => (
+    <pre
+      className="bg-accent/20 my-4 overflow-x-auto rounded-lg border border-white/5 p-4 font-mono text-xs"
       {...props}
     />
   ),
-  code: ({ node, inline, ...props }: any) =>
-    inline ? (
-      <code
-        className="bg-accent/40 text-primary rounded px-1.5 py-0.5 font-mono text-xs font-medium"
-        {...props}
-      />
+  code: ({ node, className, ...props }: any) =>
+    className ? (
+      <code className="font-mono text-xs" {...props} />
     ) : (
       <code
-        className="bg-accent/20 my-4 block overflow-x-auto rounded-lg border border-white/5 p-4 font-mono text-xs"
+        className="bg-accent/40 text-primary rounded py-0.5 font-mono text-xs font-medium"
         {...props}
       />
     ),
