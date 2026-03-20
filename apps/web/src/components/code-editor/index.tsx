@@ -6,10 +6,25 @@ import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { cpp } from "@codemirror/lang-cpp";
 import { java } from "@codemirror/lang-java";
+import { rust } from "@codemirror/lang-rust";
+import { go } from "@codemirror/lang-go";
+import { php } from "@codemirror/lang-php";
+import { StreamLanguage } from "@codemirror/language";
+import { ruby } from "@codemirror/legacy-modes/mode/ruby";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
 
-export type Language = "py" | "js" | "java" | "cpp" | "c";
+export type Language =
+  | "py"
+  | "js"
+  | "ts"
+  | "java"
+  | "cpp"
+  | "c"
+  | "rs"
+  | "go"
+  | "rb"
+  | "php";
 
 interface CodeEditorProps {
   value: string;
@@ -23,9 +38,14 @@ interface CodeEditorProps {
 const languageExtensions = {
   py: () => python(),
   js: () => javascript(),
+  ts: () => javascript({ typescript: true }),
   java: () => java(),
   cpp: () => cpp(),
   c: () => cpp(),
+  rs: () => rust(),
+  go: () => go(),
+  rb: () => StreamLanguage.define(ruby),
+  php: () => php(),
 };
 
 export function CodeEditor({
