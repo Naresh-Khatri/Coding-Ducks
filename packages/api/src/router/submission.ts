@@ -5,14 +5,9 @@ import { z } from "zod";
 import type { FunctionSignature, TestCase } from "@acme/db/schema";
 import { problem, submission } from "@acme/db/schema";
 
+import { env } from "../../env";
 import { generateDriverWithTestCases, SUPPORTED_LANGS } from "../drivers";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-
-const JUDGE_API_URL =
-  process.env.JUDGE_API_URL ?? "https://judge.codingducks.xyz/api/v1";
-const JUDGE_API_TOKEN =
-  process.env.JUDGE_API_TOKEN ??
-  "sk_live_f132093395599bd810a8f8474bf8a96cbe6e50d9e3af655f51bcf22fec3d7774";
 
 /** Verdict codes returned by the CD Judge API */
 type JudgeVerdict = "OK" | "CE" | "RE" | "SG" | "TO" | "XX";
@@ -51,13 +46,11 @@ interface JudgeStatusResponse {
 // --- Judge API helpers ---
 
 async function submitToJudge(code: string, lang: string): Promise<string> {
-  const response = await fetch(`${JUDGE_API_URL}/submissions`, {
+  const response = await fetch(`${env.JUDGE_API_URL}/submissions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(JUDGE_API_TOKEN
-        ? { Authorization: `Bearer ${JUDGE_API_TOKEN}` }
-        : {}),
+      Authorization: `Bearer ${env.JUDGE_API_TOKEN}`,
     },
     body: JSON.stringify({ code, lang }),
   });
@@ -72,11 +65,9 @@ async function submitToJudge(code: string, lang: string): Promise<string> {
 }
 
 async function getJobStatus(jobId: string): Promise<JudgeStatusResponse> {
-  const response = await fetch(`${JUDGE_API_URL}/submissions/${jobId}`, {
+  const response = await fetch(`${env.JUDGE_API_URL}/submissions/${jobId}`, {
     headers: {
-      ...(JUDGE_API_TOKEN
-        ? { Authorization: `Bearer ${JUDGE_API_TOKEN}` }
-        : {}),
+      Authorization: `Bearer ${env.JUDGE_API_TOKEN}`,
     },
   });
 
