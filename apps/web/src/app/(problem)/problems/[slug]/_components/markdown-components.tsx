@@ -1,5 +1,7 @@
 import type { Components } from "react-markdown";
 
+import { ShikiCode } from "~/components/shiki-code";
+
 export const markdownComponents: Components = {
   h1: ({ node, ...props }) => (
     <h1
@@ -19,21 +21,30 @@ export const markdownComponents: Components = {
   p: ({ node, ...props }) => (
     <p className="text-foreground/70 mb-4 text-sm leading-relaxed" {...props} />
   ),
-  pre: ({ node, ...props }) => (
-    <pre
-      className="bg-accent/20 my-4 overflow-x-auto rounded-lg border border-white/5 p-4 font-mono text-xs"
+  pre: ({ node, children, ...props }) => (
+    <div
+      className="bg-accent/20 my-4 overflow-x-auto rounded-lg border border-white/5 p-4"
       {...props}
-    />
+    >
+      {children}
+    </div>
   ),
-  code: ({ node, className, ...props }: any) =>
-    className ? (
-      <code className="font-mono text-xs" {...props} />
-    ) : (
+  code: ({ node, className, children, ...props }: any) => {
+    const match = /language-(\w+)/.exec(className || "");
+    if (match) {
+      const code = String(children).replace(/\n$/, "");
+      return <ShikiCode code={code} lang={match[1]!} />;
+    }
+
+    return (
       <code
-        className="bg-accent/40 text-primary rounded py-0.5 font-mono text-xs font-medium"
+        className="bg-accent/40 text-primary rounded px-1.5 py-0.5 font-mono text-xs font-medium"
         {...props}
-      />
-    ),
+      >
+        {children}
+      </code>
+    );
+  },
   ul: ({ node, ...props }) => (
     <ul
       className="text-foreground/70 mb-6 ml-5 list-outside list-disc space-y-2 text-sm"
