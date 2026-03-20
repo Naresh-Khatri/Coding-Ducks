@@ -187,6 +187,7 @@ export const submissionRouter = createTRPCRouter({
         problemId: z.number(),
         code: z.string(),
         lang: z.enum(SUPPORTED_LANGS),
+        customArgs: z.array(z.string()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -198,7 +199,9 @@ export const submissionRouter = createTRPCRouter({
 
       if (!prob) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const publicTestCases = prob.testCases.filter((tc) => tc.isPublic);
+      const publicTestCases = input.customArgs
+        ? [{ args: input.customArgs, expected: undefined, isPublic: true }]
+        : prob.testCases.filter((tc) => tc.isPublic);
 
       if (publicTestCases.length === 0) {
         return { id: 0, jobId: null, results: [] };

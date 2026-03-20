@@ -1,8 +1,15 @@
 "use client";
 
-import { EyeOff, Play } from "lucide-react";
+import { useState } from "react";
+import { EyeOff, Pencil, Play, X } from "lucide-react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Button } from "~/components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
 
 interface TestCasePanelProps {
@@ -14,6 +21,8 @@ interface TestCasePanelProps {
   onSelectTestCase: (i: number) => void;
   selectedOutputCase: number;
   onSelectOutputCase: (i: number) => void;
+  customTestCase: Record<string, string> | null;
+  onCustomTestCaseChange: (args: Record<string, string> | null) => void;
 }
 
 const tabTriggerClass =
@@ -28,7 +37,31 @@ export function TestCasePanel({
   onSelectTestCase,
   selectedOutputCase,
   onSelectOutputCase,
+  customTestCase,
+  onCustomTestCaseChange,
 }: TestCasePanelProps) {
+  const [isEditingCustom, setIsEditingCustom] = useState(false);
+  const sig = problem.functionSignature as any;
+  const publicCases =
+    problem.testCases?.filter((tc: any) => tc.isPublic) || [];
+
+  const startCustomEdit = () => {
+    const tc = publicCases[selectedTestCase] ?? publicCases[0];
+    const initial: Record<string, string> = {};
+    if (sig?.params && tc?.args) {
+      sig.params.forEach((p: any, i: number) => {
+        initial[p.name] = tc.args?.[i] ?? "";
+      });
+    }
+    onCustomTestCaseChange(initial);
+    setIsEditingCustom(true);
+  };
+
+  const clearCustom = () => {
+    onCustomTestCaseChange(null);
+    setIsEditingCustom(false);
+  };
+
   return (
     <div className="bg-card/10 flex h-full flex-col">
       <Tabs
@@ -57,68 +90,110 @@ export function TestCasePanel({
           value="problem"
           className="custom-scrollbar m-0 flex-1 overflow-y-auto"
         >
-          {(() => {
-            const publicCases =
-              problem.testCases?.filter((tc: any) => tc.isPublic) || [];
-            if (publicCases.length === 0) {
-              return (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="bg-accent/20 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-                    <EyeOff className="text-muted-foreground/40 h-6 w-6" />
-                  </div>
-                  <p className="text-muted-foreground text-sm font-medium">
-                    No public test cases available
-                  </p>
-                </div>
-              );
-            }
-            const sig = problem.functionSignature as any;
-            const tc = publicCases[selectedTestCase] ?? publicCases[0];
-            if (!tc) return null;
-            return (
-              <div className="p-4">
-                <div className="mb-4 flex items-center gap-2">
-                  {publicCases.map((_: any, i: number) => (
-                    <button
-                      key={i}
-                      onClick={() => onSelectTestCase(i)}
-                      className={cn(
-                        "rounded-lg px-3 py-1 text-xs font-medium transition-colors",
-                        selectedTestCase === i
-                          ? "bg-accent text-foreground"
-                          : "text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      Case {i + 1}
-                    </button>
+          {publicCases.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="bg-accent/20 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+                <EyeOff className="text-muted-foreground/40 h-6 w-6" />
+              </div>
+              <p className="text-muted-foreground text-sm font-medium">
+                No public test cases available
+              </p>
+            </div>
+          ) : (
+            <div className="p-4">
+              <div className="mb-4 flex items-center gap-2">
+                {publicCases.map((_: any, i: number) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      onSelectTestCase(i);
+                      if (isEditingCustom) clearCustom();
+                    }}
+                    className={cn(
+                      "rounded-lg px-3 py-1 text-xs font-medium transition-colors",
+                      !isEditingCustom && selectedTestCase === i
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Case {i + 1}
+                  </button>
+                ))}
+                {isEditingCustom ? (
+                  <button
+                    onClick={clearCustom}
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-medium transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                    Custom
+                  </button>
+                ) : (
+                  <button
+                    onClick={startCustomEdit}
+                    className="bg-accent text-foreground flex items-center gap-1 rounded-lg border border-dashed border-white/10 px-3 py-1 text-xs font-medium transition-colors hover:border-white/20"
+                  >
+                    <Pencil className="h-3 w-3" />
+                    Custom
+                  </button>
+                )}
+              </div>
+
+              {isEditingCustom && customTestCase ? (
+                <div className="space-y-3">
+                  {sig?.params?.map((param: any) => (
+                    <div key={param.name}>
+                      <div className="text-muted-foreground mb-1 text-xs font-medium">
+                        {param.name} =
+                      </div>
+                      <textarea
+                        value={customTestCase[param.name] ?? ""}
+                        onChange={(e) =>
+                          onCustomTestCaseChange({
+                            ...customTestCase,
+                            [param.name]: e.target.value,
+                          })
+                        }
+                        className="bg-accent/40 text-foreground w-full resize-none rounded-lg px-3 py-2 font-mono text-sm outline-none focus:ring-1 focus:ring-white/20"
+                        rows={1}
+                        spellCheck={false}
+                      />
+                    </div>
                   ))}
                 </div>
-                <div className="space-y-3">
-                  {tc.args && sig?.params ? (
-                    sig.params.map((param: any, j: number) => (
-                      <div key={j}>
-                        <div className="text-muted-foreground mb-1 text-xs font-medium">
-                          {param.name} =
+              ) : (
+                (() => {
+                  const tc =
+                    publicCases[selectedTestCase] ?? publicCases[0];
+                  if (!tc) return null;
+                  return (
+                    <div className="space-y-3">
+                      {tc.args && sig?.params ? (
+                        sig.params.map((param: any, j: number) => (
+                          <div key={j}>
+                            <div className="text-muted-foreground mb-1 text-xs font-medium">
+                              {param.name} =
+                            </div>
+                            <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
+                              {tc.args?.[j]}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div>
+                          <div className="text-muted-foreground mb-1 text-xs font-medium">
+                            Input
+                          </div>
+                          <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm whitespace-pre-wrap">
+                            {tc.input ?? ""}
+                          </div>
                         </div>
-                        <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
-                          {tc.args?.[j]}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div>
-                      <div className="text-muted-foreground mb-1 text-xs font-medium">
-                        Input
-                      </div>
-                      <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm whitespace-pre-wrap">
-                        {tc.input ?? ""}
-                      </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
+                  );
+                })()
+              )}
+            </div>
+          )}
         </TabsContent>
 
         {/* Output */}
@@ -131,9 +206,6 @@ export function TestCasePanel({
               const allPassed = consoleOutput.every((r: any) => r.passed);
               const res =
                 consoleOutput[selectedOutputCase] || consoleOutput[0];
-              const sig = problem.functionSignature as any;
-              const publicCases =
-                problem.testCases?.filter((tc: any) => tc.isPublic) || [];
               const tc = publicCases[selectedOutputCase];
               return (
                 <div className="p-4">
@@ -204,27 +276,37 @@ export function TestCasePanel({
                           </div>
                         </div>
                       ) : null}
-                      <div>
-                        <div className="text-muted-foreground mb-1 text-xs font-medium">
-                          Output
+
+                      {/* Output vs Expected — diff style */}
+                      {!res.passed ? (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <div className="mb-1 text-xs font-medium text-rose-400">
+                              Output
+                            </div>
+                            <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2 font-mono text-sm text-rose-400">
+                              {res.actual || "null"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="mb-1 text-xs font-medium text-emerald-400">
+                              Expected
+                            </div>
+                            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 font-mono text-sm text-emerald-400">
+                              {res.expected || tc?.expected || "N/A"}
+                            </div>
+                          </div>
                         </div>
-                        <div
-                          className={cn(
-                            "rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm",
-                            res.passed ? "text-foreground" : "text-rose-500",
-                          )}
-                        >
-                          {res.actual || "null"}
+                      ) : (
+                        <div>
+                          <div className="mb-1 text-xs font-medium text-emerald-400">
+                            Output
+                          </div>
+                          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 font-mono text-sm text-emerald-400">
+                            {res.actual || "null"}
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground mb-1 text-xs font-medium">
-                          Expected
-                        </div>
-                        <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
-                          {res.expected || tc?.expected || "N/A"}
-                        </div>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>

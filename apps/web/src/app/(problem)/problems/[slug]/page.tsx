@@ -40,6 +40,7 @@ export default function ProblemDetailPage() {
   const [pollingType, setPollingType] = useState<"run" | "submit" | null>(null);
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [selectedOutputCase, setSelectedOutputCase] = useState(0);
+  const [customTestCase, setCustomTestCase] = useState<Record<string, string> | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<any | null>(
     null,
   );
@@ -207,10 +208,15 @@ export default function ProblemDetailPage() {
   const handleRun = () => {
     if (!problem || !currentCode) return;
     setPollingType("run");
+    const sig = problem.functionSignature as any;
+    const customArgs = customTestCase && sig?.params
+      ? sig.params.map((p: any) => customTestCase[p.name] ?? "")
+      : undefined;
     runMutation.mutate({
       problemId: problem.id,
       code: currentCode,
       lang: language as any,
+      ...(customArgs ? { customArgs } : {}),
     });
   };
 
@@ -341,6 +347,8 @@ export default function ProblemDetailPage() {
                   onSelectTestCase={setSelectedTestCase}
                   selectedOutputCase={selectedOutputCase}
                   onSelectOutputCase={setSelectedOutputCase}
+                  customTestCase={customTestCase}
+                  onCustomTestCaseChange={setCustomTestCase}
                 />
               </ResizablePanel>
             </ResizablePanelGroup>
