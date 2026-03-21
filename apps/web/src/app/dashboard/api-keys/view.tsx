@@ -293,8 +293,8 @@ export default function ApiKeysView() {
                 </Button>
               </div>
             </div>
-            <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-3">
-              <p className="text-sm text-yellow-600 dark:text-yellow-500">
+            <div className="rounded-md border border-amber-500/20 bg-amber-500/10 p-3">
+              <p className="text-sm text-amber-600 dark:text-amber-500">
                 ⚠️ This is the only time you'll see the full key. Store it
                 securely!
               </p>

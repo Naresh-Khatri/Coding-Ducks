@@ -84,7 +84,7 @@ export function Console({ logs, onClear, onClose, className }: ConsoleProps) {
             className={`flex gap-2 p-1 rounded font-mono break-all whitespace-pre-wrap ${log.method === "error"
               ? "bg-red-950/30 text-red-200 border-l-2 border-red-500"
               : log.method === "warn"
-                ? "bg-yellow-950/30 text-yellow-200 border-l-2 border-yellow-500"
+                ? "bg-amber-950/30 text-amber-200 border-l-2 border-amber-500"
                 : "text-gray-300 border-l-2 border-transparent"
               }`}
           >

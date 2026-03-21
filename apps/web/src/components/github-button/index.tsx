@@ -185,7 +185,7 @@ function GitHubStarsButton({
             aria-hidden="true"
           />
           <Star
-            className="absolute top-0 left-0 fill-yellow-500 text-yellow-500"
+            className="absolute top-0 left-0 fill-amber-500 text-amber-500"
             aria-hidden="true"
             style={{
               clipPath: `inset(${100 - (isCompleted ? fillPercentage : fillPercentage - 10)}% 0 0 0)`,
@@ -214,7 +214,7 @@ function GitHubStarsButton({
                 {[...Array(6)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="absolute h-1 w-1 rounded-full bg-yellow-500"
+                    className="absolute h-1 w-1 rounded-full bg-amber-500"
                     initial={{ x: "50%", y: "50%", scale: 0, opacity: 0 }}
                     animate={{
                       x: `calc(50% + ${Math.cos((i * Math.PI) / 3) * 30}px)`,

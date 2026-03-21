@@ -20,10 +20,10 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white selection:bg-yellow-500/30">
+    <main className="min-h-screen bg-[#0a0a0a] text-white selection:bg-primary/30">
       {/* Background Effects */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] h-[500px] w-[500px] rounded-full bg-yellow-500/10 blur-[120px]" />
+        <div className="absolute top-[-10%] right-[-5%] h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[-5%] h-[500px] w-[500px] rounded-full bg-orange-500/10 blur-[120px]" />
       </div>
 
@@ -31,7 +31,7 @@ export default function HomePage() {
         {/* Navigation */}
         <header className="container mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-400 text-black">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Terminal size={18} strokeWidth={3} />
             </div>
             <span>Coding Ducks</span>
@@ -55,7 +55,7 @@ export default function HomePage() {
               Sign In
             </Button>
             <Button
-              className="bg-yellow-400 text-black hover:bg-yellow-300 font-semibold"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "google",
@@ -80,7 +80,7 @@ export default function HomePage() {
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent max-w-4xl">
             Code. Run. <br />
-            <span className="text-yellow-400 bg-none text-transparent bg-clip-text" style={{ textShadow: "0 0 80px rgba(250, 204, 21, 0.4)" }}>Quack.</span>
+            <span className="text-primary bg-none text-transparent bg-clip-text" style={{ textShadow: "0 0 80px hsl(var(--primary) / 0.4)" }}>Quack.</span>
           </h1>
 
           <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mb-10 leading-relaxed">
@@ -91,7 +91,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
             <Button
               size="lg"
-              className="h-12 px-8 bg-yellow-400 text-black hover:bg-yellow-300 font-bold text-base w-full sm:w-auto"
+              className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-base w-full sm:w-auto"
               onClick={async () => {
                 await authClient.signIn.social({
                   provider: "google",
@@ -135,9 +135,9 @@ export default function HomePage() {
         {/* Features Grid */}
         <section id="features" className="container mx-auto px-6 py-24 border-t border-white/10">
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="group p-8 rounded-3xl bg-zinc-900/50 border border-white/5 hover:border-yellow-500/20 hover:bg-zinc-900/80 transition-all duration-300">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-yellow-400/20 to-orange-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Code2 className="text-yellow-400" size={24} />
+            <div className="group p-8 rounded-3xl bg-zinc-900/50 border border-white/5 hover:border-primary/20 hover:bg-zinc-900/80 transition-all duration-300">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-orange-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Code2 className="text-primary" size={24} />
               </div>
               <h3 className="text-xl font-bold mb-3">Multi-Language Support</h3>
               <p className="text-zinc-400 leading-relaxed">
