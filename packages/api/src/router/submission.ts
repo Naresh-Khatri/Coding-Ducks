@@ -3,7 +3,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import type { FunctionSignature, TestCase } from "@acme/db/schema";
-import { problem, submission } from "@acme/db/schema";
+import { problem, submission, userProfile } from "@acme/db/schema";
 
 import { env } from "../../env";
 import { generateDriverWithTestCases, SUPPORTED_LANGS } from "../drivers";
@@ -346,6 +346,41 @@ export const submissionRouter = createTRPCRouter({
             })
             .where(eq(submission.id, sub.id))
             .returning();
+
+          // Update streak on accepted submission
+          if (finalStatus === "accepted") {
+            const today = new Date().toISOString().split("T")[0]!;
+            const yesterday = new Date(Date.now() - 86400000)
+              .toISOString()
+              .split("T")[0]!;
+
+            const [profile] = await ctx.db
+              .select()
+              .from(userProfile)
+              .where(eq(userProfile.userId, ctx.session.user.id))
+              .limit(1);
+
+            if (profile) {
+              let newStreak = profile.currentStreak;
+              if (profile.lastSolveDate === today) {
+                // Already solved today, no-op
+              } else if (profile.lastSolveDate === yesterday) {
+                newStreak = profile.currentStreak + 1;
+              } else {
+                newStreak = 1;
+              }
+              const newLongest = Math.max(profile.longestStreak, newStreak);
+
+              await ctx.db
+                .update(userProfile)
+                .set({
+                  currentStreak: newStreak,
+                  longestStreak: newLongest,
+                  lastSolveDate: today,
+                })
+                .where(eq(userProfile.userId, ctx.session.user.id));
+            }
+          }
 
           return updatedSub;
         }

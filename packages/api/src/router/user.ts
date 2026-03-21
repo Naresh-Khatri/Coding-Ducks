@@ -1,7 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod/v4";
 
-import { eq, user } from "@acme/db";
+import { user, userProfile, submission, problem } from "@acme/db";
 
 import { protectedProcedure } from "../trpc";
 
@@ -110,5 +111,99 @@ export const userRouter = {
     await ctx.db.delete(user).where(eq(user.id, userId));
 
     return { success: true };
+  }),
+
+  dashboardStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    // Total solved
+    const [solvedCount] = await ctx.db
+      .select({ count: sql<number>`count(distinct ${submission.problemId})` })
+      .from(submission)
+      .where(
+        and(eq(submission.userId, userId), eq(submission.status, "accepted")),
+      );
+
+    // Solved by difficulty
+    const byDifficulty = await ctx.db
+      .select({
+        difficulty: problem.difficulty,
+        count: sql<number>`count(distinct ${submission.problemId})`,
+      })
+      .from(submission)
+      .innerJoin(problem, eq(problem.id, submission.problemId))
+      .where(
+        and(eq(submission.userId, userId), eq(submission.status, "accepted")),
+      )
+      .groupBy(problem.difficulty);
+
+    // Streak info
+    const [profile] = await ctx.db
+      .select({
+        currentStreak: userProfile.currentStreak,
+        longestStreak: userProfile.longestStreak,
+        lastSolveDate: userProfile.lastSolveDate,
+        points: userProfile.points,
+        username: userProfile.username,
+      })
+      .from(userProfile)
+      .where(eq(userProfile.userId, userId))
+      .limit(1);
+
+    const yesterday = new Date(Date.now() - 86400000)
+      .toISOString()
+      .split("T")[0]!;
+    const displayStreak =
+      profile?.lastSolveDate && profile.lastSolveDate >= yesterday
+        ? profile.currentStreak
+        : 0;
+
+    // Recent submissions
+    const recent = await ctx.db
+      .select({
+        id: submission.id,
+        problemTitle: problem.title,
+        problemSlug: problem.slug,
+        difficulty: problem.difficulty,
+        lang: submission.lang,
+        status: submission.status,
+        createdAt: submission.createdAt,
+      })
+      .from(submission)
+      .innerJoin(problem, eq(problem.id, submission.problemId))
+      .where(eq(submission.userId, userId))
+      .orderBy(desc(submission.createdAt))
+      .limit(5);
+
+    // Heatmap data for current year
+    const year = new Date().getFullYear();
+    const heatmap = await ctx.db
+      .select({
+        date: sql<string>`date(${submission.createdAt})`,
+        count: sql<number>`count(*)`,
+      })
+      .from(submission)
+      .where(
+        and(
+          eq(submission.userId, userId),
+          eq(submission.status, "accepted"),
+          sql`${submission.createdAt} >= ${`${year}-01-01`}::date`,
+        ),
+      )
+      .groupBy(sql`date(${submission.createdAt})`);
+
+    return {
+      totalSolved: Number(solvedCount?.count ?? 0),
+      byDifficulty: byDifficulty.map((d) => ({
+        difficulty: d.difficulty,
+        count: Number(d.count),
+      })),
+      currentStreak: displayStreak,
+      longestStreak: profile?.longestStreak ?? 0,
+      points: profile?.points ?? 0,
+      username: profile?.username ?? null,
+      recentSubmissions: recent,
+      heatmap: heatmap.map((d) => ({ date: d.date, count: Number(d.count) })),
+    };
   }),
 } satisfies TRPCRouterRecord;
