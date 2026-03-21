@@ -25,6 +25,21 @@ export function initAuth<
     }),
     baseURL: options.baseUrl,
     secret: options.secret,
+    user: {
+      additionalFields: {
+        username: {
+          type: "string",
+          required: false, // generated in hook, not provided by user
+          input: false,
+        },
+        isAdmin: {
+          type: "boolean",
+          required: false,
+          defaultValue: false,
+          input: false,
+        },
+      },
+    },
     plugins: [
       oAuthProxy({
         productionURL: options.productionUrl,
@@ -40,6 +55,7 @@ export function initAuth<
           user: {
             ...user,
             isAdmin: dbUser?.isAdmin,
+            username: dbUser?.username,
           },
           session,
         };
@@ -66,29 +82,58 @@ export function initAuth<
     databaseHooks: {
       user: {
         create: {
-          after: async (createdUser) => {
-            const baseUsername =
-              createdUser.name?.toLowerCase().replace(/\s+/g, "_") ||
-              createdUser.email
+          before: async (user) => {
+            // Generate a unique username before user creation
+            const baseName =
+              user.name?.toLowerCase().replace(/[^a-z0-9]/g, "") ||
+              user.email
                 .split("@")[0]
                 ?.toLowerCase()
                 .replace(/[^a-z0-9]/g, "") ||
               "user";
-            const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-            const username = `${baseUsername}_${randomSuffix}`;
 
+            // Truncate base to leave room for suffix
+            const base = baseName.slice(0, 20);
+            let username = "";
+
+            // Try up to 10 times with increasing suffix range
+            for (let attempt = 0; attempt < 10; attempt++) {
+              const suffix = Math.floor(1000 + Math.random() * 9000);
+              const candidate = `${base}${suffix}`;
+
+              const [existing] = await db
+                .select({ id: userTable.id })
+                .from(userTable)
+                .where(eq(userTable.username, candidate))
+                .limit(1);
+
+              if (!existing) {
+                username = candidate;
+                break;
+              }
+            }
+
+            // Fallback: use timestamp-based suffix
+            if (!username) {
+              username = `${base}${Date.now() % 100000}`;
+            }
+
+            return {
+              data: {
+                ...user,
+                username,
+              },
+            };
+          },
+          after: async (createdUser) => {
+            const username = createdUser.username as string;
             await db.insert(userProfile).values({
               userId: createdUser.id,
               username,
               fullname: createdUser.name,
               photoURL: createdUser.image,
+              avatarSeed: username,
             });
-
-            // Also update the user's username field in the main user table
-            await db
-              .update(userTable)
-              .set({ username })
-              .where(eq(userTable.id, createdUser.id));
           },
         },
       },
