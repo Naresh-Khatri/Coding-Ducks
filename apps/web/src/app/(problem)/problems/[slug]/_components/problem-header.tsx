@@ -25,6 +25,7 @@ import {
 } from "~/components/ui/drawer";
 import { AnimatedThemeToggler } from "~/components/ui/animated-theme-toggler";
 import { Badge } from "~/components/ui/badge";
+import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
 
@@ -47,14 +48,6 @@ export function ProblemHeader({
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const user = session?.user;
-
-  const userInitials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-    : "??";
 
   // Execution timer
   const isBusy = isRunning || isSubmitting;
@@ -180,13 +173,24 @@ export function ProblemHeader({
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="from-primary to-primary/60 text-primary-foreground flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr text-xs font-medium">
-                {userInitials}
+              <button className="flex h-7 w-7 items-center justify-center rounded-full">
+                <img
+                  src={getAvatarUrl(user.username, 28)}
+                  alt={user.name ?? "User"}
+                  className="bg-muted h-7 w-7 rounded-full"
+                />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{user.name ?? "User"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {user.username && (
+                <DropdownMenuItem asChild>
+                  <Link href={`/u/${user.username}`} className="cursor-pointer">
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/settings" className="cursor-pointer">
                   Settings
