@@ -9,3 +9,4 @@ export * from "./challenges";
 export * from "./attempts";
 export * from "./ducklet-messages";
 export * from "./user-code-drafts";
+export * from "./bookmarks";

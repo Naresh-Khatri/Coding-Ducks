@@ -23,6 +23,7 @@ export {
   apiKeyUsage,
   problem,
   submission,
+  bookmark,
 } from "./schema";
 
 export const db: NodePgDatabase<typeof schema> = drizzle({
