@@ -22,6 +22,7 @@ import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
 const navLinks = [
   { href: "/problems", label: "Problems" },
   { href: "/ducklets", label: "Ducklets" },
+  { href: "/system-design", label: "System Design" },
 ];
 
 export function Navbar() {
@@ -176,9 +177,7 @@ export function Navbar() {
       {isMobileMenuOpen && (
         <div className="border-t md:hidden">
           <div className="container mx-auto space-y-3 px-6 py-4">
-            {navLinks
-              .filter((link) => !link.auth || user)
-              .map((link) => (
+            {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
