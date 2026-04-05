@@ -138,6 +138,10 @@ export function initAuth<
         },
       },
     },
+    trustedOrigins: [
+      "http://localhost:3001",
+      "https://dev3001.nareshkhatri.site",
+    ],
   } satisfies BetterAuthOptions;
 
   return betterAuth(config);
