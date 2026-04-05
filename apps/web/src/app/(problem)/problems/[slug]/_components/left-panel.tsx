@@ -63,9 +63,9 @@ export function LeftPanel({
         <div className="p-6 pb-32">
           {/* Title + difficulty badge */}
           <div className="mb-4 flex items-center gap-3">
-            <h1 className="text-foreground text-xl font-bold tracking-tight">
-              {problem.title}
-            </h1>
+            {/* <h1 className="text-foreground text-xl font-bold tracking-tight"> */}
+            {/*   {problem.title} */}
+            {/* </h1> */}
             <Badge
               variant="outline"
               className={cn(
@@ -74,8 +74,7 @@ export function LeftPanel({
                   "bg-emerald-500/10 text-emerald-500",
                 problem.difficulty === "medium" &&
                   "bg-amber-500/10 text-amber-500",
-                problem.difficulty === "hard" &&
-                  "bg-rose-500/10 text-rose-500",
+                problem.difficulty === "hard" && "bg-rose-500/10 text-rose-500",
               )}
             >
               {problem.difficulty}
