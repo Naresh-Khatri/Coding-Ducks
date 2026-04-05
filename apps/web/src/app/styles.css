@@ -201,3 +201,16 @@
   animation: none;
   mix-blend-mode: normal;
 }
+
+@keyframes edge-flow {
+  from {
+    stroke-dashoffset: 16;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-edge-flow {
+  animation: edge-flow 0.5s linear infinite;
+}
