@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
 import {
   Terminal,
   Code2,
@@ -13,20 +12,12 @@ import {
   Play,
   BookOpen,
   Braces,
-  Menu,
-  X,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
-
-const landingNavLinks = [
-  { href: "/problems", label: "Problems" },
-  { href: "/ducklets", label: "Ducklets" },
-  { href: "/system-design", label: "System Design" },
-  { href: "/playground", label: "Playground" },
-];
+import { Navbar } from "~/components/navbar";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -104,7 +95,6 @@ const steps = [
 ];
 
 export default function HomePage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { data: session, isPending } = authClient.useSession();
 
   if (!isPending && session) {
@@ -131,110 +121,7 @@ export default function HomePage() {
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Header */}
-        <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-xl">
-          <div className="container mx-auto flex h-14 items-center justify-between px-6">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center gap-2.5 font-bold text-lg tracking-tight"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Terminal size={16} strokeWidth={3} />
-              </div>
-              <span>Coding Ducks</span>
-            </Link>
-
-            {/* Desktop Nav */}
-            <nav className="hidden items-center gap-1 md:flex">
-              {landingNavLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white hover:bg-white/5"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Desktop Right */}
-            <div className="hidden items-center gap-3 md:flex">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-zinc-400 hover:text-white hover:bg-white/5"
-                onClick={handleSignIn}
-              >
-                Sign In
-              </Button>
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
-                onClick={handleSignIn}
-              >
-                Get Started
-              </Button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-zinc-400 hover:text-white hover:bg-white/5 md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </Button>
-          </div>
-
-          {/* Mobile Menu */}
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="overflow-hidden border-t border-white/5 md:hidden"
-              >
-                <div className="container mx-auto space-y-1 px-6 py-4">
-                  {landingNavLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="block rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:text-white hover:bg-white/5"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                  <div className="grid grid-cols-2 gap-2 border-t border-white/5 pt-3 mt-2">
-                    <Button
-                      variant="ghost"
-                      className="text-zinc-400 hover:text-white hover:bg-white/5 justify-center"
-                      onClick={async () => {
-                        setIsMobileMenuOpen(false);
-                        await handleSignIn();
-                      }}
-                    >
-                      Sign In
-                    </Button>
-                    <Button
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 justify-center font-semibold"
-                      onClick={async () => {
-                        setIsMobileMenuOpen(false);
-                        await handleSignIn();
-                      }}
-                    >
-                      Get Started
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </header>
+        <Navbar />
 
         {/* Hero */}
         <section className="flex-1 container mx-auto px-6 flex flex-col items-center justify-center text-center pt-20 pb-32 md:pt-28 md:pb-40">
