@@ -30,6 +30,12 @@ const config = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

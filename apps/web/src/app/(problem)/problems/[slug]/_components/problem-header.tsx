@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, List, Loader2, Play, Send, Timer } from "lucide-react";
@@ -78,14 +79,19 @@ export function ProblemHeader({
       {/* Left: back + problems list */}
       <div className="flex items-center gap-1">
         <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-          <Link href="/problems">
+          <Link href="/problems" aria-label="Back to problems">
             <ChevronLeft className="h-4 w-4" />
           </Link>
         </Button>
 
         <Drawer direction="left">
           <DrawerTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Open problems list"
+              className="h-8 w-8"
+            >
               <List className="h-4 w-4" />
             </Button>
           </DrawerTrigger>
@@ -173,10 +179,16 @@ export function ProblemHeader({
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex h-7 w-7 items-center justify-center rounded-full">
-                <img
+              <button
+                aria-label="Account menu"
+                className="flex h-7 w-7 items-center justify-center rounded-full"
+              >
+                <Image
                   src={getAvatarUrl(user.username, 28)}
                   alt={user.name ?? "User"}
+                  width={28}
+                  height={28}
+                  unoptimized
                   className="bg-muted h-7 w-7 rounded-full"
                 />
               </button>

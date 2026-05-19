@@ -181,6 +181,7 @@ export function CodeEditorPanel({
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Re-indent code"
                   className="h-6 w-6"
                   onClick={handleFormat}
                 >
@@ -196,6 +197,7 @@ export function CodeEditorPanel({
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Retrieve last submission"
                   className="h-6 w-6"
                   onClick={triggerRetrieve}
                   disabled={!hasLastSubmission}
@@ -212,6 +214,7 @@ export function CodeEditorPanel({
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Reset to default code"
                   className="h-6 w-6"
                   onClick={triggerReset}
                 >

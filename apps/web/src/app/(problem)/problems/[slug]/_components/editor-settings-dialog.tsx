@@ -26,7 +26,12 @@ export function EditorSettingsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-6 w-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Editor settings"
+          className="h-6 w-6"
+        >
           <Settings className="h-3.5 w-3.5" />
         </Button>
       </DialogTrigger>
