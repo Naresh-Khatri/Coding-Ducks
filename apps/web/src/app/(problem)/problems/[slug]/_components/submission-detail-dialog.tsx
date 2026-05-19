@@ -8,21 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { getLanguageLabel } from "~/lib/languages";
 import { cn } from "~/lib/utils";
 import type { SubmissionDetail } from "../types";
-
-const LANGUAGES: Array<{ key: string; label: string }> = [
-  { key: "py", label: "Python" },
-  { key: "js", label: "JavaScript" },
-  { key: "ts", label: "TypeScript" },
-  { key: "cpp", label: "C++" },
-  { key: "java", label: "Java" },
-  { key: "c", label: "C" },
-  { key: "rs", label: "Rust" },
-  { key: "go", label: "Go" },
-  { key: "rb", label: "Ruby" },
-  { key: "php", label: "PHP" },
-];
 
 interface SubmissionDetailDialogProps {
   submission: SubmissionDetail | null;
@@ -36,8 +24,7 @@ export function SubmissionDetailDialog({
   if (!submission) return null;
 
   const sub = submission;
-  const langLabel =
-    LANGUAGES.find((l) => l.key === sub.lang)?.label || sub.lang;
+  const langLabel = getLanguageLabel(sub.lang);
   const results = sub.results;
 
   return (

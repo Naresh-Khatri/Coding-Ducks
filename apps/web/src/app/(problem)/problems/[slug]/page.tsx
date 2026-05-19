@@ -39,6 +39,7 @@ export default function ProblemDetailPage() {
   const [lastProblemId, setLastProblemId] = useState<number | null>(null);
   const [pollingId, setPollingId] = useState<number | null>(null);
   const [pollingType, setPollingType] = useState<"run" | "submit" | null>(null);
+  const [submissionsLimit, setSubmissionsLimit] = useState(10);
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [selectedOutputCase, setSelectedOutputCase] = useState(0);
   const [customTestCase, setCustomTestCase] = useState<Record<string, string> | null>(null);
@@ -65,8 +66,8 @@ export default function ProblemDetailPage() {
 
   const { data: submissions, refetch: refetchSubmissions } = useQuery(
     trpc.submission.list.queryOptions(
-      { problemId: problem?.id, limit: 10 },
-      { enabled: !!problem?.id },
+      { problemId: problem?.id, limit: submissionsLimit },
+      { enabled: !!problem?.id && isAuthenticated },
     ),
   );
 
@@ -99,7 +100,9 @@ export default function ProblemDetailPage() {
         }
       } else if (pollingType === "submit") {
         if (data.status === "accepted") {
-          toast.success("Submission Accepted!");
+          toast.success("🎉 Accepted!", {
+            description: "Nice work — all test cases passed.",
+          });
         } else {
           toast.error(`Submission Failed: ${data.status.replace("_", " ")}`);
         }
@@ -290,6 +293,8 @@ export default function ProblemDetailPage() {
               submissions={submissions}
               leftTab={leftTab}
               isAuthenticated={isAuthenticated}
+              canLoadMore={(submissions?.length ?? 0) === submissionsLimit}
+              onLoadMore={() => setSubmissionsLimit((l) => l + 10)}
               onLeftTabChange={setLeftTab}
               onSelectSubmission={setSelectedSubmission}
             />

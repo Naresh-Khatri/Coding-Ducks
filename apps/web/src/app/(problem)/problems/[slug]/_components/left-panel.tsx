@@ -9,23 +9,18 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
+import { getLanguageLabel } from "~/lib/languages";
 import { useTRPC } from "~/trpc/react";
 import type { ProblemDetail, SubmissionDetail } from "../types";
 import { markdownComponents } from "./markdown-components";
-
-const LANGUAGES: Array<{ key: string; label: string }> = [
-  { key: "py", label: "Python" },
-  { key: "js", label: "JavaScript" },
-  { key: "cpp", label: "C++" },
-  { key: "java", label: "Java" },
-  { key: "c", label: "C" },
-];
 
 interface LeftPanelProps {
   problem: ProblemDetail;
   submissions: SubmissionDetail[] | undefined;
   leftTab: string;
   isAuthenticated: boolean;
+  canLoadMore: boolean;
+  onLoadMore: () => void;
   onLeftTabChange: (tab: string) => void;
   onSelectSubmission: (sub: SubmissionDetail) => void;
 }
@@ -35,6 +30,8 @@ export function LeftPanel({
   submissions,
   leftTab,
   isAuthenticated,
+  canLoadMore,
+  onLoadMore,
   onLeftTabChange,
   onSelectSubmission,
 }: LeftPanelProps) {
@@ -198,8 +195,7 @@ export function LeftPanel({
             </thead>
             <tbody className="divide-y divide-white/5">
               {submissions.map((sub) => {
-                const langLabel =
-                  LANGUAGES.find((l) => l.key === sub.lang)?.label || sub.lang;
+                const langLabel = getLanguageLabel(sub.lang);
                 return (
                   <tr
                     key={sub.id}
@@ -250,7 +246,20 @@ export function LeftPanel({
               })}
             </tbody>
           </table>
-        ) : (
+        ) : null}
+        {submissions && submissions.length > 0 && canLoadMore && (
+          <div className="flex justify-center p-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLoadMore}
+              className="h-8 text-xs"
+            >
+              Load more
+            </Button>
+          </div>
+        )}
+        {(!submissions || submissions.length === 0) && (
           <div className="flex flex-col items-center justify-center py-16 text-center opacity-50">
             <Send className="text-muted-foreground mb-4 h-8 w-8" />
             <p className="text-muted-foreground text-xs font-medium">

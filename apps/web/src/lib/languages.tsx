@@ -103,3 +103,8 @@ export const LANGUAGES: LanguageInfo[] = [
   { key: "rb", label: "Ruby", icon: RubyIcon },
   { key: "php", label: "PHP", icon: PhpIcon },
 ];
+
+/** Human label for a language key, falling back to the key itself. */
+export function getLanguageLabel(key: string): string {
+  return LANGUAGES.find((l) => l.key === key)?.label ?? key;
+}
