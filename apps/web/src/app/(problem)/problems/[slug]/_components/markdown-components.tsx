@@ -48,8 +48,52 @@ export const markdownComponents: Components = {
       {...props}
     />
   ),
+  ol: ({ node, ...props }) => (
+    <ol
+      className="text-foreground/70 mb-6 ml-5 list-outside list-decimal space-y-2 text-sm"
+      {...props}
+    />
+  ),
   li: ({ node, ...props }) => <li className="pl-1" {...props} />,
   strong: ({ node, ...props }) => (
     <strong className="text-foreground/90 font-semibold" {...props} />
+  ),
+  em: ({ node, ...props }) => (
+    <em className="text-foreground/80 italic" {...props} />
+  ),
+  a: ({ node, ...props }) => (
+    <a
+      className="text-primary font-medium underline underline-offset-2 hover:opacity-80"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    />
+  ),
+  blockquote: ({ node, ...props }) => (
+    <blockquote
+      className="text-foreground/60 border-primary/40 my-4 border-l-2 pl-4 text-sm italic"
+      {...props}
+    />
+  ),
+  hr: ({ node, ...props }) => (
+    <hr className="my-8 border-white/5" {...props} />
+  ),
+  table: ({ node, ...props }) => (
+    <div className="my-4 overflow-x-auto rounded-lg border border-white/5">
+      <table className="w-full text-left text-sm" {...props} />
+    </div>
+  ),
+  thead: ({ node, ...props }) => (
+    <thead className="bg-accent/30 text-foreground/80" {...props} />
+  ),
+  tbody: ({ node, ...props }) => (
+    <tbody className="divide-y divide-white/5" {...props} />
+  ),
+  tr: ({ node, ...props }) => <tr {...props} />,
+  th: ({ node, ...props }) => (
+    <th className="px-4 py-2 font-semibold" {...props} />
+  ),
+  td: ({ node, ...props }) => (
+    <td className="text-foreground/70 px-4 py-2" {...props} />
   ),
 };
