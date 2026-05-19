@@ -8,8 +8,6 @@ import { PanelLeft, Pin, PinOff } from "lucide-react";
 
 import "@xyflow/react/dist/style.css";
 
-import { defaultAttributes } from "@dnd-kit/sortable/dist/hooks/defaults";
-
 import type { BlockNodeData } from "~/lib/system-design/types";
 import {
   ResizableHandle,
@@ -32,6 +30,7 @@ import { CanvasHintsOverlay } from "./canvas-hints-overlay";
 import { CanvasInfoOverlay } from "./canvas-info-overlay";
 import { CustomEdge } from "./custom-edge";
 import { LevelBriefing } from "./level-briefing";
+import { OnboardingTour } from "./onboarding-tour";
 import { ResultsModal } from "./results-modal";
 import { StartSimulationButton } from "./start-simulation-button";
 import { useSimulation } from "./simulation-runner";
@@ -233,6 +232,7 @@ export function Workspace() {
                 <ResizablePanel defaultSize={isProduction ? 70 : 100}>
                   <div
                     className="h-full w-full"
+                    data-tour="sd-canvas"
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                   >
@@ -304,6 +304,8 @@ export function Workspace() {
 
       {/* Results overlay */}
       {phase === "results" && simulationResults && <ResultsModal />}
+
+      <OnboardingTour />
     </div>
   );
 }

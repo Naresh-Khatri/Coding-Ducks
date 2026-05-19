@@ -63,6 +63,7 @@
     "better-auth": "catalog:",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "driver.js": "^1.4.0",
     "lucide-react": "^0.555.0",
     "motion": "^12.23.26",
     "next": "^16.0.10",

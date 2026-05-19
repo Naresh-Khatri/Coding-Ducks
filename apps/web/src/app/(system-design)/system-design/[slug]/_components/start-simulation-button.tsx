@@ -49,6 +49,7 @@ export function StartSimulationButton() {
 
   return (
     <div
+      data-tour="sd-start"
       className={cn(
         "absolute bottom-5 left-1/2 z-10 -translate-x-1/2 transition-all duration-200 ease-out",
         visible

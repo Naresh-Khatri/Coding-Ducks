@@ -66,7 +66,7 @@ export function BlockPalette() {
 
   return (
     <ScrollArea className="min-h-0 flex-1">
-      <div className="flex flex-col gap-1 p-2">
+      <div className="flex flex-col gap-1 p-2" data-tour="sd-palette">
         <div className="text-muted-foreground mb-1 px-2 text-xs font-medium tracking-wider uppercase">
           Blocks
         </div>

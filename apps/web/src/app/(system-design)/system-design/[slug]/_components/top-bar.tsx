@@ -2,8 +2,9 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, RotateCcw, Undo2, Redo2 } from "lucide-react";
+import { ArrowLeft, HelpCircle, RotateCcw, Undo2, Redo2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { startSystemDesignTour } from "./onboarding-tour";
 import { useConfirm } from "~/hooks/use-confirm";
 import { authClient } from "~/auth/client";
 import { useSystemDesignStore } from "~/lib/system-design/store";
@@ -89,7 +90,7 @@ export function TopBar() {
       </div>
 
       {/* Phase indicator */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5" data-tour="sd-phase">
         <span
           className={cn(
             "h-2 w-2 rounded-full",
@@ -153,8 +154,19 @@ export function TopBar() {
       <Button
         size="sm"
         variant="ghost"
+        onClick={() => startSystemDesignTour()}
+        className="h-8 w-8 p-0"
+        title="Restart tour"
+      >
+        <HelpCircle size={14} />
+      </Button>
+
+      <Button
+        size="sm"
+        variant="ghost"
         onClick={triggerReset}
         className="h-8 w-8 p-0"
+        title="Reset canvas"
       >
         <RotateCcw size={14} />
       </Button>

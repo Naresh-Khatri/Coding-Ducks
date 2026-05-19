@@ -55,7 +55,7 @@ export function LevelBriefing() {
   ];
 
   return (
-    <div className="border-b p-3">
+    <div className="border-b p-3" data-tour="sd-briefing">
       {/* Objective */}
       <div className="mb-3">
         <div className="mb-1.5 flex items-center gap-1.5">
