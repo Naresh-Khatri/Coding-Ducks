@@ -5,6 +5,17 @@ import { ArrowLeft, MessageSquare, Trash2 } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -138,19 +149,17 @@ export function DiscussionPanel({
             {fmtDate(c.createdAt)}
           </span>
           {c.userId === currentUserId && (
-            <button
-              onClick={() =>
+            <ConfirmDelete
+              label="Delete post"
+              description="This permanently deletes this post and all of its replies. This cannot be undone."
+              disabled={deleteComment.isPending}
+              onConfirm={() =>
                 deleteComment.mutate(
                   { id: c.id },
                   { onSuccess: () => setOpenId(null) },
                 )
               }
-              disabled={deleteComment.isPending}
-              aria-label="Delete post"
-              className="text-muted-foreground/50 hover:text-rose-500 ml-auto transition-colors"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            />
           )}
         </div>
 
@@ -193,14 +202,15 @@ export function DiscussionPanel({
                         {fmtDate(r.createdAt)}
                       </span>
                       {r.userId === currentUserId && (
-                        <button
-                          onClick={() => deleteComment.mutate({ id: r.id })}
+                        <ConfirmDelete
+                          label="Delete reply"
+                          description="This permanently deletes your reply. This cannot be undone."
                           disabled={deleteComment.isPending}
-                          aria-label="Delete reply"
-                          className="text-muted-foreground/50 hover:text-rose-500 ml-auto transition-colors"
-                        >
-                          <Trash2 className="h-2.5 w-2.5" />
-                        </button>
+                          iconClassName="h-2.5 w-2.5"
+                          onConfirm={() =>
+                            deleteComment.mutate({ id: r.id })
+                          }
+                        />
                       )}
                     </div>
                     <div className="mt-0.5">
@@ -322,6 +332,50 @@ export function DiscussionPanel({
         </div>
       )}
     </div>
+  );
+}
+
+function ConfirmDelete({
+  onConfirm,
+  disabled,
+  label,
+  description,
+  iconClassName,
+}: {
+  onConfirm: () => void;
+  disabled?: boolean;
+  label: string;
+  description: string;
+  iconClassName?: string;
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled}
+          aria-label={label}
+          className="text-muted-foreground/50 hover:text-rose-500 ml-auto transition-colors"
+        >
+          <Trash2 className={iconClassName ?? "h-3.5 w-3.5"} />
+        </button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{label}?</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="bg-rose-600 text-white hover:bg-rose-600/90"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
