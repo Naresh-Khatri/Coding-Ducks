@@ -284,7 +284,7 @@ export function ProblemFormDialog({
 
   // Fetch existing problem
   const { data: existingProblem, isLoading: isLoadingProblem } = useQuery(
-    trpc.problem.getById.queryOptions(
+    trpc.problem.adminById.queryOptions(
       { id: problemId! },
       { enabled: !!problemId && open },
     ),

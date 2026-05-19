@@ -126,3 +126,25 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Admin procedure
+ *
+ * Only accessible to authenticated users with `isAdmin === true`. Builds on
+ * top of the protected tier so the admin check lives in one place instead of
+ * being repeated inline in every admin route.
+ *
+ * @see https://trpc.io/docs/procedures
+ */
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  const user = ctx.session.user as typeof ctx.session.user & {
+    isAdmin?: boolean;
+  };
+  if (!user.isAdmin) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
+  }
+  return next({ ctx });
+});
