@@ -114,7 +114,14 @@ export const commentRouter = createTRPCRouter({
       if (isReply && (input.code ?? input.title)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Replies cannot attach a solution",
+          message: "Replies cannot have a title or attach a solution",
+        });
+      }
+
+      if (!isReply && !input.title) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "A post needs a title",
         });
       }
 
@@ -153,7 +160,7 @@ export const commentRouter = createTRPCRouter({
           userId: ctx.session.user.id,
           problemId: input.problemId,
           parentId: input.parentId,
-          title: input.code ? input.title : undefined,
+          title: isReply ? undefined : input.title,
           body: input.body,
           code: input.code,
           lang: input.code ? input.lang : undefined,
