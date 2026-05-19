@@ -1,12 +1,15 @@
 "use client";
 
-import { Send } from "lucide-react";
+import { Bookmark, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
+import { useTRPC } from "~/trpc/react";
 import type { ProblemDetail, SubmissionDetail } from "../types";
 import { markdownComponents } from "./markdown-components";
 
@@ -22,6 +25,7 @@ interface LeftPanelProps {
   problem: ProblemDetail;
   submissions: SubmissionDetail[] | undefined;
   leftTab: string;
+  isAuthenticated: boolean;
   onLeftTabChange: (tab: string) => void;
   onSelectSubmission: (sub: SubmissionDetail) => void;
 }
@@ -30,9 +34,24 @@ export function LeftPanel({
   problem,
   submissions,
   leftTab,
+  isAuthenticated,
   onLeftTabChange,
   onSelectSubmission,
 }: LeftPanelProps) {
+  const trpc = useTRPC();
+  const bookmarkQuery = useQuery(
+    trpc.bookmark.isBookmarked.queryOptions(
+      { problemId: problem.id },
+      { enabled: isAuthenticated },
+    ),
+  );
+  const toggleBookmark = useMutation(
+    trpc.bookmark.toggle.mutationOptions({
+      onSuccess: () => bookmarkQuery.refetch(),
+    }),
+  );
+  const isBookmarked = bookmarkQuery.data?.bookmarked ?? false;
+
   const tabTriggerClass =
     "data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-foreground h-full rounded-none border-b-2 border-transparent px-0 text-xs font-bold tracking-wider uppercase transition-all data-[state=active]:bg-transparent";
 
@@ -64,9 +83,12 @@ export function LeftPanel({
         <div className="p-6 pb-32">
           {/* Title + difficulty badge */}
           <div className="mb-4 flex items-center gap-3">
-            {/* <h1 className="text-foreground text-xl font-bold tracking-tight"> */}
-            {/*   {problem.title} */}
-            {/* </h1> */}
+            <h1 className="text-foreground text-xl font-bold tracking-tight">
+              <span className="text-muted-foreground mr-2 font-mono text-base font-medium">
+                {problem.displayOrder || problem.id}.
+              </span>
+              {problem.title}
+            </h1>
             <Badge
               variant="outline"
               className={cn(
@@ -80,6 +102,28 @@ export function LeftPanel({
             >
               {problem.difficulty}
             </Badge>
+
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={
+                  isBookmarked ? "Remove bookmark" : "Bookmark problem"
+                }
+                disabled={toggleBookmark.isPending}
+                onClick={() =>
+                  toggleBookmark.mutate({ problemId: problem.id })
+                }
+                className="ml-auto h-8 w-8"
+              >
+                <Bookmark
+                  className={cn(
+                    "h-4 w-4",
+                    isBookmarked && "fill-amber-500 text-amber-500",
+                  )}
+                />
+              </Button>
+            )}
           </div>
 
           <div className="prose prose-invert prose-slate max-w-none">

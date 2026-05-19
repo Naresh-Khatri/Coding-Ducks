@@ -289,6 +289,7 @@ export default function ProblemDetailPage() {
               problem={problem}
               submissions={submissions}
               leftTab={leftTab}
+              isAuthenticated={isAuthenticated}
               onLeftTabChange={setLeftTab}
               onSelectSubmission={setSelectedSubmission}
             />
