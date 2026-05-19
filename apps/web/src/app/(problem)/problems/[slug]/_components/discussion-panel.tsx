@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, MessageSquare, Trash2 } from "lucide-react";
+import { ArrowLeft, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -18,6 +18,13 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import {
   RichTextContent,
@@ -68,6 +75,7 @@ export function DiscussionPanel({
   const canShare = best?.status === "accepted";
 
   const [openId, setOpenId] = useState<number | null>(null);
+  const [composeOpen, setComposeOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [attach, setAttach] = useState(false);
@@ -104,6 +112,7 @@ export function DiscussionPanel({
     setTitle("");
     setBody("");
     setAttach(false);
+    setComposeOpen(false);
   }
 
   async function submitReply(parentId: number) {
@@ -254,64 +263,86 @@ export function DiscussionPanel({
   // ---- List view ---------------------------------------------------------
   return (
     <div className="custom-scrollbar h-full overflow-y-auto p-6 pb-32">
-      {isAuthenticated ? (
-        <form onSubmit={submitPost} className="mb-8 space-y-2">
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title (e.g. O(n) sliding window — Python)"
-            maxLength={200}
-            className="text-sm font-medium"
-          />
-          <RichTextEditor
-            value={body}
-            onChange={setBody}
-            placeholder="Share your approach or ask a question…"
-            footer={
-              attach && canShare && best ? (
-                <>
-                  <div className="text-muted-foreground mb-1.5 text-[10px] font-medium tracking-wide uppercase">
-                    Attached {getLanguageLabel(best.lang)} solution
-                  </div>
-                  <ShikiCode code={best.code} lang={best.lang} />
-                </>
-              ) : undefined
-            }
-          />
-          <div className="flex items-center justify-between">
-            {canShare ? (
-              <label className="text-muted-foreground flex cursor-pointer items-center gap-1.5 text-[11px]">
-                <input
-                  type="checkbox"
-                  checked={attach}
-                  onChange={(e) => setAttach(e.target.checked)}
-                  className="accent-primary h-3 w-3"
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-foreground text-xs font-bold tracking-widest uppercase">
+          Discussion
+        </h2>
+        {isAuthenticated ? (
+          <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="h-8 text-xs">
+                <Plus className="mr-1 h-3.5 w-3.5" />
+                New post
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-base">
+                  New discussion post
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={submitPost} className="space-y-2">
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Title (e.g. O(n) sliding window — Python)"
+                  maxLength={200}
+                  className="text-sm font-medium"
                 />
-                Attach my accepted{" "}
-                {best ? getLanguageLabel(best.lang) : ""} solution
-              </label>
-            ) : (
-              <span className="text-muted-foreground/60 text-[11px]">
-                Solve this problem to attach your solution.
-              </span>
-            )}
-            <Button
-              type="submit"
-              size="sm"
-              disabled={
-                !title.trim() || !body.trim() || createComment.isPending
-              }
-              className="h-8 text-xs"
-            >
-              {createComment.isPending ? "Posting…" : "Post"}
-            </Button>
-          </div>
-        </form>
-      ) : (
-        <p className="text-muted-foreground mb-6 text-xs">
-          Sign in to join the discussion.
-        </p>
-      )}
+                <RichTextEditor
+                  value={body}
+                  onChange={setBody}
+                  placeholder="Share your approach or ask a question…"
+                  footer={
+                    attach && canShare && best ? (
+                      <>
+                        <div className="text-muted-foreground mb-1.5 text-[10px] font-medium tracking-wide uppercase">
+                          Attached {getLanguageLabel(best.lang)} solution
+                        </div>
+                        <ShikiCode code={best.code} lang={best.lang} />
+                      </>
+                    ) : undefined
+                  }
+                />
+                <div className="flex items-center justify-between">
+                  {canShare ? (
+                    <label className="text-muted-foreground flex cursor-pointer items-center gap-1.5 text-[11px]">
+                      <input
+                        type="checkbox"
+                        checked={attach}
+                        onChange={(e) => setAttach(e.target.checked)}
+                        className="accent-primary h-3 w-3"
+                      />
+                      Attach my accepted{" "}
+                      {best ? getLanguageLabel(best.lang) : ""} solution
+                    </label>
+                  ) : (
+                    <span className="text-muted-foreground/60 text-[11px]">
+                      Solve this problem to attach your solution.
+                    </span>
+                  )}
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={
+                      !title.trim() ||
+                      !body.trim() ||
+                      createComment.isPending
+                    }
+                    className="h-8 text-xs"
+                  >
+                    {createComment.isPending ? "Posting…" : "Post"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <span className="text-muted-foreground text-xs">
+            Sign in to post
+          </span>
+        )}
+      </div>
 
       {comments.length > 0 ? (
         <ul className="divide-y divide-white/5">
