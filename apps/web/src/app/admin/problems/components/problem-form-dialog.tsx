@@ -57,6 +57,10 @@ const problemFormSchema = z.object({
     .max(100)
     .regex(/^[a-z0-9-]+$/, "Slug must be lowercase with hyphens only"),
   description: z.string().min(1, "Description is required"),
+  hints: z.array(z.string()).default([]),
+  constraints: z.string().optional(),
+  companies: z.array(z.string()).default([]),
+  followUp: z.string().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]),
   tags: z.array(z.string()).default([]),
   displayOrder: z.coerce.number().default(0),
@@ -196,6 +200,10 @@ export function ProblemFormDialog({
         form.setValue("title", problemData.title || "");
         form.setValue("slug", problemData.slug || "");
         form.setValue("description", problemData.description || "");
+        form.setValue("hints", problemData.hints || []);
+        form.setValue("constraints", problemData.constraints || "");
+        form.setValue("companies", problemData.companies || []);
+        form.setValue("followUp", problemData.followUp || "");
         form.setValue("difficulty", problemData.difficulty || "easy");
         form.setValue("tags", problemData.tags || []);
         form.setValue("displayOrder", problemData.displayOrder || 0);
@@ -235,6 +243,10 @@ export function ProblemFormDialog({
       title: formData.title,
       slug: formData.slug,
       description: formData.description,
+      hints: formData.hints,
+      constraints: formData.constraints,
+      companies: formData.companies,
+      followUp: formData.followUp,
       difficulty: formData.difficulty,
       tags: formData.tags,
       displayOrder: formData.displayOrder,
@@ -273,6 +285,10 @@ export function ProblemFormDialog({
       title: "",
       slug: "",
       description: "",
+      hints: [],
+      constraints: "",
+      companies: [],
+      followUp: "",
       difficulty: "easy",
       tags: [],
       displayOrder: 0,
@@ -298,6 +314,10 @@ export function ProblemFormDialog({
           title: existingProblem.title,
           slug: existingProblem.slug,
           description: existingProblem.description,
+          hints: existingProblem.hints ?? [],
+          constraints: existingProblem.constraints ?? "",
+          companies: existingProblem.companies ?? [],
+          followUp: existingProblem.followUp ?? "",
           difficulty: existingProblem.difficulty as "easy" | "medium" | "hard",
           tags: existingProblem.tags,
           displayOrder: existingProblem.displayOrder || 0,
@@ -314,6 +334,10 @@ export function ProblemFormDialog({
           title: "",
           slug: "",
           description: "",
+          hints: [],
+          constraints: "",
+          companies: [],
+          followUp: "",
           difficulty: "easy",
           tags: [],
           displayOrder: 0,

@@ -21,6 +21,18 @@ export const problem = pgTable("problem", {
   // Editorial (Markdown content explaining the solution)
   editorial: text("editorial"),
 
+  // Progressive hints (revealed one at a time in the UI)
+  hints: text("hints").array().notNull().default(sql`'{}'::text[]`),
+
+  // Constraints (Markdown, e.g. input bounds)
+  constraints: text("constraints"),
+
+  // Companies that have asked this problem
+  companies: text("companies").array().notNull().default(sql`'{}'::text[]`),
+
+  // Follow-up prompt (Markdown)
+  followUp: text("follow_up"),
+
   // Function signature definition (language-agnostic)
   functionSignature: jsonb("function_signature").$type<FunctionSignature>(),
 

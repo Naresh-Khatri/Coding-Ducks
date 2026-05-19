@@ -36,6 +36,10 @@ export interface CreateProblemArgs {
   title: string;
   description: string;
   editorial?: string;
+  hints?: string[];
+  constraints?: string;
+  companies?: string[];
+  followUp?: string;
   difficulty: Difficulty;
   testCases: TestCaseInput[];
   starterCode?: Record<string, string>;
@@ -50,6 +54,10 @@ export interface UpdateProblemArgs {
   title?: string;
   description?: string;
   editorial?: string | null;
+  hints?: string[];
+  constraints?: string | null;
+  companies?: string[];
+  followUp?: string | null;
   difficulty?: Difficulty;
   testCases?: TestCaseInput[];
   starterCode?: Record<string, string>;

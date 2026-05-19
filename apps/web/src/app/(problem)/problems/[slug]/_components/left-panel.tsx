@@ -1,6 +1,7 @@
 "use client";
 
-import { Bookmark, Send } from "lucide-react";
+import { useState } from "react";
+import { Bookmark, ChevronRight, Lightbulb, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -48,6 +49,10 @@ export function LeftPanel({
     }),
   );
   const isBookmarked = bookmarkQuery.data?.bookmarked ?? false;
+
+  const [openHints, setOpenHints] = useState<Record<number, boolean>>({});
+  const toggleHint = (i: number) =>
+    setOpenHints((prev) => ({ ...prev, [i]: !prev[i] }));
 
   const tabTriggerClass =
     "data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-foreground h-full rounded-none border-b-2 border-transparent px-0 text-xs font-bold tracking-wider uppercase transition-all data-[state=active]:bg-transparent";
@@ -132,6 +137,76 @@ export function LeftPanel({
             </ReactMarkdown>
           </div>
 
+          {problem.constraints && (
+            <div className="mt-8">
+              <h3 className="text-muted-foreground mb-3 text-xs font-bold tracking-widest uppercase">
+                Constraints
+              </h3>
+              <div className="prose prose-invert prose-slate max-w-none">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {problem.constraints}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
+
+          {problem.followUp && (
+            <div className="mt-8">
+              <h3 className="text-muted-foreground mb-3 text-xs font-bold tracking-widest uppercase">
+                Follow-up
+              </h3>
+              <div className="prose prose-invert prose-slate max-w-none">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {problem.followUp}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
+
+          {problem.hints && problem.hints.length > 0 && (
+            <div className="mt-8 space-y-2">
+              {problem.hints.map((hint, i) => (
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-lg border border-white/5"
+                >
+                  <button
+                    onClick={() => toggleHint(i)}
+                    aria-expanded={!!openHints[i]}
+                    className="hover:bg-white/[0.03] flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors"
+                  >
+                    <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                    Hint {i + 1}
+                    <ChevronRight
+                      className={cn(
+                        "ml-auto h-3.5 w-3.5 transition-transform",
+                        openHints[i] && "rotate-90",
+                      )}
+                    />
+                  </button>
+                  {openHints[i] && (
+                    <div className="border-t border-white/5 px-3 py-2">
+                      <div className="prose prose-invert prose-slate max-w-none">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={markdownComponents}
+                        >
+                          {hint}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           {problem.tags && problem.tags.length > 0 && (
             <div className="mt-12 border-t border-white/5 pt-8">
               <h3 className="text-muted-foreground mb-4 text-xs font-bold tracking-widest uppercase">
@@ -145,6 +220,25 @@ export function LeftPanel({
                     className="cursor-pointer border-none bg-white/5 px-2 py-0.5 text-[10px] font-medium transition-colors hover:bg-white/10"
                   >
                     {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {problem.companies && problem.companies.length > 0 && (
+            <div className="mt-8 border-t border-white/5 pt-8">
+              <h3 className="text-muted-foreground mb-4 text-xs font-bold tracking-widest uppercase">
+                Companies
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {problem.companies.map((company: string) => (
+                  <Badge
+                    key={company}
+                    variant="secondary"
+                    className="border-none bg-white/5 px-2 py-0.5 text-[10px] font-medium"
+                  >
+                    {company}
                   </Badge>
                 ))}
               </div>
