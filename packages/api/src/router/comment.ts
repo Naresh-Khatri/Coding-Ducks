@@ -93,7 +93,15 @@ export const commentRouter = createTRPCRouter({
     .input(
       z.object({
         problemId: z.number(),
-        body: z.string().trim().min(1).max(2000),
+        // Rich-text HTML from the editor; reject markup with no real text.
+        body: z
+          .string()
+          .trim()
+          .min(1)
+          .max(20000)
+          .refine((s) => s.replace(/<[^>]*>/g, "").trim().length > 0, {
+            message: "Post cannot be empty",
+          }),
         parentId: z.number().optional(),
         title: z.string().trim().max(200).optional(),
         code: z.string().min(1).optional(),

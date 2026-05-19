@@ -10,7 +10,10 @@ import { CodeEditor } from "~/components/code-editor";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
+import {
+  RichTextContent,
+  RichTextEditor,
+} from "~/components/rich-text-editor";
 import { authClient } from "~/auth/client";
 import { getLanguageLabel } from "~/lib/languages";
 import { useTRPC } from "~/trpc/react";
@@ -103,12 +106,10 @@ export function DiscussionPanel({
     <div className="custom-scrollbar h-full overflow-y-auto p-6 pb-32">
       {isAuthenticated ? (
         <form onSubmit={submitPost} className="mb-8">
-          <Textarea
+          <RichTextEditor
             value={body}
-            onChange={(e) => setBody(e.target.value)}
+            onChange={setBody}
             placeholder="Share your approach or ask a question…"
-            maxLength={2000}
-            className="min-h-20 resize-none text-sm"
           />
           {attach && canShare && best && (
             <Input
@@ -194,9 +195,9 @@ export function DiscussionPanel({
                   {c.title}
                 </h3>
               )}
-              <p className="text-foreground/90 mt-2 text-sm whitespace-pre-wrap">
-                {c.body}
-              </p>
+              <div className="mt-2">
+                <RichTextContent html={c.body} />
+              </div>
 
               {c.code && c.lang && (
                 <>
@@ -261,9 +262,9 @@ export function DiscussionPanel({
                             </button>
                           )}
                         </div>
-                        <p className="text-foreground/90 mt-0.5 text-xs whitespace-pre-wrap">
-                          {r.body}
-                        </p>
+                        <div className="mt-0.5">
+                          <RichTextContent html={r.body} />
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -273,17 +274,12 @@ export function DiscussionPanel({
               {isAuthenticated &&
                 (openReply[c.id] ? (
                   <div className="mt-3">
-                    <Textarea
+                    <RichTextEditor
                       value={replyBody[c.id] ?? ""}
-                      onChange={(e) =>
-                        setReplyBody((p) => ({
-                          ...p,
-                          [c.id]: e.target.value,
-                        }))
+                      onChange={(html) =>
+                        setReplyBody((p) => ({ ...p, [c.id]: html }))
                       }
                       placeholder="Write a reply…"
-                      maxLength={2000}
-                      className="min-h-16 resize-none text-xs"
                     />
                     <div className="mt-2 flex justify-end gap-2">
                       <Button
