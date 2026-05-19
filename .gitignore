@@ -59,3 +59,5 @@ dist/
 
 # dashboard (ignore for now)
 # apps/web/src/app/dashboard/
+#
+docs/
