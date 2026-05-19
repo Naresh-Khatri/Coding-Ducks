@@ -15,6 +15,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { useIsMobile } from "~/hooks/use-is-mobile";
 import { useTRPC } from "~/trpc/react";
 
 import { CodeEditorPanel } from "./_components/code-editor-panel";
@@ -30,6 +32,7 @@ export function ProblemDetailClient() {
   const slug = params.slug as string;
   const { data: session } = authClient.useSession();
   const isAuthenticated = !!session;
+  const isMobile = useIsMobile();
 
   const [codes, setCodes] = useState<Record<string, string>>({});
   const [language, setLanguage] = useState<Language>(() => {
@@ -281,6 +284,64 @@ export function ProblemDetailClient() {
 
   // --- Render ---
 
+  const leftPanel = (
+    <LeftPanel
+      problem={problem}
+      submissions={submissions}
+      leftTab={leftTab}
+      isAuthenticated={isAuthenticated}
+      canLoadMore={(submissions?.length ?? 0) === submissionsLimit}
+      onLoadMore={() => setSubmissionsLimit((l) => l + 10)}
+      onLeftTabChange={setLeftTab}
+      onSelectSubmission={setSelectedSubmission}
+    />
+  );
+
+  const editorPanel = (
+    <CodeEditorPanel
+      code={currentCode}
+      onCodeChange={setCode}
+      language={language}
+      onLanguageChange={setLanguage}
+      availableLanguages={availableLanguages}
+      saveStatus={saveStatus}
+      hasLastSubmission={!!submissions?.some((s) => s.lang === language)}
+      onRetrieveLastSubmission={() => {
+        const lastSub = submissions?.find((s) => s.lang === language);
+        if (lastSub?.code) {
+          setCode(lastSub.code);
+          toast.success("Last submission loaded");
+        }
+      }}
+      onResetToDefault={() => {
+        const starterCode =
+          (problem.starterCode as Record<string, string>)?.[language] ?? "";
+        setCode(starterCode);
+        toast.success("Code reset to default");
+      }}
+      onRun={handleRun}
+      onSubmit={handleSubmit}
+    />
+  );
+
+  const testPanel = (
+    <TestCasePanel
+      problem={problem}
+      activeTab={activeTab}
+      onActiveTabChange={setActiveTab}
+      consoleOutput={consoleOutput}
+      selectedTestCase={selectedTestCase}
+      onSelectTestCase={setSelectedTestCase}
+      selectedOutputCase={selectedOutputCase}
+      onSelectOutputCase={setSelectedOutputCase}
+      customTestCase={customTestCase}
+      onCustomTestCaseChange={setCustomTestCase}
+    />
+  );
+
+  const tabTriggerClass =
+    "data-[state=active]:border-primary text-muted-foreground data-[state=active]:text-foreground rounded-none border-b-2 border-transparent text-xs font-bold tracking-wider uppercase data-[state=active]:bg-transparent";
+
   return (
     <>
       <ProblemHeader
@@ -293,92 +354,73 @@ export function ProblemDetailClient() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
-        <ResizablePanelGroup
-          direction="horizontal"
-          autoSaveId="problem-layout-h"
-        >
-          {/* Left Panel */}
-          <ResizablePanel defaultSize={40} minSize={20} className="bg-card/30">
-            <LeftPanel
-              problem={problem}
-              submissions={submissions}
-              leftTab={leftTab}
-              isAuthenticated={isAuthenticated}
-              canLoadMore={(submissions?.length ?? 0) === submissionsLimit}
-              onLoadMore={() => setSubmissionsLimit((l) => l + 10)}
-              onLeftTabChange={setLeftTab}
-              onSelectSubmission={setSelectedSubmission}
-            />
-          </ResizablePanel>
-
-          <ResizableHandle
-            withHandle
-            className="bg-border/50 hover:bg-primary/30 w-1 transition-colors"
-          />
-
-          {/* Right Panel */}
-          <ResizablePanel defaultSize={60} minSize={30}>
-            <ResizablePanelGroup
-              direction="vertical"
-              autoSaveId="problem-layout-v"
+        {isMobile ? (
+          <Tabs defaultValue="problem" className="flex h-full flex-col">
+            <TabsList className="grid h-10 w-full shrink-0 grid-cols-3 rounded-none border-b bg-transparent p-0">
+              <TabsTrigger value="problem" className={tabTriggerClass}>
+                Problem
+              </TabsTrigger>
+              <TabsTrigger value="code" className={tabTriggerClass}>
+                Code
+              </TabsTrigger>
+              <TabsTrigger value="tests" className={tabTriggerClass}>
+                Tests
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent
+              value="problem"
+              className="m-0 flex-1 overflow-hidden bg-card/30"
             >
-              {/* Code Editor */}
-              <ResizablePanel defaultSize={65} minSize={30}>
-                <CodeEditorPanel
-                  code={currentCode}
-                  onCodeChange={setCode}
-                  language={language}
-                  onLanguageChange={setLanguage}
-                  availableLanguages={availableLanguages}
-                  saveStatus={saveStatus}
-                  hasLastSubmission={
-                    !!submissions?.some((s) => s.lang === language)
-                  }
-                  onRetrieveLastSubmission={() => {
-                    const lastSub = submissions?.find(
-                      (s) => s.lang === language,
-                    );
-                    if (lastSub?.code) {
-                      setCode(lastSub.code);
-                      toast.success("Last submission loaded");
-                    }
-                  }}
-                  onResetToDefault={() => {
-                    const starterCode =
-                      (problem.starterCode as Record<string, string>)?.[
-                        language
-                      ] ?? "";
-                    setCode(starterCode);
-                    toast.success("Code reset to default");
-                  }}
-                  onRun={handleRun}
-                  onSubmit={handleSubmit}
-                />
-              </ResizablePanel>
+              {leftPanel}
+            </TabsContent>
+            <TabsContent value="code" className="m-0 flex-1 overflow-hidden">
+              {editorPanel}
+            </TabsContent>
+            <TabsContent value="tests" className="m-0 flex-1 overflow-hidden">
+              {testPanel}
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            autoSaveId="problem-layout-h"
+          >
+            {/* Left Panel */}
+            <ResizablePanel
+              defaultSize={40}
+              minSize={20}
+              className="bg-card/30"
+            >
+              {leftPanel}
+            </ResizablePanel>
 
-              <ResizableHandle
-                withHandle
-                className="bg-border/50 hover:bg-primary/30 h-1 transition-colors"
-              />
+            <ResizableHandle
+              withHandle
+              className="bg-border/50 hover:bg-primary/30 w-1 transition-colors"
+            />
 
-              {/* Test Cases / Output */}
-              <ResizablePanel defaultSize={35} minSize={10}>
-                <TestCasePanel
-                  problem={problem}
-                  activeTab={activeTab}
-                  onActiveTabChange={setActiveTab}
-                  consoleOutput={consoleOutput}
-                  selectedTestCase={selectedTestCase}
-                  onSelectTestCase={setSelectedTestCase}
-                  selectedOutputCase={selectedOutputCase}
-                  onSelectOutputCase={setSelectedOutputCase}
-                  customTestCase={customTestCase}
-                  onCustomTestCaseChange={setCustomTestCase}
+            {/* Right Panel */}
+            <ResizablePanel defaultSize={60} minSize={30}>
+              <ResizablePanelGroup
+                direction="vertical"
+                autoSaveId="problem-layout-v"
+              >
+                <ResizablePanel defaultSize={65} minSize={30}>
+                  {editorPanel}
+                </ResizablePanel>
+
+                <ResizableHandle
+                  withHandle
+                  className="bg-border/50 hover:bg-primary/30 h-1 transition-colors"
                 />
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+
+                <ResizablePanel defaultSize={35} minSize={10}>
+                  {testPanel}
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
 
       {/* Submission Detail Dialog */}
@@ -386,7 +428,6 @@ export function ProblemDetailClient() {
         submission={selectedSubmission}
         onClose={() => setSelectedSubmission(null)}
       />
-
     </>
   );
 }
