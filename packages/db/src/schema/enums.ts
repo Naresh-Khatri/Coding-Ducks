@@ -22,6 +22,7 @@ export const submissionStatusEnum = pgEnum("submission_status", [
   "runtime_error",
   "time_limit",
   "compile_error",
+  "judge_error",
 ]);
 export const duckletTypeEnum = pgEnum("ducklet_type", ["normal", "web"]);
 export const memberRoleEnum = pgEnum("member_role", ["owner", "editor", "viewer"]);

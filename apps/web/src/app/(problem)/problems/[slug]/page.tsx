@@ -92,7 +92,11 @@ export default function ProblemDetailPage() {
       if (pollingType === "run") {
         setConsoleOutput(data.results || []);
         setActiveTab("console");
-        toast.success("Execution completed");
+        if (data.status === "judge_error") {
+          toast.error("Judge error — please try again");
+        } else {
+          toast.success("Execution completed");
+        }
       } else if (pollingType === "submit") {
         if (data.status === "accepted") {
           toast.success("Submission Accepted!");

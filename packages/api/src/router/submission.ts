@@ -277,120 +277,168 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
+      /**
+       * Atomically move the row out of `running`. The `WHERE status =
+       * 'running'` makes the transition idempotent: only one concurrent
+       * poll wins (Postgres serializes the UPDATE), the rest get `won:
+       * false` and the already-finalized row. Streak side effects are
+       * gated on `won` so they can't run twice.
+       */
+      const finalize = async (
+        patch: Partial<typeof submission.$inferInsert>,
+      ) => {
+        const [updated] = await ctx.db
+          .update(submission)
+          .set(patch)
+          .where(
+            and(eq(submission.id, sub.id), eq(submission.status, "running")),
+          )
+          .returning();
+
+        if (updated) return { row: updated, won: true as const };
+
+        const [current] = await ctx.db
+          .select()
+          .from(submission)
+          .where(eq(submission.id, sub.id))
+          .limit(1);
+        return { row: current!, won: false as const };
+      };
+
+      // Bound how long a submission may stay `running` before we give up
+      // on the judge and surface a terminal error (no infinite polling).
+      const JUDGE_TIMEOUT_MS = 120_000;
+      const elapsed = Date.now() - sub.createdAt.getTime();
+
+      let statusResponse: JudgeStatusResponse;
       try {
-        const statusResponse = await getJobStatus(jobId);
-
-        if (
-          statusResponse.status === "completed" ||
-          statusResponse.status === "failed"
-        ) {
-          const [prob] = await ctx.db
-            .select()
-            .from(problem)
-            .where(eq(problem.id, sub.problemId))
-            .limit(1);
-
-          if (!prob) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Problem not found",
-            });
-          }
-
-          const testCases = prob.testCases;
-          const verdict = statusResponse.result?.verdict;
-          const parsedResults = parseTestResults(
-            statusResponse.result?.stdout || "",
-            statusResponse.result?.stderr || "",
-            testCases,
-          );
-          const testsPassed = parsedResults.filter(
-            (r: { passed: boolean }) => r.passed,
-          ).length;
-
-          let finalStatus:
-            | "pending"
-            | "running"
-            | "accepted"
-            | "wrong_answer"
-            | "runtime_error"
-            | "time_limit"
-            | "compile_error" = "wrong_answer";
-
-          if (verdict === "OK") {
-            finalStatus =
-              testsPassed === testCases.length ? "accepted" : "wrong_answer";
-          } else if (verdict === "CE") {
-            finalStatus = "compile_error";
-          } else if (verdict === "RE" || verdict === "SG") {
-            finalStatus = "runtime_error";
-          } else if (verdict === "TO") {
-            finalStatus = "time_limit";
-          } else if (verdict === "XX" || statusResponse.status === "failed") {
-            finalStatus = "runtime_error";
-          }
-
-          const runtime = statusResponse.result?.time;
-          const memory = statusResponse.result?.memory;
-
-          const [updatedSub] = await ctx.db
-            .update(submission)
-            .set({
-              status: finalStatus,
-              testsPassed,
-              runtime,
-              memory,
-              results: parsedResults as any,
-              errorMessage:
-                statusResponse.result?.stderr ||
-                statusResponse.result?.errorType ||
-                undefined,
-            })
-            .where(eq(submission.id, sub.id))
-            .returning();
-
-          // Update streak only on accepted real submissions ("run" is ephemeral)
-          if (finalStatus === "accepted" && sub.kind === "submit") {
-            const today = new Date().toISOString().split("T")[0]!;
-            const yesterday = new Date(Date.now() - 86400000)
-              .toISOString()
-              .split("T")[0]!;
-
-            const [profile] = await ctx.db
-              .select()
-              .from(userProfile)
-              .where(eq(userProfile.userId, ctx.session.user.id))
-              .limit(1);
-
-            if (profile) {
-              let newStreak = profile.currentStreak;
-              if (profile.lastSolveDate === today) {
-                // Already solved today, no-op
-              } else if (profile.lastSolveDate === yesterday) {
-                newStreak = profile.currentStreak + 1;
-              } else {
-                newStreak = 1;
-              }
-              const newLongest = Math.max(profile.longestStreak, newStreak);
-
-              await ctx.db
-                .update(userProfile)
-                .set({
-                  currentStreak: newStreak,
-                  longestStreak: newLongest,
-                  lastSolveDate: today,
-                })
-                .where(eq(userProfile.userId, ctx.session.user.id));
-            }
-          }
-
-          return updatedSub;
-        }
+        statusResponse = await getJobStatus(jobId);
       } catch (error) {
         console.error("Error fetching job status:", error);
+        if (elapsed > JUDGE_TIMEOUT_MS) {
+          const { row } = await finalize({
+            status: "judge_error",
+            errorMessage: "Judge unreachable",
+          });
+          return row;
+        }
+        // Transient failure within the timeout window — keep polling.
+        return sub;
       }
 
-      return sub;
+      if (
+        statusResponse.status !== "completed" &&
+        statusResponse.status !== "failed"
+      ) {
+        if (elapsed > JUDGE_TIMEOUT_MS) {
+          const { row } = await finalize({
+            status: "judge_error",
+            errorMessage: "Judging timed out",
+          });
+          return row;
+        }
+        return sub;
+      }
+
+      const [prob] = await ctx.db
+        .select()
+        .from(problem)
+        .where(eq(problem.id, sub.problemId))
+        .limit(1);
+
+      if (!prob) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Problem not found",
+        });
+      }
+
+      const testCases = prob.testCases;
+      const verdict = statusResponse.result?.verdict;
+      const parsedResults = parseTestResults(
+        statusResponse.result?.stdout || "",
+        statusResponse.result?.stderr || "",
+        testCases,
+      );
+      const testsPassed = parsedResults.filter(
+        (r: { passed: boolean }) => r.passed,
+      ).length;
+
+      let finalStatus:
+        | "pending"
+        | "running"
+        | "accepted"
+        | "wrong_answer"
+        | "runtime_error"
+        | "time_limit"
+        | "compile_error"
+        | "judge_error" = "wrong_answer";
+
+      if (verdict === "OK") {
+        finalStatus =
+          testsPassed === testCases.length ? "accepted" : "wrong_answer";
+      } else if (verdict === "CE") {
+        finalStatus = "compile_error";
+      } else if (verdict === "RE" || verdict === "SG") {
+        finalStatus = "runtime_error";
+      } else if (verdict === "TO") {
+        finalStatus = "time_limit";
+      } else if (verdict === "XX" || statusResponse.status === "failed") {
+        finalStatus = "runtime_error";
+      }
+
+      const runtime = statusResponse.result?.time;
+      const memory = statusResponse.result?.memory;
+
+      const { row: updatedSub, won } = await finalize({
+        status: finalStatus,
+        testsPassed,
+        runtime,
+        memory,
+        results: parsedResults as any,
+        errorMessage:
+          statusResponse.result?.stderr ||
+          statusResponse.result?.errorType ||
+          undefined,
+      });
+
+      // Update streak only when THIS call performed the transition, and
+      // only for accepted real submissions ("run" is ephemeral).
+      if (won && finalStatus === "accepted" && sub.kind === "submit") {
+        const today = new Date().toISOString().split("T")[0]!;
+        const yesterday = new Date(Date.now() - 86400000)
+          .toISOString()
+          .split("T")[0]!;
+
+        const [profile] = await ctx.db
+          .select()
+          .from(userProfile)
+          .where(eq(userProfile.userId, ctx.session.user.id))
+          .limit(1);
+
+        if (profile) {
+          let newStreak = profile.currentStreak;
+          if (profile.lastSolveDate === today) {
+            // Already solved today, no-op
+          } else if (profile.lastSolveDate === yesterday) {
+            newStreak = profile.currentStreak + 1;
+          } else {
+            newStreak = 1;
+          }
+          const newLongest = Math.max(profile.longestStreak, newStreak);
+
+          await ctx.db
+            .update(userProfile)
+            .set({
+              currentStreak: newStreak,
+              longestStreak: newLongest,
+              lastSolveDate: today,
+            })
+            .where(eq(userProfile.userId, ctx.session.user.id));
+        }
+      }
+
+      return updatedSub;
     }),
 
   list: protectedProcedure
