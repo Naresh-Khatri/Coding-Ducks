@@ -125,18 +125,64 @@ export function SubmissionDetailDialog({
             <div className="text-muted-foreground mb-2 text-xs font-medium">
               Test Results
             </div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="max-h-64 space-y-2 overflow-auto">
               {results.map((r, i) => (
                 <div
                   key={i}
-                  className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded text-[10px] font-bold",
-                    r.passed
-                      ? "bg-emerald-500/15 text-emerald-500"
-                      : "bg-rose-500/15 text-rose-500",
-                  )}
+                  className="rounded-lg border border-white/5 bg-accent/30 p-3"
                 >
-                  {i + 1}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold">Test {i + 1}</span>
+                    <span
+                      className={cn(
+                        "text-[10px] font-bold uppercase",
+                        r.passed ? "text-emerald-500" : "text-rose-500",
+                      )}
+                    >
+                      {r.passed ? "Passed" : "Failed"}
+                    </span>
+                  </div>
+                  {(r.input != null ||
+                    r.expected != null ||
+                    r.actual != null ||
+                    r.error) && (
+                    <div className="mt-2 space-y-1 font-mono text-[11px]">
+                      {r.input != null && (
+                        <div>
+                          <span className="text-muted-foreground">Input: </span>
+                          <span className="break-all">{r.input}</span>
+                        </div>
+                      )}
+                      {r.expected != null && (
+                        <div>
+                          <span className="text-muted-foreground">
+                            Expected:{" "}
+                          </span>
+                          <span className="break-all text-emerald-400">
+                            {r.expected}
+                          </span>
+                        </div>
+                      )}
+                      {r.actual != null && (
+                        <div>
+                          <span className="text-muted-foreground">Got: </span>
+                          <span
+                            className={cn(
+                              "break-all",
+                              r.passed ? "text-emerald-400" : "text-rose-400",
+                            )}
+                          >
+                            {r.actual}
+                          </span>
+                        </div>
+                      )}
+                      {r.error && (
+                        <div className="whitespace-pre-wrap text-rose-400">
+                          {r.error}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
