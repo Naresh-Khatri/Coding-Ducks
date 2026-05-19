@@ -15,6 +15,7 @@ import { useTRPC } from "~/trpc/react";
 import type { ProblemDetail, SubmissionDetail } from "../types";
 import { DiscussionPanel } from "./discussion-panel";
 import { markdownComponents } from "./markdown-components";
+import { SolutionsPanel } from "./solutions-panel";
 
 interface LeftPanelProps {
   problem: ProblemDetail;
@@ -71,6 +72,9 @@ export function LeftPanel({
           </TabsTrigger>
           <TabsTrigger value="editorial" className={tabTriggerClass}>
             Editorial
+          </TabsTrigger>
+          <TabsTrigger value="solutions" className={tabTriggerClass}>
+            Solutions
           </TabsTrigger>
           <TabsTrigger value="discussion" className={tabTriggerClass}>
             Discussion
@@ -274,6 +278,14 @@ export function LeftPanel({
             </p>
           </div>
         )}
+      </TabsContent>
+
+      {/* Solutions */}
+      <TabsContent value="solutions" className="m-0 flex-1 overflow-hidden">
+        <SolutionsPanel
+          problem={problem}
+          isAuthenticated={isAuthenticated}
+        />
       </TabsContent>
 
       {/* Discussion */}

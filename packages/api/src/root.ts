@@ -2,6 +2,7 @@
 import { authRouter } from "./router/auth";
 import { bookmarkRouter } from "./router/bookmark";
 import { commentRouter } from "./router/comment";
+import { solutionRouter } from "./router/solution";
 import { systemDesignRouter } from "./router/system-design";
 import { codeDraftRouter } from "./router/code-draft";
 import { duckletRouter } from "./router/ducklet";
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
   profile: profileRouter,
   bookmark: bookmarkRouter,
   comment: commentRouter,
+  solution: solutionRouter,
   systemDesign: systemDesignRouter,
 });
 
