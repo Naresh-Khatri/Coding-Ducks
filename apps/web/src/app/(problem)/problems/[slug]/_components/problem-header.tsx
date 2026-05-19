@@ -3,8 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ChevronLeft, List, Loader2, Play, Send, Timer } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  ChevronLeft,
+  ChevronRight,
+  List,
+  Loader2,
+  Play,
+  Send,
+  Shuffle,
+  Timer,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { authClient } from "~/auth/client";
@@ -47,6 +56,8 @@ export function ProblemHeader({
 }: ProblemHeaderProps) {
   const trpc = useTRPC();
   const router = useRouter();
+  const params = useParams();
+  const slug = params.slug as string;
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
@@ -73,6 +84,23 @@ export function ProblemHeader({
   const { data: problemsList } = useQuery(
     trpc.problem.list.queryOptions({ limit: 50 }),
   );
+
+  // Prev/next/random over the first page of problems (limit 50).
+  const items = problemsList?.items ?? [];
+  const currentIndex = items.findIndex((p) => p.slug === slug);
+  const prevSlug =
+    currentIndex > 0 ? items[currentIndex - 1]?.slug : undefined;
+  const nextSlug =
+    currentIndex >= 0 && currentIndex < items.length - 1
+      ? items[currentIndex + 1]?.slug
+      : undefined;
+
+  const goRandom = () => {
+    const others = items.filter((p) => p.slug !== slug);
+    if (others.length === 0) return;
+    const pick = others[Math.floor(Math.random() * others.length)];
+    if (pick) router.push(`/problems/${pick.slug}`);
+  };
 
   return (
     <div className="bg-background flex h-12 shrink-0 items-center justify-between border-b px-3">
@@ -128,6 +156,51 @@ export function ProblemHeader({
             </div>
           </DrawerContent>
         </Drawer>
+
+        <div className="bg-border/50 mx-1 h-5 w-px" />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild={!!prevSlug}
+          disabled={!prevSlug}
+          aria-label="Previous problem"
+          className="h-8 w-8"
+        >
+          {prevSlug ? (
+            <Link href={`/problems/${prevSlug}`}>
+              <ChevronLeft className="h-4 w-4" />
+            </Link>
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild={!!nextSlug}
+          disabled={!nextSlug}
+          aria-label="Next problem"
+          className="h-8 w-8"
+        >
+          {nextSlug ? (
+            <Link href={`/problems/${nextSlug}`}>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={goRandom}
+          disabled={items.length <= 1}
+          aria-label="Random problem"
+          className="h-8 w-8"
+        >
+          <Shuffle className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Center: run + submit */}
