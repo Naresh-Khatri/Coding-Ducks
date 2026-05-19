@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import type { db } from "@acme/db";
@@ -8,7 +8,11 @@ import { problem, submission, userProfile } from "@acme/db/schema";
 
 import { env } from "../../env";
 import { generateDriverWithTestCases, SUPPORTED_LANGS } from "../drivers";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "../trpc";
 
 /** Verdict codes returned by the CD Judge API */
 type JudgeVerdict = "OK" | "CE" | "RE" | "SG" | "TO" | "XX";
@@ -133,7 +137,7 @@ function parseTestResults(
  */
 async function dispatchSubmission(
   database: typeof db,
-  userId: string,
+  userId: string | null,
   prob: typeof problem.$inferSelect,
   opts: {
     code: string;
@@ -222,7 +226,7 @@ export const submissionRouter = createTRPCRouter({
       });
     }),
 
-  run: protectedProcedure
+  run: publicProcedure
     .input(
       z.object({
         problemId: z.number(),
@@ -248,7 +252,7 @@ export const submissionRouter = createTRPCRouter({
         return { id: 0, jobId: null, results: [] };
       }
 
-      return dispatchSubmission(ctx.db, ctx.session.user.id, prob, {
+      return dispatchSubmission(ctx.db, ctx.session?.user?.id ?? null, prob, {
         code: input.code,
         lang: input.lang,
         kind: "run",
@@ -257,16 +261,21 @@ export const submissionRouter = createTRPCRouter({
       });
     }),
 
-  getResults: protectedProcedure
+  getResults: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
+      // Logged-in callers may only read their own rows; anonymous
+      // callers may only read ownerless (anonymous "run") rows.
+      const userId = ctx.session?.user?.id;
       const [sub] = await ctx.db
         .select()
         .from(submission)
         .where(
           and(
             eq(submission.id, input.id),
-            eq(submission.userId, ctx.session.user.id),
+            userId
+              ? eq(submission.userId, userId)
+              : isNull(submission.userId),
           ),
         )
         .limit(1);
@@ -411,7 +420,12 @@ export const submissionRouter = createTRPCRouter({
 
       // Update streak only when THIS call performed the transition, and
       // only for accepted real submissions ("run" is ephemeral).
-      if (won && finalStatus === "accepted" && sub.kind === "submit") {
+      if (
+        won &&
+        finalStatus === "accepted" &&
+        sub.kind === "submit" &&
+        sub.userId
+      ) {
         const today = new Date().toISOString().split("T")[0]!;
         const yesterday = new Date(Date.now() - 86400000)
           .toISOString()
@@ -420,7 +434,7 @@ export const submissionRouter = createTRPCRouter({
         const [profile] = await ctx.db
           .select()
           .from(userProfile)
-          .where(eq(userProfile.userId, ctx.session.user.id))
+          .where(eq(userProfile.userId, sub.userId))
           .limit(1);
 
         if (profile) {
@@ -441,7 +455,7 @@ export const submissionRouter = createTRPCRouter({
               longestStreak: newLongest,
               lastSolveDate: today,
             })
-            .where(eq(userProfile.userId, ctx.session.user.id));
+            .where(eq(userProfile.userId, sub.userId));
         }
       }
 

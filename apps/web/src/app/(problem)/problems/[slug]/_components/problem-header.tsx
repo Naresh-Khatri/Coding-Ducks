@@ -209,7 +209,7 @@ export function ProblemHeader({
           variant="outline"
           size="sm"
           onClick={onRun}
-          disabled={!isAuthenticated || isRunning || isSubmitting}
+          disabled={isRunning || isSubmitting}
           className="h-8 gap-1.5 px-4 text-xs font-medium"
         >
           {isRunning ? (

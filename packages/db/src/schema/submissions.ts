@@ -8,9 +8,8 @@ export const submission = pgTable("submission", {
   id: serial("id").primaryKey(),
 
   // Foreign keys
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  // Nullable: anonymous "run" submissions have no owner.
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
   problemId: integer("problem_id")
     .notNull()
     .references(() => problem.id, { onDelete: "cascade" }),
