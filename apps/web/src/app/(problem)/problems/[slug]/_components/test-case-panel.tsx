@@ -49,10 +49,15 @@ export function TestCasePanel({
   const startCustomEdit = () => {
     const tc = publicCases[selectedTestCase] ?? publicCases[0];
     const initial: Record<string, string> = {};
-    if (sig?.params && tc?.args) {
-      sig.params.forEach((p, i) => {
-        initial[p.name] = tc.args?.[i] ?? "";
-      });
+    if (sig?.params) {
+      if (tc?.args) {
+        sig.params.forEach((p, i) => {
+          initial[p.name] = tc.args?.[i] ?? "";
+        });
+      }
+    } else {
+      // stdin problem: a single raw-input field (sentinel key).
+      initial.stdin = tc?.input ?? "";
     }
     onCustomTestCaseChange(initial);
     setIsEditingCustom(true);
@@ -141,25 +146,45 @@ export function TestCasePanel({
 
               {isEditingCustom && customTestCase ? (
                 <div className="space-y-3">
-                  {sig?.params?.map((param) => (
-                    <div key={param.name}>
+                  {sig?.params ? (
+                    sig.params.map((param) => (
+                      <div key={param.name}>
+                        <div className="text-muted-foreground mb-1 text-xs font-medium">
+                          {param.name} =
+                        </div>
+                        <textarea
+                          value={customTestCase[param.name] ?? ""}
+                          onChange={(e) =>
+                            onCustomTestCaseChange({
+                              ...customTestCase,
+                              [param.name]: e.target.value,
+                            })
+                          }
+                          className="bg-accent/40 text-foreground w-full resize-none rounded-lg px-3 py-2 font-mono text-sm outline-none focus:ring-1 focus:ring-white/20"
+                          rows={1}
+                          spellCheck={false}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div>
                       <div className="text-muted-foreground mb-1 text-xs font-medium">
-                        {param.name} =
+                        Input (stdin)
                       </div>
                       <textarea
-                        value={customTestCase[param.name] ?? ""}
+                        value={customTestCase.stdin ?? ""}
                         onChange={(e) =>
                           onCustomTestCaseChange({
                             ...customTestCase,
-                            [param.name]: e.target.value,
+                            stdin: e.target.value,
                           })
                         }
                         className="bg-accent/40 text-foreground w-full resize-none rounded-lg px-3 py-2 font-mono text-sm outline-none focus:ring-1 focus:ring-white/20"
-                        rows={1}
+                        rows={4}
                         spellCheck={false}
                       />
                     </div>
-                  ))}
+                  )}
                 </div>
               ) : (
                 (() => {

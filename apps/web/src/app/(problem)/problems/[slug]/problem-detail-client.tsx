@@ -231,11 +231,15 @@ export function ProblemDetailClient() {
       customTestCase && sig?.params
         ? sig.params.map((p) => customTestCase[p.name] ?? "")
         : undefined;
+    // stdin problems (no signature) send raw custom input instead.
+    const customInput =
+      customTestCase && !sig?.params ? (customTestCase.stdin ?? "") : undefined;
     runMutation.mutate({
       problemId: problem.id,
       code: currentCode,
       lang: language,
       ...(customArgs ? { customArgs } : {}),
+      ...(customInput != null ? { customInput } : {}),
     });
   };
 

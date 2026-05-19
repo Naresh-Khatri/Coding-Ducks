@@ -54,6 +54,7 @@ async function submitToJudge(
   code: string,
   lang: string,
   limits?: { timeLimit?: number | null; memoryLimit?: number | null },
+  stdin?: string,
 ): Promise<string> {
   const response = await fetch(`${env.JUDGE_API_URL}/submissions`, {
     method: "POST",
@@ -66,6 +67,7 @@ async function submitToJudge(
       lang,
       ...(limits?.timeLimit != null && { timeLimit: limits.timeLimit }),
       ...(limits?.memoryLimit != null && { memoryLimit: limits.memoryLimit }),
+      ...(stdin != null && { stdin }),
     }),
   });
 
@@ -130,10 +132,24 @@ function parseTestResults(
 }
 
 /**
- * Shared tail for `submit`/`run`: validate the function signature, generate
- * driver code, dispatch to the judge, and persist a `running` submission row.
- * The two mutations only differ in which test cases they feed in and the
- * `kind` they record.
+ * One entry per pending judge job stored on `submission.results` while a
+ * submission is `running`. Function-signature problems use a single driver
+ * job (`{ jobId }`); stdin problems fan out to one job per test case and
+ * carry the expected output so polling can grade each independently.
+ */
+interface PendingJob {
+  jobId: string;
+  // Present only for the stdin (one-job-per-test) path.
+  expected?: string;
+  input?: string;
+  isPublic?: boolean;
+}
+
+/**
+ * Shared tail for `submit`/`run`: dispatch to the judge and persist a
+ * `running` submission row. Function-signature problems get a single
+ * type-aware driver job; stdin problems (no signature) fan out to one
+ * raw-code job per test case, each fed that test's input on stdin.
  */
 async function dispatchSubmission(
   database: typeof db,
@@ -147,26 +163,31 @@ async function dispatchSubmission(
     hidePrivate: boolean;
   },
 ): Promise<{ id: number; jobId: string }> {
-  const signature = prob.functionSignature as FunctionSignature;
-  if (!signature) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Problem has no function signature configured",
-    });
+  const signature = prob.functionSignature as FunctionSignature | null;
+  const limits = { timeLimit: prob.timeLimit, memoryLimit: prob.memoryLimit };
+
+  let pendingJobs: PendingJob[];
+
+  if (signature) {
+    const driverCode = generateDriverWithTestCases(
+      opts.code,
+      opts.lang,
+      signature,
+      opts.testCases,
+      opts.hidePrivate,
+    );
+    pendingJobs = [{ jobId: await submitToJudge(driverCode, opts.lang, limits) }];
+  } else {
+    // stdin problem: one job per test case, raw user code, input on stdin.
+    pendingJobs = await Promise.all(
+      opts.testCases.map(async (tc) => ({
+        jobId: await submitToJudge(opts.code, opts.lang, limits, tc.input ?? ""),
+        expected: tc.output ?? "",
+        input: tc.isPublic || !opts.hidePrivate ? (tc.input ?? "") : undefined,
+        isPublic: opts.hidePrivate ? tc.isPublic : true,
+      })),
+    );
   }
-
-  const driverCode = generateDriverWithTestCases(
-    opts.code,
-    opts.lang,
-    signature,
-    opts.testCases,
-    opts.hidePrivate,
-  );
-
-  const jobId = await submitToJudge(driverCode, opts.lang, {
-    timeLimit: prob.timeLimit,
-    memoryLimit: prob.memoryLimit,
-  });
 
   const [newSubmission] = await database
     .insert(submission)
@@ -178,7 +199,7 @@ async function dispatchSubmission(
       kind: opts.kind,
       status: "running",
       testsTotal: opts.testCases.length,
-      results: [{ jobId }] as any,
+      results: pendingJobs as any,
     })
     .returning();
 
@@ -189,7 +210,51 @@ async function dispatchSubmission(
     });
   }
 
-  return { id: newSubmission.id, jobId };
+  return { id: newSubmission.id, jobId: pendingJobs[0]!.jobId };
+}
+
+/** Normalise program output for comparison: trim trailing space per line. */
+function normalizeOutput(s: string): string {
+  return s
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.replace(/\s+$/, ""))
+    .join("\n")
+    .replace(/\n+$/, "");
+}
+
+/** Roll the daily solve streak forward for an accepted real submission. */
+async function applyStreak(database: typeof db, userId: string) {
+  const today = new Date().toISOString().split("T")[0]!;
+  const yesterday = new Date(Date.now() - 86400000)
+    .toISOString()
+    .split("T")[0]!;
+
+  const [profile] = await database
+    .select()
+    .from(userProfile)
+    .where(eq(userProfile.userId, userId))
+    .limit(1);
+
+  if (!profile) return;
+
+  let newStreak = profile.currentStreak;
+  if (profile.lastSolveDate === today) {
+    // Already solved today, no-op
+  } else if (profile.lastSolveDate === yesterday) {
+    newStreak = profile.currentStreak + 1;
+  } else {
+    newStreak = 1;
+  }
+
+  await database
+    .update(userProfile)
+    .set({
+      currentStreak: newStreak,
+      longestStreak: Math.max(profile.longestStreak, newStreak),
+      lastSolveDate: today,
+    })
+    .where(eq(userProfile.userId, userId));
 }
 
 // --- tRPC Router ---
@@ -233,6 +298,7 @@ export const submissionRouter = createTRPCRouter({
         code: z.string(),
         lang: z.enum(SUPPORTED_LANGS),
         customArgs: z.array(z.string()).optional(),
+        customInput: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -246,7 +312,9 @@ export const submissionRouter = createTRPCRouter({
 
       const publicTestCases = input.customArgs
         ? [{ args: input.customArgs, expected: undefined, isPublic: true }]
-        : prob.testCases.filter((tc) => tc.isPublic);
+        : input.customInput != null
+          ? [{ input: input.customInput, output: "", isPublic: true }]
+          : prob.testCases.filter((tc) => tc.isPublic);
 
       if (publicTestCases.length === 0) {
         return { id: 0, jobId: null, results: [] };
@@ -320,6 +388,94 @@ export const submissionRouter = createTRPCRouter({
           .limit(1);
         return { row: current!, won: false as const };
       };
+
+      // stdin problems fan out to one job per test case (entries carry
+      // `expected`). Poll them all and grade by comparing stdout.
+      const pending = resultsData as PendingJob[];
+      if (
+        Array.isArray(pending) &&
+        pending.length > 0 &&
+        pending[0]?.expected !== undefined
+      ) {
+        const STDIN_TIMEOUT_MS = 120_000;
+        const age = Date.now() - sub.createdAt.getTime();
+
+        const statuses = await Promise.all(
+          pending.map((p) => getJobStatus(p.jobId).catch(() => null)),
+        );
+
+        const allDone = statuses.every(
+          (s) => s?.status === "completed" || s?.status === "failed",
+        );
+
+        if (!allDone) {
+          if (age > STDIN_TIMEOUT_MS) {
+            const { row } = await finalize({
+              status: "judge_error",
+              errorMessage: "Judging timed out",
+            });
+            return row;
+          }
+          return sub; // keep polling
+        }
+
+        const verdicts = statuses.map((s) => s?.result?.verdict);
+        const parsed = pending.map((p, i) => {
+          const res = statuses[i]?.result;
+          const verdict = res?.verdict;
+          const ok =
+            verdict === "OK" &&
+            normalizeOutput(res?.stdout ?? "") ===
+              normalizeOutput(p.expected ?? "");
+          return {
+            passed: ok,
+            runtime: res?.time,
+            memory: res?.memory,
+            input: p.isPublic ? p.input : undefined,
+            expected: p.isPublic ? p.expected : undefined,
+            actual: p.isPublic ? res?.stdout : undefined,
+            error:
+              verdict && verdict !== "OK"
+                ? res?.stderr || res?.errorType || verdict
+                : undefined,
+          };
+        });
+
+        const testsPassed = parsed.filter((r) => r.passed).length;
+        let stdinStatus:
+          | "accepted"
+          | "wrong_answer"
+          | "runtime_error"
+          | "time_limit"
+          | "compile_error" = "wrong_answer";
+        if (verdicts.includes("CE")) stdinStatus = "compile_error";
+        else if (verdicts.includes("TO")) stdinStatus = "time_limit";
+        else if (
+          verdicts.some((v) => v === "RE" || v === "SG" || v === "XX")
+        )
+          stdinStatus = "runtime_error";
+        else if (testsPassed === parsed.length) stdinStatus = "accepted";
+
+        const { row, won } = await finalize({
+          status: stdinStatus,
+          testsPassed,
+          runtime: Math.max(0, ...parsed.map((r) => r.runtime ?? 0)),
+          memory: Math.max(0, ...parsed.map((r) => r.memory ?? 0)),
+          results: parsed as any,
+          errorMessage: parsed.find((r) => r.error)?.error ?? undefined,
+        });
+
+        if (
+          won &&
+          stdinStatus === "accepted" &&
+          sub.kind === "submit" &&
+          sub.userId
+        ) {
+          await applyStreak(ctx.db, sub.userId);
+        }
+
+        return row;
+      }
 
       // Bound how long a submission may stay `running` before we give up
       // on the judge and surface a terminal error (no infinite polling).
@@ -426,37 +582,7 @@ export const submissionRouter = createTRPCRouter({
         sub.kind === "submit" &&
         sub.userId
       ) {
-        const today = new Date().toISOString().split("T")[0]!;
-        const yesterday = new Date(Date.now() - 86400000)
-          .toISOString()
-          .split("T")[0]!;
-
-        const [profile] = await ctx.db
-          .select()
-          .from(userProfile)
-          .where(eq(userProfile.userId, sub.userId))
-          .limit(1);
-
-        if (profile) {
-          let newStreak = profile.currentStreak;
-          if (profile.lastSolveDate === today) {
-            // Already solved today, no-op
-          } else if (profile.lastSolveDate === yesterday) {
-            newStreak = profile.currentStreak + 1;
-          } else {
-            newStreak = 1;
-          }
-          const newLongest = Math.max(profile.longestStreak, newStreak);
-
-          await ctx.db
-            .update(userProfile)
-            .set({
-              currentStreak: newStreak,
-              longestStreak: newLongest,
-              lastSolveDate: today,
-            })
-            .where(eq(userProfile.userId, sub.userId));
-        }
+        await applyStreak(ctx.db, sub.userId);
       }
 
       return updatedSub;
