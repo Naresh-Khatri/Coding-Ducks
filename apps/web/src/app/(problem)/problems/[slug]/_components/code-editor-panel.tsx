@@ -92,7 +92,7 @@ export function CodeEditorPanel({
     const changes = indentRange(view.state, 0, doc.length);
     if (changes) {
       view.dispatch({ changes });
-      toast.success("Code formatted");
+      toast.success("Code re-indented");
     }
   };
 
@@ -188,7 +188,7 @@ export function CodeEditorPanel({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <p>Format code</p>
+                <p>Re-indent code</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -249,7 +249,7 @@ export function CodeEditorPanel({
           vimMode={isVim}
           height="100%"
           className="absolute inset-0"
-          onSave={() => toast.success("Code formatted & saved")}
+          onSave={() => toast.success("Draft saved")}
           onRun={runShortcut ? onRun : undefined}
           onSubmit={submitShortcut ? onSubmit : undefined}
         />
