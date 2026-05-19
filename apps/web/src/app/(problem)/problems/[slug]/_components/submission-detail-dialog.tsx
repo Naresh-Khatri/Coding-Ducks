@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { cn } from "~/lib/utils";
+import type { SubmissionDetail } from "../types";
 
 const LANGUAGES: Array<{ key: string; label: string }> = [
   { key: "py", label: "Python" },
@@ -24,7 +25,7 @@ const LANGUAGES: Array<{ key: string; label: string }> = [
 ];
 
 interface SubmissionDetailDialogProps {
-  submission: any | null;
+  submission: SubmissionDetail | null;
   onClose: () => void;
 }
 
@@ -37,7 +38,7 @@ export function SubmissionDetailDialog({
   const sub = submission;
   const langLabel =
     LANGUAGES.find((l) => l.key === sub.lang)?.label || sub.lang;
-  const results = sub.results as any[] | null;
+  const results = sub.results;
 
   return (
     <Dialog open={!!submission} onOpenChange={(open) => !open && onClose()}>
@@ -125,7 +126,7 @@ export function SubmissionDetailDialog({
               Test Results
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {results.map((r: any, i: number) => (
+              {results.map((r, i) => (
                 <div
                   key={i}
                   className={cn(

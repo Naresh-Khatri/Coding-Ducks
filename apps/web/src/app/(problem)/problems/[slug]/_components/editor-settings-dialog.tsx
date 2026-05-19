@@ -120,7 +120,7 @@ export function EditorSettingsDialog() {
           <Row label="Keybindings">
             <Select
               value={s.keymap}
-              onValueChange={(v) => s.set({ keymap: v as any })}
+              onValueChange={(v) => s.set({ keymap: v as "default" | "vim" })}
             >
               <SelectTrigger className="h-8 w-28 text-xs">
                 <SelectValue />

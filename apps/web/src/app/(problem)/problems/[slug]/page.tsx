@@ -22,6 +22,7 @@ import { LeftPanel } from "./_components/left-panel";
 import { ProblemHeader } from "./_components/problem-header";
 import { SubmissionDetailDialog } from "./_components/submission-detail-dialog";
 import { TestCasePanel } from "./_components/test-case-panel";
+import type { ConsoleResult, SubmissionDetail } from "./types";
 
 export default function ProblemDetailPage() {
   const trpc = useTRPC();
@@ -34,16 +35,15 @@ export default function ProblemDetailPage() {
   const [language, setLanguage] = useState<Language>("py");
   const [leftTab, setLeftTab] = useState("description");
   const [activeTab, setActiveTab] = useState("problem");
-  const [consoleOutput, setConsoleOutput] = useState<any[]>([]);
+  const [consoleOutput, setConsoleOutput] = useState<ConsoleResult[]>([]);
   const [lastProblemId, setLastProblemId] = useState<number | null>(null);
   const [pollingId, setPollingId] = useState<number | null>(null);
   const [pollingType, setPollingType] = useState<"run" | "submit" | null>(null);
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [selectedOutputCase, setSelectedOutputCase] = useState(0);
   const [customTestCase, setCustomTestCase] = useState<Record<string, string> | null>(null);
-  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(
-    null,
-  );
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<SubmissionDetail | null>(null);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
@@ -158,7 +158,7 @@ export default function ProblemDetailPage() {
     saveTimerRef.current = setTimeout(() => {
       saveDraftMutation.mutate({
         problemId: problem.id,
-        lang: language as any,
+        lang: language,
         code: currentCode,
       });
     }, 2000);
@@ -208,14 +208,15 @@ export default function ProblemDetailPage() {
   const handleRun = () => {
     if (!problem || !currentCode) return;
     setPollingType("run");
-    const sig = problem.functionSignature as any;
-    const customArgs = customTestCase && sig?.params
-      ? sig.params.map((p: any) => customTestCase[p.name] ?? "")
-      : undefined;
+    const sig = problem.functionSignature;
+    const customArgs =
+      customTestCase && sig?.params
+        ? sig.params.map((p) => customTestCase[p.name] ?? "")
+        : undefined;
     runMutation.mutate({
       problemId: problem.id,
       code: currentCode,
-      lang: language as any,
+      lang: language,
       ...(customArgs ? { customArgs } : {}),
     });
   };
@@ -226,7 +227,7 @@ export default function ProblemDetailPage() {
     submitMutation.mutate({
       problemId: problem.id,
       code: currentCode,
-      lang: language as any,
+      lang: language,
     });
   };
 

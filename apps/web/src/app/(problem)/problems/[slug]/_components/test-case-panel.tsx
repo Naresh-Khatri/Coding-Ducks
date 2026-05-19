@@ -11,12 +11,13 @@ import {
   TabsTrigger,
 } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
+import type { ConsoleResult, ProblemDetail } from "../types";
 
 interface TestCasePanelProps {
-  problem: any;
+  problem: ProblemDetail;
   activeTab: string;
   onActiveTabChange: (tab: string) => void;
-  consoleOutput: any[];
+  consoleOutput: ConsoleResult[];
   selectedTestCase: number;
   onSelectTestCase: (i: number) => void;
   selectedOutputCase: number;
@@ -41,15 +42,15 @@ export function TestCasePanel({
   onCustomTestCaseChange,
 }: TestCasePanelProps) {
   const [isEditingCustom, setIsEditingCustom] = useState(false);
-  const sig = problem.functionSignature as any;
+  const sig = problem.functionSignature;
   const publicCases =
-    problem.testCases?.filter((tc: any) => tc.isPublic) || [];
+    problem.testCases?.filter((tc) => tc.isPublic) ?? [];
 
   const startCustomEdit = () => {
     const tc = publicCases[selectedTestCase] ?? publicCases[0];
     const initial: Record<string, string> = {};
     if (sig?.params && tc?.args) {
-      sig.params.forEach((p: any, i: number) => {
+      sig.params.forEach((p, i) => {
         initial[p.name] = tc.args?.[i] ?? "";
       });
     }
@@ -102,7 +103,7 @@ export function TestCasePanel({
           ) : (
             <div className="p-4">
               <div className="mb-4 flex items-center gap-2">
-                {publicCases.map((_: any, i: number) => (
+                {publicCases.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => {
@@ -140,7 +141,7 @@ export function TestCasePanel({
 
               {isEditingCustom && customTestCase ? (
                 <div className="space-y-3">
-                  {sig?.params?.map((param: any) => (
+                  {sig?.params?.map((param) => (
                     <div key={param.name}>
                       <div className="text-muted-foreground mb-1 text-xs font-medium">
                         {param.name} =
@@ -168,7 +169,7 @@ export function TestCasePanel({
                   return (
                     <div className="space-y-3">
                       {tc.args && sig?.params ? (
-                        sig.params.map((param: any, j: number) => (
+                        sig.params.map((param, j) => (
                           <div key={j}>
                             <div className="text-muted-foreground mb-1 text-xs font-medium">
                               {param.name} =
@@ -203,10 +204,11 @@ export function TestCasePanel({
         >
           {consoleOutput.length > 0 ? (
             (() => {
-              const allPassed = consoleOutput.every((r: any) => r.passed);
+              const allPassed = consoleOutput.every((r) => r.passed);
               const res =
-                consoleOutput[selectedOutputCase] || consoleOutput[0];
+                consoleOutput[selectedOutputCase] ?? consoleOutput[0];
               const tc = publicCases[selectedOutputCase];
+              if (!res) return null;
               return (
                 <div className="p-4">
                   <div className="mb-4 flex items-center gap-2">
@@ -221,7 +223,7 @@ export function TestCasePanel({
                     )}
                   </div>
                   <div className="mb-4 flex items-center gap-2">
-                    {consoleOutput.map((r: any, i: number) => (
+                    {consoleOutput.map((r, i) => (
                       <button
                         key={i}
                         onClick={() => onSelectOutputCase(i)}
@@ -256,7 +258,7 @@ export function TestCasePanel({
                   ) : (
                     <div className="space-y-3">
                       {tc?.args && sig?.params ? (
-                        sig.params.map((param: any, j: number) => (
+                        sig.params.map((param, j) => (
                           <div key={j}>
                             <div className="text-muted-foreground mb-1 text-xs font-medium">
                               {param.name} =

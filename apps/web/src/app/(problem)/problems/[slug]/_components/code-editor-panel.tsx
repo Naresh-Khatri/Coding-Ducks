@@ -71,7 +71,11 @@ export function CodeEditorPanel({
       if (!view) return;
       const cm = getCM(view);
       if (!cm) return;
-      const state = (cm as any).state?.vim;
+      const state = (
+        cm as {
+          state?: { vim?: { insertMode?: boolean; visualMode?: boolean } };
+        }
+      ).state?.vim;
       if (!state) return;
       if (state.insertMode) setVimModeLabel("INSERT");
       else if (state.visualMode) setVimModeLabel("VISUAL");

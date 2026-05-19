@@ -21,15 +21,12 @@ export const markdownComponents: Components = {
   p: ({ node, ...props }) => (
     <p className="text-foreground/70 mb-4 text-sm leading-relaxed" {...props} />
   ),
-  pre: ({ node, children, ...props }) => (
-    <div
-      className="bg-accent/20 my-4 overflow-x-auto rounded-lg border border-white/5 p-4"
-      {...props}
-    >
+  pre: ({ children }) => (
+    <div className="bg-accent/20 my-4 overflow-x-auto rounded-lg border border-white/5 p-4">
       {children}
     </div>
   ),
-  code: ({ node, className, children, ...props }: any) => {
+  code: ({ node, className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className || "");
     if (match) {
       const code = String(children).replace(/\n$/, "");

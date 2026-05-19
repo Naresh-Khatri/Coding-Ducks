@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
+import type { ProblemDetail, SubmissionDetail } from "../types";
 import { markdownComponents } from "./markdown-components";
 
 const LANGUAGES: Array<{ key: string; label: string }> = [
@@ -18,11 +19,11 @@ const LANGUAGES: Array<{ key: string; label: string }> = [
 ];
 
 interface LeftPanelProps {
-  problem: any;
-  submissions: any[] | undefined;
+  problem: ProblemDetail;
+  submissions: SubmissionDetail[] | undefined;
   leftTab: string;
   onLeftTabChange: (tab: string) => void;
-  onSelectSubmission: (sub: any) => void;
+  onSelectSubmission: (sub: SubmissionDetail) => void;
 }
 
 export function LeftPanel({
