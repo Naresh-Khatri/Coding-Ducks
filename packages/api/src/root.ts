@@ -1,6 +1,7 @@
 // import { apiKeyRouter } from "./router/api-key";
 import { authRouter } from "./router/auth";
 import { bookmarkRouter } from "./router/bookmark";
+import { commentRouter } from "./router/comment";
 import { systemDesignRouter } from "./router/system-design";
 import { codeDraftRouter } from "./router/code-draft";
 import { duckletRouter } from "./router/ducklet";
@@ -26,6 +27,7 @@ export const appRouter = createTRPCRouter({
   ducklet: duckletRouter,
   profile: profileRouter,
   bookmark: bookmarkRouter,
+  comment: commentRouter,
   systemDesign: systemDesignRouter,
 });
 

@@ -13,6 +13,7 @@ import { cn } from "~/lib/utils";
 import { getLanguageLabel } from "~/lib/languages";
 import { useTRPC } from "~/trpc/react";
 import type { ProblemDetail, SubmissionDetail } from "../types";
+import { DiscussionPanel } from "./discussion-panel";
 import { markdownComponents } from "./markdown-components";
 
 interface LeftPanelProps {
@@ -70,6 +71,9 @@ export function LeftPanel({
           </TabsTrigger>
           <TabsTrigger value="editorial" className={tabTriggerClass}>
             Editorial
+          </TabsTrigger>
+          <TabsTrigger value="discussion" className={tabTriggerClass}>
+            Discussion
           </TabsTrigger>
           <TabsTrigger value="submissions" className={tabTriggerClass}>
             Submissions
@@ -270,6 +274,14 @@ export function LeftPanel({
             </p>
           </div>
         )}
+      </TabsContent>
+
+      {/* Discussion */}
+      <TabsContent value="discussion" className="m-0 flex-1 overflow-hidden">
+        <DiscussionPanel
+          problemId={problem.id}
+          isAuthenticated={isAuthenticated}
+        />
       </TabsContent>
 
       {/* Submissions */}
