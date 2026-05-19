@@ -257,6 +257,16 @@ export function DiscussionPanel({
             value={body}
             onChange={setBody}
             placeholder="Share your approach or ask a question…"
+            footer={
+              attach && canShare && best ? (
+                <>
+                  <div className="text-muted-foreground mb-1.5 text-[10px] font-medium tracking-wide uppercase">
+                    Attached {getLanguageLabel(best.lang)} solution
+                  </div>
+                  <ShikiCode code={best.code} lang={best.lang} />
+                </>
+              ) : undefined
+            }
           />
           <div className="flex items-center justify-between">
             {canShare ? (

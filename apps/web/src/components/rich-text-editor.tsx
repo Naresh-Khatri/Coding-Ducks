@@ -33,6 +33,8 @@ interface RichTextEditorProps {
   onChange: (html: string) => void;
   placeholder?: string;
   className?: string;
+  /** Rendered inside the editor box, below the editable area. */
+  footer?: React.ReactNode;
 }
 
 function ToolbarButton({
@@ -72,6 +74,7 @@ export function RichTextEditor({
   onChange,
   placeholder,
   className,
+  footer,
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions,
@@ -164,6 +167,9 @@ export function RichTextEditor({
         )}
         <EditorContent editor={editor} />
       </div>
+      {footer && (
+        <div className="border-t px-3 py-2">{footer}</div>
+      )}
     </div>
   );
 }
