@@ -105,6 +105,7 @@ async function getBestSubmission(
       and(
         eq(submission.userId, userId),
         eq(submission.problemId, problemId),
+        eq(submission.kind, "submit"),
         eq(submission.status, "accepted"),
       ),
     )
@@ -116,7 +117,11 @@ async function getBestSubmission(
     .select()
     .from(submission)
     .where(
-      and(eq(submission.userId, userId), eq(submission.problemId, problemId)),
+      and(
+        eq(submission.userId, userId),
+        eq(submission.problemId, problemId),
+        eq(submission.kind, "submit"),
+      ),
     )
     .orderBy(
       desc(submission.status),
@@ -195,7 +200,12 @@ export const problemService = {
           accepted: sql<number>`count(*) filter (where ${submission.status} = 'accepted')`,
         })
         .from(submission)
-        .where(inArray(submission.problemId, problemIds))
+        .where(
+          and(
+            inArray(submission.problemId, problemIds),
+            eq(submission.kind, "submit"),
+          ),
+        )
         .groupBy(submission.problemId);
 
       for (const s of stats) {
@@ -215,6 +225,7 @@ export const problemService = {
           .where(
             and(
               eq(submission.userId, userId),
+              eq(submission.kind, "submit"),
               inArray(submission.problemId, problemIds),
             ),
           );

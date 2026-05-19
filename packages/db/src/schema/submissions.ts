@@ -1,6 +1,6 @@
 import { pgTable, serial, text, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { langEnum, submissionStatusEnum } from "./enums";
+import { langEnum, submissionKindEnum, submissionStatusEnum } from "./enums";
 import { user } from "./auth-schema";
 import { problem } from "./problems";
 
@@ -14,6 +14,10 @@ export const submission = pgTable("submission", {
   problemId: integer("problem_id")
     .notNull()
     .references(() => problem.id, { onDelete: "cascade" }),
+
+  // Distinguishes a real "submit" (run against all tests, counts toward
+  // history/stats/streak) from an ephemeral "run" (public tests only).
+  kind: submissionKindEnum("kind").default("submit").notNull(),
 
   // Submission data
   code: text("code").notNull(),

@@ -165,6 +165,7 @@ export const submissionRouter = createTRPCRouter({
           problemId: input.problemId,
           code: input.code,
           lang: input.lang,
+          kind: "submit",
           status: "running",
           testsTotal: prob.testCases.length,
           results: [{ jobId }] as any,
@@ -232,6 +233,7 @@ export const submissionRouter = createTRPCRouter({
           problemId: input.problemId,
           code: input.code,
           lang: input.lang,
+          kind: "run",
           status: "running",
           testsTotal: publicTestCases.length,
           results: [{ jobId }] as any,
@@ -347,8 +349,8 @@ export const submissionRouter = createTRPCRouter({
             .where(eq(submission.id, sub.id))
             .returning();
 
-          // Update streak on accepted submission
-          if (finalStatus === "accepted") {
+          // Update streak only on accepted real submissions ("run" is ephemeral)
+          if (finalStatus === "accepted" && sub.kind === "submit") {
             const today = new Date().toISOString().split("T")[0]!;
             const yesterday = new Date(Date.now() - 86400000)
               .toISOString()
@@ -400,7 +402,10 @@ export const submissionRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const conditions = [eq(submission.userId, ctx.session.user.id)];
+      const conditions = [
+        eq(submission.userId, ctx.session.user.id),
+        eq(submission.kind, "submit"),
+      ];
 
       if (input.problemId) {
         conditions.push(eq(submission.problemId, input.problemId));
