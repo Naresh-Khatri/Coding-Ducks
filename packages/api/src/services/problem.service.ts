@@ -45,6 +45,8 @@ export interface CreateProblemArgs {
   starterCode?: Record<string, string>;
   functionSignature?: FunctionSignatureInput;
   tags: string[];
+  timeLimit?: number;
+  memoryLimit?: number;
   displayOrder: number;
 }
 
@@ -63,6 +65,8 @@ export interface UpdateProblemArgs {
   starterCode?: Record<string, string>;
   functionSignature?: FunctionSignatureInput;
   tags?: string[];
+  timeLimit?: number | null;
+  memoryLimit?: number | null;
   isActive?: boolean;
   displayOrder?: number;
 }

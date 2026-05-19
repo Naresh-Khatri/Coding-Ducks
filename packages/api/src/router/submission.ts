@@ -46,14 +46,23 @@ interface JudgeStatusResponse {
 
 // --- Judge API helpers ---
 
-async function submitToJudge(code: string, lang: string): Promise<string> {
+async function submitToJudge(
+  code: string,
+  lang: string,
+  limits?: { timeLimit?: number | null; memoryLimit?: number | null },
+): Promise<string> {
   const response = await fetch(`${env.JUDGE_API_URL}/submissions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${env.JUDGE_API_TOKEN}`,
     },
-    body: JSON.stringify({ code, lang }),
+    body: JSON.stringify({
+      code,
+      lang,
+      ...(limits?.timeLimit != null && { timeLimit: limits.timeLimit }),
+      ...(limits?.memoryLimit != null && { memoryLimit: limits.memoryLimit }),
+    }),
   });
 
   if (!response.ok) {
@@ -150,7 +159,10 @@ async function dispatchSubmission(
     opts.hidePrivate,
   );
 
-  const jobId = await submitToJudge(driverCode, opts.lang);
+  const jobId = await submitToJudge(driverCode, opts.lang, {
+    timeLimit: prob.timeLimit,
+    memoryLimit: prob.memoryLimit,
+  });
 
   const [newSubmission] = await database
     .insert(submission)

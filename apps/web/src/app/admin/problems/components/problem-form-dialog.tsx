@@ -63,6 +63,8 @@ const problemFormSchema = z.object({
   followUp: z.string().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]),
   tags: z.array(z.string()).default([]),
+  timeLimit: z.coerce.number().int().positive().optional(),
+  memoryLimit: z.coerce.number().int().positive().optional(),
   displayOrder: z.coerce.number().default(0),
   isActive: z.boolean().default(true),
   testCases: z
@@ -206,6 +208,8 @@ export function ProblemFormDialog({
         form.setValue("followUp", problemData.followUp || "");
         form.setValue("difficulty", problemData.difficulty || "easy");
         form.setValue("tags", problemData.tags || []);
+        form.setValue("timeLimit", problemData.timeLimit ?? undefined);
+        form.setValue("memoryLimit", problemData.memoryLimit ?? undefined);
         form.setValue("displayOrder", problemData.displayOrder || 0);
         form.setValue("isActive", problemData.isActive ?? true);
 
@@ -249,6 +253,8 @@ export function ProblemFormDialog({
       followUp: formData.followUp,
       difficulty: formData.difficulty,
       tags: formData.tags,
+      timeLimit: formData.timeLimit,
+      memoryLimit: formData.memoryLimit,
       displayOrder: formData.displayOrder,
       isActive: formData.isActive,
       functionSignature: formData.functionSignature,
@@ -291,6 +297,8 @@ export function ProblemFormDialog({
       followUp: "",
       difficulty: "easy",
       tags: [],
+      timeLimit: undefined,
+      memoryLimit: undefined,
       displayOrder: 0,
       isActive: true,
       testCases: [{ input: "", output: "", isPublic: true }],
@@ -320,6 +328,8 @@ export function ProblemFormDialog({
           followUp: existingProblem.followUp ?? "",
           difficulty: existingProblem.difficulty as "easy" | "medium" | "hard",
           tags: existingProblem.tags,
+          timeLimit: existingProblem.timeLimit ?? undefined,
+          memoryLimit: existingProblem.memoryLimit ?? undefined,
           displayOrder: existingProblem.displayOrder || 0,
           isActive: existingProblem.isActive,
           testCases: existingProblem.testCases as any[],
@@ -340,6 +350,8 @@ export function ProblemFormDialog({
           followUp: "",
           difficulty: "easy",
           tags: [],
+          timeLimit: undefined,
+          memoryLimit: undefined,
           displayOrder: 0,
           isActive: true,
           testCases: [{ input: "", output: "", isPublic: true }],
@@ -583,6 +595,50 @@ export function ProblemFormDialog({
                                 </FormControl>
                                 <FormDescription>
                                   Lower numbers appear first
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="timeLimit"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Time Limit (s)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="Judge default"
+                                    {...field}
+                                    value={field.value ?? ""}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Per-test wall time; blank = judge default
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="memoryLimit"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Memory Limit (KB)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="Judge default"
+                                    {...field}
+                                    value={field.value ?? ""}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Blank = judge default
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>

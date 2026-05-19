@@ -36,6 +36,11 @@ export const problem = pgTable("problem", {
   // Function signature definition (language-agnostic)
   functionSignature: jsonb("function_signature").$type<FunctionSignature>(),
 
+  // Per-problem judge limits; null = judge defaults.
+  // timeLimit in seconds, memoryLimit in KB (matches the judge runner).
+  timeLimit: integer("time_limit"),
+  memoryLimit: integer("memory_limit"),
+
   // Display order (for sorting)
   displayOrder: integer("display_order").default(0),
 

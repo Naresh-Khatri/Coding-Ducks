@@ -86,6 +86,8 @@ export const problemRouter = createTRPCRouter({
         starterCode: z.record(z.string(), z.string()).optional(),
         functionSignature: functionSignatureSchema.optional(),
         tags: z.array(z.string()).default([]),
+        timeLimit: z.number().int().positive().optional(),
+        memoryLimit: z.number().int().positive().optional(),
         displayOrder: z.number().default(0),
       }),
     )
@@ -109,6 +111,8 @@ export const problemRouter = createTRPCRouter({
         starterCode: z.record(z.string(), z.string()).optional(),
         functionSignature: functionSignatureSchema.optional(),
         tags: z.array(z.string()).optional(),
+        timeLimit: z.number().int().positive().nullable().optional(),
+        memoryLimit: z.number().int().positive().nullable().optional(),
         isActive: z.boolean().optional(),
         displayOrder: z.number().optional(),
       }),
