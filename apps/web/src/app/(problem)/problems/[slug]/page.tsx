@@ -32,7 +32,10 @@ export default function ProblemDetailPage() {
   const isAuthenticated = !!session;
 
   const [codes, setCodes] = useState<Record<string, string>>({});
-  const [language, setLanguage] = useState<Language>("py");
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === "undefined") return "py";
+    return (localStorage.getItem("problem-editor-language") as Language) || "py";
+  });
   const [leftTab, setLeftTab] = useState("description");
   const [activeTab, setActiveTab] = useState("problem");
   const [consoleOutput, setConsoleOutput] = useState<ConsoleResult[]>([]);
@@ -138,6 +141,11 @@ export default function ProblemDetailPage() {
       draftsLoadedRef.current = true;
     }
   }, [problem, lastProblemId, language, savedDrafts, isAuthenticated]);
+
+  // Remember the chosen language across problems / reloads.
+  useEffect(() => {
+    localStorage.setItem("problem-editor-language", language);
+  }, [language]);
 
   const currentCode = codes[language] || "";
 
