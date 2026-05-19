@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import type { db } from "@acme/db";
@@ -484,5 +484,54 @@ export const submissionRouter = createTRPCRouter({
       }
 
       return sub;
+    }),
+
+  // "Beats X%" of accepted submissions for the same problem + language.
+  percentile: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const [sub] = await ctx.db
+        .select()
+        .from(submission)
+        .where(
+          and(
+            eq(submission.id, input.id),
+            eq(submission.userId, ctx.session.user.id),
+          ),
+        )
+        .limit(1);
+
+      if (!sub || sub.status !== "accepted") return null;
+
+      const peers = and(
+        eq(submission.problemId, sub.problemId),
+        eq(submission.lang, sub.lang),
+        eq(submission.kind, "submit"),
+        eq(submission.status, "accepted"),
+      );
+
+      const [agg] = await ctx.db
+        .select({
+          total: sql<number>`count(*)::int`,
+          runtimeTotal: sql<number>`count(${submission.runtime})::int`,
+          runtimeSlower: sql<number>`count(*) filter (where ${submission.runtime} > ${sub.runtime})::int`,
+          memoryTotal: sql<number>`count(${submission.memory})::int`,
+          memorySlower: sql<number>`count(*) filter (where ${submission.memory} > ${sub.memory})::int`,
+        })
+        .from(submission)
+        .where(peers);
+
+      if (!agg || agg.total === 0) return null;
+
+      const pct = (slower: number, total: number) =>
+        total > 0 ? Math.round((slower / total) * 1000) / 10 : null;
+
+      return {
+        runtime:
+          sub.runtime != null ? pct(agg.runtimeSlower, agg.runtimeTotal) : null,
+        memory:
+          sub.memory != null ? pct(agg.memorySlower, agg.memoryTotal) : null,
+        sampleSize: agg.total,
+      };
     }),
 });

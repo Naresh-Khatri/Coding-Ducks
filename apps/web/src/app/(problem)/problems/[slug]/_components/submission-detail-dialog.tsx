@@ -1,7 +1,10 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+
 import type { Language } from "~/components/code-editor";
 import { CodeEditor } from "~/components/code-editor";
+import { useTRPC } from "~/trpc/react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +24,14 @@ export function SubmissionDetailDialog({
   submission,
   onClose,
 }: SubmissionDetailDialogProps) {
+  const trpc = useTRPC();
+  const { data: percentile } = useQuery(
+    trpc.submission.percentile.queryOptions(
+      { id: submission?.id ?? 0 },
+      { enabled: !!submission && submission.status === "accepted" },
+    ),
+  );
+
   if (!submission) return null;
 
   const sub = submission;
@@ -52,10 +63,11 @@ export function SubmissionDetailDialog({
 
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: "Language", value: langLabel },
+            { label: "Language", value: langLabel, beats: null },
             {
               label: "Runtime",
               value: sub.runtime != null ? `${sub.runtime} ms` : "N/A",
+              beats: percentile?.runtime ?? null,
             },
             {
               label: "Memory",
@@ -65,10 +77,12 @@ export function SubmissionDetailDialog({
                     ? `${(sub.memory / 1024).toFixed(1)} MB`
                     : `${sub.memory} KB`
                   : "N/A",
+              beats: percentile?.memory ?? null,
             },
             {
               label: "Tests",
               value: `${sub.testsPassed}/${sub.testsTotal} passed`,
+              beats: null,
             },
           ].map((stat) => (
             <div key={stat.label} className="rounded-lg bg-accent/40 p-3">
@@ -78,6 +92,11 @@ export function SubmissionDetailDialog({
               <div className="text-foreground text-sm font-medium">
                 {stat.value}
               </div>
+              {stat.beats != null && (
+                <div className="mt-0.5 text-[10px] font-medium text-emerald-500">
+                  Beats {stat.beats}%
+                </div>
+              )}
             </div>
           ))}
         </div>
