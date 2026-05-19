@@ -33,6 +33,8 @@ interface RichTextEditorProps {
   onChange: (html: string) => void;
   placeholder?: string;
   className?: string;
+  /** Min height of the editable area (Tailwind class). Default min-h-16. */
+  minHeightClass?: string;
   /** Rendered inside the editor box, below the editable area. */
   footer?: React.ReactNode;
 }
@@ -74,13 +76,16 @@ export function RichTextEditor({
   onChange,
   placeholder,
   className,
+  minHeightClass = "min-h-16",
   footer,
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions,
     content: value,
     immediatelyRender: false,
-    editorProps: { attributes: { class: cn(proseClass, "min-h-16 px-3 py-2") } },
+    editorProps: {
+      attributes: { class: cn(proseClass, minHeightClass, "px-3 py-2") },
+    },
     onUpdate: ({ editor }) => onChange(editor.isEmpty ? "" : editor.getHTML()),
   });
 

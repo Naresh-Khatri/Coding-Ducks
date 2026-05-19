@@ -293,6 +293,7 @@ export function DiscussionPanel({
                   value={body}
                   onChange={setBody}
                   placeholder="Share your approach or ask a question…"
+                  minHeightClass="min-h-48"
                   footer={
                     attach && canShare && best ? (
                       <>
