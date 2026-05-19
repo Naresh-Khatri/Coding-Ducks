@@ -2,16 +2,24 @@
 
 import { useCallback } from "react";
 import {
-  AreaChart,
+  Pause,
+  Play,
+  Radio,
+  SkipForward,
+  SlidersHorizontal,
+} from "lucide-react";
+import {
   Area,
+  AreaChart,
+  CartesianGrid,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
 } from "recharts";
-import { Play, Pause, Radio, SlidersHorizontal, SkipForward } from "lucide-react";
+
+import { Button } from "~/components/ui/button";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { cn } from "~/lib/utils";
 
@@ -97,7 +105,7 @@ export function TrafficChart() {
         </button>
 
         {/* Mode toggle */}
-        <div className="flex items-center gap-0.5 rounded-md bg-muted p-0.5">
+        <div className="bg-muted flex items-center gap-0.5 rounded-md p-0.5">
           <button
             onClick={() => setTimelineMode("live")}
             className={cn(
@@ -125,7 +133,7 @@ export function TrafficChart() {
         </div>
 
         {/* Speed selector */}
-        <div className="flex items-center gap-0.5 rounded-md bg-muted p-0.5">
+        <div className="bg-muted flex items-center gap-0.5 rounded-md p-0.5">
           {SPEEDS.map((speed) => (
             <button
               key={speed}
@@ -152,13 +160,15 @@ export function TrafficChart() {
         </span>
 
         {/* End simulation */}
-        <button
+        <Button
           onClick={() => setPhase("results")}
-          className="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium transition-colors"
+          size={"sm"}
+          variant="ghost"
+          className="flex items-center gap-1 rounded-md p-1 text-[11px]"
         >
-          <SkipForward size={11} />
+          <SkipForward />
           End
-        </button>
+        </Button>
       </div>
 
       {/* Chart */}
