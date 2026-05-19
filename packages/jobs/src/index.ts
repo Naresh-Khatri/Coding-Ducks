@@ -1,18 +1,61 @@
 import { Queue, Worker } from "bullmq";
 
 import { connection } from "./connection";
+import { reconcileSubmission } from "./submission-reconcile";
 import { Language } from "./types";
 import IsolateRunner from "./utils/isolate-runner";
 
 export const QUEUE_NAMES = {
   EMAIL: "email",
   CODE_EXECUTION: "code-execution",
+  SUBMISSION_RECONCILE: "submission-reconcile",
 };
 
 export const emailQueue = new Queue(QUEUE_NAMES.EMAIL, { connection });
 export const codeExecutionQueue = new Queue(QUEUE_NAMES.CODE_EXECUTION, {
   connection,
 });
+
+export const submissionReconcileQueue = new Queue(
+  QUEUE_NAMES.SUBMISSION_RECONCILE,
+  { connection },
+);
+
+/**
+ * Schedule server-side reconciliation for a submission so its result is
+ * persisted even if the user closes the tab mid-poll. Retries with backoff
+ * until the row reaches a terminal state (the judge usually finishes in
+ * seconds; the reconciler force-fails to `judge_error` after the timeout,
+ * so the job always terminates within ~the backoff window).
+ *
+ * `jobId` dedupes against a double enqueue for the same row.
+ */
+export async function enqueueSubmissionReconcile(submissionId: number) {
+  await submissionReconcileQueue.add(
+    "reconcile",
+    { submissionId },
+    {
+      jobId: `submission-${submissionId}`,
+      delay: 2000,
+      attempts: 40,
+      backoff: { type: "fixed", delay: 5000 },
+      removeOnComplete: true,
+      removeOnFail: 100,
+    },
+  );
+}
+
+export const submissionReconcileWorker = new Worker<{ submissionId: number }>(
+  QUEUE_NAMES.SUBMISSION_RECONCILE,
+  async (job) => {
+    const row = await reconcileSubmission(job.data.submissionId);
+    // Still pending on the judge — throw so BullMQ retries with backoff.
+    if (row && row.status === "running") {
+      throw new Error(`submission ${job.data.submissionId} still running`);
+    }
+  },
+  { connection, concurrency: 5 },
+);
 
 export const emailWorker = new Worker(
   QUEUE_NAMES.EMAIL,
@@ -64,4 +107,5 @@ export const codeExecutionWorker = new Worker(
   },
 );
 
+export { reconcileSubmission } from "./submission-reconcile";
 export * from "./connection";
