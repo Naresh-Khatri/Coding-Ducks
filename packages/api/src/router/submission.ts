@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
+import type { db } from "@acme/db";
 import type { FunctionSignature, TestCase } from "@acme/db/schema";
 import { problem, submission, userProfile } from "@acme/db/schema";
 
@@ -115,6 +116,66 @@ function parseTestResults(
   }
 }
 
+/**
+ * Shared tail for `submit`/`run`: validate the function signature, generate
+ * driver code, dispatch to the judge, and persist a `running` submission row.
+ * The two mutations only differ in which test cases they feed in and the
+ * `kind` they record.
+ */
+async function dispatchSubmission(
+  database: typeof db,
+  userId: string,
+  prob: typeof problem.$inferSelect,
+  opts: {
+    code: string;
+    lang: (typeof SUPPORTED_LANGS)[number];
+    kind: "run" | "submit";
+    testCases: TestCase[];
+    hidePrivate: boolean;
+  },
+): Promise<{ id: number; jobId: string }> {
+  const signature = prob.functionSignature as FunctionSignature;
+  if (!signature) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Problem has no function signature configured",
+    });
+  }
+
+  const driverCode = generateDriverWithTestCases(
+    opts.code,
+    opts.lang,
+    signature,
+    opts.testCases,
+    opts.hidePrivate,
+  );
+
+  const jobId = await submitToJudge(driverCode, opts.lang);
+
+  const [newSubmission] = await database
+    .insert(submission)
+    .values({
+      userId,
+      problemId: prob.id,
+      code: opts.code,
+      lang: opts.lang,
+      kind: opts.kind,
+      status: "running",
+      testsTotal: opts.testCases.length,
+      results: [{ jobId }] as any,
+    })
+    .returning();
+
+  if (!newSubmission) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to create submission",
+    });
+  }
+
+  return { id: newSubmission.id, jobId };
+}
+
 // --- tRPC Router ---
 
 export const submissionRouter = createTRPCRouter({
@@ -140,46 +201,13 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
-      const signature = prob.functionSignature as FunctionSignature;
-      if (!signature) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Problem has no function signature configured",
-        });
-      }
-
-      const driverCode = generateDriverWithTestCases(
-        input.code,
-        input.lang,
-        signature,
-        prob.testCases,
-        true,
-      );
-
-      const jobId = await submitToJudge(driverCode, input.lang);
-
-      const [newSubmission] = await ctx.db
-        .insert(submission)
-        .values({
-          userId: ctx.session.user.id,
-          problemId: input.problemId,
-          code: input.code,
-          lang: input.lang,
-          kind: "submit",
-          status: "running",
-          testsTotal: prob.testCases.length,
-          results: [{ jobId }] as any,
-        })
-        .returning();
-
-      if (!newSubmission) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create submission",
-        });
-      }
-
-      return { id: newSubmission.id, jobId };
+      return dispatchSubmission(ctx.db, ctx.session.user.id, prob, {
+        code: input.code,
+        lang: input.lang,
+        kind: "submit",
+        testCases: prob.testCases,
+        hidePrivate: true,
+      });
     }),
 
   run: protectedProcedure
@@ -208,46 +236,13 @@ export const submissionRouter = createTRPCRouter({
         return { id: 0, jobId: null, results: [] };
       }
 
-      const signature = prob.functionSignature as FunctionSignature;
-      if (!signature) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Problem has no function signature configured",
-        });
-      }
-
-      const driverCode = generateDriverWithTestCases(
-        input.code,
-        input.lang,
-        signature,
-        publicTestCases,
-        false,
-      );
-
-      const jobId = await submitToJudge(driverCode, input.lang);
-
-      const [newSubmission] = await ctx.db
-        .insert(submission)
-        .values({
-          userId: ctx.session.user.id,
-          problemId: input.problemId,
-          code: input.code,
-          lang: input.lang,
-          kind: "run",
-          status: "running",
-          testsTotal: publicTestCases.length,
-          results: [{ jobId }] as any,
-        })
-        .returning();
-
-      if (!newSubmission) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create submission",
-        });
-      }
-
-      return { id: newSubmission.id, jobId };
+      return dispatchSubmission(ctx.db, ctx.session.user.id, prob, {
+        code: input.code,
+        lang: input.lang,
+        kind: "run",
+        testCases: publicTestCases,
+        hidePrivate: false,
+      });
     }),
 
   getResults: protectedProcedure
