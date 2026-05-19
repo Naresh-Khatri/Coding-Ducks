@@ -1,8 +1,7 @@
 # Default target
 help:
 	@echo "Available commands:"
-	@echo "  make dev                - Start development environment"
-	@echo "  make prod               - Start production environment"
+	@echo "  make dev                - Start full development environment (incl. app container)"
 	@echo "  make services           - Start ONLY dependencies (db, redis) for local dev"
 	@echo "  make down               - Stop all containers"
 	@echo "  make logs               - Follow container logs"
@@ -10,24 +9,20 @@ help:
 	@echo "  make dangerously-clean  - Stop containers AND DELETE ALL DATA"
 
 dev:
-	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml up -d
-
-prod:
-	docker compose -f docker-compose.base.yml -f docker-compose.prod.yml up -d --build
-
+	docker compose up -d
 
 services:
-	docker compose -f docker-compose.base.yml up -d
+	docker compose up -d db redis
 
 down:
-	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml -f docker-compose.prod.yml down --remove-orphans
+	docker compose down --remove-orphans
 
 logs:
 	docker compose logs -f
 
 clean:
-	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml down --remove-orphans
+	docker compose down --remove-orphans
 
 dangerously-clean:
 	@echo "WARNING: This will delete all database and redis data. Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
-	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml down -v --remove-orphans
+	docker compose down -v --remove-orphans
