@@ -5,7 +5,6 @@ export * from "./enums";
 export * from "./problems";
 export * from "./submissions";
 export * from "./problem-comments";
-export * from "./problem-solutions";
 export * from "./ducklets";
 export * from "./challenges";
 export * from "./attempts";
