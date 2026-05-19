@@ -163,10 +163,10 @@ export default function ProblemDetailPage() {
 
   useEffect(() => {
     if (!isAuthenticated || !problem || !currentCode) return;
-    const starterCode = (problem.starterCode as Record<string, string>)?.[
-      language
-    ];
-    if (currentCode === starterCode) return;
+    // Persist even when the code matches starter: reverting to starter
+    // must overwrite a previous draft, otherwise the stale draft is
+    // restored on reload. The upsert is idempotent so the worst case is
+    // one redundant write on a fresh, untouched problem.
 
     setSaveStatus("saving");
     clearTimeout(saveTimerRef.current);
@@ -293,7 +293,10 @@ export default function ProblemDetailPage() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal">
+        <ResizablePanelGroup
+          direction="horizontal"
+          autoSaveId="problem-layout-h"
+        >
           {/* Left Panel */}
           <ResizablePanel defaultSize={40} minSize={20} className="bg-card/30">
             <LeftPanel
@@ -315,7 +318,10 @@ export default function ProblemDetailPage() {
 
           {/* Right Panel */}
           <ResizablePanel defaultSize={60} minSize={30}>
-            <ResizablePanelGroup direction="vertical">
+            <ResizablePanelGroup
+              direction="vertical"
+              autoSaveId="problem-layout-v"
+            >
               {/* Code Editor */}
               <ResizablePanel defaultSize={65} minSize={30}>
                 <CodeEditorPanel
