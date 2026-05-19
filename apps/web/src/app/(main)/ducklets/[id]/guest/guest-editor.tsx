@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { cpp } from "@codemirror/lang-cpp";
+import { useEffect, useState } from "react";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
 import { syntaxTree } from "@codemirror/language";
 import { linter, lintGutter, Diagnostic } from "@codemirror/lint";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -22,7 +20,6 @@ import {
 import { useDebounce } from "~/hooks/use-debounce";
 import { Console, LogEntry } from "~/components/collab-editor/console";
 import { Preview } from "~/components/collab-editor/preview";
-import { useEffect } from "react";
 
 type LayoutType = "top" | "left";
 
@@ -39,8 +36,6 @@ interface GuestEditorProps {
 
 const languageExtensions = {
   js: () => javascript(),
-  py: () => python(),
-  cpp: () => cpp(),
   html: () => html(),
   css: () => css(),
 };

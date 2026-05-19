@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, MessageSquare, Send, Users } from "lucide-react";
 
 import { authClient } from "~/auth/client";
@@ -123,7 +123,7 @@ export default function DuckletPage({
     if (ducklet && isPublic && !isOwner && !isMember) {
       router.push(`/ducklets/${duckletId}/guest`);
     }
-  }, [ducklet, isPublic, isOwner, isMember, duckletId, router, userStatus]);
+  }, [ducklet, isPublic, isOwner, isMember, duckletId, router]);
 
   // Listen to websocket disconnects for access revocation
   useEffect(() => {
@@ -147,8 +147,6 @@ export default function DuckletPage({
       provider.off("authenticationFailed", handleAuthFailure);
     };
   }, [provider, ducklet, isOwner, duckletId, router]);
-
-
 
   if (isDuckletLoading) {
     return (
@@ -243,7 +241,7 @@ export default function DuckletPage({
                 readOnly={!canEdit}
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[#282c34] text-gray-400">
+              <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
                 Connecting to room...
               </div>
             )}

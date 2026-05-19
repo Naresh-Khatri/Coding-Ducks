@@ -17,6 +17,7 @@ import {
 import { motion } from "motion/react";
 import * as Y from "yjs";
 
+import type { RouterOutputs } from "@acme/api";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -62,24 +63,38 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
+type DuckletListItem = RouterOutputs["ducklet"]["list"][number];
+
+// Browser-safe base64 encoding for binary data (Y.js updates).
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+  return btoa(binary);
+}
+
 export default function DuckletsPage() {
   const router = useRouter();
-  const utils = useTRPC();
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newDuckletName, setNewDuckletName] = useState("");
 
   const { data: ducklets, isLoading } = useQuery(
-    utils.ducklet.list.queryOptions({
+    trpc.ducklet.list.queryOptions({
       limit: 50,
     }),
   );
 
   const createDuckletMutation = useMutation(
-    utils.ducklet.create.mutationOptions({
+    trpc.ducklet.create.mutationOptions({
       onSuccess: (ducklet) => {
         setIsCreateOpen(false);
         setNewDuckletName("");
+        void queryClient.invalidateQueries(trpc.ducklet.list.queryFilter());
         if (ducklet) {
           void router.push(`/ducklets/${ducklet.id}`);
         }
@@ -115,8 +130,8 @@ h1 {
     doc.getText("css").insert(0, cssContent);
     doc.getText("js").insert(0, jsContent);
 
-    // Encode state
-    const yjsData = Buffer.from(Y.encodeStateAsUpdate(doc)).toString("base64");
+    // Encode state (browser-safe, no Node Buffer)
+    const yjsData = uint8ArrayToBase64(Y.encodeStateAsUpdate(doc));
 
     createDuckletMutation.mutate({
       name: newDuckletName,
@@ -128,9 +143,9 @@ h1 {
   };
 
   const deleteDuckletMutation = useMutation(
-    utils.ducklet.delete.mutationOptions({
+    trpc.ducklet.delete.mutationOptions({
       onSuccess: () => {
-        void queryClient.invalidateQueries(utils.ducklet.list.queryFilter());
+        void queryClient.invalidateQueries(trpc.ducklet.list.queryFilter());
       },
     }),
   );
@@ -265,7 +280,7 @@ function DuckletCard({
   ducklet,
   onDelete,
 }: {
-  ducklet: any;
+  ducklet: DuckletListItem;
   onDelete: () => void;
 }) {
   const router = useRouter();
@@ -273,8 +288,8 @@ function DuckletCard({
   return (
     <motion.div variants={item}>
       <Card className="group border-muted/40 hover:border-primary/40 flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl">
-        <Link href={`/ducklets/${ducklet.id}`} className="relative block">
-          <div className="aspect-[1200/630] w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+        <Link href={`/ducklets/${ducklet.id}`} className="block">
+          <div className="relative aspect-[1200/630] w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
             {ducklet.previewImage ? (
               <Image
                 src={ducklet.previewImage}
@@ -322,7 +337,7 @@ function DuckletCard({
               </CardTitle>
               <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 <Avatar className="h-5 w-5">
-                  <AvatarImage src={ducklet.owner?.photoURL} />
+                  <AvatarImage src={ducklet.owner?.photoURL ?? undefined} />
                   <AvatarFallback className="text-[10px]">
                     {ducklet.owner?.username?.charAt(0).toUpperCase() ?? "U"}
                   </AvatarFallback>
