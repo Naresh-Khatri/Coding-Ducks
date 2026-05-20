@@ -3,8 +3,9 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, MessageSquare, Send, Users } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ChevronLeft, Lock, MessageSquare, Send, Users } from "lucide-react";
+import { toast } from "sonner";
 
 import { authClient } from "~/auth/client";
 import { LayoutManager } from "~/components/collab-editor/layout-manager";
@@ -169,13 +170,22 @@ export default function DuckletPage({
   }
 
   if (error || !ducklet) {
+    const code = error?.data?.code;
+    if (code === "FORBIDDEN") {
+      return (
+        <AccessDeniedScreen
+          duckletId={duckletId}
+          isAuthed={!!userId}
+        />
+      );
+    }
     return (
       <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
         <h2 className="text-destructive text-xl font-bold">
-          Error loading ducklet
+          {code === "NOT_FOUND" ? "Ducklet not found" : "Error loading ducklet"}
         </h2>
         <p className="text-muted-foreground">
-          {error?.message ?? "Ducklet not found"}
+          {error?.message ?? "This ducklet does not exist."}
         </p>
         <Button onClick={() => router.push("/ducklets")}>Back to List</Button>
       </div>
@@ -341,6 +351,65 @@ export default function DuckletPage({
             </ResizablePanel>
           )}
         </ResizablePanelGroup>
+      </div>
+    </div>
+  );
+}
+
+function AccessDeniedScreen({
+  duckletId,
+  isAuthed,
+}: {
+  duckletId: number;
+  isAuthed: boolean;
+}) {
+  const trpc = useTRPC();
+  const requestAccess = useMutation(
+    trpc.ducklet.requestAccess.mutationOptions({
+      onSuccess: (data) => {
+        toast.success(data.message ?? "Request sent");
+      },
+      onError: (err) => toast.error(err.message),
+    }),
+  );
+
+  return (
+    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
+        <Lock className="text-muted-foreground h-7 w-7" />
+      </div>
+      <h2 className="text-2xl font-semibold">This ducklet is private</h2>
+      <p className="text-muted-foreground">
+        You don't have access to this ducklet. Ask the owner to invite you, or
+        request access below.
+      </p>
+      <div className="flex gap-2">
+        {isAuthed ? (
+          <Button
+            onClick={() => requestAccess.mutate({ duckletId })}
+            disabled={requestAccess.isPending || requestAccess.isSuccess}
+          >
+            {requestAccess.isSuccess
+              ? "Request sent"
+              : requestAccess.isPending
+                ? "Requesting…"
+                : "Request access"}
+          </Button>
+        ) : (
+          <Button
+            onClick={() =>
+              authClient.signIn.social({
+                provider: "google",
+                callbackURL: `/ducklets/${duckletId}`,
+              })
+            }
+          >
+            Sign in to request access
+          </Button>
+        )}
+        <Button variant="outline" asChild>
+          <Link href="/ducklets">Back to list</Link>
+        </Button>
       </div>
     </div>
   );

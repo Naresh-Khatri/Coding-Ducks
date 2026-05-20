@@ -44,41 +44,27 @@ export function LayoutManager({
   const debouncedCss = useDebounce(css, 600);
   const debouncedJs = useDebounce(js, 600);
 
-  // Sync Yjs to local state on initial load and changes
   useEffect(() => {
-    if (!ydoc) {
-      console.log("[LayoutManager] No ydoc provided");
-      return;
-    }
-    console.log("[LayoutManager] Setting up YJS observers");
+    if (!ydoc) return;
 
-    const updateState = () => {
-      const h = ydoc.getText("html").toString();
-      const c = ydoc.getText("css").toString();
-      const j = ydoc.getText("js").toString();
-
-      // console.log("[LayoutManager] YJS Content Updated:", { hLength: h.length, cLength: c.length, jLength: j.length });
-      setHtml(h);
-      setCss(c);
-      setJs(j);
-    };
-
-    // Initial sync
-    updateState();
-
-    // Listeners
     const htmlText = ydoc.getText("html");
     const cssText = ydoc.getText("css");
     const jsText = ydoc.getText("js");
 
-    const observer = () => updateState();
+    const updateState = () => {
+      setHtml(htmlText.toString());
+      setCss(cssText.toString());
+      setJs(jsText.toString());
+    };
 
+    updateState();
+
+    const observer = () => updateState();
     htmlText.observe(observer);
     cssText.observe(observer);
     jsText.observe(observer);
 
     return () => {
-      console.log("[LayoutManager] Cleaning up observers");
       htmlText.unobserve(observer);
       cssText.unobserve(observer);
       jsText.unobserve(observer);
@@ -137,6 +123,7 @@ export function LayoutManager({
             field="css"
             provider={provider}
             ydoc={ydoc}
+            readOnly={readOnly}
           />
         </div>
       </ResizablePanel>
@@ -151,6 +138,7 @@ export function LayoutManager({
             field="js"
             provider={provider}
             ydoc={ydoc}
+            readOnly={readOnly}
           />
         </div>
       </ResizablePanel>

@@ -17,13 +17,13 @@ export const duckletRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(50).default(20),
-        offset: z.number().default(0),
+        cursor: z.number().nullish(),
         onlyMine: z.boolean().optional(),
       }).optional()
     )
     .query(async ({ ctx, input }) => {
       const limit = input?.limit ?? 20;
-      const offset = input?.offset ?? 0;
+      const offset = input?.cursor ?? 0;
       const onlyMine = input?.onlyMine;
 
       // Build conditions
@@ -54,6 +54,7 @@ export const duckletRouter = createTRPCRouter({
           type: ducklet.type,
           previewImage: ducklet.previewImage,
           createdAt: ducklet.createdAt,
+          ownerId: ducklet.ownerId,
           owner: {
             username: userProfile.username,
             photoURL: userProfile.photoURL,
@@ -66,10 +67,15 @@ export const duckletRouter = createTRPCRouter({
         .limit(limit)
         .offset(offset);
 
-      return ducklets.map((d) => ({
+      const items = ducklets.map((d) => ({
         ...d,
         previewImage: d.previewImage ? getPublicUrl(d.previewImage) : null,
       }));
+
+      const nextCursor =
+        items.length === limit ? offset + items.length : undefined;
+
+      return { items, nextCursor };
     }),
 
   /**

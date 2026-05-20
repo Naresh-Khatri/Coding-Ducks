@@ -3,6 +3,7 @@ import {
   boolean,
   integer,
   pgTable,
+  primaryKey,
   serial,
   text,
   timestamp,
@@ -43,17 +44,21 @@ export const ducklet = pgTable("ducklet", {
   updatedAt: timestamp("updated_at").$onUpdateFn(() => sql`now()`),
 });
 
-export const duckletMember = pgTable("ducklet_member", {
-  duckletId: integer("ducklet_id")
-    .notNull()
-    .references(() => ducklet.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  role: memberRoleEnum("role").default("viewer").notNull(),
-  status: memberStatusEnum("status").default("active").notNull(),
-  joinedAt: timestamp("joined_at").defaultNow().notNull(),
-});
+export const duckletMember = pgTable(
+  "ducklet_member",
+  {
+    duckletId: integer("ducklet_id")
+      .notNull()
+      .references(() => ducklet.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: memberRoleEnum("role").default("viewer").notNull(),
+    status: memberStatusEnum("status").default("active").notNull(),
+    joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.duckletId, t.userId] })],
+);
 
 // Relations
 export const duckletRelations = relations(ducklet, ({ one, many }) => ({

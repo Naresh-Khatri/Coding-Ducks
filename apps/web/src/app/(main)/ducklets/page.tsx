@@ -4,7 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   Calendar,
   ExternalLink,
@@ -18,6 +22,7 @@ import { motion } from "motion/react";
 import * as Y from "yjs";
 
 import type { RouterOutputs } from "@acme/api";
+import { authClient } from "~/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -63,7 +68,7 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-type DuckletListItem = RouterOutputs["ducklet"]["list"][number];
+type DuckletListItem = RouterOutputs["ducklet"]["list"]["items"][number];
 
 // Browser-safe base64 encoding for binary data (Y.js updates).
 function uint8ArrayToBase64(bytes: Uint8Array): string {
@@ -80,21 +85,35 @@ export default function DuckletsPage() {
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { data: session } = authClient.useSession();
+  const currentUserId = session?.user?.id;
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newDuckletName, setNewDuckletName] = useState("");
 
-  const { data: ducklets, isLoading } = useQuery(
-    trpc.ducklet.list.queryOptions({
-      limit: 50,
-    }),
+  const {
+    data: ducklets,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery(
+    trpc.ducklet.list.infiniteQueryOptions(
+      { limit: 12 },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        initialCursor: 0,
+      },
+    ),
   );
+
+  const allDucklets = ducklets?.pages.flatMap((p) => p.items) ?? [];
 
   const createDuckletMutation = useMutation(
     trpc.ducklet.create.mutationOptions({
       onSuccess: (ducklet) => {
         setIsCreateOpen(false);
         setNewDuckletName("");
-        void queryClient.invalidateQueries(trpc.ducklet.list.queryFilter());
+        void queryClient.invalidateQueries(trpc.ducklet.list.infiniteQueryFilter());
         if (ducklet) {
           void router.push(`/ducklets/${ducklet.id}`);
         }
@@ -145,7 +164,7 @@ h1 {
   const deleteDuckletMutation = useMutation(
     trpc.ducklet.delete.mutationOptions({
       onSuccess: () => {
-        void queryClient.invalidateQueries(trpc.ducklet.list.queryFilter());
+        void queryClient.invalidateQueries(trpc.ducklet.list.infiniteQueryFilter());
       },
     }),
   );
@@ -238,7 +257,7 @@ h1 {
             </Card>
           ))}
         </div>
-      ) : ducklets?.length === 0 ? (
+      ) : allDucklets.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -257,20 +276,35 @@ h1 {
           </Button>
         </motion.div>
       ) : (
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {ducklets?.map((ducklet) => (
-            <DuckletCard
-              key={ducklet.id}
-              ducklet={ducklet}
-              onDelete={() => handleDelete(ducklet.id)}
-            />
-          ))}
-        </motion.div>
+        <>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {allDucklets.map((ducklet) => (
+              <DuckletCard
+                key={ducklet.id}
+                ducklet={ducklet}
+                isOwner={ducklet.ownerId === currentUserId}
+                onDelete={() => handleDelete(ducklet.id)}
+              />
+            ))}
+          </motion.div>
+          {hasNextPage && (
+            <div className="mt-10 flex justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => void fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? "Loading…" : "Load more"}
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -278,9 +312,11 @@ h1 {
 
 function DuckletCard({
   ducklet,
+  isOwner,
   onDelete,
 }: {
   ducklet: DuckletListItem;
+  isOwner: boolean;
   onDelete: () => void;
 }) {
   const router = useRouter();
@@ -366,16 +402,18 @@ function DuckletCard({
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Open Ducklet
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:bg-destructive/10 focus:text-destructive font-medium"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete();
-                  }}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
+                {isOwner && (
+                  <DropdownMenuItem
+                    className="text-destructive focus:bg-destructive/10 focus:text-destructive font-medium"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete();
+                    }}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

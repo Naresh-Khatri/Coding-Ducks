@@ -38,14 +38,12 @@ interface ShareModalProps {
 
   isOwner: boolean;
   isPublic: boolean;
-  onVisibilityChange?: (isPublic: boolean) => void;
 }
 
 export function ShareModal({
   duckletId,
   isOwner,
   isPublic,
-  onVisibilityChange,
 }: ShareModalProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -92,11 +90,13 @@ export function ShareModal({
 
   const updateDuckletMutation = useMutation(trpc.ducklet.update.mutationOptions({
     onSuccess: (data) => {
-      if (data) {
-        toast.success(`Ducklet is now ${data.isPublic ? "Public" : "Private"}`);
-        onVisibilityChange?.(data.isPublic ? true : false); // Ensure boolean
-        queryClient.invalidateQueries(trpc.ducklet.byId.queryFilter({ id: duckletId }));
-      }
+      if (!data) return;
+      toast.success(`Ducklet is now ${data.isPublic ? "Public" : "Private"}`);
+      const queryKey = trpc.ducklet.byId.queryKey({ id: duckletId });
+      queryClient.setQueryData(queryKey, (prev) =>
+        prev ? { ...prev, isPublic: data.isPublic } : prev,
+      );
+      queryClient.invalidateQueries(trpc.ducklet.byId.queryFilter({ id: duckletId }));
     },
     onError: (err) => {
       toast.error(err.message);
