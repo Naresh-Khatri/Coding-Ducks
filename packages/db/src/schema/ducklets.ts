@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
-import { duckletTypeEnum, memberRoleEnum, memberStatusEnum } from "./enums";
+import { memberRoleEnum, memberStatusEnum } from "./enums";
 
 export const ducklet = pgTable(
   "ducklet",
@@ -28,9 +28,6 @@ export const ducklet = pgTable(
 
     // Visibility
     isPublic: boolean("is_public").default(true).notNull(),
-
-    // Ducklet type
-    type: duckletTypeEnum("type").default("normal").notNull(),
 
     // Yjs Collaboration Data
     yjsData: text("yjs_data"), // Base64-encoded Yjs state

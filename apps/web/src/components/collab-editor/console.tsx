@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 
 export interface LogEntry {
   method: "log" | "warn" | "error" | "info";
-  args: any[];
+  args: unknown[];
   timestamp: number;
   lineno?: number;
   colno?: number;
@@ -27,11 +27,11 @@ export function Console({ logs, onClear, onClose, className }: ConsoleProps) {
     }
   }, [logs]);
 
-  const formatArg = (arg: any) => {
-    if (typeof arg === "object") {
+  const formatArg = (arg: unknown) => {
+    if (typeof arg === "object" && arg !== null) {
       try {
         return JSON.stringify(arg, null, 2);
-      } catch (e) {
+      } catch {
         return String(arg);
       }
     }

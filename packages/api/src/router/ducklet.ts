@@ -51,7 +51,6 @@ export const duckletRouter = createTRPCRouter({
           name: ducklet.name,
           description: ducklet.description,
           isPublic: ducklet.isPublic,
-          type: ducklet.type,
           previewImage: ducklet.previewImage,
           createdAt: ducklet.createdAt,
           ownerId: ducklet.ownerId,
@@ -237,8 +236,6 @@ export const duckletRouter = createTRPCRouter({
         name: z.string().min(1).max(100),
         description: z.string().optional(),
         isPublic: z.boolean().default(true),
-        type: z.enum(["normal", "web"]).default("normal"),
-
         yjsData: z.string().optional(),
       })
     )

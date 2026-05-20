@@ -205,7 +205,10 @@ export function ShareModal({
                     className="h-8"
                   />
                 </div>
-                <Select value={inviteRole} onValueChange={(val: any) => setInviteRole(val)}>
+                <Select
+                  value={inviteRole}
+                  onValueChange={(val) => setInviteRole(val as "editor" | "viewer")}
+                >
                   <SelectTrigger className="w-[100px] h-8">
                     <SelectValue />
                   </SelectTrigger>

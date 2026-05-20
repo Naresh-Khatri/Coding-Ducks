@@ -52,9 +52,9 @@ export function SettingsModal({ head, onHeadChange, body, onBodyChange }: Settin
       </DialogTrigger>
       <DialogContent className="min-w-3xl max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Pen Settings</DialogTitle>
+          <DialogTitle>Ducklet Settings</DialogTitle>
           <DialogDescription>
-            Configure global settings for this pen.
+            Configure global settings for this ducklet.
           </DialogDescription>
         </DialogHeader>
 

@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { cpp } from "@codemirror/lang-cpp";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
 import { syntaxTree } from "@codemirror/language";
 import { linter, lintGutter, Diagnostic } from "@codemirror/lint";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -19,7 +17,7 @@ interface CollabEditorProps {
   roomId?: string;
   userId?: string;
   username?: string;
-  language?: "js" | "py" | "cpp" | "html" | "css";
+  language?: "html" | "css" | "js";
   field: string; // The Y.js text field name to bind to
   onCursorChange?: (position: { line: number; column: number }) => void;
   provider: HocuspocusProvider | null;
@@ -28,11 +26,9 @@ interface CollabEditorProps {
 }
 
 const languageExtensions = {
-  js: () => javascript(),
-  py: () => python(),
-  cpp: () => cpp(),
   html: () => html(),
   css: () => css(),
+  js: () => javascript(),
 };
 
 // Syntax linter that extracts errors from the Lezer parse tree
@@ -61,7 +57,7 @@ const syntaxLinter = linter((view) => {
 });
 
 export function CollabEditor({
-  language = "py",
+  language = "html",
   field,
   onCursorChange,
   provider,

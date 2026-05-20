@@ -253,53 +253,37 @@ Acceptance: a websocket connection from an unlisted origin is rejected.
 ### P3 — Scope cleanup (now that "frontend playground only" is the decision)
 
 #### DUCK-022 — Drop multi-language scaffolding from the editor
-**P3 · S**
-`apps/web/src/components/collab-editor/index.tsx:22` declares `language: "py" | "cpp" | "java" | "html" | "css" | "js"`. Settings modal exposes a switcher that does nothing useful for the locked HTML/CSS/JS layout.
+**P3 · S · DONE**
 
-- Narrow the type to `"html" | "css" | "js"`.
-- Remove unused language imports.
-- Remove the language switcher from `settings-modal.tsx`.
-
-Acceptance: `grep -r "language: \"py\"" apps/` returns no matches.
+Narrowed `CollabEditor.language` to `"html" | "css" | "js"`, dropped the python/cpp imports and the `py`/`cpp` keys from `languageExtensions`, and changed the default from `"py"` to `"html"`. The settings modal never had a language switcher (it only edits head/body scripts), so nothing to remove there.
 
 #### DUCK-023 — Collapse the `ducklet_type` enum or drop the column
-**P3 · S**
-`packages/db/src/schema/enums.ts` has `ducklet_type: ["normal", "web"]`. With scope frozen to frontend, the column is dead weight.
+**P3 · S · DONE**
 
-- Either drop the column (migration) or collapse the enum to a single value and remove the input from `create`.
-
-Acceptance: `ducklet.type` is no longer in the create/update tRPC inputs.
+Dropped the `type` column from the `ducklet` schema, removed `duckletTypeEnum`, stripped `type` from the `list` select and the `create` input, and removed the "Web" badge from the list page. Migration helper at `packages/db/scripts/drop-ducklet-type.sql` drops the enum after `drizzle-kit push` removes the column.
 
 #### DUCK-024 — Remove the dead `"owner"` value from `memberRoleEnum`
-**P3 · XS**
-The owner is tracked only via `ducklet.ownerId`. The hocuspocus check `member.role === "owner"` (`index.ts:72`) can never match.
+**P3 · XS · DONE**
 
-- Drop `"owner"` from the enum, replace the dead check with `ducklet.ownerId === userId`.
-
-Acceptance: enum has `["editor", "viewer"]` only; auth check is updated.
+Narrowed `memberRoleEnum` to `["editor", "viewer"]`. The hocuspocus auth check was already gated on `ownerId` after the P0 sprint, so no code change was needed there. `CollabRole` (the signed-token role) keeps `"owner"` — it's a separate concept used to tag the connecting user's effective position. Migration helper at `packages/db/scripts/prune-member-role-owner.sql` recreates the pg enum without the dead value.
 
 #### DUCK-025 — Rename "Pen Settings" to "Ducklet Settings"
-**P3 · XS**
-`apps/web/src/components/collab-editor/settings-modal.tsx:57` — CodePen artifact.
+**P3 · XS · DONE**
 
-Acceptance: title reads "Ducklet Settings."
+Renamed the dialog title and description in `settings-modal.tsx`.
 
 #### DUCK-026 — Remove the `console.log("hi")` and other dev noise
-**P3 · XS**
-- `apps/hocuspocus-server/src/index.ts:16` — `console.log("hi")`.
-- `apps/web/src/components/collab-editor/layout-manager.tsx:52,53` — debug `console.log`.
+**P3 · XS · DONE**
 
-Acceptance: no stray logs in the diff.
+Both call sites were already cleaned up during P1 (layout-manager observer rewrite) and P2 (hocuspocus rewrite). Remaining `console.log` calls are legitimate startup/shutdown traces and the in-iframe console interception in `preview.tsx`.
 
 #### DUCK-027 — Fix `any` usages
-**P3 · S**
-- `apps/web/src/hooks/use-socket.ts:125` (`state: any`).
-- `apps/web/src/components/collab-editor/share-modal.tsx:208` (`val: any`).
-- `apps/web/src/components/collab-editor/console.tsx:8,30`.
-- `apps/hocuspocus-server/src/index.ts:173` (`messages` as `any[]`).
-- `apps/hocuspocus-server/src/services/preview.ts:74-76`.
+**P3 · S · DONE**
 
-Acceptance: `grep -n "any" …` only finds legitimate library-imposed cases (if any).
+- `console.tsx`: `args: any[]` → `unknown[]`, `formatArg(arg: any)` → `unknown` (with null guard before `typeof === "object"`).
+- `share-modal.tsx`: invite-role `Select` now narrows via `val as "editor" | "viewer"` on the callback param.
+- `use-socket.ts`, `hocuspocus index.ts`, `preview.ts`: already cleaned up during prior sprints (use-socket got the `(user as { name?: string })` narrowing; the hocuspocus files were rewritten with typed payloads).
+- Sweep `grep -nE ":\s*any\b|as any\b|<any>" apps/web/src/components/collab-editor/ apps/web/src/hooks/use-socket.ts apps/hocuspocus-server/src/` returns no hits.
 
 ---
 

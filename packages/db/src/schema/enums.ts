@@ -24,8 +24,7 @@ export const submissionStatusEnum = pgEnum("submission_status", [
   "compile_error",
   "judge_error",
 ]);
-export const duckletTypeEnum = pgEnum("ducklet_type", ["normal", "web"]);
-export const memberRoleEnum = pgEnum("member_role", ["owner", "editor", "viewer"]);
+export const memberRoleEnum = pgEnum("member_role", ["editor", "viewer"]);
 export const challengeDiffEnum = pgEnum("challenge_diff", [
   "newbie",
   "junior",

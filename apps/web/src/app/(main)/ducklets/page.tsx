@@ -155,8 +155,6 @@ h1 {
     createDuckletMutation.mutate({
       name: newDuckletName,
       isPublic: true,
-      type: "normal",
-
       yjsData,
     });
   };
@@ -351,11 +349,6 @@ function DuckletCard({
                 )}
                 {ducklet.isPublic ? "Public" : "Private"}
               </Badge>
-              {ducklet.type === "web" && (
-                <Badge className="bg-blue-500/80 text-white backdrop-blur-md hover:bg-blue-600/80">
-                  Web
-                </Badge>
-              )}
             </div>
           </div>
         </Link>
