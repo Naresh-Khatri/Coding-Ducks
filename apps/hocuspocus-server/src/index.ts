@@ -43,6 +43,45 @@ const allowedOrigins = (env.ALLOWED_WS_ORIGINS ?? "")
   .map((o) => o.trim())
   .filter(Boolean);
 
+// Per-ducklet cache of (ownerId + active member IDs) used to validate
+// chat-message authorship at persist time. onStoreDocument fires on every
+// save tick — re-querying every time fans out one extra round trip per
+// keystroke burst.
+const MEMBERSHIP_TTL_MS = 30 * 1000;
+const membershipCache = new Map<
+  number,
+  { allowed: Set<string>; expiresAt: number }
+>();
+
+async function getAllowedAuthorIds(
+  duckletId: number,
+  ownerId: string,
+): Promise<Set<string>> {
+  const cached = membershipCache.get(duckletId);
+  const now = Date.now();
+  if (cached && cached.expiresAt > now) {
+    return cached.allowed;
+  }
+
+  const members = await db
+    .select({ userId: duckletMember.userId })
+    .from(duckletMember)
+    .where(
+      and(
+        eq(duckletMember.duckletId, duckletId),
+        eq(duckletMember.status, "active"),
+      ),
+    );
+
+  const allowed = new Set<string>([ownerId, ...members.map((m) => m.userId)]);
+  membershipCache.set(duckletId, {
+    allowed,
+    expiresAt: now + MEMBERSHIP_TTL_MS,
+  });
+  return allowed;
+}
+
+
 function originAllowed(origin: string | undefined): boolean {
   if (allowedOrigins.length === 0) return true;
   if (!origin) return false;
@@ -230,20 +269,10 @@ const server = Server.configure({
           new Set(messages.map((m) => m.userId).filter(Boolean)),
         );
 
-        const allowedUserIds = new Set<string>();
-        if (candidateUserIds.length > 0) {
-          allowedUserIds.add(duckletData.ownerId);
-          const members = await db
-            .select({ userId: duckletMember.userId })
-            .from(duckletMember)
-            .where(
-              and(
-                eq(duckletMember.duckletId, duckletId),
-                eq(duckletMember.status, "active"),
-              ),
-            );
-          for (const m of members) allowedUserIds.add(m.userId);
-        }
+        const allowedUserIds =
+          candidateUserIds.length > 0
+            ? await getAllowedAuthorIds(duckletId, duckletData.ownerId)
+            : new Set<string>();
 
         const values = messages
           .filter(
@@ -258,6 +287,10 @@ const server = Server.configure({
             id: msg.id,
             duckletId,
             userId: msg.userId,
+            authorUsername:
+              typeof msg.username === "string"
+                ? msg.username.slice(0, 100)
+                : null,
             content: msg.text.slice(0, 4000),
             createdAt: new Date(msg.timestamp),
           }));

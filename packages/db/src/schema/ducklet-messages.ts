@@ -18,9 +18,12 @@ export const duckletMessage = pgTable(
     duckletId: integer("ducklet_id")
       .notNull()
       .references(() => ducklet.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    // userId becomes null when the author is deleted — the row itself
+    // stays so chat history isn't punched full of holes. authorUsername
+    // is the snapshot of the username at send-time so we can still render
+    // who said what.
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    authorUsername: varchar("author_username", { length: 100 }),
     content: text("content").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
