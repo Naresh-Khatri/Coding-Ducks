@@ -57,6 +57,7 @@ export function Console({ logs, onClear, onClose, className }: ConsoleProps) {
             onClick={onClear}
             className="h-5 w-5 hover:bg-white/10 text-gray-400 hover:text-white"
             title="Clear Console"
+            aria-label="Clear console"
           >
             <Ban className="w-3 h-3" />
           </Button>
@@ -67,6 +68,7 @@ export function Console({ logs, onClear, onClose, className }: ConsoleProps) {
               onClick={onClose}
               className="h-5 w-5 hover:bg-white/10 text-gray-400 hover:text-white"
               title="Close Console"
+              aria-label="Close console"
             >
               <ChevronDown className="w-3 h-3" />
             </Button>

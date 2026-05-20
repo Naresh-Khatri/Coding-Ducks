@@ -46,7 +46,7 @@ export function SettingsModal({ head, onHeadChange, body, onBodyChange }: Settin
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" title="Settings">
+        <Button variant="ghost" size="icon" title="Settings" aria-label="Open ducklet settings">
           <Settings className="h-4 w-4" />
         </Button>
       </DialogTrigger>

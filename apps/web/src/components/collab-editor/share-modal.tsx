@@ -78,6 +78,16 @@ export function ShareModal({
     },
   }));
 
+  const updateMemberRoleMutation = useMutation(trpc.ducklet.updateMemberRole.mutationOptions({
+    onSuccess: () => {
+      toast.success("Role updated");
+      queryClient.invalidateQueries(trpc.ducklet.byId.queryFilter({ id: duckletId }));
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  }));
+
   const respondRequestMutation = useMutation(trpc.ducklet.respondToRequest.mutationOptions({
     onSuccess: (data, variables) => {
       toast.success(variables.accept ? "Request approved" : "Request denied");
@@ -152,7 +162,13 @@ export function ShareModal({
               className="h-8 text-xs"
             />
           </div>
-          <Button type="submit" size="sm" className="px-3" onClick={copyLink}>
+          <Button
+            type="submit"
+            size="sm"
+            className="px-3"
+            onClick={copyLink}
+            aria-label="Copy ducklet link"
+          >
             <span className="sr-only">Copy</span>
             <Copy className="h-4 w-4" />
           </Button>
@@ -252,6 +268,7 @@ export function ShareModal({
                             <Button
                               size="icon"
                               variant="ghost"
+                              aria-label={`Approve ${member.username}`}
                               className="h-6 w-6 text-green-500 hover:text-green-600 hover:bg-green-500/10"
                               onClick={() => respondRequestMutation.mutate({ duckletId, userId: member.userId, accept: true, role: "editor" })}
                             >
@@ -260,6 +277,7 @@ export function ShareModal({
                             <Button
                               size="icon"
                               variant="ghost"
+                              aria-label={`Deny ${member.username}`}
                               className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-500/10"
                               onClick={() => respondRequestMutation.mutate({ duckletId, userId: member.userId, accept: false })}
                             >
@@ -288,30 +306,55 @@ export function ShareModal({
                   </div>
 
                   {activeMembers.map((member) => (
-                    <div key={member.userId} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-2">
+                    <div key={member.userId} className="flex items-center justify-between gap-2 group">
+                      <div className="flex min-w-0 items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={member.photoURL ?? undefined} />
                           <AvatarFallback>{member.username?.[0]?.toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="text-sm font-medium leading-none">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium leading-none">
                             {member.username}
                             {member.status === "invited" && <Badge variant="outline" className="ml-2 text-[10px] h-4 py-0">Invited</Badge>}
                           </p>
-                          <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                          {!isOwner && (
+                            <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                          )}
                         </div>
                       </div>
-                      {isOwner && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                          onClick={() => removeMemberMutation.mutate({ duckletId, userId: member.userId })}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {isOwner ? (
+                          <Select
+                            value={member.role}
+                            onValueChange={(val) =>
+                              updateMemberRoleMutation.mutate({
+                                duckletId,
+                                userId: member.userId,
+                                role: val as "editor" | "viewer",
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-7 w-[90px] text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="viewer">Viewer</SelectItem>
+                              <SelectItem value="editor">Editor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : null}
+                        {isOwner && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Remove ${member.username}`}
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeMemberMutation.mutate({ duckletId, userId: member.userId })}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

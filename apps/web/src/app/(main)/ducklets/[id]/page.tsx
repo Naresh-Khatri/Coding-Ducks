@@ -1,11 +1,13 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
+  Copy,
   Lock,
   MessageSquare,
   Send,
@@ -17,7 +19,6 @@ import {
 import { toast } from "sonner";
 
 import { authClient } from "~/auth/client";
-import { LayoutManager } from "~/components/collab-editor/layout-manager";
 import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
 import { SettingsModal } from "~/components/collab-editor/settings-modal";
 import { ShareModal } from "~/components/collab-editor/share-modal";
@@ -34,6 +35,23 @@ import { useIsMobile } from "~/hooks/use-is-mobile";
 import { useSocketDucklet } from "~/hooks/use-socket";
 import { useTRPC } from "~/trpc/react";
 import type { ChatMessage, UserPresence } from "~/hooks/use-socket";
+
+// CodeMirror + y-codemirror.next add ~200kB to the bundle. Defer them
+// until the page is interactive so they don't block first paint.
+const LayoutManager = dynamic(
+  () =>
+    import("~/components/collab-editor/layout-manager").then(
+      (m) => m.LayoutManager,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
+        Loading editor…
+      </div>
+    ),
+  },
+);
 
 export default function DuckletPage({
   params,
@@ -136,6 +154,19 @@ export default function DuckletPage({
     setIsChatOpen(!isMobile);
   }, [isMobile]);
   const [renameOpen, setRenameOpen] = useState(false);
+
+  const queryClient = useQueryClient();
+  const forkMutation = useMutation(
+    trpc.ducklet.fork.mutationOptions({
+      onSuccess: (forked) => {
+        if (!forked) return;
+        toast.success("Forked to your ducklets");
+        void queryClient.invalidateQueries(trpc.ducklet.list.infiniteQueryFilter());
+        router.push(`/ducklets/${forked.id}`);
+      },
+      onError: (err) => toast.error(err.message),
+    }),
+  );
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
@@ -249,6 +280,19 @@ export default function DuckletPage({
         </div>
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <ConnectionBadge isConnected={isConnected} hasToken={!!collabAuth?.token} />
+
+          {userId && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => forkMutation.mutate({ id: duckletId })}
+              disabled={forkMutation.isPending}
+              title="Fork this ducklet"
+              aria-label="Fork ducklet"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          )}
 
           <SettingsModal
             head={head}

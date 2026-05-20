@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-query";
 import {
   Calendar,
+  Copy,
   ExternalLink,
   Globe,
   Lock,
@@ -21,10 +22,21 @@ import {
   Trash2,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import * as Y from "yjs";
 
 import type { RouterOutputs } from "@acme/api";
 import { authClient } from "~/auth/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -187,11 +199,17 @@ h1 {
     }),
   );
 
-  const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this Ducklet?")) {
-      deleteDuckletMutation.mutate({ id });
-    }
-  };
+  const forkDuckletMutation = useMutation(
+    trpc.ducklet.fork.mutationOptions({
+      onSuccess: (forked) => {
+        if (!forked) return;
+        toast.success("Forked to your ducklets");
+        void queryClient.invalidateQueries(trpc.ducklet.list.infiniteQueryFilter());
+        void router.push(`/ducklets/${forked.id}`);
+      },
+      onError: (err) => toast.error(err.message),
+    }),
+  );
 
   return (
     <div className="container mx-auto py-12">
@@ -337,7 +355,17 @@ h1 {
                 key={ducklet.id}
                 ducklet={ducklet}
                 isOwner={ducklet.ownerId === currentUserId}
-                onDelete={() => handleDelete(ducklet.id)}
+                isSignedIn={!!currentUserId}
+                onDelete={() => deleteDuckletMutation.mutate({ id: ducklet.id })}
+                isDeleting={
+                  deleteDuckletMutation.isPending &&
+                  deleteDuckletMutation.variables?.id === ducklet.id
+                }
+                onFork={() => forkDuckletMutation.mutate({ id: ducklet.id })}
+                isForking={
+                  forkDuckletMutation.isPending &&
+                  forkDuckletMutation.variables?.id === ducklet.id
+                }
               />
             ))}
           </motion.div>
@@ -362,14 +390,23 @@ h1 {
 function DuckletCard({
   ducklet,
   isOwner,
+  isSignedIn,
   onDelete,
+  isDeleting,
+  onFork,
+  isForking,
 }: {
   ducklet: DuckletListItem;
   isOwner: boolean;
+  isSignedIn: boolean;
   onDelete: () => void;
+  isDeleting: boolean;
+  onFork: () => void;
+  isForking: boolean;
 }) {
   const router = useRouter();
   const [renameOpen, setRenameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <motion.div variants={item}>
@@ -436,7 +473,12 @@ function DuckletCard({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label={`More actions for ${ducklet.name}`}
+                >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -447,6 +489,18 @@ function DuckletCard({
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Open Ducklet
                 </DropdownMenuItem>
+                {isSignedIn && (
+                  <DropdownMenuItem
+                    disabled={isForking}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onFork();
+                    }}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    {isForking ? "Forking…" : "Fork"}
+                  </DropdownMenuItem>
+                )}
                 {isOwner && (
                   <>
                     <DropdownMenuItem
@@ -462,7 +516,7 @@ function DuckletCard({
                       className="text-destructive focus:bg-destructive/10 focus:text-destructive font-medium"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDelete();
+                        setDeleteOpen(true);
                       }}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -474,12 +528,42 @@ function DuckletCard({
             </DropdownMenu>
 
             {isOwner && (
-              <RenameDuckletDialog
-                open={renameOpen}
-                onOpenChange={setRenameOpen}
-                duckletId={ducklet.id}
-                currentName={ducklet.name}
-              />
+              <>
+                <RenameDuckletDialog
+                  open={renameOpen}
+                  onOpenChange={setRenameOpen}
+                  duckletId={ducklet.id}
+                  currentName={ducklet.name}
+                />
+                <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this ducklet?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        <strong>{ducklet.name}</strong> will be permanently
+                        deleted along with its chat history and member access.
+                        This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isDeleting}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onDelete();
+                          setDeleteOpen(false);
+                        }}
+                      >
+                        {isDeleting ? "Deleting…" : "Delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
             )}
           </div>
         </CardHeader>

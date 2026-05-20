@@ -10,6 +10,7 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import CodeMirror, { Extension } from "@uiw/react-codemirror";
+import { useTheme } from "next-themes";
 import { yCollab } from "y-codemirror.next";
 import * as Y from "yjs";
 
@@ -66,6 +67,8 @@ export function CollabEditor({
 }: CollabEditorProps) {
   const [extensions, setExtensions] = useState<Extension[]>([]);
   const [initialValue, setInitialValue] = useState("");
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
 
   useEffect(() => {
     if (!ydoc || !provider) return;
@@ -78,7 +81,6 @@ export function CollabEditor({
     const undoManager = new Y.UndoManager(ytext);
     const extensions = [
       languageExtensions[language](),
-      oneDark,
       EditorView.lineWrapping,
       yCollab(ytext, provider.awareness, { undoManager }),
       syntaxLinter, // Extracts syntax errors from parse tree
@@ -95,7 +97,13 @@ export function CollabEditor({
 
   if (!ydoc || !provider || extensions.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-[#282c34] text-gray-400">
+      <div
+        className={`flex h-full w-full items-center justify-center ${
+          isDark
+            ? "bg-[#282c34] text-gray-400"
+            : "bg-white text-gray-500"
+        }`}
+      >
         Loading editor...
       </div>
     );
@@ -107,7 +115,7 @@ export function CollabEditor({
         key={field} // Force remount on field change
         className="h-full"
         height="100%"
-        theme={oneDark}
+        theme={isDark ? oneDark : "light"}
         extensions={extensions}
         value={initialValue} // Set initial value, then yCollab takes over
         readOnly={readOnly}
