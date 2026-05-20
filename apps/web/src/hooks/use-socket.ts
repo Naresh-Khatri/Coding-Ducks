@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import * as Y from "yjs";
 
@@ -12,6 +12,8 @@ interface UseSocketDuckletOptions {
   userId?: string;
   username: string;
   photoURL?: string;
+  /** Server-signed collab token. Connection is deferred until this is set. */
+  token?: string;
 }
 
 export interface UserPresence {
@@ -53,39 +55,30 @@ export function useSocketDucklet({
   userId,
   username,
   photoURL,
+  token,
 }: UseSocketDuckletOptions) {
   const [users, setUsers] = useState<UserPresence[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
   // Y.Doc should be recreated if the duckletId changes to ensure clean state
-  const ydoc = useMemo(() => {
-    console.log(
-      `[useSocketDucklet] Creating new Y.Doc for ducklet: ${duckletId}`,
-    );
-    return new Y.Doc();
-  }, [duckletId]);
+  const ydoc = useMemo(() => new Y.Doc(), [duckletId]);
 
   const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
   const userColor = useMemo(() => getRandomColor(), []);
 
   useEffect(() => {
-    console.log(
-      `[useSocketDucklet] Connecting to ${SOCKET_URL} for ducklet ${duckletId}...`,
-    );
-    if (!userId) return;
+    if (!userId || !token) return;
 
-    // Connect to Hocuspocus Server
-    const wsUrl = `${SOCKET_URL.replace(/^http/, "ws")}?userId=${userId}`;
+    const wsUrl = SOCKET_URL.replace(/^http/, "ws");
 
     const newProvider = new HocuspocusProvider({
       url: wsUrl,
       name: `ducklet-${duckletId}`,
       document: ydoc,
+      token,
       onConnect: () => {
-        console.log(`[useSocketDucklet] Connected to ${duckletId}`);
         setIsConnected(true);
-        // Broadcast presence immediately on connection
         newProvider.setAwarenessField("user", {
           id: userId,
           name: username,
@@ -93,23 +86,13 @@ export function useSocketDucklet({
           color: userColor,
         });
       },
-      onDisconnect: () => {
-        console.log(`[useSocketDucklet] Disconnected from ${duckletId}`);
-        setIsConnected(false);
-      },
-      onClose: () => {
-        console.log(`[useSocketDucklet] Connection closed for ${duckletId}`);
-        setIsConnected(false);
-      },
-      onDestroy: () => {
-        console.log(`[useSocketDucklet] Provider destroyed for ${duckletId}`);
-        setIsConnected(false);
-      },
+      onDisconnect: () => setIsConnected(false),
+      onClose: () => setIsConnected(false),
+      onDestroy: () => setIsConnected(false),
     });
 
     setProvider(newProvider);
 
-    // Set local awareness immediately (updates local state, will sync when connected)
     newProvider.setAwarenessField("user", {
       id: userId,
       name: username,
@@ -117,53 +100,44 @@ export function useSocketDucklet({
       color: userColor,
     });
 
-    // Sync users from awareness
     const handleAwarenessUpdate = () => {
       const states = newProvider.awareness!.getStates();
       const activeUsers: UserPresence[] = [];
 
-      states.forEach((state: any, clientId: number) => {
-        if (state.user) {
+      states.forEach((state) => {
+        const user = (state as { user?: UserPresence }).user;
+        if (user) {
           activeUsers.push({
-            id: state.user.id,
-            username: state.user.name,
-            photoURL: state.user.photoURL,
-            cursor: state.user.cursor,
-            color: state.user.color,
+            id: user.id,
+            username: user.username ?? (user as { name?: string }).name ?? "",
+            photoURL: user.photoURL,
+            cursor: user.cursor,
+            color: user.color,
           });
         }
       });
-      console.log(
-        `[useSocketDucklet] Awareness update. Active users: ${activeUsers.length}`,
-      );
       setUsers(activeUsers);
     };
 
     newProvider.awareness!.on("change", handleAwarenessUpdate);
 
-    // Sync messages from Y.Array
     const messagesArray = ydoc.getArray<ChatMessage>("messages");
 
     const updateMessages = () => {
-      const msgs = messagesArray.toArray();
-      console.log(`[useSocketDucklet] Messages updated. Count: ${msgs.length}`);
-      setMessages(msgs);
+      setMessages(messagesArray.toArray());
     };
 
     messagesArray.observe(updateMessages);
-    updateMessages(); // Initial sync
+    updateMessages();
 
     return () => {
-      console.log(`[useSocketDucklet] Cleaning up provider for ${duckletId}`);
       newProvider.destroy();
-      // We don't destroy ydoc here because it's managed by useMemo
     };
-  }, [duckletId, userId, username, photoURL, userColor, ydoc]);
+  }, [duckletId, userId, username, photoURL, userColor, ydoc, token]);
 
-  // Send chat message
   const sendMessage = useCallback(
     (text: string) => {
-      if (!ydoc) return;
+      if (!ydoc || !userId) return;
 
       const message: ChatMessage = {
         id: `${Date.now()}-${userId}`,
@@ -183,12 +157,9 @@ export function useSocketDucklet({
     [userId, username, ydoc],
   );
 
-  // Update cursor position
   const updateCursor = useCallback(
     (position: { line: number; column: number }) => {
       if (!provider) return;
-
-      // HocuspocusProvider convenience method
       provider.setAwarenessField("user", {
         id: userId,
         name: username,

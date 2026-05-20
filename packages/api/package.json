@@ -18,12 +18,12 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@t3-oss/env-core": "^0.13.8",
     "@acme/auth": "workspace:*",
     "@acme/db": "workspace:*",
     "@acme/jobs": "workspace:*",
     "@acme/storage": "workspace:*",
     "@acme/validators": "workspace:*",
+    "@t3-oss/env-core": "^0.13.8",
     "@trpc/server": "catalog:",
     "drizzle-orm": "^0.45.0",
     "superjson": "2.2.3",

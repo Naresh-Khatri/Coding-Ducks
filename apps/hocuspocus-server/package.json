@@ -11,6 +11,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@acme/auth": "workspace:*",
     "@acme/db": "workspace:*",
     "@acme/storage": "workspace:^",
     "@hocuspocus/server": "^2.13.5",

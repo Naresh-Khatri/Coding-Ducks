@@ -5,11 +5,71 @@ import chromium from "@sparticuz/chromium";
 import nodeHtmlToImage from "node-html-to-image";
 import puppeteer from "puppeteer-core";
 
+// Hostname allowlist for assets that may be loaded into the preview iframe.
+// User-supplied <script> / <link> tags pointing anywhere else are stripped.
+const ALLOWED_ASSET_HOSTS = new Set([
+  "cdn.jsdelivr.net",
+  "cdnjs.cloudflare.com",
+  "unpkg.com",
+  "cdn.tailwindcss.com",
+  "fonts.googleapis.com",
+  "fonts.gstatic.com",
+]);
+
+function isAllowedAssetUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:") return false;
+    return ALLOWED_ASSET_HOSTS.has(url.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Extracts only `<script src="...">` and `<link rel="stylesheet" href="...">`
+ * tags whose URLs resolve to allowlisted hosts. Inline scripts, event handlers,
+ * `javascript:` URLs, and anything else are dropped.
+ */
+function sanitizeHeadScripts(input: string): string {
+  if (!input) return "";
+
+  const parts: string[] = [];
+
+  const scriptRe = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
+  for (const match of input.matchAll(scriptRe)) {
+    const attrs = match[1] ?? "";
+    const body = (match[2] ?? "").trim();
+    if (body.length > 0) continue; // drop inline scripts
+    const srcMatch = attrs.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+    if (!srcMatch) continue;
+    const src = srcMatch[1]!;
+    if (!isAllowedAssetUrl(src)) continue;
+    parts.push(`<script src="${encodeURI(src)}"></script>`);
+  }
+
+  const linkRe = /<link\b([^>]*)\/?>/gi;
+  for (const match of input.matchAll(linkRe)) {
+    const attrs = match[1] ?? "";
+    const relMatch = attrs.match(/\brel\s*=\s*["']([^"']+)["']/i);
+    const rel = (relMatch?.[1] ?? "").toLowerCase();
+    if (rel !== "stylesheet" && rel !== "preconnect") continue;
+
+    const hrefMatch = attrs.match(/\bhref\s*=\s*["']([^"']+)["']/i);
+    if (!hrefMatch) continue;
+    const href = hrefMatch[1]!;
+    if (!isAllowedAssetUrl(href)) continue;
+    parts.push(`<link rel="${rel}" href="${encodeURI(href)}">`);
+  }
+
+  return parts.join("\n");
+}
+
 export async function generateAndStorePreview({
   duckletId,
   html,
   css,
-  js,
+  js: _js,
   headScripts,
 }: {
   duckletId: number;
@@ -19,14 +79,16 @@ export async function generateAndStorePreview({
   headScripts: string;
 }) {
   try {
-    if (!html && !css && !js) {
+    if (!html && !css) {
       return;
     }
+
+    const safeHead = sanitizeHeadScripts(headScripts);
 
     const content = `
       <html>
         <head>
-          ${headScripts}
+          ${safeHead}
           <style>
             body { margin: 0; padding: 0; overflow: hidden; background: #fff; }
             ${css}
@@ -38,11 +100,8 @@ export async function generateAndStorePreview({
       </html>
     `;
 
-    console.log(`Generating preview image for ducklet ${duckletId}...`);
-
     let executablePath: string | undefined;
 
-    // specific check for local development to avoid hanging on chromium.executablePath()
     if (process.env.NODE_ENV !== "production") {
       if (fs.existsSync("/usr/bin/chromium")) {
         executablePath = "/usr/bin/chromium";
@@ -52,17 +111,26 @@ export async function generateAndStorePreview({
     }
 
     if (!executablePath) {
-      console.log("Fetching chromium executable path...");
       executablePath = await chromium.executablePath();
     }
 
-    console.log(`Using chromium executable at: ${executablePath}`);
-
-    // Use correct args based on environment
-    const puppeteerLaunchArgs =
+    // JS from the editor is intentionally NOT executed during preview render —
+    // we screenshot a static snapshot (HTML + sanitized head + CSS). This
+    // sidesteps the need to run untrusted JS in the screenshotter.
+    const baseArgs =
       process.env.NODE_ENV === "production"
         ? chromium.args
-        : ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"];
+        : ["--disable-gpu"];
+    const puppeteerLaunchArgs = [
+      ...baseArgs,
+      "--disable-features=IsolateOrigins,site-per-process",
+      "--disable-web-security=false",
+    ];
+
+    const headlessMode: "shell" | true =
+      (chromium as unknown as { headless?: string }).headless === "shell"
+        ? "shell"
+        : true;
 
     const image = (await nodeHtmlToImage({
       html: content,
@@ -71,13 +139,12 @@ export async function generateAndStorePreview({
         args: puppeteerLaunchArgs,
         defaultViewport: { width: 1200, height: 630 },
         executablePath,
-        headless: (chromium as any).headless === "shell" ? "shell" : true,
-        ignoreHTTPSErrors: true,
-      } as any,
+        headless: headlessMode,
+      },
       type: "png",
     })) as Buffer;
 
-    const key = `preview/${duckletId}/${Date.now()}.png`;
+    const key = `preview/${duckletId}.png`;
 
     await uploadFile(key, image, "image/png");
 
@@ -85,10 +152,9 @@ export async function generateAndStorePreview({
       .update(ducklet)
       .set({
         previewImage: key,
+        updatedAt: new Date(),
       })
       .where(eq(ducklet.id, duckletId));
-
-    console.log(`Updated preview image for ducklet ${duckletId}`);
   } catch (err) {
     console.error("Failed to generate/store preview image:", err);
   }

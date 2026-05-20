@@ -47,6 +47,15 @@ export default function DuckletPage({
     trpc.ducklet.byId.queryOptions({ id: duckletId }, { enabled: !!duckletId }),
   );
 
+  // Fetch a short-lived collab token. The websocket will not connect until
+  // the server has authorized this user for this ducklet.
+  const { data: collabAuth } = useQuery(
+    trpc.ducklet.getCollabToken.queryOptions(
+      { duckletId },
+      { enabled: !!duckletId && !!userId, staleTime: 30 * 60 * 1000 },
+    ),
+  );
+
   // Connect to Socket Server
   const { users, messages, sendMessage, updateCursor, provider, ydoc } =
     useSocketDucklet({
@@ -54,6 +63,7 @@ export default function DuckletPage({
       userId,
       username,
       photoURL,
+      token: collabAuth?.token,
     });
 
   // Settings state - synced via Y.js Map

@@ -3,7 +3,11 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { ducklet, duckletMember, userProfile } from "@acme/db/schema";
 import { getPublicUrl } from "@acme/storage";
+import { signCollabToken } from "@acme/auth/collab-token";
+import type { CollabRole } from "@acme/auth/collab-token";
 import { eq, desc, and, or } from "drizzle-orm";
+
+const COLLAB_TOKEN_TTL_SECONDS = 60 * 60;
 
 export const duckletRouter = createTRPCRouter({
   /**
@@ -86,7 +90,7 @@ export const duckletRouter = createTRPCRouter({
 
       // Check access
       if (!result.isPublic && result.ownerId !== ctx.session?.user?.id) {
-        // Check if user is a member
+        // Check if user is an ACTIVE member (invited/requested do not grant access)
         if (ctx.session?.user) {
           const [membership] = await ctx.db
             .select()
@@ -94,7 +98,8 @@ export const duckletRouter = createTRPCRouter({
             .where(
               and(
                 eq(duckletMember.duckletId, input.id),
-                eq(duckletMember.userId, ctx.session.user.id)
+                eq(duckletMember.userId, ctx.session.user.id),
+                eq(duckletMember.status, "active")
               )
             )
             .limit(1);
@@ -147,6 +152,74 @@ export const duckletRouter = createTRPCRouter({
         members,
         currentUserStatus,
       };
+    }),
+
+  /**
+   * Issue a short-lived signed token for connecting to the Hocuspocus
+   * collaboration websocket. Verifies ownership / active membership /
+   * public-read access before signing.
+   */
+  getCollabToken: protectedProcedure
+    .input(z.object({ duckletId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const [existing] = await ctx.db
+        .select()
+        .from(ducklet)
+        .where(eq(ducklet.id, input.duckletId))
+        .limit(1);
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Ducklet not found" });
+      }
+
+      const userId = ctx.session.user.id;
+      let role: CollabRole;
+
+      if (existing.ownerId === userId) {
+        role = "owner";
+      } else {
+        const [member] = await ctx.db
+          .select()
+          .from(duckletMember)
+          .where(
+            and(
+              eq(duckletMember.duckletId, input.duckletId),
+              eq(duckletMember.userId, userId),
+              eq(duckletMember.status, "active")
+            )
+          )
+          .limit(1);
+
+        if (member?.role === "editor") {
+          role = "editor";
+        } else if (member?.role === "viewer") {
+          role = "viewer";
+        } else if (existing.isPublic) {
+          role = "viewer";
+        } else {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        }
+      }
+
+      const sessionUser = ctx.session.user as {
+        id: string;
+        name?: string;
+        username?: string;
+      };
+      const username = sessionUser.username ?? sessionUser.name ?? "User";
+
+      const token = signCollabToken(
+        {
+          userId,
+          username,
+          duckletId: input.duckletId,
+          role,
+          exp: Math.floor(Date.now() / 1000) + COLLAB_TOKEN_TTL_SECONDS,
+        },
+        process.env.BETTER_AUTH_SECRET ?? ""
+      );
+
+      return { token, role };
     }),
 
   /**

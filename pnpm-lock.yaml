@@ -109,6 +109,9 @@ importers:
 
   apps/hocuspocus-server:
     dependencies:
+      '@acme/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@acme/db':
         specifier: workspace:*
         version: link:../../packages/db
