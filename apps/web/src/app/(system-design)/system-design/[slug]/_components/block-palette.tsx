@@ -11,10 +11,10 @@ import {
   Server,
   Shield,
 } from "lucide-react";
-import { motion } from "motion/react";
 
 import type { BlockCategory, BlockNodeData } from "~/lib/system-design/types";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { Separator } from "~/components/ui/separator";
 import {
   getBlockDefinition,
   getBlocksByCategory,
@@ -53,10 +53,10 @@ export function BlockPalette() {
   const phase = useSystemDesignStore((s) => s.phase);
   const addBlockToCenter = useSystemDesignStore((s) => s.addBlockToCenter);
 
-  const budgetUsed = nodes.reduce(
-    (sum, n) => sum + (n.data as BlockNodeData).definition.costPerMonth,
-    0,
-  );
+  const budgetUsed = nodes.reduce((sum, n) => {
+    const d = n.data as BlockNodeData;
+    return sum + d.definition.costPerMonth * (d.replicas ?? 1);
+  }, 0);
 
   const onDragStart = (e: DragEvent, blockType: string, provider: string) => {
     e.dataTransfer.setData("application/system-design-block", blockType);
@@ -70,14 +70,16 @@ export function BlockPalette() {
         <div className="text-muted-foreground mb-1 px-2 text-xs font-medium tracking-wider uppercase">
           Blocks
         </div>
-        {(Object.keys(CATEGORY_CONFIG) as BlockCategory[]).map((category) => {
+        {(Object.keys(CATEGORY_CONFIG) as BlockCategory[])
+          .filter((category) => grouped[category].length > 0)
+          .map((category, idx) => {
           const blocks = grouped[category];
-          if (blocks.length === 0) return null;
           const config = CATEGORY_CONFIG[category];
           const isCatExpanded = expandedCategories[category];
 
           return (
             <div key={category}>
+              {idx > 0 && <Separator className="my-1" />}
               <button
                 className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium transition-colors"
                 onClick={() =>
@@ -98,7 +100,7 @@ export function BlockPalette() {
                 />
               </button>
               {isCatExpanded && (
-                <div className="mt-0.5 space-y-0.5 pl-1">
+                <div className="mt-1 grid grid-cols-2 gap-1 pl-1">
                   {blocks.map((block) => {
                     const currentDefault =
                       defaultProviders[block.type] ?? block.name;
@@ -107,6 +109,19 @@ export function BlockPalette() {
                     );
                     const cost =
                       providerData?.costPerMonth ?? block.costPerMonth;
+                    const providerCosts = block.providers?.map(
+                      (p) => p.costPerMonth,
+                    );
+                    const minCost = providerCosts?.length
+                      ? Math.min(...providerCosts)
+                      : block.costPerMonth;
+                    const maxCost = providerCosts?.length
+                      ? Math.max(...providerCosts)
+                      : block.costPerMonth;
+                    const hasRange = minCost !== maxCost;
+                    const costLabel = hasRange
+                      ? `$${minCost}–$${maxCost}`
+                      : `$${minCost}`;
                     const wouldExceed =
                       level !== null && budgetUsed + cost > level.budget;
                     const isDisabled = phase !== "building" || wouldExceed;
@@ -119,70 +134,49 @@ export function BlockPalette() {
                         >
                       )[block.icon] ?? Icons.Box;
 
-                    const hasProviders =
-                      block.providers && block.providers.length > 1;
-
                     return (
                       <div
                         key={block.type}
+                        draggable={!isDisabled}
+                        onDragStart={(e) =>
+                          onDragStart(e, block.type, currentDefault)
+                        }
+                        onClick={() => {
+                          if (isDisabled) return;
+                          const baseDef = getBlockDefinition(block.type);
+                          if (!baseDef) return;
+                          const provider = baseDef.providers?.find(
+                            (p) => p.provider === currentDefault,
+                          );
+                          const def = provider
+                            ? {
+                                ...baseDef,
+                                name: provider.provider,
+                                costPerMonth: provider.costPerMonth,
+                                maxRps: provider.maxRps,
+                                maxConnections: provider.maxConnections,
+                                baseLatencyMs: provider.baseLatencyMs,
+                              }
+                            : baseDef;
+                          addBlockToCenter(def);
+                        }}
+                        title={`${block.label} — ${costLabel}/mo`}
                         className={cn(
-                          "bg-card rounded-md border transition-colors",
-                          isDisabled && "opacity-40",
+                          "bg-card flex items-center gap-2 rounded-md border p-2 transition-colors",
+                          !isDisabled &&
+                            "hover:bg-muted hover:border-foreground/20 cursor-grab active:cursor-grabbing",
+                          isDisabled && "cursor-not-allowed opacity-40",
                         )}
                       >
-                        {/* Block row — draggable + clickable */}
-                        <div
-                          draggable={!isDisabled}
-                          onDragStart={(e) =>
-                            onDragStart(e, block.type, currentDefault)
-                          }
-                          onClick={() => {
-                            if (isDisabled) return;
-                            const baseDef = getBlockDefinition(block.type);
-                            if (!baseDef) return;
-                            const provider = baseDef.providers?.find(
-                              (p) => p.provider === currentDefault,
-                            );
-                            const def = provider
-                              ? {
-                                  ...baseDef,
-                                  name: provider.provider,
-                                  costPerMonth: provider.costPerMonth,
-                                  maxRps: provider.maxRps,
-                                  maxConnections: provider.maxConnections,
-                                  baseLatencyMs: provider.baseLatencyMs,
-                                }
-                              : baseDef;
-                            addBlockToCenter(def);
-                          }}
-                          className={cn(
-                            "group flex items-center gap-2 rounded-md p-2 text-xs",
-                            !isDisabled &&
-                              "hover:bg-muted cursor-pointer active:cursor-grabbing",
-                            isDisabled && "cursor-not-allowed",
-                          )}
-                        >
-                          <motion.div
-                            className={cn(
-                              "flex w-0 overflow-hidden opacity-0 transition-all duration-200",
-                              "group-hover:w-4 group-hover:opacity-100",
-                            )}
-                          >
-                            <Icons.GripVertical size={16} />
-                          </motion.div>
-                          <div className="bg-muted flex h-6 w-6 shrink-0 items-center justify-center rounded">
-                            <IconComponent size={12} />
+                        <div className="bg-muted flex h-7 w-7 shrink-0 items-center justify-center rounded">
+                          <IconComponent size={14} />
+                        </div>
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <div className="truncate text-[11px] leading-tight font-medium">
+                            {block.label}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate font-medium">
-                              {block.label}
-                            </div>
-                            {/* <div className="text-muted-foreground text-[10px]"> */}
-                            {/*   {currentDefault} */}
-                            {/* </div> */}
-                          </div>
-                          <span className="text-muted-foreground shrink-0 text-[10px] tabular-nums">
-                            ${cost}
+                          <span className="text-muted-foreground text-[10px] tabular-nums">
+                            {costLabel}
                           </span>
                         </div>
                       </div>
