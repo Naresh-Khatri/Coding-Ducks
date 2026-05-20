@@ -194,14 +194,9 @@ Acceptance: `lastClientsCount` is computed without using a nonexistent API, veri
 
 Acceptance: kicking the server with SIGTERM during an active edit results in the edit being persisted in `ducklet.yjsData`.
 
-#### DUCK-015 — Add a Docker service for hocuspocus
-**P2 · S**
-`docker-compose.yml` provisions Postgres + Redis but no hocuspocus service. There is no production deployment spec.
-
-- Add a `hocuspocus` service with build context `apps/hocuspocus-server`, exposed port `5000`, and `depends_on: postgres`.
-- Add a healthcheck (see DUCK-016).
-
-Acceptance: `make dev` starts hocuspocus alongside Postgres/Redis.
+#### DUCK-015 — Add a Docker service for hocuspocus — _obsolete_
+**P2 · S · won't fix**
+Closed: `docker-compose.yml` is intentionally local-dev-deps-only (postgres + redis). The web app and the hocuspocus server are both deployed separately, not via compose.
 
 #### DUCK-016 — Healthcheck endpoint
 **P2 · XS**

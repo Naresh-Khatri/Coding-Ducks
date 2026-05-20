@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  index,
   integer,
   pgTable,
   primaryKey,
@@ -13,36 +14,41 @@ import {
 import { user } from "./auth-schema";
 import { duckletTypeEnum, memberRoleEnum, memberStatusEnum } from "./enums";
 
-export const ducklet = pgTable("ducklet", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }).notNull(),
-  description: text("description"),
+export const ducklet = pgTable(
+  "ducklet",
+  {
+    id: serial("id").primaryKey(),
+    name: varchar("name", { length: 100 }).notNull(),
+    description: text("description"),
 
-  // Owner (creator)
-  ownerId: text("owner_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    // Owner (creator)
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
 
-  // Visibility
-  isPublic: boolean("is_public").default(true).notNull(),
+    // Visibility
+    isPublic: boolean("is_public").default(true).notNull(),
 
-  // Ducklet type
-  type: duckletTypeEnum("type").default("normal").notNull(),
+    // Ducklet type
+    type: duckletTypeEnum("type").default("normal").notNull(),
 
+    // Yjs Collaboration Data
+    yjsData: text("yjs_data"), // Base64-encoded Yjs state
+    yjsVersion: integer("yjs_version").default(1).notNull(), // Version for conflict detection
+    lastClientsCount: integer("last_clients_count").default(0),
 
+    // Preview image URL (stored in R2)
+    previewImage: text("preview_image"),
 
-  // Yjs Collaboration Data
-  yjsData: text("yjs_data"), // Base64-encoded Yjs state
-  yjsVersion: integer("yjs_version").default(1).notNull(), // Version for conflict detection
-  lastClientsCount: integer("last_clients_count").default(0),
-
-  // Preview image URL (stored in R2)
-  previewImage: text("preview_image"),
-
-  // Timestamps
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").$onUpdateFn(() => sql`now()`),
-});
+    // Timestamps
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").$onUpdateFn(() => sql`now()`),
+  },
+  (t) => [
+    index("ducklet_owner_idx").on(t.ownerId),
+    index("ducklet_is_public_idx").on(t.isPublic),
+  ],
+);
 
 export const duckletMember = pgTable(
   "ducklet_member",
@@ -57,7 +63,10 @@ export const duckletMember = pgTable(
     status: memberStatusEnum("status").default("active").notNull(),
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
   },
-  (t) => [primaryKey({ columns: [t.duckletId, t.userId] })],
+  (t) => [
+    primaryKey({ columns: [t.duckletId, t.userId] }),
+    index("ducklet_member_user_idx").on(t.userId),
+  ],
 );
 
 // Relations

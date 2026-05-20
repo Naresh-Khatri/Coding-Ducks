@@ -65,19 +65,64 @@ function sanitizeHeadScripts(input: string): string {
   return parts.join("\n");
 }
 
+interface PreviewPayload {
+  duckletId: number;
+  html: string;
+  css: string;
+  js: string;
+  headScripts: string;
+}
+
+const PREVIEW_MIN_INTERVAL_MS = 60_000;
+const lastFiredAt = new Map<number, number>();
+const pendingPayloads = new Map<number, PreviewPayload>();
+const pendingTimers = new Map<number, NodeJS.Timeout>();
+
+// Leading-and-trailing throttle: first save per ducklet renders immediately;
+// subsequent saves within the window are coalesced into one render at the
+// window's end. Guarantees at most one Puppeteer launch per ducklet per
+// PREVIEW_MIN_INTERVAL_MS.
+export function schedulePreview(payload: PreviewPayload) {
+  const { duckletId } = payload;
+  const now = Date.now();
+  const last = lastFiredAt.get(duckletId) ?? 0;
+  const elapsed = now - last;
+
+  if (elapsed >= PREVIEW_MIN_INTERVAL_MS && !pendingTimers.has(duckletId)) {
+    lastFiredAt.set(duckletId, now);
+    void generateAndStorePreview(payload);
+    return;
+  }
+
+  pendingPayloads.set(duckletId, payload);
+  if (pendingTimers.has(duckletId)) return;
+
+  const delay = Math.max(0, PREVIEW_MIN_INTERVAL_MS - elapsed);
+  const timer = setTimeout(() => {
+    pendingTimers.delete(duckletId);
+    const latest = pendingPayloads.get(duckletId);
+    pendingPayloads.delete(duckletId);
+    if (latest) {
+      lastFiredAt.set(duckletId, Date.now());
+      void generateAndStorePreview(latest);
+    }
+  }, delay);
+  pendingTimers.set(duckletId, timer);
+}
+
+export function cancelPreviewSchedules() {
+  for (const timer of pendingTimers.values()) clearTimeout(timer);
+  pendingTimers.clear();
+  pendingPayloads.clear();
+}
+
 export async function generateAndStorePreview({
   duckletId,
   html,
   css,
   js: _js,
   headScripts,
-}: {
-  duckletId: number;
-  html: string;
-  css: string;
-  js: string;
-  headScripts: string;
-}) {
+}: PreviewPayload) {
   try {
     if (!html && !css) {
       return;
