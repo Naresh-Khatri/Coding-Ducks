@@ -4,11 +4,21 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Lock, MessageSquare, Send, Users } from "lucide-react";
+import {
+  ChevronLeft,
+  Lock,
+  MessageSquare,
+  Send,
+  Users,
+  Wifi,
+  WifiOff,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { authClient } from "~/auth/client";
 import { LayoutManager } from "~/components/collab-editor/layout-manager";
+import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
 import { SettingsModal } from "~/components/collab-editor/settings-modal";
 import { ShareModal } from "~/components/collab-editor/share-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -20,8 +30,10 @@ import {
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { useIsMobile } from "~/hooks/use-is-mobile";
 import { useSocketDucklet } from "~/hooks/use-socket";
 import { useTRPC } from "~/trpc/react";
+import type { ChatMessage, UserPresence } from "~/hooks/use-socket";
 
 export default function DuckletPage({
   params,
@@ -58,14 +70,21 @@ export default function DuckletPage({
   );
 
   // Connect to Socket Server
-  const { users, messages, sendMessage, updateCursor, provider, ydoc } =
-    useSocketDucklet({
-      duckletId: duckletIdStr,
-      userId,
-      username,
-      photoURL,
-      token: collabAuth?.token,
-    });
+  const {
+    users,
+    messages,
+    isConnected,
+    sendMessage,
+    updateCursor,
+    provider,
+    ydoc,
+  } = useSocketDucklet({
+    duckletId: duckletIdStr,
+    userId,
+    username,
+    photoURL,
+    token: collabAuth?.token,
+  });
 
   // Settings state - synced via Y.js Map
   const [head, setHead] = useState("");
@@ -110,7 +129,13 @@ export default function DuckletPage({
   };
 
   const [newMessage, setNewMessage] = useState("");
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const isMobile = useIsMobile();
+  // Chat collapses by default on mobile so editors get the full viewport.
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  useEffect(() => {
+    setIsChatOpen(!isMobile);
+  }, [isMobile]);
+  const [renameOpen, setRenameOpen] = useState(false);
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
@@ -194,21 +219,37 @@ export default function DuckletPage({
 
   return (
     <div className="flex h-[100dvh] flex-col">
-      <header className="bg-muted/20 flex items-center justify-between border-b px-4 py-2">
-        <div className="flex items-center gap-2">
+      <header className="bg-muted/20 flex items-center justify-between gap-2 border-b px-2 py-2 sm:px-4">
+        <div className="flex shrink-0 items-center gap-2">
           <Link href="/ducklets">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="px-2 sm:px-3">
               <ChevronLeft className="h-4 w-4" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Button>
           </Link>
         </div>
-        <div>
-          <h1 className="font-semibold">{ducklet.name}</h1>
-          <p className="text-muted-foreground text-xs">{ducklet.description}</p>
+        <div className="min-w-0 flex-1 text-center">
+          {isOwner ? (
+            <button
+              type="button"
+              onClick={() => setRenameOpen(true)}
+              className="hover:text-primary block max-w-full truncate font-semibold transition-colors"
+              title="Rename"
+            >
+              {ducklet.name}
+            </button>
+          ) : (
+            <h1 className="truncate font-semibold">{ducklet.name}</h1>
+          )}
+          {ducklet.description && (
+            <p className="text-muted-foreground hidden truncate text-xs sm:block">
+              {ducklet.description}
+            </p>
+          )}
         </div>
-        <div className="flex items-center gap-2">
-          {/* Settings Modal */}
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <ConnectionBadge isConnected={isConnected} hasToken={!!collabAuth?.token} />
+
           <SettingsModal
             head={head}
             onHeadChange={handleHeadChange}
@@ -228,11 +269,12 @@ export default function DuckletPage({
             onClick={() => setIsChatOpen(!isChatOpen)}
             className={isChatOpen ? "bg-muted" : ""}
             title={isChatOpen ? "Hide Chat" : "Show Chat"}
+            aria-label={isChatOpen ? "Hide chat" : "Show chat"}
           >
             <MessageSquare className="h-4 w-4" />
           </Button>
 
-          <div className="flex -space-x-2">
+          <div className="hidden -space-x-2 sm:flex">
             {users.slice(0, 5).map((u) => (
               <Avatar key={u.id} className="border-background h-8 w-8 border-2">
                 <AvatarImage src={u.photoURL} />
@@ -267,92 +309,193 @@ export default function DuckletPage({
             )}
           </ResizablePanel>
 
-          {isChatOpen && <ResizableHandle />}
-
-          {/* Chat Sidebar */}
-          {isChatOpen && (
-            <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
-              <div className="bg-muted/10 flex h-full flex-col border-l">
-                <div className="flex items-center gap-2 border-b p-3 font-medium">
-                  <MessageSquare className="h-4 w-4" />
-                  Chat & Users
-                </div>
-
-                {/* Online Users List (Compact) */}
-                <div className="border-b p-2">
-                  <div className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-semibold">
-                    <Users className="h-3 w-3" /> Online ({users.length})
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {users.map((u) => (
-                      <div key={u.id} title={u.username} className="relative">
-                        <Avatar className="border-border h-6 w-6 border">
-                          <AvatarImage src={u.photoURL} />
-                          <AvatarFallback className="text-[9px]">
-                            {u.username[0]?.toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <ScrollArea className="flex-1 p-4">
-                  <div className="space-y-4">
-                    {messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={`flex flex-col ${msg.userId === userId ? "items-end" : "items-start"}`}
-                      >
-                        <div className="mb-1 flex items-baseline gap-2">
-                          <span className="text-muted-foreground text-xs font-medium">
-                            {msg.username}
-                          </span>
-                          <span className="text-muted-foreground/70 text-[10px]">
-                            {new Date(msg.timestamp).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
-                        <div
-                          className={`max-w-[90%] rounded-lg px-3 py-2 text-sm ${msg.userId === userId
-                            ? "bg-primary text-primary-foreground rounded-tr-none"
-                            : "bg-muted rounded-tl-none"
-                            }`}
-                        >
-                          {msg.text}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-                <div className="bg-background border-t p-3">
-                  <div className="flex gap-2">
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && handleSendMessage()
-                      }
-                      placeholder="Type..."
-                      className="h-8"
-                    />
-                    <Button
-                      size="icon"
-                      onClick={handleSendMessage}
-                      className="h-8 w-8"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </ResizablePanel>
+          {/* Chat sidebar — only on desktop. On mobile the chat lives in a
+              fixed overlay rendered below so it can take the full viewport. */}
+          {isChatOpen && !isMobile && (
+            <>
+              <ResizableHandle />
+              <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+                <ChatPanel
+                  users={users}
+                  messages={messages}
+                  userId={userId}
+                  newMessage={newMessage}
+                  setNewMessage={setNewMessage}
+                  onSend={handleSendMessage}
+                />
+              </ResizablePanel>
+            </>
           )}
         </ResizablePanelGroup>
+
+        {isChatOpen && isMobile && (
+          <div className="bg-background fixed inset-0 z-40 flex flex-col md:hidden">
+            <div className="flex items-center justify-between border-b p-3">
+              <div className="flex items-center gap-2 font-medium">
+                <MessageSquare className="h-4 w-4" />
+                Chat & Users
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsChatOpen(false)}
+                aria-label="Close chat"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <ChatPanel
+              users={users}
+              messages={messages}
+              userId={userId}
+              newMessage={newMessage}
+              setNewMessage={setNewMessage}
+              onSend={handleSendMessage}
+              showHeader={false}
+            />
+          </div>
+        )}
+      </div>
+
+      {isOwner && (
+        <RenameDuckletDialog
+          open={renameOpen}
+          onOpenChange={setRenameOpen}
+          duckletId={duckletId}
+          currentName={ducklet.name}
+        />
+      )}
+    </div>
+  );
+}
+
+function ChatPanel({
+  users,
+  messages,
+  userId,
+  newMessage,
+  setNewMessage,
+  onSend,
+  showHeader = true,
+}: {
+  users: UserPresence[];
+  messages: ChatMessage[];
+  userId: string | undefined;
+  newMessage: string;
+  setNewMessage: (val: string) => void;
+  onSend: () => void;
+  showHeader?: boolean;
+}) {
+  return (
+    <div className="bg-muted/10 flex h-full flex-col border-l">
+      {showHeader && (
+        <div className="flex items-center gap-2 border-b p-3 font-medium">
+          <MessageSquare className="h-4 w-4" />
+          Chat & Users
+        </div>
+      )}
+
+      <div className="border-b p-2">
+        <div className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-semibold">
+          <Users className="h-3 w-3" /> Online ({users.length})
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {users.map((u) => (
+            <div key={u.id} title={u.username} className="relative">
+              <Avatar className="border-border h-6 w-6 border">
+                <AvatarImage src={u.photoURL} />
+                <AvatarFallback className="text-[9px]">
+                  {u.username[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex flex-col ${
+                msg.userId === userId ? "items-end" : "items-start"
+              }`}
+            >
+              <div className="mb-1 flex items-baseline gap-2">
+                <span className="text-muted-foreground text-xs font-medium">
+                  {msg.username}
+                </span>
+                <span className="text-muted-foreground/70 text-[10px]">
+                  {new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+              <div
+                className={`max-w-[90%] rounded-lg px-3 py-2 text-sm ${
+                  msg.userId === userId
+                    ? "bg-primary text-primary-foreground rounded-tr-none"
+                    : "bg-muted rounded-tl-none"
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+      <div className="bg-background border-t p-3">
+        <div className="flex gap-2">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onSend()}
+            placeholder="Type..."
+            className="h-8"
+          />
+          <Button size="icon" onClick={onSend} className="h-8 w-8" aria-label="Send">
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
+  );
+}
+
+function ConnectionBadge({
+  isConnected,
+  hasToken,
+}: {
+  isConnected: boolean;
+  hasToken: boolean;
+}) {
+  if (isConnected) {
+    return (
+      <span
+        className="text-muted-foreground flex items-center gap-1 text-xs"
+        title="Connected — changes sync in real time"
+      >
+        <Wifi className="h-3.5 w-3.5 text-emerald-500" />
+        <span className="hidden sm:inline">Live</span>
+      </span>
+    );
+  }
+  return (
+    <span
+      className="flex items-center gap-1 text-xs text-amber-500"
+      title={
+        hasToken
+          ? "Disconnected — reconnecting…"
+          : "Connecting…"
+      }
+    >
+      <WifiOff className="h-3.5 w-3.5 animate-pulse" />
+      <span className="hidden sm:inline">
+        {hasToken ? "Reconnecting…" : "Connecting…"}
+      </span>
+    </span>
   );
 }
 

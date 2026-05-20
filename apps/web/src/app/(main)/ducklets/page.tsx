@@ -15,7 +15,9 @@ import {
   Globe,
   Lock,
   MoreVertical,
+  Pencil,
   Plus,
+  Search,
   Trash2,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -51,7 +53,18 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
+import { useDebounce } from "~/hooks/use-debounce";
 import { useTRPC } from "~/trpc/react";
+
+type DuckletSort = "recent" | "updated" | "oldest";
 
 const container = {
   hidden: { opacity: 0 },
@@ -89,6 +102,9 @@ export default function DuckletsPage() {
   const currentUserId = session?.user?.id;
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newDuckletName, setNewDuckletName] = useState("");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<DuckletSort>("recent");
+  const debouncedSearch = useDebounce(search.trim(), 250);
 
   const {
     data: ducklets,
@@ -98,7 +114,11 @@ export default function DuckletsPage() {
     isFetchingNextPage,
   } = useInfiniteQuery(
     trpc.ducklet.list.infiniteQueryOptions(
-      { limit: 12 },
+      {
+        limit: 12,
+        search: debouncedSearch || undefined,
+        sort,
+      },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         initialCursor: 0,
@@ -240,6 +260,32 @@ h1 {
         </Dialog>
       </div>
 
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Input
+            type="search"
+            placeholder="Search ducklets…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select
+          value={sort}
+          onValueChange={(val) => setSort(val as DuckletSort)}
+        >
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recent">Newest first</SelectItem>
+            <SelectItem value="updated">Recently edited</SelectItem>
+            <SelectItem value="oldest">Oldest first</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {isLoading ? (
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -264,14 +310,19 @@ h1 {
           <div className="bg-muted mb-6 flex h-20 w-20 items-center justify-center rounded-full">
             <Plus className="text-muted-foreground h-10 w-10" />
           </div>
-          <h3 className="text-2xl font-semibold">No ducklets found</h3>
+          <h3 className="text-2xl font-semibold">
+            {debouncedSearch ? "No matches" : "No ducklets found"}
+          </h3>
           <p className="text-muted-foreground mt-2 mb-8 max-w-sm">
-            You haven't created any Ducklets yet. Start your first collaborative
-            coding session now!
+            {debouncedSearch
+              ? `Nothing matches "${debouncedSearch}". Try a different name.`
+              : "You haven't created any Ducklets yet. Start your first collaborative coding session now!"}
           </p>
-          <Button size="lg" onClick={() => setIsCreateOpen(true)}>
-            Create Your First Ducklet
-          </Button>
+          {!debouncedSearch && (
+            <Button size="lg" onClick={() => setIsCreateOpen(true)}>
+              Create Your First Ducklet
+            </Button>
+          )}
         </motion.div>
       ) : (
         <>
@@ -318,6 +369,7 @@ function DuckletCard({
   onDelete: () => void;
 }) {
   const router = useRouter();
+  const [renameOpen, setRenameOpen] = useState(false);
 
   return (
     <motion.div variants={item}>
@@ -396,19 +448,39 @@ function DuckletCard({
                   Open Ducklet
                 </DropdownMenuItem>
                 {isOwner && (
-                  <DropdownMenuItem
-                    className="text-destructive focus:bg-destructive/10 focus:text-destructive font-medium"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete();
-                    }}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenameOpen(true);
+                      }}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive focus:bg-destructive/10 focus:text-destructive font-medium"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                      }}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {isOwner && (
+              <RenameDuckletDialog
+                open={renameOpen}
+                onOpenChange={setRenameOpen}
+                duckletId={ducklet.id}
+                currentName={ducklet.name}
+              />
+            )}
           </div>
         </CardHeader>
 

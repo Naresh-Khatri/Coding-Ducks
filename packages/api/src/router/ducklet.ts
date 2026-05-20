@@ -5,7 +5,7 @@ import { ducklet, duckletMember, userProfile } from "@acme/db/schema";
 import { getPublicUrl } from "@acme/storage";
 import { signCollabToken } from "@acme/auth/collab-token";
 import type { CollabRole } from "@acme/auth/collab-token";
-import { eq, desc, and, or } from "drizzle-orm";
+import { eq, desc, and, or, ilike } from "drizzle-orm";
 
 const COLLAB_TOKEN_TTL_SECONDS = 60 * 60;
 
@@ -19,21 +19,22 @@ export const duckletRouter = createTRPCRouter({
         limit: z.number().min(1).max(50).default(20),
         cursor: z.number().nullish(),
         onlyMine: z.boolean().optional(),
+        search: z.string().trim().max(100).optional(),
+        sort: z.enum(["recent", "oldest", "updated"]).default("recent"),
       }).optional()
     )
     .query(async ({ ctx, input }) => {
       const limit = input?.limit ?? 20;
       const offset = input?.cursor ?? 0;
       const onlyMine = input?.onlyMine;
+      const search = input?.search;
+      const sort = input?.sort ?? "recent";
 
-      // Build conditions
       const conditions = [];
 
       if (ctx.session?.user && onlyMine) {
-        // Only user's ducklets
         conditions.push(eq(ducklet.ownerId, ctx.session.user.id));
       } else if (ctx.session?.user) {
-        // Public ducklets + user's private ducklets
         conditions.push(
           or(
             eq(ducklet.isPublic, true),
@@ -41,9 +42,22 @@ export const duckletRouter = createTRPCRouter({
           )
         );
       } else {
-        // Only public ducklets for anonymous users
         conditions.push(eq(ducklet.isPublic, true));
       }
+
+      if (search) {
+        // Postgres ILIKE handles case-insensitive prefix/substring match.
+        // % chars in the input are escaped so users can't widen the search.
+        const escaped = search.replace(/[\\%_]/g, (m) => `\\${m}`);
+        conditions.push(ilike(ducklet.name, `%${escaped}%`));
+      }
+
+      const orderBy =
+        sort === "oldest"
+          ? ducklet.createdAt
+          : sort === "updated"
+            ? desc(ducklet.updatedAt)
+            : desc(ducklet.createdAt);
 
       const ducklets = await ctx.db
         .select({
@@ -53,6 +67,7 @@ export const duckletRouter = createTRPCRouter({
           isPublic: ducklet.isPublic,
           previewImage: ducklet.previewImage,
           createdAt: ducklet.createdAt,
+          updatedAt: ducklet.updatedAt,
           ownerId: ducklet.ownerId,
           owner: {
             username: userProfile.username,
@@ -62,7 +77,7 @@ export const duckletRouter = createTRPCRouter({
         .from(ducklet)
         .leftJoin(userProfile, eq(ducklet.ownerId, userProfile.userId))
         .where(and(...conditions))
-        .orderBy(desc(ducklet.createdAt))
+        .orderBy(orderBy)
         .limit(limit)
         .offset(offset);
 

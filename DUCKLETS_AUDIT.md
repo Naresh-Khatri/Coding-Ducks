@@ -291,11 +291,11 @@ Both call sites were already cleaned up during P1 (layout-manager observer rewri
 
 | ID | Title | Size | Notes |
 |---|---|---|---|
-| DUCK-028 | Rename in list dropdown + editor header | S | Add a `rename` mutation or extend `update` UI. |
+| DUCK-028 | Rename in list dropdown + editor header | S | **DONE** — extended existing `update` mutation via `RenameDuckletDialog`, wired into list dropdown (owners) and editor header title click. |
 | DUCK-029 | Fork / duplicate a ducklet | S | New mutation that clones name + `yjsData` under the caller's ownership. |
-| DUCK-030 | Search + sort on list page | M | Server-side `name ILIKE` + sort by `updatedAt` / `createdAt`. |
-| DUCK-031 | Reconnect / offline indicator | XS | Surface `isConnected` from `use-socket.ts:59` as a chip in the header. |
-| DUCK-032 | Mobile layout for the editor | M | Stack panels vertically below `md:`; collapse chat into a sheet. |
+| DUCK-030 | Search + sort on list page | M | **DONE** — `list` accepts `search` (ILIKE, escaped) + `sort: recent\|updated\|oldest`; UI has debounced search + sort Select. |
+| DUCK-031 | Reconnect / offline indicator | XS | **DONE** — `ConnectionBadge` chip in header reads `isConnected` from `useSocketDucklet`, distinguishes "Live" / "Reconnecting…" / "Connecting…". |
+| DUCK-032 | Mobile layout for the editor | M | **DONE** — `<md` switches editors to a 4-tab layout (HTML/CSS/JS/Preview); chat becomes a full-screen overlay (no Sheet component in the codebase, overlay matches the project's existing modal style). |
 | DUCK-033 | Light-mode editor theme | S | Swap `oneDark` based on `useTheme()`. |
 | DUCK-034 | Lazy-load CodeMirror + Y.js | S | `dynamic(() => import(...), { ssr: false })` around the editor. |
 | DUCK-035 | Change member role after invite | S | New `updateMemberRole` mutation + UI in share modal. |

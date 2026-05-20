@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { LayoutTemplate, Sidebar, Terminal } from "lucide-react";
+import { LayoutTemplate, Terminal } from "lucide-react";
 import * as Y from "yjs";
 
 import { Button } from "~/components/ui/button";
@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useDebounce } from "~/hooks/use-debounce";
+import { useIsMobile } from "~/hooks/use-is-mobile";
 import { Console, LogEntry } from "./console";
 import { CollabEditor } from "./index";
 import { Preview } from "./preview";
@@ -34,6 +35,10 @@ export function LayoutManager({
 }: LayoutManagerProps) {
   const [layout, setLayout] = useState<LayoutType>("top");
   const [showConsole, setShowConsole] = useState(true);
+  const isMobile = useIsMobile();
+  const [mobileTab, setMobileTab] = useState<"html" | "css" | "js" | "preview">(
+    "html",
+  );
 
   // Local state for preview
   const [html, setHtml] = useState("");
@@ -144,6 +149,61 @@ export function LayoutManager({
       </ResizablePanel>
     </>
   );
+
+  if (isMobile) {
+    return (
+      <div className="flex h-full flex-col">
+        <Tabs
+          value={mobileTab}
+          onValueChange={(v) => setMobileTab(v as typeof mobileTab)}
+          className="flex h-full flex-col"
+        >
+          <TabsList className="bg-muted/20 grid w-full grid-cols-4 rounded-none border-b">
+            <TabsTrigger value="html">HTML</TabsTrigger>
+            <TabsTrigger value="css">CSS</TabsTrigger>
+            <TabsTrigger value="js">JS</TabsTrigger>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+          </TabsList>
+          <TabsContent value="html" className="m-0 flex-1 overflow-hidden">
+            <CollabEditor
+              language="html"
+              field="html"
+              provider={provider}
+              ydoc={ydoc}
+              readOnly={readOnly}
+            />
+          </TabsContent>
+          <TabsContent value="css" className="m-0 flex-1 overflow-hidden">
+            <CollabEditor
+              language="css"
+              field="css"
+              provider={provider}
+              ydoc={ydoc}
+              readOnly={readOnly}
+            />
+          </TabsContent>
+          <TabsContent value="js" className="m-0 flex-1 overflow-hidden">
+            <CollabEditor
+              language="js"
+              field="js"
+              provider={provider}
+              ydoc={ydoc}
+              readOnly={readOnly}
+            />
+          </TabsContent>
+          <TabsContent value="preview" className="m-0 flex-1 overflow-hidden bg-white">
+            <Preview
+              html={debouncedHtml}
+              css={debouncedCss}
+              js={debouncedJs}
+              head={head}
+              body={body}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">
