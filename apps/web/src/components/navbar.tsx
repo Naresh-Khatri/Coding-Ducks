@@ -44,7 +44,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="bg-background/80 sticky top-0 z-50 border-b backdrop-blur-md">
+    <header className="bg-background/70 sticky top-0 z-50 border-b border-border/60 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
         {/* Logo */}
         <Link
@@ -67,8 +67,8 @@ export function Navbar() {
                 className={cn(
                   "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                   pathname?.startsWith(link.href)
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                    ? "bg-primary/10 text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-primary/5",
                 )}
               >
                 {link.label}
@@ -184,8 +184,8 @@ export function Navbar() {
                   className={cn(
                     "block rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                     pathname?.startsWith(link.href)
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                      ? "bg-primary/10 text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-primary/5",
                   )}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -208,7 +208,7 @@ export function Navbar() {
                   {user.username && (
                     <Link
                       href={`/u/${user.username}`}
-                      className="text-muted-foreground hover:text-foreground hover:bg-muted/50 block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                      className="text-muted-foreground hover:text-foreground hover:bg-primary/5 block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       My Profile
@@ -216,14 +216,14 @@ export function Navbar() {
                   )}
                   <Link
                     href="/dashboard"
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted/50 block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                    className="text-muted-foreground hover:text-foreground hover:bg-primary/5 block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <Link
                     href="/dashboard/settings"
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted/50 block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                    className="text-muted-foreground hover:text-foreground hover:bg-primary/5 block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Settings
