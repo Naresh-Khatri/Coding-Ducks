@@ -53,7 +53,9 @@ COPY . .
 
 ENV NODE_ENV=production
 ENV SKIP_ENV_VALIDATION=1
-RUN pnpm -F hocuspocus-server build
+# Typecheck only — runtime executes TS directly via tsx (workspace @acme/* packages
+# export raw .ts sources, which bare `node` can't resolve without explicit extensions).
+RUN pnpm -F hocuspocus-server typecheck
 
 # ============================================
 # STAGE 4: Runtime
@@ -67,7 +69,8 @@ ENV NODE_ENV=production
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs hocuspocus
 
-COPY --from=builder /app/apps/hocuspocus-server/dist ./apps/hocuspocus-server/dist
+COPY --from=builder /app/apps/hocuspocus-server/src ./apps/hocuspocus-server/src
+COPY --from=builder /app/apps/hocuspocus-server/tsconfig.json ./apps/hocuspocus-server/tsconfig.json
 COPY --from=builder /app/apps/hocuspocus-server/package.json ./apps/hocuspocus-server/package.json
 COPY --from=builder /app/apps/hocuspocus-server/node_modules ./apps/hocuspocus-server/node_modules
 COPY --from=builder /app/packages ./packages
@@ -81,4 +84,4 @@ EXPOSE 5000
 
 ENV PORT=5000
 
-CMD ["node", "apps/hocuspocus-server/dist/index.js"]
+CMD ["apps/hocuspocus-server/node_modules/.bin/tsx", "apps/hocuspocus-server/src/index.ts"]

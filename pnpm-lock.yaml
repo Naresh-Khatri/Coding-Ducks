@@ -137,6 +137,9 @@ importers:
       puppeteer-core:
         specifier: ^24.35.0
         version: 24.35.0(bufferutil@4.0.9)(utf-8-validate@6.0.4)
+      tsx:
+        specifier: ^4.7.1
+        version: 4.21.0
       yjs:
         specifier: ^13.6.29
         version: 13.6.29
@@ -150,9 +153,6 @@ importers:
       '@types/node':
         specifier: ^20.19.27
         version: 20.19.27
-      tsx:
-        specifier: ^4.7.1
-        version: 4.21.0
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
