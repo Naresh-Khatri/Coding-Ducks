@@ -19,8 +19,6 @@ export {
   session,
   challenge,
   challengeAttempt,
-  apiKey,
-  apiKeyUsage,
   problem,
   submission,
   bookmark,

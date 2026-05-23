@@ -15,7 +15,6 @@
   "dependencies": {
     "@acme/auth": "workspace:*",
     "@acme/db": "workspace:*",
-    "@acme/jobs": "workspace:*",
     "@acme/storage": "workspace:*",
     "@acme/validators": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",

@@ -10,11 +10,9 @@ import {
   AlertTriangle,
   Bell,
   Laptop,
-  Save,
   Shield,
   Smartphone,
   User,
-  Webhook,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,13 +50,13 @@ export default function SettingsView() {
     trpc.user.getProfile.queryOptions(),
   );
 
-  // Using empty array for sessions as in original code
-  const sessions: any[] = [];
+  const { data: sessions } = useSuspenseQuery(
+    trpc.user.getSessions.queryOptions(),
+  );
 
   // Local state for forms
   const [name, setName] = useState(profile?.name ?? "");
   const [email, setEmail] = useState(profile?.email ?? "");
-  const [webhookUrl, setWebhookUrl] = useState(profile?.webhookUrl ?? "");
   const [emailNotifications, setEmailNotifications] = useState(
     profile?.emailNotifications ?? true,
   );
@@ -124,7 +122,6 @@ export default function SettingsView() {
   const handleSavePreferences = () => {
     updatePreferencesMutation.mutate({
       emailNotifications,
-      webhookUrl: webhookUrl || undefined,
     });
   };
 
@@ -261,45 +258,6 @@ export default function SettingsView() {
               </div>
             </div>
           </CardContent>
-        </Card>
-
-        {/* API Configuration */}
-        <Card className="pb-0">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Webhook className="text-primary h-5 w-5" />
-              <CardTitle>API Configuration</CardTitle>
-            </div>
-            <CardDescription>
-              Configure webhooks and API behavior.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="webhook">Webhook URL</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="webhook"
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  placeholder="https://your-api.com/webhooks"
-                />
-                <Button variant="secondary">Test</Button>
-              </div>
-              <p className="text-muted-foreground text-[0.8rem]">
-                We'll send events to this URL when your code execution
-                completes.
-              </p>
-            </div>
-          </CardContent>
-          <CardFooter className="bg-muted/50 border-t px-6 py-4">
-            <Button
-              onClick={handleSavePreferences}
-              disabled={updatePreferencesMutation.isPending}
-            >
-              Save Configuration
-            </Button>
-          </CardFooter>
         </Card>
 
         {/* Preferences */}

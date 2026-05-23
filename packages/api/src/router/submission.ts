@@ -14,7 +14,7 @@ import {
   publicProcedure,
 } from "../trpc";
 
-/** Verdict codes returned by the CD Judge API */
+/** Verdict codes returned by the judge API */
 type JudgeVerdict = "OK" | "CE" | "RE" | "SG" | "TO" | "XX";
 
 interface JudgeJobResponse {

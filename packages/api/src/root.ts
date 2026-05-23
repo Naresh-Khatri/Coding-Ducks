@@ -1,4 +1,3 @@
-// import { apiKeyRouter } from "./router/api-key";
 import { authRouter } from "./router/auth";
 import { bookmarkRouter } from "./router/bookmark";
 import { commentRouter } from "./router/comment";
@@ -17,7 +16,6 @@ import { createTRPCRouter } from "./trpc";
 export const appRouter = createTRPCRouter({
   auth: authRouter,
   // post: postRouter,
-  // apiKey: apiKeyRouter,
   user: userRouter,
   problem: problemRouter,
   submission: submissionRouter,

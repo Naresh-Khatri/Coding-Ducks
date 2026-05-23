@@ -43,7 +43,6 @@ export const userRouter = {
     .input(
       z.object({
         emailNotifications: z.boolean(),
-        webhookUrl: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -53,7 +52,6 @@ export const userRouter = {
         .update(user)
         .set({
           emailNotifications: input.emailNotifications,
-          webhookUrl: input.webhookUrl || null,
         })
         .where(eq(user.id, userId))
         .returning();

@@ -1,6 +1,5 @@
 export * from "./auth-schema";
 export * from "./users";
-export * from "./api-keys";
 export * from "./enums";
 export * from "./problems";
 export * from "./submissions";
