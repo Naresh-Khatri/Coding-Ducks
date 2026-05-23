@@ -1,26 +1,11 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 
-import { appRouter, createTRPCContext } from "@acme/api";
-
-import { auth } from "~/auth/server";
+import { getQueryClient, HydrateClient, prefetch, trpc } from "~/trpc/server";
 
 import { ProblemDetailClient } from "./problem-detail-client";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-}
-
-async function getProblem(slug: string) {
-  try {
-    const ctx = await createTRPCContext({
-      headers: new Headers(await headers()),
-      auth,
-    });
-    return await appRouter.createCaller(ctx).problem.bySlug({ slug });
-  } catch {
-    return null;
-  }
 }
 
 /** Plain-text excerpt of the (markdown) description for meta/OG tags. */
@@ -37,7 +22,9 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const problem = await getProblem(slug);
+  const problem = await getQueryClient()
+    .fetchQuery(trpc.problem.bySlug.queryOptions({ slug }))
+    .catch(() => null);
 
   if (!problem) {
     return { title: "Problem not found · Coding Ducks" };
@@ -62,6 +49,12 @@ export async function generateMetadata({
   };
 }
 
-export default function ProblemDetailPage() {
-  return <ProblemDetailClient />;
+export default async function ProblemDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  prefetch(trpc.problem.bySlug.queryOptions({ slug }));
+  return (
+    <HydrateClient>
+      <ProblemDetailClient />
+    </HydrateClient>
+  );
 }
