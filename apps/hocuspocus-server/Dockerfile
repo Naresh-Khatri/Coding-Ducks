@@ -69,9 +69,11 @@ RUN groupadd --system --gid 1001 nodejs && \
 
 COPY --from=builder /app/apps/hocuspocus-server/dist ./apps/hocuspocus-server/dist
 COPY --from=builder /app/apps/hocuspocus-server/package.json ./apps/hocuspocus-server/package.json
+COPY --from=builder /app/apps/hocuspocus-server/node_modules ./apps/hocuspocus-server/node_modules
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 
 USER hocuspocus
 
