@@ -31,7 +31,7 @@ const defaults: EditorSettings = {
   submitShortcut: true,
 };
 
-let listeners: Array<() => void> = [];
+let listeners: (() => void)[] = [];
 let cached: EditorSettings = defaults;
 
 function read(): EditorSettings {

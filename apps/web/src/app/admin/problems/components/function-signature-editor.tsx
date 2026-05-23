@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -11,9 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 
 // Supported types for parameters and return values
@@ -26,7 +26,7 @@ const PARAM_TYPES = [
   { value: "string[]", label: "String Array" },
 ] as const;
 
-export type ParamType = typeof PARAM_TYPES[number]["value"];
+export type ParamType = (typeof PARAM_TYPES)[number]["value"];
 
 export interface Parameter {
   id: string;
@@ -95,10 +95,10 @@ export function FunctionSignatureEditor({
 }: FunctionSignatureEditorProps) {
   const [fnName, setFnName] = useState(value?.fnName || "solution");
   const [params, setParams] = useState<Parameter[]>(
-    value?.params || [{ id: "1", name: "nums", type: "integer[]" }]
+    value?.params || [{ id: "1", name: "nums", type: "integer[]" }],
   );
   const [returnType, setReturnType] = useState<ParamType>(
-    value?.returnType || "integer[]"
+    value?.returnType || "integer[]",
   );
 
   // Update parent when state changes
@@ -122,9 +122,7 @@ export function FunctionSignatureEditor({
   };
 
   const updateParam = (id: string, field: keyof Parameter, val: string) => {
-    setParams(
-      params.map((p) => (p.id === id ? { ...p, [field]: val } : p))
-    );
+    setParams(params.map((p) => (p.id === id ? { ...p, [field]: val } : p)));
   };
 
   return (
@@ -161,12 +159,7 @@ export function FunctionSignatureEditor({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label>Parameters</Label>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addParam}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={addParam}>
             <Plus className="mr-2 h-4 w-4" />
             Add Parameter
           </Button>
@@ -174,20 +167,22 @@ export function FunctionSignatureEditor({
 
         <div className="space-y-3">
           {params.map((param, index) => (
-            <div key={param.id} className="flex gap-3 items-end">
-              <div className="w-10 pt-3 text-center text-sm text-muted-foreground">
+            <div key={param.id} className="flex items-end gap-3">
+              <div className="text-muted-foreground w-10 pt-3 text-center text-sm">
                 {index + 1}.
               </div>
               <div className="flex-1 space-y-1">
-                <Label className="text-xs text-muted-foreground">Name</Label>
+                <Label className="text-muted-foreground text-xs">Name</Label>
                 <Input
                   value={param.name}
-                  onChange={(e) => updateParam(param.id, "name", e.target.value)}
+                  onChange={(e) =>
+                    updateParam(param.id, "name", e.target.value)
+                  }
                   placeholder="arg name"
                 />
               </div>
               <div className="flex-1 space-y-1">
-                <Label className="text-xs text-muted-foreground">Type</Label>
+                <Label className="text-muted-foreground text-xs">Type</Label>
                 <Select
                   value={param.type}
                   onValueChange={(val) =>
@@ -222,12 +217,16 @@ export function FunctionSignatureEditor({
 
       <Separator />
 
-      <div className="rounded-md bg-muted/50 p-4 text-xs font-mono text-muted-foreground">
+      <div className="bg-muted/50 text-muted-foreground rounded-md p-4 font-mono text-xs">
         <div className="mb-2 font-semibold">Preview (Python):</div>
         <div>
           class Solution:
           <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;def {fnName}(self, {params.map(p => `${p.name}: ${TYPE_MAP.py?.[p.type] || "Any"}`).join(", ")}) -&gt; {TYPE_MAP.py?.[returnType] || "Any"}:
+          &nbsp;&nbsp;&nbsp;&nbsp;def {fnName}(self,{" "}
+          {params
+            .map((p) => `${p.name}: ${TYPE_MAP.py?.[p.type] || "Any"}`)
+            .join(", ")}
+          ) -&gt; {TYPE_MAP.py?.[returnType] || "Any"}:
           <br />
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Your code here
           <br />

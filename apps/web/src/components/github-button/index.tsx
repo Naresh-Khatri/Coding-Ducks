@@ -21,7 +21,7 @@ import {
 import { cn } from "~/lib/utils";
 import { SlidingNumber } from "./sliding-number";
 
-type FormatNumberResult = { number: string[]; unit: string };
+interface FormatNumberResult { number: string[]; unit: string }
 
 function formatNumber(num: number, formatted: boolean): FormatNumberResult {
   if (formatted) {

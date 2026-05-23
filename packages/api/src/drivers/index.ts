@@ -1,5 +1,6 @@
 import type { FunctionSignature, TestCase } from "@acme/db/schema";
 
+import type { DriverGenerator, TestData } from "./types";
 import { generateCDriver } from "./langs/c";
 import { generateCppDriver } from "./langs/cpp";
 import { generateGoDriver } from "./langs/go";
@@ -10,7 +11,6 @@ import { generatePythonDriver } from "./langs/python";
 import { generateRubyDriver } from "./langs/ruby";
 import { generateRustDriver } from "./langs/rust";
 import { generateTSDriver } from "./langs/typescript";
-import type { DriverGenerator, TestData } from "./types";
 
 export type { TestData } from "./types";
 
@@ -51,7 +51,7 @@ export function generateDriverWithTestCases(
   lang: string,
   signature: FunctionSignature,
   testCases: TestCase[],
-  hidePrivate: boolean = false,
+  hidePrivate = false,
 ): string {
   const { fnName, params, returnType } = signature;
 

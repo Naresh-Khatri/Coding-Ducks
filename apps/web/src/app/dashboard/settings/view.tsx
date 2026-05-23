@@ -239,7 +239,7 @@ export default function SettingsView() {
                     </div>
                   ))}
                   {(!sessions || sessions.length === 0) && (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
+                    <div className="text-muted-foreground p-4 text-center text-sm">
                       No other active sessions found.
                     </div>
                   )}

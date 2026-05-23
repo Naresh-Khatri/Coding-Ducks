@@ -60,9 +60,7 @@ export function verifyCollabToken(
 
   let payload: unknown;
   try {
-    payload = JSON.parse(
-      Buffer.from(payloadStr, "base64url").toString("utf8"),
-    );
+    payload = JSON.parse(Buffer.from(payloadStr, "base64url").toString("utf8"));
   } catch {
     return null;
   }

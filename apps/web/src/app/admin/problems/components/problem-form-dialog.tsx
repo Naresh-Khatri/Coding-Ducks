@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Download, Loader2, Save, Upload } from "lucide-react";
+import { AlertCircle, Download, Loader2, Save, Upload } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -38,12 +39,11 @@ import {
 import { Switch } from "~/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
-import { Alert, AlertDescription } from "~/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
+import type {
+  FunctionSignature} from "./function-signature-editor";
 import {
-  FunctionSignature,
   FunctionSignatureEditor,
   ParamType,
 } from "./function-signature-editor";
@@ -158,7 +158,6 @@ const generateStarterCode = (sig: FunctionSignature) => {
   };
   return codes;
 };
-
 
 interface ProblemFormDialogProps {
   open: boolean;
@@ -326,14 +325,14 @@ export function ProblemFormDialog({
           constraints: existingProblem.constraints ?? "",
           companies: existingProblem.companies ?? [],
           followUp: existingProblem.followUp ?? "",
-          difficulty: existingProblem.difficulty as "easy" | "medium" | "hard",
+          difficulty: existingProblem.difficulty,
           tags: existingProblem.tags,
           timeLimit: existingProblem.timeLimit ?? undefined,
           memoryLimit: existingProblem.memoryLimit ?? undefined,
           displayOrder: existingProblem.displayOrder || 0,
           isActive: existingProblem.isActive,
           testCases: existingProblem.testCases as any[],
-          starterCode: existingProblem.starterCode as Record<string, string>,
+          starterCode: existingProblem.starterCode!,
           functionSignature: existingProblem.functionSignature as any,
         });
         if (existingProblem.functionSignature) {
@@ -421,14 +420,16 @@ export function ProblemFormDialog({
 
   const onSubmit = (data: ProblemFormData) => {
     // Validate that test cases have either input/output OR args/expected
-    const invalidTestCases = data.testCases.filter(tc => {
+    const invalidTestCases = data.testCases.filter((tc) => {
       const hasLegacy = tc.input !== undefined && tc.output !== undefined;
       const hasNew = tc.args !== undefined && tc.expected !== undefined;
       return !hasLegacy && !hasNew;
     });
 
     if (invalidTestCases.length > 0) {
-      toast.error("Some test cases are incomplete. Please provide either input/output or args/expected for each test case.");
+      toast.error(
+        "Some test cases are incomplete. Please provide either input/output or args/expected for each test case.",
+      );
       return;
     }
     if (!problemId) {
@@ -498,11 +499,14 @@ export function ProblemFormDialog({
                     <AlertDescription>
                       Please fix the following errors:
                       <ul className="mt-2 list-inside list-disc space-y-1">
-                        {Object.entries(form.formState.errors).map(([key, error]) => (
-                          <li key={key} className="text-sm">
-                            {key}: {error?.message?.toString() || "Invalid value"}
-                          </li>
-                        ))}
+                        {Object.entries(form.formState.errors).map(
+                          ([key, error]) => (
+                            <li key={key} className="text-sm">
+                              {key}:{" "}
+                              {error?.message?.toString() || "Invalid value"}
+                            </li>
+                          ),
+                        )}
                       </ul>
                     </AlertDescription>
                   </Alert>

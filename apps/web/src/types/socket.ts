@@ -1,24 +1,24 @@
 // Message types for Socket communication
 export type SocketMessage =
   | {
-    type: "chat";
-    userId: string;
-    username: string;
-    text: string;
-    timestamp: number;
-  }
+      type: "chat";
+      userId: string;
+      username: string;
+      text: string;
+      timestamp: number;
+    }
   | {
-    type: "cursor";
-    userId: string;
-    position: { line: number; column: number };
-  }
+      type: "cursor";
+      userId: string;
+      position: { line: number; column: number };
+    }
   | {
-    type: "presence";
-    userId: string;
-    username: string;
-    photoURL?: string;
-    action: "join" | "leave";
-  }
+      type: "presence";
+      userId: string;
+      username: string;
+      photoURL?: string;
+      action: "join" | "leave";
+    }
   | { type: "sync"; data: unknown };
 
 export interface RoomState {

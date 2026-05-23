@@ -1,19 +1,20 @@
 "use client";
 
+import type { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { useCallback, useMemo } from "react";
-import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
 import { cpp } from "@codemirror/lang-cpp";
-import { java } from "@codemirror/lang-java";
-import { rust } from "@codemirror/lang-rust";
 import { go } from "@codemirror/lang-go";
+import { java } from "@codemirror/lang-java";
+import { javascript } from "@codemirror/lang-javascript";
 import { php } from "@codemirror/lang-php";
+import { python } from "@codemirror/lang-python";
+import { rust } from "@codemirror/lang-rust";
 import { indentRange, indentUnit, StreamLanguage } from "@codemirror/language";
 import { ruby } from "@codemirror/legacy-modes/mode/ruby";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView, keymap, lineNumbers } from "@codemirror/view";
 import { vim } from "@replit/codemirror-vim";
+import CodeMirror from "@uiw/react-codemirror";
 
 export type Language =
   | "py"
@@ -139,7 +140,19 @@ export function CodeEditor({
     }
 
     return exts;
-  }, [language, height, fontSize, fontFamily, fontLigatures, tabSize, relLineNums, vimMode, onSave, onRun, onSubmit]);
+  }, [
+    language,
+    height,
+    fontSize,
+    fontFamily,
+    fontLigatures,
+    tabSize,
+    relLineNums,
+    vimMode,
+    onSave,
+    onRun,
+    onSubmit,
+  ]);
 
   const handleChange = useCallback(
     (val: string) => {

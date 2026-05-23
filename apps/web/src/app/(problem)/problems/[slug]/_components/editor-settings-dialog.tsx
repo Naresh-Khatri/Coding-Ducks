@@ -139,7 +139,7 @@ export function EditorSettingsDialog() {
 
           {/* Shortcuts */}
           <div className="space-y-3">
-            <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+            <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
               Shortcuts
             </span>
             <Row label="Run code" sublabel="Ctrl+Enter">

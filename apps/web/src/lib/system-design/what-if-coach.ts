@@ -1,4 +1,5 @@
 import type { Edge, Node } from "@xyflow/react";
+
 import type {
   BlockNodeData,
   LevelDefinition,

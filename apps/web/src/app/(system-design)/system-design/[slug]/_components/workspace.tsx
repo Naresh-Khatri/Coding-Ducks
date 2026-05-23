@@ -32,8 +32,8 @@ import { CustomEdge } from "./custom-edge";
 import { LevelBriefing } from "./level-briefing";
 import { OnboardingTour } from "./onboarding-tour";
 import { ResultsModal } from "./results-modal";
-import { StartSimulationButton } from "./start-simulation-button";
 import { useSimulation } from "./simulation-runner";
+import { StartSimulationButton } from "./start-simulation-button";
 import { StatsPanel } from "./stats-panel";
 import { SubmissionHistory } from "./submission-history";
 import { TopBar } from "./top-bar";
@@ -120,7 +120,7 @@ export function Workspace() {
     (connection: Edge | Connection) => {
       return isValidConnection(
         connection as Connection,
-        nodes as Node<BlockNodeData>[],
+        nodes,
         edges,
       );
     },
@@ -193,7 +193,10 @@ export function Workspace() {
                   )}
                 </button>
               </div>
-              <Tabs defaultValue="build" className="flex min-h-0 flex-1 flex-col">
+              <Tabs
+                defaultValue="build"
+                className="flex min-h-0 flex-1 flex-col"
+              >
                 <TabsList className="mx-2 mt-1 w-auto shrink-0">
                   <TabsTrigger value="build" className="flex-1 text-xs">
                     Build
@@ -209,13 +212,8 @@ export function Workspace() {
                   <LevelBriefing />
                   <BlockPalette />
                 </TabsContent>
-                <TabsContent
-                  value="history"
-                  className="mt-0 min-h-0 flex-1"
-                >
-                  {level && (
-                    <SubmissionHistory levelSlug={level.slug} />
-                  )}
+                <TabsContent value="history" className="mt-0 min-h-0 flex-1">
+                  {level && <SubmissionHistory levelSlug={level.slug} />}
                 </TabsContent>
               </Tabs>
             </>

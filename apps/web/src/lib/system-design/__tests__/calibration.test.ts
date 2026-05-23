@@ -21,18 +21,19 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 
-import { score, type DesignSpec } from "./harness.ts";
 import type { LevelDefinition } from "../types.ts";
-import { cdnStaticSite } from "../../../data/system-design/levels/cdn-static-site.ts";
-import { simpleWebApp } from "../../../data/system-design/levels/simple-web-app.ts";
+import type { DesignSpec } from "./harness.ts";
 import { apiWithCache } from "../../../data/system-design/levels/api-with-cache.ts";
-import { eCommerceCheckout } from "../../../data/system-design/levels/e-commerce-checkout.ts";
 import { asyncProcessing } from "../../../data/system-design/levels/async-processing.ts";
-import { searchPlatform } from "../../../data/system-design/levels/search-platform.ts";
-import { realtimeChat } from "../../../data/system-design/levels/realtime-chat.ts";
-import { iotTelemetry } from "../../../data/system-design/levels/iot-telemetry.ts";
-import { socialMediaFeed } from "../../../data/system-design/levels/social-media-feed.ts";
+import { cdnStaticSite } from "../../../data/system-design/levels/cdn-static-site.ts";
+import { eCommerceCheckout } from "../../../data/system-design/levels/e-commerce-checkout.ts";
 import { globalApi } from "../../../data/system-design/levels/global-api.ts";
+import { iotTelemetry } from "../../../data/system-design/levels/iot-telemetry.ts";
+import { realtimeChat } from "../../../data/system-design/levels/realtime-chat.ts";
+import { searchPlatform } from "../../../data/system-design/levels/search-platform.ts";
+import { simpleWebApp } from "../../../data/system-design/levels/simple-web-app.ts";
+import { socialMediaFeed } from "../../../data/system-design/levels/social-media-feed.ts";
+import { score } from "./harness.ts";
 
 // Averaged over enough runs to smooth the engine's RNG (chaos/attack jitter).
 const RUNS = 15;
@@ -54,7 +55,11 @@ const cases: LevelCase[] = [
         cdn: { type: "cdn", provider: "Cloudflare" },
         o: { type: "object-storage", provider: "R2" },
       },
-      edges: [["traffic-source", "dns"], ["dns", "cdn"], ["cdn", "o"]],
+      edges: [
+        ["traffic-source", "dns"],
+        ["dns", "cdn"],
+        ["cdn", "o"],
+      ],
     },
     naive: {
       blocks: {
@@ -62,7 +67,11 @@ const cases: LevelCase[] = [
         cdn: { type: "cdn", provider: "CloudFront" },
         o: { type: "object-storage", provider: "S3" },
       },
-      edges: [["traffic-source", "dns"], ["dns", "cdn"], ["cdn", "o"]],
+      edges: [
+        ["traffic-source", "dns"],
+        ["dns", "cdn"],
+        ["cdn", "o"],
+      ],
     },
     // CDN present but bypassed — required block carries no traffic.
     broken: {
@@ -71,7 +80,10 @@ const cases: LevelCase[] = [
         cdn: { type: "cdn", provider: "Cloudflare" },
         o: { type: "object-storage", provider: "R2" },
       },
-      edges: [["traffic-source", "dns"], ["dns", "o"]],
+      edges: [
+        ["traffic-source", "dns"],
+        ["dns", "o"],
+      ],
     },
   },
 
@@ -88,8 +100,12 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "MySQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "cdn"], ["cdn", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db", "SQL"],
       ],
     },
     naive: {
@@ -102,8 +118,12 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "PostgreSQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "cdn"], ["cdn", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db", "SQL"],
       ],
     },
     // DB present but never written to.
@@ -116,7 +136,10 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "PostgreSQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "cdn"], ["cdn", "lb"], ["lb", "app"],
+        ["traffic-source", "dns"],
+        ["dns", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
       ],
     },
   },
@@ -133,8 +156,11 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "MySQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db", "SQL"],
       ],
     },
     naive: {
@@ -146,8 +172,11 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "PostgreSQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db", "SQL"],
       ],
     },
     // No cache on the path → DB saturates and the required cache stays idle.
@@ -160,7 +189,9 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "PostgreSQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
         ["app", "db", "SQL"],
       ],
     },
@@ -180,8 +211,13 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "Aurora" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "fw"], ["fw", "cdn"], ["cdn", "lb"],
-        ["lb", "app"], ["app", "cache", "Redis"], ["app", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "fw"],
+        ["fw", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db", "SQL"],
       ],
     },
     naive: {
@@ -195,8 +231,13 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "Aurora" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "fw"], ["fw", "cdn"], ["cdn", "lb"],
-        ["lb", "app"], ["app", "cache", "Redis"], ["app", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "fw"],
+        ["fw", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db", "SQL"],
       ],
     },
     broken: {
@@ -210,8 +251,12 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "Aurora" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "fw"], ["fw", "cdn"], ["cdn", "lb"],
-        ["lb", "app"], ["app", "cache", "Redis"],
+        ["traffic-source", "dns"],
+        ["dns", "fw"],
+        ["fw", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
       ],
     },
   },
@@ -229,8 +274,12 @@ const cases: LevelCase[] = [
         obj: { type: "object-storage", provider: "R2" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "mq", "AMQP"], ["mq", "worker", "AMQP"], ["worker", "obj", "S3"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "mq", "AMQP"],
+        ["mq", "worker", "AMQP"],
+        ["worker", "obj", "S3"],
       ],
     },
     naive: {
@@ -243,8 +292,12 @@ const cases: LevelCase[] = [
         obj: { type: "object-storage", provider: "S3" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "mq", "AMQP"], ["mq", "worker", "AMQP"], ["worker", "obj", "S3"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "mq", "AMQP"],
+        ["mq", "worker", "AMQP"],
+        ["worker", "obj", "S3"],
       ],
     },
     // Single app + single worker — both saturate, jobs back up, uptime collapses.
@@ -258,8 +311,12 @@ const cases: LevelCase[] = [
         obj: { type: "object-storage", provider: "S3" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "mq", "AMQP"], ["mq", "worker", "AMQP"], ["worker", "obj", "S3"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "mq", "AMQP"],
+        ["mq", "worker", "AMQP"],
+        ["worker", "obj", "S3"],
       ],
     },
   },
@@ -276,8 +333,11 @@ const cases: LevelCase[] = [
         search: { type: "search-engine", provider: "Typesense", replicas: 2 },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "search", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "search", "SQL"],
       ],
     },
     naive: {
@@ -286,11 +346,18 @@ const cases: LevelCase[] = [
         lb: { type: "load-balancer", provider: "Nginx" },
         app: { type: "app-server", provider: "Node.js", replicas: 4 },
         cache: { type: "cache", provider: "Redis" },
-        search: { type: "search-engine", provider: "Elasticsearch", replicas: 2 },
+        search: {
+          type: "search-engine",
+          provider: "Elasticsearch",
+          replicas: 2,
+        },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "search", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "search", "SQL"],
       ],
     },
     // No cache, single app, single search node — search saturates.
@@ -299,10 +366,16 @@ const cases: LevelCase[] = [
         dns: { type: "dns", provider: "Route 53" },
         lb: { type: "load-balancer", provider: "Nginx" },
         app: { type: "app-server", provider: "Node.js", replicas: 1 },
-        search: { type: "search-engine", provider: "Elasticsearch", replicas: 1 },
+        search: {
+          type: "search-engine",
+          provider: "Elasticsearch",
+          replicas: 1,
+        },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
         ["app", "search", "SQL"],
       ],
     },
@@ -320,8 +393,11 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "Cloud SQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "ws"],
-        ["ws", "cache", "Redis"], ["ws", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "ws"],
+        ["ws", "cache", "Redis"],
+        ["ws", "db", "SQL"],
       ],
     },
     naive: {
@@ -333,8 +409,11 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "PostgreSQL", replicas: 2 },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "ws"],
-        ["ws", "cache", "Redis"], ["ws", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "ws"],
+        ["ws", "cache", "Redis"],
+        ["ws", "db", "SQL"],
       ],
     },
     // Single WS replica — SPOF and capacity-starved during the streamer surge.
@@ -347,8 +426,11 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "PostgreSQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "ws"],
-        ["ws", "cache", "Redis"], ["ws", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "ws"],
+        ["ws", "cache", "Redis"],
+        ["ws", "db", "SQL"],
       ],
     },
   },
@@ -366,8 +448,12 @@ const cases: LevelCase[] = [
         tsdb: { type: "time-series-db", provider: "VictoriaMetrics" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "mq", "AMQP"], ["mq", "stream", "AMQP"], ["stream", "tsdb", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "mq", "AMQP"],
+        ["mq", "stream", "AMQP"],
+        ["stream", "tsdb", "SQL"],
       ],
     },
     naive: {
@@ -380,8 +466,12 @@ const cases: LevelCase[] = [
         tsdb: { type: "time-series-db", provider: "InfluxDB" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "mq", "AMQP"], ["mq", "stream", "AMQP"], ["stream", "tsdb", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "mq", "AMQP"],
+        ["mq", "stream", "AMQP"],
+        ["stream", "tsdb", "SQL"],
       ],
     },
     // Undersized ingest + cheap low-throughput TSDB — writes overflow everywhere.
@@ -395,8 +485,12 @@ const cases: LevelCase[] = [
         tsdb: { type: "time-series-db", provider: "Prometheus" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "lb"], ["lb", "app"],
-        ["app", "mq", "AMQP"], ["mq", "stream", "AMQP"], ["stream", "tsdb", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "lb"],
+        ["lb", "app"],
+        ["app", "mq", "AMQP"],
+        ["mq", "stream", "AMQP"],
+        ["stream", "tsdb", "SQL"],
       ],
     },
   },
@@ -415,8 +509,13 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "Aurora" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "fw"], ["fw", "cdn"], ["cdn", "lb"],
-        ["lb", "app"], ["app", "cache", "Redis"], ["app", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "fw"],
+        ["fw", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db", "SQL"],
       ],
     },
     naive: {
@@ -429,8 +528,12 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "PostgreSQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "cdn"], ["cdn", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "db", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db", "SQL"],
       ],
     },
     // Cache present but bypassed — DB sees every read and required cache idles.
@@ -444,7 +547,10 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "PostgreSQL" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "cdn"], ["cdn", "lb"], ["lb", "app"],
+        ["traffic-source", "dns"],
+        ["dns", "cdn"],
+        ["cdn", "lb"],
+        ["lb", "app"],
         ["app", "db", "SQL"],
       ],
     },
@@ -467,9 +573,16 @@ const cases: LevelCase[] = [
         db2: { type: "sql-db", provider: "Aurora" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "fw"], ["fw", "rl"], ["rl", "cdn"],
-        ["cdn", "gw"], ["gw", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "db1", "SQL"], ["app", "db2", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "fw"],
+        ["fw", "rl"],
+        ["rl", "cdn"],
+        ["cdn", "gw"],
+        ["gw", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db1", "SQL"],
+        ["app", "db2", "SQL"],
       ],
     },
     naive: {
@@ -486,9 +599,16 @@ const cases: LevelCase[] = [
         db2: { type: "sql-db", provider: "Aurora" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "fw"], ["fw", "rl"], ["rl", "cdn"],
-        ["cdn", "gw"], ["gw", "lb"], ["lb", "app"],
-        ["app", "cache", "Redis"], ["app", "db1", "SQL"], ["app", "db2", "SQL"],
+        ["traffic-source", "dns"],
+        ["dns", "fw"],
+        ["fw", "rl"],
+        ["rl", "cdn"],
+        ["cdn", "gw"],
+        ["gw", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
+        ["app", "db1", "SQL"],
+        ["app", "db2", "SQL"],
       ],
     },
     // DB present but never written to — required block carries no traffic.
@@ -505,8 +625,14 @@ const cases: LevelCase[] = [
         db: { type: "sql-db", provider: "Aurora" },
       },
       edges: [
-        ["traffic-source", "dns"], ["dns", "fw"], ["fw", "rl"], ["rl", "cdn"],
-        ["cdn", "gw"], ["gw", "lb"], ["lb", "app"], ["app", "cache", "Redis"],
+        ["traffic-source", "dns"],
+        ["dns", "fw"],
+        ["fw", "rl"],
+        ["rl", "cdn"],
+        ["cdn", "gw"],
+        ["gw", "lb"],
+        ["lb", "app"],
+        ["app", "cache", "Redis"],
       ],
     },
   },

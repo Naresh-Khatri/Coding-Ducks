@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
 
 /** Scroll-triggered fade + rise. Animates once when it enters the viewport. */
 export function Reveal({

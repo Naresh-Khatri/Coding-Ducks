@@ -26,9 +26,10 @@ export function BookmarkButton({
       { problemId },
       {
         enabled: !!session,
-        initialData: initialBookmarked != null
-          ? { bookmarked: initialBookmarked }
-          : undefined,
+        initialData:
+          initialBookmarked != null
+            ? { bookmarked: initialBookmarked }
+            : undefined,
       },
     ),
   );
@@ -60,9 +61,7 @@ export function BookmarkButton({
       <Bookmark
         className={cn(
           "h-4 w-4 transition-colors",
-          isBookmarked
-            ? "fill-primary text-primary"
-            : "text-muted-foreground",
+          isBookmarked ? "fill-primary text-primary" : "text-muted-foreground",
         )}
       />
     </Button>

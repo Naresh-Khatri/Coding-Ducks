@@ -76,10 +76,7 @@ export function generateCppDriver(
   const serializeResult = cppSerialize("actual", returnType);
 
   const argsInit = testData
-    .map(
-      (td) =>
-        `{${td.args.map((a) => cppStringLiteral(a)).join(", ")}}`,
-    )
+    .map((td) => `{${td.args.map((a) => cppStringLiteral(a)).join(", ")}}`)
     .join(",\n        ");
 
   return `
@@ -197,4 +194,3 @@ ${parseStatements}
 }
 `;
 }
-

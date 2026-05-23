@@ -1,6 +1,9 @@
-import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { and, desc, eq, ilike, lt, or } from "drizzle-orm";
+import { z } from "zod";
+
+import type { CollabRole } from "@acme/auth/collab-token";
+import { signCollabToken } from "@acme/auth/collab-token";
 import {
   ducklet,
   duckletMember,
@@ -9,10 +12,9 @@ import {
   userProfile,
 } from "@acme/db/schema";
 import { getPublicUrl } from "@acme/storage";
-import { signCollabToken } from "@acme/auth/collab-token";
-import type { CollabRole } from "@acme/auth/collab-token";
-import { eq, desc, and, or, ilike, lt } from "drizzle-orm";
+
 import { track } from "../telemetry";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 const COLLAB_TOKEN_TTL_SECONDS = 60 * 60;
 
@@ -43,13 +45,15 @@ export const duckletRouter = createTRPCRouter({
    */
   list: publicProcedure
     .input(
-      z.object({
-        limit: z.number().min(1).max(50).default(20),
-        cursor: z.number().nullish(),
-        onlyMine: z.boolean().optional(),
-        search: z.string().trim().max(100).optional(),
-        sort: z.enum(["recent", "oldest", "updated"]).default("recent"),
-      }).optional()
+      z
+        .object({
+          limit: z.number().min(1).max(50).default(20),
+          cursor: z.number().nullish(),
+          onlyMine: z.boolean().optional(),
+          search: z.string().trim().max(100).optional(),
+          sort: z.enum(["recent", "oldest", "updated"]).default("recent"),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const limit = input?.limit ?? 20;
@@ -66,8 +70,8 @@ export const duckletRouter = createTRPCRouter({
         conditions.push(
           or(
             eq(ducklet.isPublic, true),
-            eq(ducklet.ownerId, ctx.session.user.id)
-          )
+            eq(ducklet.ownerId, ctx.session.user.id),
+          ),
         );
       } else {
         conditions.push(eq(ducklet.isPublic, true));
@@ -133,7 +137,10 @@ export const duckletRouter = createTRPCRouter({
         .limit(1);
 
       if (!result) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Ducklet not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Ducklet not found",
+        });
       }
 
       // Short-circuit: private ducklet with no session user can't read at all.
@@ -214,7 +221,10 @@ export const duckletRouter = createTRPCRouter({
         .limit(1);
 
       if (!existing) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Ducklet not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Ducklet not found",
+        });
       }
 
       const userId = ctx.session.user.id;
@@ -230,8 +240,8 @@ export const duckletRouter = createTRPCRouter({
             and(
               eq(duckletMember.duckletId, input.duckletId),
               eq(duckletMember.userId, userId),
-              eq(duckletMember.status, "active")
-            )
+              eq(duckletMember.status, "active"),
+            ),
           )
           .limit(1);
 
@@ -261,7 +271,7 @@ export const duckletRouter = createTRPCRouter({
           role,
           exp: Math.floor(Date.now() / 1000) + COLLAB_TOKEN_TTL_SECONDS,
         },
-        process.env.BETTER_AUTH_SECRET ?? ""
+        process.env.BETTER_AUTH_SECRET ?? "",
       );
 
       return { token, role };
@@ -279,7 +289,7 @@ export const duckletRouter = createTRPCRouter({
         // Cap at ~5MB base64 to prevent oversized initial snapshots from
         // blowing past TRPC payload limits.
         yjsData: z.string().max(5_000_000).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [newDucklet] = await ctx.db
@@ -310,7 +320,7 @@ export const duckletRouter = createTRPCRouter({
       z.object({
         id: z.number(),
         name: z.string().min(1).max(100).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [source] = await ctx.db
@@ -320,7 +330,10 @@ export const duckletRouter = createTRPCRouter({
         .limit(1);
 
       if (!source) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Ducklet not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Ducklet not found",
+        });
       }
 
       // Caller must be able to read the source: public, owner, or active member.
@@ -333,8 +346,8 @@ export const duckletRouter = createTRPCRouter({
             and(
               eq(duckletMember.duckletId, input.id),
               eq(duckletMember.userId, userId),
-              eq(duckletMember.status, "active")
-            )
+              eq(duckletMember.status, "active"),
+            ),
           )
           .limit(1);
 
@@ -377,7 +390,7 @@ export const duckletRouter = createTRPCRouter({
         name: z.string().min(1).max(100).optional(),
         description: z.string().max(2000).optional(),
         isPublic: z.boolean().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...updates } = input;
@@ -438,7 +451,7 @@ export const duckletRouter = createTRPCRouter({
         duckletId: z.number(),
         userId: z.string().max(100),
         role: z.enum(["editor", "viewer"]).default("viewer"),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Check ownership
@@ -470,7 +483,7 @@ export const duckletRouter = createTRPCRouter({
         duckletId: z.number(),
         userId: z.string().max(100),
         role: z.enum(["editor", "viewer"]),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [existing] = await ctx.db
@@ -489,8 +502,8 @@ export const duckletRouter = createTRPCRouter({
         .where(
           and(
             eq(duckletMember.duckletId, input.duckletId),
-            eq(duckletMember.userId, input.userId)
-          )
+            eq(duckletMember.userId, input.userId),
+          ),
         )
         .limit(1);
 
@@ -504,8 +517,8 @@ export const duckletRouter = createTRPCRouter({
         .where(
           and(
             eq(duckletMember.duckletId, input.duckletId),
-            eq(duckletMember.userId, input.userId)
-          )
+            eq(duckletMember.userId, input.userId),
+          ),
         );
 
       track("ducklet.member.role_changed", {
@@ -526,7 +539,7 @@ export const duckletRouter = createTRPCRouter({
       z.object({
         duckletId: z.number(),
         userId: z.string().max(100),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Check ownership
@@ -545,8 +558,8 @@ export const duckletRouter = createTRPCRouter({
         .where(
           and(
             eq(duckletMember.duckletId, input.duckletId),
-            eq(duckletMember.userId, input.userId)
-          )
+            eq(duckletMember.userId, input.userId),
+          ),
         );
 
       track("ducklet.member.removed", {
@@ -567,7 +580,7 @@ export const duckletRouter = createTRPCRouter({
         duckletId: z.number(),
         username: z.string().min(1).max(100),
         role: z.enum(["editor", "viewer"]).default("viewer"),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // 1. Verify Ducklet Ownership
@@ -578,7 +591,10 @@ export const duckletRouter = createTRPCRouter({
         .limit(1);
 
       if (!existingDucklet || existingDucklet.ownerId !== ctx.session.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to invite users" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to invite users",
+        });
       }
 
       // 2. Find User by Username
@@ -593,7 +609,10 @@ export const duckletRouter = createTRPCRouter({
       }
 
       if (targetUser.userId === ctx.session.user.id) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot invite yourself" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot invite yourself",
+        });
       }
 
       // 3. Check if already a member/invited
@@ -603,16 +622,22 @@ export const duckletRouter = createTRPCRouter({
         .where(
           and(
             eq(duckletMember.duckletId, input.duckletId),
-            eq(duckletMember.userId, targetUser.userId)
-          )
+            eq(duckletMember.userId, targetUser.userId),
+          ),
         )
         .limit(1);
 
       if (existingMember) {
         if (existingMember.status === "active") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "User is already a member" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User is already a member",
+          });
         } else if (existingMember.status === "invited") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "User is already invited" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User is already invited",
+          });
         } else if (existingMember.status === "requested") {
           // If they requested, just approve them by updating to active/invited
           await ctx.db
@@ -621,8 +646,8 @@ export const duckletRouter = createTRPCRouter({
             .where(
               and(
                 eq(duckletMember.duckletId, input.duckletId),
-                eq(duckletMember.userId, targetUser.userId)
-              )
+                eq(duckletMember.userId, targetUser.userId),
+              ),
             );
           return { success: true, message: "Request approved" };
         }
@@ -671,7 +696,10 @@ export const duckletRouter = createTRPCRouter({
       }
 
       if (existingDucklet.ownerId === ctx.session.user.id) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "You are the owner" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are the owner",
+        });
       }
 
       // 2. Check existing membership
@@ -681,14 +709,16 @@ export const duckletRouter = createTRPCRouter({
         .where(
           and(
             eq(duckletMember.duckletId, input.duckletId),
-            eq(duckletMember.userId, ctx.session.user.id)
-          )
+            eq(duckletMember.userId, ctx.session.user.id),
+          ),
         )
         .limit(1);
 
       if (existingMember) {
-        if (existingMember.status === "active") return { success: true, message: "Already a member" };
-        if (existingMember.status === "requested") return { success: true, message: "Request already sending" };
+        if (existingMember.status === "active")
+          return { success: true, message: "Already a member" };
+        if (existingMember.status === "requested")
+          return { success: true, message: "Request already sending" };
         if (existingMember.status === "invited") {
           // If invited, auto-accept
           await ctx.db
@@ -697,8 +727,8 @@ export const duckletRouter = createTRPCRouter({
             .where(
               and(
                 eq(duckletMember.duckletId, input.duckletId),
-                eq(duckletMember.userId, ctx.session.user.id)
-              )
+                eq(duckletMember.userId, ctx.session.user.id),
+              ),
             );
           return { success: true, message: "Joined via invitation" };
         }
@@ -733,13 +763,16 @@ export const duckletRouter = createTRPCRouter({
           and(
             eq(duckletMember.duckletId, input.duckletId),
             eq(duckletMember.userId, ctx.session.user.id),
-            eq(duckletMember.status, "invited")
-          )
+            eq(duckletMember.status, "invited"),
+          ),
         )
         .limit(1);
 
       if (!member) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "No invitation found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No invitation found",
+        });
       }
 
       if (input.accept) {
@@ -749,8 +782,8 @@ export const duckletRouter = createTRPCRouter({
           .where(
             and(
               eq(duckletMember.duckletId, input.duckletId),
-              eq(duckletMember.userId, ctx.session.user.id)
-            )
+              eq(duckletMember.userId, ctx.session.user.id),
+            ),
           );
       } else {
         await ctx.db
@@ -758,8 +791,8 @@ export const duckletRouter = createTRPCRouter({
           .where(
             and(
               eq(duckletMember.duckletId, input.duckletId),
-              eq(duckletMember.userId, ctx.session.user.id)
-            )
+              eq(duckletMember.userId, ctx.session.user.id),
+            ),
           );
       }
 
@@ -776,7 +809,7 @@ export const duckletRouter = createTRPCRouter({
         userId: z.string().max(100),
         accept: z.boolean(),
         role: z.enum(["editor", "viewer"]).default("viewer"),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // 1. Verify Ownership
@@ -798,13 +831,16 @@ export const duckletRouter = createTRPCRouter({
           and(
             eq(duckletMember.duckletId, input.duckletId),
             eq(duckletMember.userId, input.userId),
-            eq(duckletMember.status, "requested")
-          )
+            eq(duckletMember.status, "requested"),
+          ),
         )
         .limit(1);
 
       if (!member) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "No pending request found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No pending request found",
+        });
       }
 
       if (input.accept) {
@@ -814,8 +850,8 @@ export const duckletRouter = createTRPCRouter({
           .where(
             and(
               eq(duckletMember.duckletId, input.duckletId),
-              eq(duckletMember.userId, input.userId)
-            )
+              eq(duckletMember.userId, input.userId),
+            ),
           );
       } else {
         await ctx.db
@@ -823,8 +859,8 @@ export const duckletRouter = createTRPCRouter({
           .where(
             and(
               eq(duckletMember.duckletId, input.duckletId),
-              eq(duckletMember.userId, input.userId)
-            )
+              eq(duckletMember.userId, input.userId),
+            ),
           );
       }
 
@@ -842,18 +878,25 @@ export const duckletRouter = createTRPCRouter({
         duckletId: z.number(),
         limit: z.number().min(1).max(100).default(50),
         cursor: z.string().datetime().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       // Same access rules as byId: owner, active member, or public reader.
       const [existing] = await ctx.db
-        .select({ id: ducklet.id, ownerId: ducklet.ownerId, isPublic: ducklet.isPublic })
+        .select({
+          id: ducklet.id,
+          ownerId: ducklet.ownerId,
+          isPublic: ducklet.isPublic,
+        })
         .from(ducklet)
         .where(eq(ducklet.id, input.duckletId))
         .limit(1);
 
       if (!existing) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Ducklet not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Ducklet not found",
+        });
       }
 
       const userId = ctx.session.user.id;
@@ -865,8 +908,8 @@ export const duckletRouter = createTRPCRouter({
             and(
               eq(duckletMember.duckletId, input.duckletId),
               eq(duckletMember.userId, userId),
-              eq(duckletMember.status, "active")
-            )
+              eq(duckletMember.status, "active"),
+            ),
           )
           .limit(1);
 
@@ -924,11 +967,15 @@ export const duckletRouter = createTRPCRouter({
       z.object({
         duckletId: z.number(),
         label: z.string().trim().max(200).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [existing] = await ctx.db
-        .select({ id: ducklet.id, ownerId: ducklet.ownerId, yjsData: ducklet.yjsData })
+        .select({
+          id: ducklet.id,
+          ownerId: ducklet.ownerId,
+          yjsData: ducklet.yjsData,
+        })
         .from(ducklet)
         .where(eq(ducklet.id, input.duckletId))
         .limit(1);
@@ -995,7 +1042,10 @@ export const duckletRouter = createTRPCRouter({
           creatorUsername: userProfile.username,
         })
         .from(duckletSnapshot)
-        .leftJoin(userProfile, eq(duckletSnapshot.createdBy, userProfile.userId))
+        .leftJoin(
+          userProfile,
+          eq(duckletSnapshot.createdBy, userProfile.userId),
+        )
         .where(eq(duckletSnapshot.duckletId, input.duckletId))
         .orderBy(desc(duckletSnapshot.createdAt));
 
@@ -1014,7 +1064,7 @@ export const duckletRouter = createTRPCRouter({
       z.object({
         duckletId: z.number(),
         snapshotId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [existing] = await ctx.db
@@ -1033,13 +1083,16 @@ export const duckletRouter = createTRPCRouter({
         .where(
           and(
             eq(duckletSnapshot.id, input.snapshotId),
-            eq(duckletSnapshot.duckletId, input.duckletId)
-          )
+            eq(duckletSnapshot.duckletId, input.duckletId),
+          ),
         )
         .limit(1);
 
       if (!snap) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Snapshot not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Snapshot not found",
+        });
       }
 
       await ctx.db
@@ -1064,7 +1117,7 @@ export const duckletRouter = createTRPCRouter({
       z.object({
         duckletId: z.number(),
         snapshotId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const [existing] = await ctx.db
@@ -1082,8 +1135,8 @@ export const duckletRouter = createTRPCRouter({
         .where(
           and(
             eq(duckletSnapshot.id, input.snapshotId),
-            eq(duckletSnapshot.duckletId, input.duckletId)
-          )
+            eq(duckletSnapshot.duckletId, input.duckletId),
+          ),
         );
 
       return { success: true };

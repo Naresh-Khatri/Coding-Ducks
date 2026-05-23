@@ -1,8 +1,9 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
-import { sql, relations } from "drizzle-orm";
-import { attemptStatusEnum } from "./enums";
+import { relations, sql } from "drizzle-orm";
+import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+
 import { user } from "./auth-schema";
 import { challenge } from "./challenges";
+import { attemptStatusEnum } from "./enums";
 
 export const challengeAttempt = pgTable("challenge_attempt", {
   id: serial("id").primaryKey(),
@@ -36,16 +37,19 @@ export const challengeAttempt = pgTable("challenge_attempt", {
   updatedAt: timestamp("updated_at").$onUpdateFn(() => sql`now()`),
 });
 
-export const challengeAttemptRelations = relations(challengeAttempt, ({ one }) => ({
-  challenge: one(challenge, {
-    fields: [challengeAttempt.challengeId],
-    references: [challenge.id],
+export const challengeAttemptRelations = relations(
+  challengeAttempt,
+  ({ one }) => ({
+    challenge: one(challenge, {
+      fields: [challengeAttempt.challengeId],
+      references: [challenge.id],
+    }),
+    user: one(user, {
+      fields: [challengeAttempt.userId],
+      references: [user.id],
+    }),
   }),
-  user: one(user, {
-    fields: [challengeAttempt.userId],
-    references: [user.id],
-  }),
-}));
+);
 
 export type ChallengeAttempt = typeof challengeAttempt.$inferSelect;
 export type NewChallengeAttempt = typeof challengeAttempt.$inferInsert;

@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Bookmark, ChevronRight, Lightbulb, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useMutation, useQuery } from "@tanstack/react-query";
 
+import type { ProblemDetail, SubmissionDetail } from "../types";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { cn } from "~/lib/utils";
 import { getLanguageLabel } from "~/lib/languages";
+import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
-import type { ProblemDetail, SubmissionDetail } from "../types";
 import { DiscussionPanel } from "./discussion-panel";
 import { markdownComponents } from "./markdown-components";
 
@@ -117,9 +117,7 @@ export function LeftPanel({
                   isBookmarked ? "Remove bookmark" : "Bookmark problem"
                 }
                 disabled={toggleBookmark.isPending}
-                onClick={() =>
-                  toggleBookmark.mutate({ problemId: problem.id })
-                }
+                onClick={() => toggleBookmark.mutate({ problemId: problem.id })}
                 className="ml-auto h-8 w-8"
               >
                 <Bookmark
@@ -183,7 +181,7 @@ export function LeftPanel({
                   <button
                     onClick={() => toggleHint(i)}
                     aria-expanded={!!openHints[i]}
-                    className="hover:bg-white/[0.03] flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-white/[0.03]"
                   >
                     <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
                     Hint {i + 1}
@@ -278,10 +276,7 @@ export function LeftPanel({
 
       {/* Discussion */}
       <TabsContent value="discussion" className="m-0 flex-1 overflow-hidden">
-        <DiscussionPanel
-          problem={problem}
-          isAuthenticated={isAuthenticated}
-        />
+        <DiscussionPanel problem={problem} isAuthenticated={isAuthenticated} />
       </TabsContent>
 
       {/* Submissions */}

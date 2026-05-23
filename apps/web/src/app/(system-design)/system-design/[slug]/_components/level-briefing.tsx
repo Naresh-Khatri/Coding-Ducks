@@ -1,6 +1,7 @@
 "use client";
 
 import { Target } from "lucide-react";
+
 import { useSystemDesignStore } from "~/lib/system-design/store";
 
 export function LevelBriefing() {
@@ -14,7 +15,7 @@ export function LevelBriefing() {
       {/* Objective */}
       <div className="mb-1.5 flex items-center gap-1.5">
         <Target size={13} className="text-primary shrink-0" />
-        <span className="text-xs font-semibold uppercase tracking-wider">
+        <span className="text-xs font-semibold tracking-wider uppercase">
           Objective
         </span>
       </div>

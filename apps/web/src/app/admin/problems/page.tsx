@@ -2,33 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTRPC } from "~/trpc/react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Badge } from "~/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+  Copy,
+  Eye,
+  EyeOff,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,19 +26,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
-  Plus,
-  Search,
-  MoreHorizontal,
-  Pencil,
-  Copy,
-  Trash2,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { cn } from "~/lib/utils";
-import { toast } from "sonner";
+import { useTRPC } from "~/trpc/react";
 import { ProblemFormDialog } from "./components/problem-form-dialog";
 
 const DIFFICULTY_COLORS = {
@@ -70,7 +71,9 @@ export default function AdminProblemsPage() {
 
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
+  const [selectedProblemId, setSelectedProblemId] = useState<number | null>(
+    null,
+  );
 
   const { data, isLoading, refetch } = useQuery(
     trpc.problem.list.queryOptions({
@@ -80,7 +83,7 @@ export default function AdminProblemsPage() {
           ? undefined
           : (difficulty as "easy" | "medium" | "hard" | undefined),
       limit: 50,
-    })
+    }),
   );
 
   const updateMutation = useMutation(
@@ -92,7 +95,7 @@ export default function AdminProblemsPage() {
       onError: (error) => {
         toast.error(error.message);
       },
-    })
+    }),
   );
 
   const deleteMutation = useMutation(
@@ -104,7 +107,7 @@ export default function AdminProblemsPage() {
       onError: (error) => {
         toast.error(error.message);
       },
-    })
+    }),
   );
 
   const duplicateMutation = useMutation(
@@ -116,7 +119,7 @@ export default function AdminProblemsPage() {
       onError: (error) => {
         toast.error(error.message);
       },
-    })
+    }),
   );
 
   const handleToggleActive = (id: number, currentStatus: boolean) => {
@@ -145,7 +148,7 @@ export default function AdminProblemsPage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Problems</h1>
           <p className="text-muted-foreground">
@@ -159,9 +162,9 @@ export default function AdminProblemsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+        <div className="relative max-w-sm flex-1">
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Search problems..."
             value={search}
@@ -184,7 +187,7 @@ export default function AdminProblemsPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border bg-card">
+      <div className="bg-card rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -199,15 +202,15 @@ export default function AdminProblemsPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                <TableCell colSpan={6} className="py-12 text-center">
+                  <Loader2 className="text-muted-foreground mx-auto h-6 w-6 animate-spin" />
                 </TableCell>
               </TableRow>
             ) : data?.items.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
-                  className="text-center py-12 text-muted-foreground"
+                  className="text-muted-foreground py-12 text-center"
                 >
                   No problems found. Create your first problem to get started.
                 </TableCell>
@@ -215,18 +218,18 @@ export default function AdminProblemsPage() {
             ) : (
               data?.items.map((problem, index) => (
                 <TableRow key={problem.id}>
-                  <TableCell className="font-mono text-muted-foreground">
+                  <TableCell className="text-muted-foreground font-mono">
                     {index + 1}
                   </TableCell>
                   <TableCell>
                     <div>
                       <button
                         onClick={() => openEditDialog(problem.id)}
-                        className="font-medium hover:underline text-left"
+                        className="text-left font-medium hover:underline"
                       >
                         {problem.title}
                       </button>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         /{problem.slug}
                       </div>
                     </div>
@@ -235,8 +238,8 @@ export default function AdminProblemsPage() {
                     <Badge
                       variant="outline"
                       className={cn(
-                        "capitalize font-normal",
-                        DIFFICULTY_COLORS[problem.difficulty]
+                        "font-normal capitalize",
+                        DIFFICULTY_COLORS[problem.difficulty],
                       )}
                     >
                       {problem.difficulty}
@@ -247,13 +250,13 @@ export default function AdminProblemsPage() {
                       {problem.tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-secondary-foreground"
+                          className="bg-secondary text-secondary-foreground rounded-full px-1.5 py-0.5 text-[10px]"
                         >
                           {tag}
                         </span>
                       ))}
                       {problem.tags.length > 3 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                        <span className="bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 text-[10px]">
                           +{problem.tags.length - 3}
                         </span>
                       )}
@@ -261,7 +264,11 @@ export default function AdminProblemsPage() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={(problem as any).isActive !== false ? "default" : "secondary"}
+                      variant={
+                        (problem as any).isActive !== false
+                          ? "default"
+                          : "secondary"
+                      }
                       className="text-xs"
                     >
                       {(problem as any).isActive !== false ? "Active" : "Draft"}
@@ -275,17 +282,24 @@ export default function AdminProblemsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEditDialog(problem.id)}>
+                        <DropdownMenuItem
+                          onClick={() => openEditDialog(problem.id)}
+                        >
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDuplicate(problem.id)}>
+                        <DropdownMenuItem
+                          onClick={() => handleDuplicate(problem.id)}
+                        >
                           <Copy className="mr-2 h-4 w-4" />
                           Duplicate
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
-                            handleToggleActive(problem.id, (problem as any).isActive !== false)
+                            handleToggleActive(
+                              problem.id,
+                              (problem as any).isActive !== false,
+                            )
                           }
                         >
                           {(problem as any).isActive !== false ? (
@@ -320,19 +334,22 @@ export default function AdminProblemsPage() {
 
       {/* Pagination info */}
       {data && (
-        <div className="mt-4 text-sm text-muted-foreground">
+        <div className="text-muted-foreground mt-4 text-sm">
           Showing {data.items.length} of {data.total} problems
         </div>
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog
+        open={deleteId !== null}
+        onOpenChange={() => setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Problem</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this problem? This action cannot be
-              undone. All associated submissions will also be deleted.
+              Are you sure you want to delete this problem? This action cannot
+              be undone. All associated submissions will also be deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

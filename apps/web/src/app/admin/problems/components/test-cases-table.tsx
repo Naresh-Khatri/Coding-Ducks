@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+import type {
+  DragEndEvent} from "@dnd-kit/core";
 import {
   closestCenter,
   DndContext,
-  DragEndEvent,
   KeyboardSensor,
   MouseSensor,
   TouchSensor,
@@ -18,18 +19,25 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
+import type {
   ColumnDef,
+  Row} from "@tanstack/react-table";
+import {
   flexRender,
   getCoreRowModel,
-  Row,
   useReactTable,
 } from "@tanstack/react-table";
 import { Eye, EyeOff, GripVertical, Plus, Trash2 } from "lucide-react";
-import { Control, useFieldArray } from "react-hook-form";
+import type { Control} from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
 
 import { Button } from "~/components/ui/button";
-import { FormControl, FormField, FormItem, FormMessage } from "~/components/ui/form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "~/components/ui/form";
 import {
   Table,
   TableBody,
@@ -87,38 +95,45 @@ const DraggableRow = ({ row }: { row: Row<TestCase & { id: string }> }) => {
             <div
               {...attributes}
               {...listeners}
-              className="cursor-move text-muted-foreground/50 hover:text-foreground"
+              className="text-muted-foreground/50 hover:text-foreground cursor-move"
             >
               {flexRender(cell.column.columnDef.cell, cell.getContext())}
             </div>
-
-          ) : flexRender(cell.column.columnDef.cell, cell.getContext())}
+          ) : (
+            flexRender(cell.column.columnDef.cell, cell.getContext())
+          )}
         </TableCell>
       ))}
     </TableRow>
   );
 };
 
-export function TestCasesTable({ control, name, signature }: TestCasesTableProps) {
+export function TestCasesTable({
+  control,
+  name,
+  signature,
+}: TestCasesTableProps) {
   const { fields, append, remove, move } = useFieldArray({
     control,
     name,
   });
 
-  const data = useMemo(() => fields as unknown as (TestCase & { id: string })[], [fields]);
+  const data = useMemo(
+    () => fields as unknown as (TestCase & { id: string })[],
+    [fields],
+  );
 
-  const columns = useMemo<ColumnDef<TestCase & { id: string }>[]>(
-    () => {
-      const baseCols: ColumnDef<TestCase & { id: string }>[] = [
-        {
-          id: "drag-handle",
-          header: "",
-          size: 40,
-          cell: () => <GripVertical className="h-4 w-4" />,
-        },
-        // Dynamic Input Column(s)
-        ...(signature && signature.params
-          ? signature.params.map((param: any, pIndex: number) => ({
+  const columns = useMemo<ColumnDef<TestCase & { id: string }>[]>(() => {
+    const baseCols: ColumnDef<TestCase & { id: string }>[] = [
+      {
+        id: "drag-handle",
+        header: "",
+        size: 40,
+        cell: () => <GripVertical className="h-4 w-4" />,
+      },
+      // Dynamic Input Column(s)
+      ...(signature?.params
+        ? signature.params.map((param: any, pIndex: number) => ({
             accessorKey: `args.${pIndex}`,
             header: `${param.name} (${param.type})`,
             cell: ({ row }: any) => {
@@ -132,7 +147,7 @@ export function TestCasesTable({ control, name, signature }: TestCasesTableProps
                       <FormControl>
                         <Textarea
                           placeholder={param.name}
-                          className="min-h-[2.5rem] py-1.5 text-xs font-mono leading-relaxed resize-y"
+                          className="min-h-[2.5rem] resize-y py-1.5 font-mono text-xs leading-relaxed"
                           rows={1}
                           {...field}
                           value={field.value || ""} // Ensure controlled
@@ -145,7 +160,7 @@ export function TestCasesTable({ control, name, signature }: TestCasesTableProps
               );
             },
           }))
-          : [
+        : [
             {
               accessorKey: "input",
               header: "Input",
@@ -160,7 +175,7 @@ export function TestCasesTable({ control, name, signature }: TestCasesTableProps
                         <FormControl>
                           <Textarea
                             placeholder="Input"
-                            className="min-h-[2.5rem] py-1.5 text-xs font-mono leading-relaxed resize-y"
+                            className="min-h-[2.5rem] resize-y py-1.5 font-mono text-xs leading-relaxed"
                             rows={1}
                             {...field}
                           />
@@ -173,86 +188,88 @@ export function TestCasesTable({ control, name, signature }: TestCasesTableProps
               },
             },
           ]),
-        {
-          accessorKey: "output", // Mopup for both 'output' and 'expected'
-          header: signature ? "Expected Output" : "Output",
-          cell: ({ row }) => {
-            const index = row.index;
-            return (
+      {
+        accessorKey: "output", // Mopup for both 'output' and 'expected'
+        header: signature ? "Expected Output" : "Output",
+        cell: ({ row }) => {
+          const index = row.index;
+          return (
+            <FormField
+              control={control}
+              name={`${name}.${index}.${signature ? "expected" : "output"}`}
+              render={({ field }) => (
+                <FormItem className="space-y-0">
+                  <FormControl>
+                    <Textarea
+                      placeholder={
+                        signature ? "Expected Return Value" : "Output"
+                      }
+                      className="min-h-[2.5rem] resize-y py-1.5 font-mono text-xs leading-relaxed"
+                      rows={1}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-[10px]" />
+                </FormItem>
+              )}
+            />
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        size: 80,
+        cell: ({ row }) => {
+          const index = row.index;
+          return (
+            <div className="flex items-center gap-1">
               <FormField
                 control={control}
-                name={`${name}.${index}.${signature ? "expected" : "output"}`}
+                name={`${name}.${index}.isPublic`}
                 render={({ field }) => (
                   <FormItem className="space-y-0">
                     <FormControl>
-                      <Textarea
-                        placeholder={signature ? "Expected Return Value" : "Output"}
-                        className="min-h-[2.5rem] py-1.5 text-xs font-mono leading-relaxed resize-y"
-                        rows={1}
-                        {...field}
-                      />
+                      <button
+                        type="button"
+                        onClick={() => field.onChange(!field.value)}
+                        className={cn(
+                          "flex h-8 w-8 items-center justify-center rounded-sm transition-colors",
+                          field.value
+                            ? "bg-green-500/10 text-green-600 hover:bg-green-500/20"
+                            : "text-muted-foreground hover:bg-muted",
+                        )}
+                        title={
+                          field.value ? "Public Test Case" : "Hidden Test Case"
+                        }
+                      >
+                        {field.value ? (
+                          <Eye className="h-4 w-4" />
+                        ) : (
+                          <EyeOff className="h-4 w-4" />
+                        )}
+                      </button>
                     </FormControl>
-                    <FormMessage className="text-[10px]" />
                   </FormItem>
                 )}
               />
-            )
-          },
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                onClick={() => remove(index)}
+                title="Remove Test Case"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          );
         },
-        {
-          id: "actions",
-          header: "Actions",
-          size: 80,
-          cell: ({ row }) => {
-            const index = row.index;
-            return (
-              <div className="flex items-center gap-1">
-                <FormField
-                  control={control}
-                  name={`${name}.${index}.isPublic`}
-                  render={({ field }) => (
-                    <FormItem className="space-y-0">
-                      <FormControl>
-                        <button
-                          type="button"
-                          onClick={() => field.onChange(!field.value)}
-                          className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-sm transition-colors",
-                            field.value
-                              ? "bg-green-500/10 text-green-600 hover:bg-green-500/20"
-                              : "text-muted-foreground hover:bg-muted"
-                          )}
-                          title={field.value ? "Public Test Case" : "Hidden Test Case"}
-                        >
-                          {field.value ? (
-                            <Eye className="h-4 w-4" />
-                          ) : (
-                            <EyeOff className="h-4 w-4" />
-                          )}
-                        </button>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => remove(index)}
-                  title="Remove Test Case"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )
-          }
-        },
-      ];
-      return baseCols;
-    },
-    [control, name, remove, signature]
-  );
+      },
+    ];
+    return baseCols;
+  }, [control, name, remove, signature]);
 
   const table = useReactTable({
     data,
@@ -264,7 +281,7 @@ export function TestCasesTable({ control, name, signature }: TestCasesTableProps
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
+    useSensor(KeyboardSensor, {}),
   );
 
   function handleDragEnd(event: DragEndEvent) {
@@ -279,7 +296,7 @@ export function TestCasesTable({ control, name, signature }: TestCasesTableProps
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           {fields.length} Test Cases
         </div>
         <Button
@@ -303,13 +320,16 @@ export function TestCasesTable({ control, name, signature }: TestCasesTableProps
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} style={{ width: header.getSize() }}>
+                    <TableHead
+                      key={header.id}
+                      style={{ width: header.getSize() }}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -321,9 +341,9 @@ export function TestCasesTable({ control, name, signature }: TestCasesTableProps
                 strategy={verticalListSortingStrategy}
               >
                 {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <DraggableRow key={row.id} row={row} />
-                  ))
+                  table
+                    .getRowModel()
+                    .rows.map((row) => <DraggableRow key={row.id} row={row} />)
                 ) : (
                   <TableRow>
                     <TableCell

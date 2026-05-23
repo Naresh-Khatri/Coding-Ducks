@@ -1,13 +1,11 @@
 import { readdir, readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-
 import { eq } from "drizzle-orm";
 
+import type { NewProblem } from "./schema/problems";
 import { db } from "./index";
 import { problem, user } from "./schema";
-
-import type { NewProblem } from "./schema/problems";
 
 interface ExampleProblem {
   title: string;
@@ -20,14 +18,14 @@ interface ExampleProblem {
   isActive: boolean;
   functionSignature: {
     fnName: string;
-    params: Array<{ name: string; type: string }>;
+    params: { name: string; type: string }[];
     returnType: string;
   };
-  testCases: Array<{
+  testCases: {
     args?: string[];
     expected?: string;
     isPublic: boolean;
-  }>;
+  }[];
 }
 
 // Maps generic types to language-specific types
@@ -114,13 +112,21 @@ const TYPE_MAP: Record<string, Record<string, string>> = {
   },
 };
 
-function generateStarterCode(sig: ExampleProblem["functionSignature"]): Record<string, string> {
+function generateStarterCode(
+  sig: ExampleProblem["functionSignature"],
+): Record<string, string> {
   const goRetType = TYPE_MAP.go?.[sig.returnType] || "interface{}";
-  const goParams = sig.params.map((p) => `${p.name} ${TYPE_MAP.go?.[p.type] || "interface{}"}`).join(", ");
+  const goParams = sig.params
+    .map((p) => `${p.name} ${TYPE_MAP.go?.[p.type] || "interface{}"}`)
+    .join(", ");
   const rsRetType = TYPE_MAP.rs?.[sig.returnType] || "i32";
-  const rsParams = sig.params.map((p) => `${p.name}: ${TYPE_MAP.rs?.[p.type] || "i32"}`).join(", ");
+  const rsParams = sig.params
+    .map((p) => `${p.name}: ${TYPE_MAP.rs?.[p.type] || "i32"}`)
+    .join(", ");
   const phpRetType = TYPE_MAP.php?.[sig.returnType] || "mixed";
-  const phpParams = sig.params.map((p) => `${TYPE_MAP.php?.[p.type] || "mixed"} $${p.name}`).join(", ");
+  const phpParams = sig.params
+    .map((p) => `${TYPE_MAP.php?.[p.type] || "mixed"} $${p.name}`)
+    .join(", ");
 
   return {
     py: `class Solution:\n    def ${sig.fnName}(self, ${sig.params.map((p) => `${p.name}: ${TYPE_MAP.py?.[p.type] || "Any"}`).join(", ")}) -> ${TYPE_MAP.py?.[sig.returnType] || "Any"}:\n        # Your code here\n        pass`,
@@ -165,7 +171,9 @@ async function seed() {
     .limit(1);
 
   if (!admin) {
-    console.warn("No admin user found. Seeding problems without admin context.");
+    console.warn(
+      "No admin user found. Seeding problems without admin context.",
+    );
   } else {
     console.log(`Found admin: ${admin.name} (${admin.email})\n`);
   }

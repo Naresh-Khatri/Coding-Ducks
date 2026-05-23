@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 import { useTRPC } from "~/trpc/react";
-
 import { ActivityFeed } from "./activity-feed";
 import { ProfileHeader } from "./profile-header";
 import { SkillTags } from "./skill-tags";
@@ -15,9 +14,11 @@ import { SubmissionHeatmap } from "./submission-heatmap";
 export function ProfileView({ username }: { username: string }) {
   const trpc = useTRPC();
 
-  const { data: profile, isLoading, error } = useQuery(
-    trpc.profile.byUsername.queryOptions({ username }),
-  );
+  const {
+    data: profile,
+    isLoading,
+    error,
+  } = useQuery(trpc.profile.byUsername.queryOptions({ username }));
 
   if (isLoading) {
     return (
@@ -37,7 +38,7 @@ export function ProfileView({ username }: { username: string }) {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8 space-y-8">
+    <div className="container mx-auto max-w-5xl space-y-8 px-4 py-8">
       <ProfileHeader profile={profile} />
       <StatsOverview username={username} profile={profile} />
       <SubmissionHeatmap username={username} />

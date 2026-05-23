@@ -27,7 +27,9 @@ export const duckletMessage = pgTable(
     content: text("content").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (t) => [index("ducklet_message_room_created_idx").on(t.duckletId, t.createdAt)],
+  (t) => [
+    index("ducklet_message_room_created_idx").on(t.duckletId, t.createdAt),
+  ],
 );
 
 export const duckletMessageRelations = relations(duckletMessage, ({ one }) => ({

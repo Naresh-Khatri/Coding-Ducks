@@ -5,11 +5,13 @@ import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { syntaxTree } from "@codemirror/language";
-import { linter, lintGutter, Diagnostic } from "@codemirror/lint";
+import type { Diagnostic} from "@codemirror/lint";
+import { linter, lintGutter } from "@codemirror/lint";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
-import { HocuspocusProvider } from "@hocuspocus/provider";
-import CodeMirror, { Extension } from "@uiw/react-codemirror";
+import type { HocuspocusProvider } from "@hocuspocus/provider";
+import type { Extension } from "@uiw/react-codemirror";
+import CodeMirror from "@uiw/react-codemirror";
 import { useTheme } from "next-themes";
 import { yCollab } from "y-codemirror.next";
 import * as Y from "yjs";
@@ -99,9 +101,7 @@ export function CollabEditor({
     return (
       <div
         className={`flex h-full w-full items-center justify-center ${
-          isDark
-            ? "bg-[#282c34] text-gray-400"
-            : "bg-white text-gray-500"
+          isDark ? "bg-[#282c34] text-gray-400" : "bg-white text-gray-500"
         }`}
       >
         Loading editor...

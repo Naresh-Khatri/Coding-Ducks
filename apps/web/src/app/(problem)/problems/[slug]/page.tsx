@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { getQueryClient, HydrateClient, prefetch, trpc } from "~/trpc/server";
-
 import { ProblemDetailClient } from "./problem-detail-client";
 
 interface PageProps {

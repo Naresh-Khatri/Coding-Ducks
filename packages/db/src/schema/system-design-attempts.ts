@@ -1,13 +1,14 @@
+import { relations } from "drizzle-orm";
 import {
+  integer,
+  jsonb,
   pgTable,
   serial,
   text,
-  integer,
   timestamp,
-  jsonb,
   varchar,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+
 import { user } from "./auth-schema";
 
 export const systemDesignAttempt = pgTable("system_design_attempt", {

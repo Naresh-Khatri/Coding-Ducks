@@ -1,19 +1,11 @@
 {
   "extends": "@acme/tsconfig/base.json",
   "compilerOptions": {
-    "lib": [
-      "ES2022",
-      "dom",
-      "dom.iterable"
-    ],
+    "lib": ["ES2022", "dom", "dom.iterable"],
     "jsx": "preserve",
     "paths": {
-      "~/*": [
-        "./src/*"
-      ],
-      "@/*": [
-        "./src/*"
-      ]
+      "~/*": ["./src/*"],
+      "@/*": ["./src/*"]
     },
     "plugins": [
       {
@@ -21,12 +13,6 @@
       }
     ]
   },
-  "include": [
-    ".",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "src/lib/system-design/__tests__"
-  ]
+  "include": [".", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "src/lib/system-design/__tests__"]
 }

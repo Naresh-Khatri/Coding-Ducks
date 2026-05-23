@@ -1,7 +1,15 @@
-import { pgTable, serial, text, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { langEnum, submissionKindEnum, submissionStatusEnum } from "./enums";
+import {
+  integer,
+  jsonb,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
+
 import { user } from "./auth-schema";
+import { langEnum, submissionKindEnum, submissionStatusEnum } from "./enums";
 import { problem } from "./problems";
 
 export const submission = pgTable("submission", {

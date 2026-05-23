@@ -1,7 +1,9 @@
 "use client";
 
+import type { EdgeProps } from "@xyflow/react";
 import { memo } from "react";
-import { getBezierPath, type EdgeProps } from "@xyflow/react";
+import { getBezierPath } from "@xyflow/react";
+
 import { useSystemDesignStore } from "~/lib/system-design/store";
 
 function CustomEdgeComponent({
@@ -20,7 +22,7 @@ function CustomEdgeComponent({
   // traffic this tick. Disconnected / bypassed branches stay dark.
   const sourceRps = useSystemDesignStore((s) => {
     const n = s.nodes.find((node) => node.id === source);
-    return (n?.data?.currentRps as number | undefined) ?? 0;
+    return (n?.data?.currentRps) ?? 0;
   });
 
   const [edgePath] = getBezierPath({

@@ -23,7 +23,7 @@ export function StartSimulationButton() {
   const reachableTypes = useMemo(
     () =>
       getReachableTypes(
-        nodes as Parameters<typeof getReachableTypes>[0],
+        nodes,
         edges,
       ),
     [nodes, edges],
@@ -32,7 +32,7 @@ export function StartSimulationButton() {
   const requiredTypes = level?.requiredBlockTypes ?? [];
   const allRequiredPlaced = requiredTypes.every((t) => reachableTypes.has(t));
   const userNodes = nodes.filter(
-    (n) => !(n.data as BlockNodeData).isStartBlock,
+    (n) => !(n.data).isStartBlock,
   );
   const hasUserNodes = userNodes.length > 0;
   const hasConnections = edges.length > 0;

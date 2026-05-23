@@ -4,11 +4,7 @@ import { z } from "zod/v4";
 
 import { problemComment, submission, user } from "@acme/db/schema";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 const lang = z.enum([
   "py",
@@ -185,7 +181,10 @@ export const commentRouter = createTRPCRouter({
         .returning();
 
       if (!deleted) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Comment not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Comment not found",
+        });
       }
 
       return { success: true };

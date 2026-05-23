@@ -36,28 +36,28 @@ export function getReactFlowInstance() {
 const STORAGE_PREFIX = "sd-canvas-";
 
 interface SavedCanvas {
-  nodes: Array<{
+  nodes: {
     id: string;
     position: { x: number; y: number };
     definitionType: string;
     providerName: string;
     replicas?: number;
     isStartBlock?: boolean;
-  }>;
-  edges: Array<{
+  }[];
+  edges: {
     id: string;
     source: string;
     target: string;
     sourceHandle: string | null;
     targetHandle: string | null;
-  }>;
+  }[];
 }
 
 function saveCanvas(slug: string, nodes: Node<BlockNodeData>[], edges: Edge[]) {
   try {
     const data: SavedCanvas = {
       nodes: nodes.map((n) => {
-        const d = n.data as BlockNodeData;
+        const d = n.data;
         return {
           id: n.id,
           position: n.position,
@@ -159,7 +159,7 @@ function loadCanvas(
     // for the labeled Server slots; now there's a single backend pool port).
     const nodeTypeById = new Map<string, string>();
     for (const n of nodes) {
-      nodeTypeById.set(n.id, (n.data as BlockNodeData).definition.type);
+      nodeTypeById.set(n.id, (n.data).definition.type);
     }
 
     const edges: Edge[] = data.edges.map((e) => {
@@ -404,7 +404,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
   addBlock: (definition, position) => {
     const { nodes, level } = get();
     const budgetUsed = nodes.reduce((sum, n) => {
-      const d = n.data as BlockNodeData;
+      const d = n.data;
       return sum + d.definition.costPerMonth * (d.replicas ?? 1);
     }, 0);
     if (level && budgetUsed + definition.costPerMonth > level.budget) {
@@ -462,7 +462,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
     const { nodes } = get();
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
-    const data = node.data as BlockNodeData;
+    const data = node.data;
     if (data.isStartBlock) return;
     get().addBlock(data.definition, {
       x: node.position.x + 40,
@@ -473,7 +473,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
   removeBlock: (nodeId) => {
     const { nodes, edges } = get();
     const node = nodes.find((n) => n.id === nodeId);
-    if ((node?.data as BlockNodeData)?.isStartBlock) return;
+    if ((node?.data!)?.isStartBlock) return;
     const newNodes = nodes.filter((n) => n.id !== nodeId);
     const newEdges = edges.filter(
       (e) => e.source !== nodeId && e.target !== nodeId,
@@ -505,7 +505,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
     const { nodes } = get();
     const newNodes = nodes.map((n) => {
       if (n.id !== nodeId) return n;
-      const data = n.data as BlockNodeData;
+      const data = n.data;
       const provider = data.definition.providers?.find(
         (p) => p.provider === providerName,
       );
@@ -540,7 +540,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
     const { nodes, level } = get();
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
-    const data = node.data as BlockNodeData;
+    const data = node.data;
     if (data.isStartBlock) return;
     if ((data.definition.scaling ?? "counter") !== "counter") return;
 
@@ -548,7 +548,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
     if (level) {
       const others = nodes.reduce((sum, n) => {
         if (n.id === nodeId) return sum;
-        const d = n.data as BlockNodeData;
+        const d = n.data;
         return sum + d.definition.costPerMonth * (d.replicas ?? 1);
       }, 0);
       const affordable = Math.floor(
@@ -565,7 +565,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
 
     const newNodes = nodes.map((n) =>
       n.id === nodeId
-        ? { ...n, data: { ...(n.data as BlockNodeData), replicas: next } }
+        ? { ...n, data: { ...(n.data), replicas: next } }
         : n,
     );
     set({ nodes: newNodes });
@@ -575,7 +575,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
 
   onConnect: (connection) => {
     const { nodes, edges } = get();
-    if (!isValidConnection(connection, nodes as Node<BlockNodeData>[], edges))
+    if (!isValidConnection(connection, nodes, edges))
       return;
 
     const newEdge: Edge = {
@@ -609,7 +609,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
         return {
           ...n,
           data: {
-            ...(n.data as BlockNodeData),
+            ...(n.data),
             currentRps: stats.rps,
             currentLatencyMs: stats.latencyMs,
             loadPercent: stats.loadPercent,
@@ -650,7 +650,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
         return {
           ...n,
           data: {
-            ...(n.data as BlockNodeData),
+            ...(n.data),
             currentRps: stats.rps,
             currentLatencyMs: stats.latencyMs,
             loadPercent: stats.loadPercent,
@@ -658,7 +658,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
             writeLoadPercent: stats.writeLoadPercent,
             failedRequests: stats.failedRps,
             queueDepth: stats.queueDepth,
-            status: stats.status as BlockNodeData["status"],
+            status: stats.status,
           },
         };
       }),

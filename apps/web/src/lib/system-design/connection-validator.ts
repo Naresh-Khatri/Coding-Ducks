@@ -1,4 +1,5 @@
 import type { Connection, Edge, Node } from "@xyflow/react";
+
 import type { BlockNodeData } from "./types";
 
 export function isValidConnection(
@@ -12,10 +13,10 @@ export function isValidConnection(
   const targetNode = nodes.find((n) => n.id === connection.target);
   if (!sourceNode || !targetNode) return false;
 
-  const sourcePort = (sourceNode.data as BlockNodeData).definition.ports.find(
+  const sourcePort = (sourceNode.data).definition.ports.find(
     (p) => p.id === connection.sourceHandle,
   );
-  const targetPort = (targetNode.data as BlockNodeData).definition.ports.find(
+  const targetPort = (targetNode.data).definition.ports.find(
     (p) => p.id === connection.targetHandle,
   );
   if (!sourcePort || !targetPort) return false;
@@ -70,10 +71,7 @@ export function hasCycle(nodes: Node[], edges: Edge[]): boolean {
   return visited !== nodes.length;
 }
 
-export function getTopologicalOrder(
-  nodes: Node[],
-  edges: Edge[],
-): string[] {
+export function getTopologicalOrder(nodes: Node[], edges: Edge[]): string[] {
   const adjacency = new Map<string, string[]>();
   const inDegree = new Map<string, number>();
 
@@ -136,7 +134,7 @@ export function getReachableTypes(
   const types = new Set<string>();
   for (const node of nodes) {
     if (visited.has(node.id)) {
-      types.add((node.data as BlockNodeData).definition.type);
+      types.add((node.data).definition.type);
     }
   }
   return types;

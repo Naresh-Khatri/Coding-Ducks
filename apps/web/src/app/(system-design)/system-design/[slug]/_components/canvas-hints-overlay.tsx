@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Panel } from "@xyflow/react";
-import { Lightbulb, ChevronUp } from "lucide-react";
+import { ChevronUp, Lightbulb } from "lucide-react";
+
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { cn } from "~/lib/utils";
 
@@ -20,9 +21,7 @@ export function CanvasHintsOverlay() {
           className="hover:bg-muted/50 flex w-full items-center gap-2 rounded-xl px-3 py-2 transition-colors"
         >
           <Lightbulb size={13} className="text-amber-500" />
-          <span className="flex-1 text-left text-xs font-medium">
-            Hints
-          </span>
+          <span className="flex-1 text-left text-xs font-medium">Hints</span>
           <span className="bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 text-[10px]">
             {level.hints.length}
           </span>
@@ -35,7 +34,7 @@ export function CanvasHintsOverlay() {
           />
         </button>
         {expanded && (
-          <div className="border-t px-3 pb-3 pt-2">
+          <div className="border-t px-3 pt-2 pb-3">
             <ol className="space-y-2">
               {level.hints.map((hint, i) => (
                 <li key={i} className="flex gap-2 text-[11px]">

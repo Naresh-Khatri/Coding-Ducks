@@ -75,9 +75,7 @@ export const markdownComponents: Components = {
       {...props}
     />
   ),
-  hr: ({ node, ...props }) => (
-    <hr className="my-8 border-white/5" {...props} />
-  ),
+  hr: ({ node, ...props }) => <hr className="my-8 border-white/5" {...props} />,
   table: ({ node, ...props }) => (
     <div className="my-4 overflow-x-auto rounded-lg border border-white/5">
       <table className="w-full text-left text-sm" {...props} />

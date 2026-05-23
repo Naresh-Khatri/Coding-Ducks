@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { motion, useAnimation } from "motion/react";
 
 import { cn } from "~/lib/utils";
 
@@ -37,7 +37,7 @@ const LockIcon = forwardRef<LockIconHandle, LockIconProps>(
           controls.start("animate");
         }
       },
-      [controls, onMouseEnter]
+      [controls, onMouseEnter],
     );
 
     const handleMouseLeave = useCallback(
@@ -48,7 +48,7 @@ const LockIcon = forwardRef<LockIconHandle, LockIconProps>(
           controls.start("normal");
         }
       },
-      [controls, onMouseLeave]
+      [controls, onMouseLeave],
     );
 
     return (
@@ -106,7 +106,7 @@ const LockIcon = forwardRef<LockIconHandle, LockIconProps>(
         </motion.svg>
       </div>
     );
-  }
+  },
 );
 
 LockIcon.displayName = "LockIcon";

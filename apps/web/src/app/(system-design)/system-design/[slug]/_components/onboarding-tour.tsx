@@ -133,7 +133,10 @@ export function OnboardingTour() {
     if (hasSeenTour()) return;
 
     // Let the canvas + sidebar mount before we point at them.
-    const timer = setTimeout(() => startSystemDesignTour({ strict: true }), 800);
+    const timer = setTimeout(
+      () => startSystemDesignTour({ strict: true }),
+      800,
+    );
     return () => clearTimeout(timer);
   }, []);
 

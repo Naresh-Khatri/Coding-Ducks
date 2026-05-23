@@ -9,7 +9,14 @@ interface PreviewProps {
   className?: string;
 }
 
-export function Preview({ html, css, js, head = "", body = "", className }: PreviewProps) {
+export function Preview({
+  html,
+  css,
+  js,
+  head = "",
+  body = "",
+  className,
+}: PreviewProps) {
   const content = useMemo(() => {
     const preJs = `
       <!DOCTYPE html>
@@ -61,7 +68,7 @@ export function Preview({ html, css, js, head = "", body = "", className }: Prev
     // 1. The preJs block
     // 2. The line containing window.__js_offset = ...
     // So we need to subtract the number of lines in preJs + 1.
-    const jsOffset = preJs.split('\n').length + 1;
+    const jsOffset = preJs.split("\n").length + 1;
 
     return `${preJs}
               window.__js_offset = ${jsOffset};

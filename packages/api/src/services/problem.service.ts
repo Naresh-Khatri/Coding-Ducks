@@ -19,7 +19,7 @@ interface TestCaseInput {
 
 interface FunctionSignatureInput {
   fnName: string;
-  params: Array<{ name: string; type: string }>;
+  params: { name: string; type: string }[];
   returnType: string;
 }
 

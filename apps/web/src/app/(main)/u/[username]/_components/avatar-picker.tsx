@@ -5,7 +5,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-import { getAvatarUrl } from "~/lib/avatar";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -13,13 +12,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
 
 const PRESET_SEEDS = [
-  "felix", "aneka", "milo", "sophia", "luna", "oliver",
-  "cleo", "jasper", "nova", "atlas", "iris", "orion",
-  "sage", "piper", "finn", "maple", "echo", "willow",
+  "felix",
+  "aneka",
+  "milo",
+  "sophia",
+  "luna",
+  "oliver",
+  "cleo",
+  "jasper",
+  "nova",
+  "atlas",
+  "iris",
+  "orion",
+  "sage",
+  "piper",
+  "finn",
+  "maple",
+  "echo",
+  "willow",
 ];
 
 function generateRandomSeeds(count: number): string[] {
@@ -87,7 +102,7 @@ export function AvatarPicker({
                 "rounded-xl border-2 p-1 transition-all hover:scale-105",
                 selected === seed
                   ? "border-primary ring-primary/20 ring-2"
-                  : "border-transparent hover:border-border",
+                  : "hover:border-border border-transparent",
               )}
             >
               <img
@@ -111,10 +126,7 @@ export function AvatarPicker({
             More options
           </Button>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button

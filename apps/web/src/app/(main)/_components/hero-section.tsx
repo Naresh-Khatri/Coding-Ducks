@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { RetroGrid } from "@/components/ui/retro-grid";
+import { ArrowRight } from "lucide-react";
+import { motion } from "motion/react";
 
 const AnimatedTerminal = dynamic(
   () => import("@/components/animated-terminal"),
@@ -72,7 +72,7 @@ export function HeroSection() {
                 The playground for coders
               </span>
             </div>
-            <h1 className="text-6xl font-black leading-[0.9] tracking-tight text-white md:text-7xl xl:text-8xl">
+            <h1 className="text-6xl leading-[0.9] font-black tracking-tight text-white md:text-7xl xl:text-8xl">
               BUILD. BATTLE.
               <br />
               <span className="bg-gradient-to-r from-fuchsia-400 via-violet-400 to-fuchsia-300 bg-clip-text text-transparent">

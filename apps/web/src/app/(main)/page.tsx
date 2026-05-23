@@ -2,12 +2,11 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { auth } from "~/auth/server";
-
-import { HeroSection } from "./_components/hero-section";
-import { FeaturesSection } from "./_components/features-section";
-import { StatsBand } from "./_components/stats-band";
 import { ClosingCta } from "./_components/closing-cta";
+import { FeaturesSection } from "./_components/features-section";
+import { HeroSection } from "./_components/hero-section";
 import { SiteFooter } from "./_components/site-footer";
+import { StatsBand } from "./_components/stats-band";
 
 export default async function Home() {
   // Logged-in users skip the marketing landing and go to their workspace.

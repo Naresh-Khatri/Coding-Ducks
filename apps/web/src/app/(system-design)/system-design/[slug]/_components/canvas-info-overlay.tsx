@@ -1,20 +1,15 @@
 "use client";
 
-import { Panel } from "@xyflow/react";
-import {
-  AreaChart,
-  Area,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { useMemo } from "react";
+import { Panel } from "@xyflow/react";
 import { AlertTriangle, Check, Circle, Info } from "lucide-react";
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+
+import type { BlockNodeData } from "~/lib/system-design/types";
 import { getReachableTypes } from "~/lib/system-design/connection-validator";
 import { computeMissingLayerPenalties } from "~/lib/system-design/simulation-engine";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { computeTopologyWarnings } from "~/lib/system-design/topology-warnings";
-import type { BlockNodeData } from "~/lib/system-design/types";
 import { cn } from "~/lib/utils";
 
 export function CanvasInfoOverlay() {
@@ -25,19 +20,23 @@ export function CanvasInfoOverlay() {
   if (!level) return null;
 
   const budgetUsed = nodes.reduce((sum, n) => {
-    const d = n.data as BlockNodeData;
+    const d = n.data;
     return sum + d.definition.costPerMonth * (d.replicas ?? 1);
   }, 0);
   const budgetPercent = (budgetUsed / level.budget) * 100;
 
   const reachableTypes = useMemo(
-    () => getReachableTypes(nodes as Parameters<typeof getReachableTypes>[0], edges),
+    () =>
+      getReachableTypes(
+        nodes,
+        edges,
+      ),
     [nodes, edges],
   );
   const topologyWarnings = useMemo(
     () =>
       computeTopologyWarnings(
-        nodes as Parameters<typeof computeTopologyWarnings>[0],
+        nodes,
         edges,
       ),
     [nodes, edges],
@@ -106,7 +105,11 @@ export function CanvasInfoOverlay() {
           <div className="text-muted-foreground mt-0.5 flex justify-between text-[9px]">
             <span>0s</span>
             <span>
-              Peak: {Math.max(...level.trafficPattern.map((p) => p.rps)).toLocaleString()} RPS
+              Peak:{" "}
+              {Math.max(
+                ...level.trafficPattern.map((p) => p.rps),
+              ).toLocaleString()}{" "}
+              RPS
             </span>
             <span>{level.durationSeconds}s</span>
           </div>
@@ -129,17 +132,12 @@ export function CanvasInfoOverlay() {
                     {placed ? (
                       <Check size={11} className="text-green-500" />
                     ) : (
-                      <Circle
-                        size={11}
-                        className="text-muted-foreground/40"
-                      />
+                      <Circle size={11} className="text-muted-foreground/40" />
                     )}
                     <span
                       className={cn(
                         "capitalize",
-                        placed
-                          ? "text-foreground"
-                          : "text-muted-foreground",
+                        placed ? "text-foreground" : "text-muted-foreground",
                       )}
                     >
                       {type.replace(/-/g, " ")}
@@ -161,7 +159,7 @@ export function CanvasInfoOverlay() {
           if (penalties.every((p) => p.resolved)) return null;
           return (
             <div className="mt-1">
-              <div className="text-amber-500 mb-1 text-[11px] font-medium flex items-center gap-1">
+              <div className="mb-1 flex items-center gap-1 text-[11px] font-medium text-amber-500">
                 <AlertTriangle size={11} />
                 Penalties
               </div>
@@ -172,8 +170,8 @@ export function CanvasInfoOverlay() {
                     className={cn(
                       "overflow-hidden text-[10px] leading-tight",
                       resolved
-                        ? "text-green-500/60 line-through max-h-0 opacity-0 transition-[max-height,opacity] duration-300 delay-700"
-                        : "text-amber-500/80 max-h-6 opacity-100 transition-[color] duration-200",
+                        ? "max-h-0 text-green-500/60 line-through opacity-0 transition-[max-height,opacity] delay-700 duration-300"
+                        : "max-h-6 text-amber-500/80 opacity-100 transition-[color] duration-200",
                     )}
                   >
                     {warning}

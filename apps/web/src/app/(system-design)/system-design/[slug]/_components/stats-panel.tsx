@@ -1,7 +1,7 @@
 "use client";
 
-import { useSystemDesignStore } from "~/lib/system-design/store";
 import type { BlockNodeData } from "~/lib/system-design/types";
+import { useSystemDesignStore } from "~/lib/system-design/store";
 import { cn } from "~/lib/utils";
 
 export function StatsPanel() {
@@ -13,7 +13,7 @@ export function StatsPanel() {
   if (!level) return null;
 
   const budgetUsed = nodes.reduce((sum, n) => {
-    const d = n.data as BlockNodeData;
+    const d = n.data;
     return sum + d.definition.costPerMonth * (d.replicas ?? 1);
   }, 0);
 
@@ -46,9 +46,9 @@ export function StatsPanel() {
 
   return (
     <div className="flex flex-col gap-3 overflow-y-auto p-3">
-      <div className="text-muted-foreground flex items-center justify-between text-xs font-medium uppercase tracking-wider">
+      <div className="text-muted-foreground flex items-center justify-between text-xs font-medium tracking-wider uppercase">
         <span>Stats</span>
-        <span className="text-[10px] font-mono tabular-nums normal-case">
+        <span className="font-mono text-[10px] normal-case tabular-nums">
           t={simulationTick}s
         </span>
       </div>
@@ -117,7 +117,7 @@ export function StatsPanel() {
           </div>
           <div className="space-y-1">
             {nodes.map((n) => {
-              const data = n.data as BlockNodeData;
+              const data = n.data;
               const stats = currentTick.blockStats[n.id];
               if (!stats) return null;
               return (
@@ -129,7 +129,7 @@ export function StatsPanel() {
                     className={cn(
                       "h-2 w-2 shrink-0 rounded-full",
                       stats.status === "failing"
-                        ? "bg-red-600 animate-pulse"
+                        ? "animate-pulse bg-red-600"
                         : stats.status === "overloaded"
                           ? "bg-red-500"
                           : stats.status === "degraded"

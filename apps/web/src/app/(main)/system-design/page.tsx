@@ -1,31 +1,30 @@
 "use client";
 
+import type { Edge, Node } from "@xyflow/react";
 import { useCallback, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { Background, ReactFlow } from "@xyflow/react";
 import {
-  Star,
-  DollarSign,
+  Activity,
+  CheckCircle,
   Clock,
   Cpu,
-  Activity,
+  DollarSign,
+  Eye,
   Gauge,
   History,
-  CheckCircle,
-  XCircle,
-  Eye,
   LayoutGrid,
   List,
+  Star,
+  XCircle,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import {
-  ReactFlow,
-  Background,
-  type Node,
-  type Edge,
-} from "@xyflow/react";
+
 import "@xyflow/react/dist/style.css";
-import { LEVELS } from "~/data/system-design";
-import { useTRPC } from "~/trpc/react";
+
+import type { BlockNodeData } from "~/lib/system-design/types";
+import { BlockNode } from "~/app/(system-design)/system-design/[slug]/_components/block-node";
+import { CustomEdge } from "~/app/(system-design)/system-design/[slug]/_components/custom-edge";
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
 import {
@@ -34,14 +33,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { cn } from "~/lib/utils";
+import { LEVELS } from "~/data/system-design";
 import {
   getBlockDefinition,
   TRAFFIC_SOURCE_BLOCK,
 } from "~/lib/system-design/block-registry";
-import { BlockNode } from "~/app/(system-design)/system-design/[slug]/_components/block-node";
-import { CustomEdge } from "~/app/(system-design)/system-design/[slug]/_components/custom-edge";
-import type { BlockNodeData } from "~/lib/system-design/types";
+import { cn } from "~/lib/utils";
+import { useTRPC } from "~/trpc/react";
 
 const DIFFICULTY_COLORS = {
   beginner: "bg-green-500/10 text-green-500 border-green-500/20",
@@ -58,7 +56,9 @@ export default function SystemDesignPage() {
   const [historySlug, setHistorySlug] = useState<string | null>(null);
   const [view, setView] = useState<"grid" | "table">(() => {
     try {
-      return (localStorage.getItem("sd-levels-view") as "grid" | "table") ?? "grid";
+      return (
+        (localStorage.getItem("sd-levels-view") as "grid" | "table") ?? "grid"
+      );
     } catch {
       return "grid";
     }
@@ -223,11 +223,7 @@ export default function SystemDesignPage() {
                 <div className="flex gap-2">
                   <Button asChild size="sm" className="flex-1">
                     <Link href={`/system-design/${level.slug}`}>
-                      {!hasAttempt
-                        ? "Start"
-                        : stars < 3
-                          ? "Improve"
-                          : "Retry"}
+                      {!hasAttempt ? "Start" : stars < 3 ? "Improve" : "Retry"}
                     </Link>
                   </Button>
                   {hasAttempt && (
@@ -331,14 +327,18 @@ export default function SystemDesignPage() {
                       </div>
                     </td>
                     <td className="hidden px-4 py-3 text-xs tabular-nums sm:table-cell">
-                      {hasAttempt
-                        ? `${((attempt.uptimePercent ?? 0) / 100).toFixed(1)}%`
-                        : <span className="text-muted-foreground">--</span>}
+                      {hasAttempt ? (
+                        `${((attempt.uptimePercent ?? 0) / 100).toFixed(1)}%`
+                      ) : (
+                        <span className="text-muted-foreground">--</span>
+                      )}
                     </td>
                     <td className="hidden px-4 py-3 text-xs tabular-nums md:table-cell">
-                      {hasAttempt
-                        ? `${attempt.avgLatencyMs ?? 0}ms`
-                        : <span className="text-muted-foreground">--</span>}
+                      {hasAttempt ? (
+                        `${attempt.avgLatencyMs ?? 0}ms`
+                      ) : (
+                        <span className="text-muted-foreground">--</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -415,7 +415,7 @@ export default function SystemDesignPage() {
                   return (
                     <tr
                       key={a.id}
-                      className="hover:bg-muted/50 border-b last:border-0 transition-colors"
+                      className="hover:bg-muted/50 border-b transition-colors last:border-0"
                     >
                       <td className="px-4 py-2.5">
                         {a.passed ? (
@@ -516,7 +516,10 @@ function reconstructGraph(graph: SavedGraph): {
 } {
   const nodes: Node[] = graph.nodes.map((saved) => {
     let definition;
-    if (saved.data.isStartBlock || saved.data.definitionType === "traffic-source") {
+    if (
+      saved.data.isStartBlock ||
+      saved.data.definitionType === "traffic-source"
+    ) {
       definition = TRAFFIC_SOURCE_BLOCK;
     } else {
       const baseDef = getBlockDefinition(saved.data.definitionType);
@@ -684,7 +687,8 @@ function AttemptHistoryDialog({
                     className="text-muted-foreground flex items-center gap-0.5"
                     title="Cost"
                   >
-                    <DollarSign size={10} />${((a.totalCost ?? 0) / 100).toFixed(0)}
+                    <DollarSign size={10} />$
+                    {((a.totalCost ?? 0) / 100).toFixed(0)}
                   </span>
                 </div>
 

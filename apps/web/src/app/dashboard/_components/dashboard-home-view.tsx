@@ -78,9 +78,9 @@ export function DashboardHomeView() {
     const start = new Date(today);
     start.setDate(start.getDate() - start.getDay() - 20 * 7);
 
-    const weeks: Array<Array<{ date: string; count: number }>> = [];
+    const weeks: { date: string; count: number }[][] = [];
     for (let w = 0; w < 20; w++) {
-      const days: Array<{ date: string; count: number }> = [];
+      const days: { date: string; count: number }[] = [];
       for (let d = 0; d < 7; d++) {
         const date = new Date(start);
         date.setDate(date.getDate() + w * 7 + d);
@@ -192,7 +192,7 @@ export function DashboardHomeView() {
               </div>
             ))}
           </div>
-          <div className="mt-3 flex items-center justify-end gap-1 text-xs text-muted-foreground">
+          <div className="text-muted-foreground mt-3 flex items-center justify-end gap-1 text-xs">
             <span>Less</span>
             {INTENSITY_CLASSES.map((cls, i) => (
               <div
@@ -229,14 +229,16 @@ export function DashboardHomeView() {
                     href={`/problems/${sub.problemSlug}`}
                     className="hover:bg-muted/50 flex items-center gap-2 rounded-lg px-2 py-2 transition-colors"
                   >
-                    <Icon className={cn("h-4 w-4 shrink-0", statusInfo.color)} />
+                    <Icon
+                      className={cn("h-4 w-4 shrink-0", statusInfo.color)}
+                    />
                     <span className="flex-1 truncate text-sm font-medium">
                       {sub.problemTitle}
                     </span>
                     <Badge
                       variant="outline"
                       className={cn(
-                        "shrink-0 px-1.5 py-0 text-[9px] capitalize font-normal border-none",
+                        "shrink-0 border-none px-1.5 py-0 text-[9px] font-normal capitalize",
                         DIFFICULTY_COLORS[sub.difficulty],
                       )}
                     >

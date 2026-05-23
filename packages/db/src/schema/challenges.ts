@@ -1,7 +1,16 @@
-import { pgTable, serial, text, varchar, boolean, timestamp, integer } from "drizzle-orm/pg-core";
-import { sql, relations } from "drizzle-orm";
-import { challengeDiffEnum } from "./enums";
+import { relations, sql } from "drizzle-orm";
+import {
+  boolean,
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
+
 import { user } from "./auth-schema";
+import { challengeDiffEnum } from "./enums";
 
 export const challenge = pgTable("challenge", {
   id: serial("id").primaryKey(),

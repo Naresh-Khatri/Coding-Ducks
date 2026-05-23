@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
-import { Button } from "@/components/ui/button";
 
 export function ClosingCta() {
   return (
     <section className="relative overflow-hidden border-t border-white/5 bg-black py-32">
       {/* grid texture fading upward */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(157,78,221,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(157,78,221,0.07)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_60%_80%_at_50%_100%,black,transparent)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(157,78,221,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(157,78,221,0.07)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_80%_at_50%_100%,black,transparent)] [background-size:56px_56px]" />
       {/* horizon bloom */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-[radial-gradient(ellipse_50%_100%_at_50%_100%,rgba(157,78,221,0.25),transparent_70%)] blur-2xl" />
 
@@ -20,7 +20,7 @@ export function ClosingCta() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       >
-        <h2 className="text-balance text-4xl font-black leading-[1.05] tracking-tight text-white md:text-6xl">
+        <h2 className="text-4xl leading-[1.05] font-black tracking-tight text-balance text-white md:text-6xl">
           Ready to start
           <br />
           <span className="bg-gradient-to-r from-fuchsia-400 via-violet-400 to-fuchsia-300 bg-clip-text text-transparent">

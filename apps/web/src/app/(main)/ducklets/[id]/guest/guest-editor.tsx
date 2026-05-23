@@ -5,12 +5,17 @@ import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { syntaxTree } from "@codemirror/language";
-import { linter, lintGutter, Diagnostic } from "@codemirror/lint";
+import type { Diagnostic} from "@codemirror/lint";
+import { linter, lintGutter } from "@codemirror/lint";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
-import CodeMirror, { Extension } from "@uiw/react-codemirror";
+import type { Extension } from "@uiw/react-codemirror";
+import CodeMirror from "@uiw/react-codemirror";
 import { LayoutTemplate, Terminal } from "lucide-react";
 
+import type { LogEntry } from "~/components/collab-editor/console";
+import { Console } from "~/components/collab-editor/console";
+import { Preview } from "~/components/collab-editor/preview";
 import { Button } from "~/components/ui/button";
 import {
   ResizableHandle,
@@ -18,8 +23,6 @@ import {
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
 import { useDebounce } from "~/hooks/use-debounce";
-import { Console, LogEntry } from "~/components/collab-editor/console";
-import { Preview } from "~/components/collab-editor/preview";
 
 type LayoutType = "top" | "left";
 

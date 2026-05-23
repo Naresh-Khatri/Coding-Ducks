@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import type { ConsoleResult, SubmissionDetail } from "./types";
 import type { Language } from "~/components/code-editor";
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
@@ -18,13 +19,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useIsMobile } from "~/hooks/use-is-mobile";
 import { useTRPC } from "~/trpc/react";
-
 import { CodeEditorPanel } from "./_components/code-editor-panel";
 import { LeftPanel } from "./_components/left-panel";
 import { ProblemHeader } from "./_components/problem-header";
 import { SubmissionDetailDialog } from "./_components/submission-detail-dialog";
 import { TestCasePanel } from "./_components/test-case-panel";
-import type { ConsoleResult, SubmissionDetail } from "./types";
 
 export function ProblemDetailClient() {
   const trpc = useTRPC();
@@ -37,7 +36,9 @@ export function ProblemDetailClient() {
   const [codes, setCodes] = useState<Record<string, string>>({});
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window === "undefined") return "py";
-    return (localStorage.getItem("problem-editor-language") as Language) || "py";
+    return (
+      (localStorage.getItem("problem-editor-language") as Language) || "py"
+    );
   });
   const [leftTab, setLeftTab] = useState("description");
   const [activeTab, setActiveTab] = useState("problem");
@@ -48,7 +49,10 @@ export function ProblemDetailClient() {
   const [submissionsLimit, setSubmissionsLimit] = useState(10);
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [selectedOutputCase, setSelectedOutputCase] = useState(0);
-  const [customTestCase, setCustomTestCase] = useState<Record<string, string> | null>(null);
+  const [customTestCase, setCustomTestCase] = useState<Record<
+    string,
+    string
+  > | null>(null);
   const [selectedSubmission, setSelectedSubmission] =
     useState<SubmissionDetail | null>(null);
   const [saveStatus, setSaveStatus] = useState<
@@ -131,7 +135,7 @@ export function ProblemDetailClient() {
       (!draftsLoadedRef.current && savedDrafts)
     ) {
       const starterCodes =
-        (problem.starterCode as Record<string, string>) || {};
+        (problem.starterCode!) || {};
       const mergedCodes = { ...starterCodes, ...(savedDrafts || {}) };
       setCodes(mergedCodes);
 
@@ -283,7 +287,7 @@ export function ProblemDetailClient() {
   }
 
   const availableLanguages = Object.keys(
-    (problem.starterCode as Record<string, string>) || {},
+    (problem.starterCode!) || {},
   );
 
   // --- Render ---
@@ -319,7 +323,7 @@ export function ProblemDetailClient() {
       }}
       onResetToDefault={() => {
         const starterCode =
-          (problem.starterCode as Record<string, string>)?.[language] ?? "";
+          (problem.starterCode)?.[language] ?? "";
         setCode(starterCode);
         toast.success("Code reset to default");
       }}
@@ -373,7 +377,7 @@ export function ProblemDetailClient() {
             </TabsList>
             <TabsContent
               value="problem"
-              className="m-0 flex-1 overflow-hidden bg-card/30"
+              className="bg-card/30 m-0 flex-1 overflow-hidden"
             >
               {leftPanel}
             </TabsContent>

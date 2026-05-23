@@ -27,8 +27,8 @@ export const globalApi: LevelDefinition = {
     { time: 90, rps: 3000 },
   ],
   attackSpikes: [
-    { time: 15, duration: 5, rps: 30000 },   // Bot scan during Asia ramp-up
-    { time: 42, duration: 10, rps: 50000 },   // DDoS at global peak
+    { time: 15, duration: 5, rps: 30000 }, // Bot scan during Asia ramp-up
+    { time: 42, duration: 10, rps: 50000 }, // DDoS at global peak
   ],
   requiredBlockTypes: [
     "dns",

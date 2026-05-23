@@ -1,6 +1,9 @@
 "use client";
 
+import type { Editor } from "@tiptap/react";
 import { useEffect } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import {
   Bold,
   Code,
@@ -10,9 +13,6 @@ import {
   Quote,
   Strikethrough,
 } from "lucide-react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import type { Editor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 
 import { cn } from "~/lib/utils";
 
@@ -62,8 +62,8 @@ function ToolbarButton({
         editor.commands.focus();
       }}
       className={cn(
-        "text-muted-foreground hover:text-foreground hover:bg-white/5 rounded p-1 transition-colors",
-        active && "bg-white/10 text-foreground",
+        "text-muted-foreground hover:text-foreground rounded p-1 transition-colors hover:bg-white/5",
+        active && "text-foreground bg-white/10",
       )}
     >
       {children}
@@ -172,9 +172,7 @@ export function RichTextEditor({
         )}
         <EditorContent editor={editor} />
       </div>
-      {footer && (
-        <div className="border-t px-3 py-2">{footer}</div>
-      )}
+      {footer && <div className="border-t px-3 py-2">{footer}</div>}
     </div>
   );
 }

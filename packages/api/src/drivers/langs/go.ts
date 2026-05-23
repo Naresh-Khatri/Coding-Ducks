@@ -86,20 +86,14 @@ export function generateGoDriver(
   const goRetType = goType(returnType);
 
   const parseStatements = params
-    .map(
-      (p, i) =>
-        `\t\targ${i} := ${goParseExpr(p.type, `args[${i}]`)}`,
-    )
+    .map((p, i) => `\t\targ${i} := ${goParseExpr(p.type, `args[${i}]`)}`)
     .join("\n");
 
   const argList = params.map((_, i) => `arg${i}`).join(", ");
   const serializeResult = goSerialize("actual", returnType);
 
   const argsInit = testData
-    .map(
-      (td) =>
-        `{${td.args.map((a) => goStringLiteral(a)).join(", ")}}`,
-    )
+    .map((td) => `{${td.args.map((a) => goStringLiteral(a)).join(", ")}}`)
     .join(",\n\t\t");
 
   return `package main
@@ -215,4 +209,3 @@ ${parseStatements}
 }
 `;
 }
-

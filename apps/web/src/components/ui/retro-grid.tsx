@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, HTMLAttributes } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const ANIMATION_DURATION_SECONDS = 15;
@@ -523,7 +522,7 @@ export function RetroGrid({
         premultipliedAlpha: true,
       });
 
-      if (!nextGl || !nextGl.getExtension("OES_standard_derivatives")) {
+      if (!nextGl?.getExtension("OES_standard_derivatives")) {
         return null;
       }
 

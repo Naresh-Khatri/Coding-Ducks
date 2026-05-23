@@ -63,12 +63,12 @@ export function SubmissionHeatmap({ username }: { username: string }) {
     // Roll back to previous Sunday
     startDate.setDate(startDate.getDate() - startDay);
 
-    const weeks: Array<Array<{ date: string; count: number }>> = [];
-    const months: Array<{ label: string; col: number }> = [];
+    const weeks: { date: string; count: number }[][] = [];
+    const months: { label: string; col: number }[] = [];
     let lastMonth = -1;
 
     for (let week = 0; week < 53; week++) {
-      const days: Array<{ date: string; count: number }> = [];
+      const days: { date: string; count: number }[] = [];
       for (let day = 0; day < 7; day++) {
         const d = new Date(startDate);
         d.setDate(d.getDate() + week * 7 + day);

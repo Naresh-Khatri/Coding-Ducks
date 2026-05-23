@@ -1,5 +1,13 @@
-import { pgTable, serial, text, integer, timestamp, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import {
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
+
 import { user } from "./auth-schema";
 import { problem } from "./problems";
 
@@ -15,7 +23,9 @@ export const bookmark = pgTable(
       .references(() => problem.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [unique("bookmark_user_problem_unique").on(table.userId, table.problemId)],
+  (table) => [
+    unique("bookmark_user_problem_unique").on(table.userId, table.problemId),
+  ],
 );
 
 export const bookmarkRelations = relations(bookmark, ({ one }) => ({

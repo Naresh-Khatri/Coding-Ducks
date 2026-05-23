@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import type { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { useEffect, useRef, useState } from "react";
 import { indentRange } from "@codemirror/language";
 import { getCM } from "@replit/codemirror-vim";
 import { Cloud, History, RotateCcw, Sparkles } from "lucide-react";
@@ -58,8 +58,14 @@ export function CodeEditorPanel({
 }: CodeEditorPanelProps) {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
   const {
-    fontSize, fontFamily, fontLigatures, tabSize,
-    relativeLineNumbers, keymap, runShortcut, submitShortcut,
+    fontSize,
+    fontFamily,
+    fontLigatures,
+    tabSize,
+    relativeLineNumbers,
+    keymap,
+    runShortcut,
+    submitShortcut,
   } = useEditorSettings();
   const isVim = keymap === "vim";
   const [vimModeLabel, setVimModeLabel] = useState("NORMAL");

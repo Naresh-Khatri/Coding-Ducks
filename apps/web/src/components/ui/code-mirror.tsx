@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
-import CodeMirror, { Extension } from "@uiw/react-codemirror";
-import { python } from "@codemirror/lang-python";
-import { javascript } from "@codemirror/lang-javascript";
-import { java } from "@codemirror/lang-java";
 import { cpp } from "@codemirror/lang-cpp";
+import { java } from "@codemirror/lang-java";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
+import type { Extension } from "@uiw/react-codemirror";
+import CodeMirror from "@uiw/react-codemirror";
 
 interface CodeEditorProps {
   value: string;
@@ -49,7 +50,7 @@ export function CodeEditor({
         theme={vscodeDark}
         extensions={[getLanguageExtension(language)]}
         onChange={onChange}
-        className="border rounded-md overflow-hidden text-sm"
+        className="overflow-hidden rounded-md border text-sm"
       />
     </div>
   );

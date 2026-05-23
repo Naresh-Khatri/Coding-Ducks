@@ -26,7 +26,9 @@ import { toast } from "sonner";
 import * as Y from "yjs";
 
 import type { RouterOutputs } from "@acme/api";
+
 import { authClient } from "~/auth/client";
+import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,7 +74,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
 import { useDebounce } from "~/hooks/use-debounce";
 import { useTRPC } from "~/trpc/react";
 
@@ -145,7 +146,9 @@ export default function DuckletsPage() {
       onSuccess: (ducklet) => {
         setIsCreateOpen(false);
         setNewDuckletName("");
-        void queryClient.invalidateQueries(trpc.ducklet.list.infiniteQueryFilter());
+        void queryClient.invalidateQueries(
+          trpc.ducklet.list.infiniteQueryFilter(),
+        );
         if (ducklet) {
           void router.push(`/ducklets/${ducklet.id}`);
         }
@@ -194,7 +197,9 @@ h1 {
   const deleteDuckletMutation = useMutation(
     trpc.ducklet.delete.mutationOptions({
       onSuccess: () => {
-        void queryClient.invalidateQueries(trpc.ducklet.list.infiniteQueryFilter());
+        void queryClient.invalidateQueries(
+          trpc.ducklet.list.infiniteQueryFilter(),
+        );
       },
     }),
   );
@@ -204,7 +209,9 @@ h1 {
       onSuccess: (forked) => {
         if (!forked) return;
         toast.success("Forked to your ducklets");
-        void queryClient.invalidateQueries(trpc.ducklet.list.infiniteQueryFilter());
+        void queryClient.invalidateQueries(
+          trpc.ducklet.list.infiniteQueryFilter(),
+        );
         void router.push(`/ducklets/${forked.id}`);
       },
       onError: (err) => toast.error(err.message),
@@ -280,7 +287,7 @@ h1 {
 
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
-          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             type="search"
             placeholder="Search ducklets…"
@@ -356,7 +363,9 @@ h1 {
                 ducklet={ducklet}
                 isOwner={ducklet.ownerId === currentUserId}
                 isSignedIn={!!currentUserId}
-                onDelete={() => deleteDuckletMutation.mutate({ id: ducklet.id })}
+                onDelete={() =>
+                  deleteDuckletMutation.mutate({ id: ducklet.id })
+                }
                 isDeleting={
                   deleteDuckletMutation.isPending &&
                   deleteDuckletMutation.variables?.id === ducklet.id

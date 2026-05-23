@@ -20,37 +20,37 @@ import { authClient } from "~/auth/client";
 import { CodeEditor } from "~/components/code-editor";
 import { Button } from "~/components/ui/button";
 import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "~/components/ui/resizable";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "~/components/ui/resizable";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
 import {
-  PythonLogo,
-  JavaScriptLogo,
-  TypeScriptLogo,
-  JavaLogo,
-  CppLogo,
   CLogo,
-  RustLogo,
+  CppLogo,
   GoLogo,
-  RubyLogo,
+  JavaLogo,
+  JavaScriptLogo,
   PhpLogo,
+  PythonLogo,
+  RubyLogo,
+  RustLogo,
+  TypeScriptLogo,
 } from "./_components/language-logos";
 
-const LANGUAGES: Array<{
+const LANGUAGES: {
   id: Language;
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   ext: string;
-}> = [
+}[] = [
   { id: "py", label: "Python", icon: PythonLogo, ext: "py" },
   { id: "js", label: "Node.js", icon: JavaScriptLogo, ext: "js" },
   { id: "ts", label: "TypeScript", icon: TypeScriptLogo, ext: "ts" },
@@ -515,7 +515,7 @@ export default function PlaygroundPage() {
                         <div className="text-muted-foreground/60 mb-2 text-[10px] font-bold tracking-wider uppercase">
                           stdout
                         </div>
-                        <pre className="custom-scrollbar overflow-x-auto rounded-lg border border-white/5 bg-black/30 p-3 font-mono text-sm leading-relaxed text-emerald-300/90 whitespace-pre-wrap">
+                        <pre className="custom-scrollbar overflow-x-auto rounded-lg border border-white/5 bg-black/30 p-3 font-mono text-sm leading-relaxed whitespace-pre-wrap text-emerald-300/90">
                           {result.stdout}
                         </pre>
                       </div>
@@ -527,7 +527,7 @@ export default function PlaygroundPage() {
                         <div className="mb-2 text-[10px] font-bold tracking-wider text-rose-400/60 uppercase">
                           stderr
                         </div>
-                        <pre className="custom-scrollbar overflow-x-auto rounded-lg border border-rose-500/10 bg-rose-500/5 p-3 font-mono text-xs leading-relaxed text-rose-300/80 whitespace-pre-wrap">
+                        <pre className="custom-scrollbar overflow-x-auto rounded-lg border border-rose-500/10 bg-rose-500/5 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-rose-300/80">
                           {result.stderr}
                         </pre>
                       </div>

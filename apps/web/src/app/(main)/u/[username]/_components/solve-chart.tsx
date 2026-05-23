@@ -117,7 +117,11 @@ export function SolveChart({ username }: { username: string }) {
                       color: "var(--popover-foreground)",
                     }}
                   />
-                  <Bar dataKey="count" fill="var(--primary)" radius={[0, 4, 4, 0]} />
+                  <Bar
+                    dataKey="count"
+                    fill="var(--primary)"
+                    radius={[0, 4, 4, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>

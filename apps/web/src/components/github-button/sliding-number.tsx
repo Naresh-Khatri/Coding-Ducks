@@ -6,12 +6,12 @@ import { motion, useSpring, useTransform } from "motion/react";
 
 import { cn } from "~/lib/utils";
 
-type SlidingNumberRollerProps = {
+interface SlidingNumberRollerProps {
   prevValue: number;
   value: number;
   place: number;
   transition: SpringOptions;
-};
+}
 
 function SlidingNumberRoller({
   prevValue,
@@ -45,11 +45,11 @@ function SlidingNumberRoller({
   );
 }
 
-type SlidingNumberDisplayProps = {
+interface SlidingNumberDisplayProps {
   motionValue: MotionValue<number>;
   number: number;
   transition: SpringOptions;
-};
+}
 
 function SlidingNumberDisplay({
   motionValue,

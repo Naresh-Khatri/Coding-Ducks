@@ -1,32 +1,34 @@
 import Link from "next/link";
 import { Github, Terminal, Twitter } from "lucide-react";
 
-const FOOTER_LINKS: { heading: string; links: { label: string; href: string }[] }[] =
-  [
-    {
-      heading: "Practice",
-      links: [
-        { label: "Problems", href: "/problems" },
-        { label: "UI Battles", href: "/battles" },
-        { label: "System Design", href: "/system-design" },
-      ],
-    },
-    {
-      heading: "Collaborate",
-      links: [
-        { label: "Ducklets", href: "/ducklets" },
-        { label: "Contests", href: "/contests" },
-        { label: "Dashboard", href: "/dashboard" },
-      ],
-    },
-    {
-      heading: "Account",
-      links: [
-        { label: "Sign in", href: "/login" },
-        { label: "Settings", href: "/dashboard/settings" },
-      ],
-    },
-  ];
+const FOOTER_LINKS: {
+  heading: string;
+  links: { label: string; href: string }[];
+}[] = [
+  {
+    heading: "Practice",
+    links: [
+      { label: "Problems", href: "/problems" },
+      { label: "UI Battles", href: "/battles" },
+      { label: "System Design", href: "/system-design" },
+    ],
+  },
+  {
+    heading: "Collaborate",
+    links: [
+      { label: "Ducklets", href: "/ducklets" },
+      { label: "Contests", href: "/contests" },
+      { label: "Dashboard", href: "/dashboard" },
+    ],
+  },
+  {
+    heading: "Account",
+    links: [
+      { label: "Sign in", href: "/login" },
+      { label: "Settings", href: "/dashboard/settings" },
+    ],
+  },
+];
 
 const SOCIALS: { label: string; href: string; icon: typeof Github }[] = [
   { label: "GitHub", href: "https://github.com", icon: Github },
@@ -43,7 +45,10 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
           {/* brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-bold tracking-tight"
+            >
               <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
                 <Terminal size={18} strokeWidth={3} />
               </div>

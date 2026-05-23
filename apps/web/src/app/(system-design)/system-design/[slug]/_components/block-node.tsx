@@ -86,7 +86,7 @@ function BlockNodeComponent({ id, data }: NodeProps) {
       if (e.target !== id) return false;
       const src = nodes.find((n) => n.id === e.source);
       return (
-        (src?.data as BlockNodeData | undefined)?.definition.type ===
+        (src?.data)?.definition.type ===
         requiredDistributor
       );
     });
@@ -110,7 +110,7 @@ function BlockNodeComponent({ id, data }: NodeProps) {
           .reduce((sum, e) => {
             const target = nodes.find((n) => n.id === e.target);
             const reps =
-              (target?.data as BlockNodeData | undefined)?.replicas ?? 1;
+              (target?.data)?.replicas ?? 1;
             return sum + reps;
           }, 0)
       : 0;
@@ -175,7 +175,9 @@ function BlockNodeComponent({ id, data }: NodeProps) {
           >
             <Copy size={11} />
             <span>
-              {definition.scaling === "manual" ? "Duplicate to scale" : "Duplicate"}
+              {definition.scaling === "manual"
+                ? "Duplicate to scale"
+                : "Duplicate"}
             </span>
           </button>
           <button

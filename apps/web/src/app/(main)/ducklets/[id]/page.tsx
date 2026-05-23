@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import type { ChatMessage, UserPresence } from "~/hooks/use-socket";
 import { authClient } from "~/auth/client";
 import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
 import { SettingsModal } from "~/components/collab-editor/settings-modal";
@@ -34,7 +35,6 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import { useIsMobile } from "~/hooks/use-is-mobile";
 import { useSocketDucklet } from "~/hooks/use-socket";
 import { useTRPC } from "~/trpc/react";
-import type { ChatMessage, UserPresence } from "~/hooks/use-socket";
 
 // CodeMirror + y-codemirror.next add ~200kB to the bundle. Defer them
 // until the page is interactive so they don't block first paint.
@@ -161,7 +161,9 @@ export default function DuckletPage({
       onSuccess: (forked) => {
         if (!forked) return;
         toast.success("Forked to your ducklets");
-        void queryClient.invalidateQueries(trpc.ducklet.list.infiniteQueryFilter());
+        void queryClient.invalidateQueries(
+          trpc.ducklet.list.infiniteQueryFilter(),
+        );
         router.push(`/ducklets/${forked.id}`);
       },
       onError: (err) => toast.error(err.message),
@@ -228,12 +230,7 @@ export default function DuckletPage({
   if (error || !ducklet) {
     const code = error?.data?.code;
     if (code === "FORBIDDEN") {
-      return (
-        <AccessDeniedScreen
-          duckletId={duckletId}
-          isAuthed={!!userId}
-        />
-      );
+      return <AccessDeniedScreen duckletId={duckletId} isAuthed={!!userId} />;
     }
     return (
       <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
@@ -279,7 +276,10 @@ export default function DuckletPage({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <ConnectionBadge isConnected={isConnected} hasToken={!!collabAuth?.token} />
+          <ConnectionBadge
+            isConnected={isConnected}
+            hasToken={!!collabAuth?.token}
+          />
 
           {userId && (
             <Button
@@ -499,7 +499,12 @@ function ChatPanel({
             placeholder="Type..."
             className="h-8"
           />
-          <Button size="icon" onClick={onSend} className="h-8 w-8" aria-label="Send">
+          <Button
+            size="icon"
+            onClick={onSend}
+            className="h-8 w-8"
+            aria-label="Send"
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>
@@ -529,11 +534,7 @@ function ConnectionBadge({
   return (
     <span
       className="flex items-center gap-1 text-xs text-amber-500"
-      title={
-        hasToken
-          ? "Disconnected — reconnecting…"
-          : "Connecting…"
-      }
+      title={hasToken ? "Disconnected — reconnecting…" : "Connecting…"}
     >
       <WifiOff className="h-3.5 w-3.5 animate-pulse" />
       <span className="hidden sm:inline">

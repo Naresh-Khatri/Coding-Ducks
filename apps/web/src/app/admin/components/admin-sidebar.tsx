@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  FileCode2,
-  LayoutDashboard,
-  ChevronLeft,
-  Shield,
-} from "lucide-react";
+import { ChevronLeft, FileCode2, LayoutDashboard, Shield } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -27,15 +22,15 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full w-64 flex-col border-r border-border bg-card">
+    <div className="border-border bg-card flex h-full w-64 flex-col border-r">
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-destructive/10">
-          <Shield className="h-5 w-5 text-destructive" />
+      <div className="border-border flex items-center gap-3 border-b px-4 py-4">
+        <div className="bg-destructive/10 flex h-9 w-9 items-center justify-center rounded-lg">
+          <Shield className="text-destructive h-5 w-5" />
         </div>
         <div>
           <h1 className="text-sm font-semibold">Coding Ducks Admin</h1>
-          <p className="text-xs text-muted-foreground">Manage content</p>
+          <p className="text-muted-foreground text-xs">Manage content</p>
         </div>
       </div>
 
@@ -56,7 +51,7 @@ export function AdminSidebar() {
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -67,8 +62,13 @@ export function AdminSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-border p-3">
-        <Button variant="ghost" size="sm" className="w-full justify-start gap-2" asChild>
+      <div className="border-border border-t p-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2"
+          asChild
+        >
           <Link href="/problems">
             <ChevronLeft className="h-4 w-4" />
             Back to Problems

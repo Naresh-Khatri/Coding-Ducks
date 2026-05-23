@@ -2,9 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import type { SubmissionDetail } from "../types";
 import type { Language } from "~/components/code-editor";
 import { CodeEditor } from "~/components/code-editor";
-import { useTRPC } from "~/trpc/react";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
 } from "~/components/ui/dialog";
 import { getLanguageLabel } from "~/lib/languages";
 import { cn } from "~/lib/utils";
-import type { SubmissionDetail } from "../types";
+import { useTRPC } from "~/trpc/react";
 
 interface SubmissionDetailDialogProps {
   submission: SubmissionDetail | null;
@@ -25,13 +25,7 @@ interface SubmissionDetailDialogProps {
  * shared prefix/suffix and emphasising the differing middle. Keeps the diff
  * cheap (no library) while making the mismatch obvious at a glance.
  */
-function DiffValue({
-  expected,
-  actual,
-}: {
-  expected: string;
-  actual: string;
-}) {
+function DiffValue({ expected, actual }: { expected: string; actual: string }) {
   let start = 0;
   while (
     start < expected.length &&
@@ -142,7 +136,7 @@ export function SubmissionDetailDialog({
               beats: null,
             },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-lg bg-accent/40 p-3">
+            <div key={stat.label} className="bg-accent/40 rounded-lg p-3">
               <div className="text-muted-foreground mb-1 text-[10px] font-medium uppercase">
                 {stat.label}
               </div>
@@ -177,7 +171,7 @@ export function SubmissionDetailDialog({
             <div className="text-muted-foreground mb-1 text-xs font-medium">
               Error
             </div>
-            <div className="max-h-32 overflow-auto rounded-lg bg-accent/40 px-3 py-2 font-mono text-xs whitespace-pre-wrap text-rose-400">
+            <div className="bg-accent/40 max-h-32 overflow-auto rounded-lg px-3 py-2 font-mono text-xs whitespace-pre-wrap text-rose-400">
               {sub.errorMessage}
             </div>
           </div>
@@ -193,79 +187,76 @@ export function SubmissionDetailDialog({
                 .map((r, i) => ({ r, n: i + 1 }))
                 .sort((a, b) => Number(a.r.passed) - Number(b.r.passed))
                 .map(({ r, n }) => (
-                <div
-                  key={n}
-                  className="rounded-lg border border-white/5 bg-accent/30 p-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold">Test {n}</span>
-                    <span
-                      className={cn(
-                        "text-[10px] font-bold uppercase",
-                        r.passed ? "text-emerald-500" : "text-rose-500",
-                      )}
-                    >
-                      {r.passed ? "Passed" : "Failed"}
-                    </span>
-                  </div>
-                  {(r.input != null ||
-                    r.expected != null ||
-                    r.actual != null ||
-                    r.error) && (
-                    <div className="mt-2 space-y-1 font-mono text-[11px]">
-                      {r.input != null && (
-                        <div>
-                          <span className="text-muted-foreground">Input: </span>
-                          <span className="break-all">{r.input}</span>
-                        </div>
-                      )}
-                      {!r.passed &&
-                      r.expected != null &&
-                      r.actual != null ? (
-                        <DiffValue
-                          expected={r.expected}
-                          actual={r.actual}
-                        />
-                      ) : (
-                        <>
-                          {r.expected != null && (
-                            <div>
-                              <span className="text-muted-foreground">
-                                Expected:{" "}
-                              </span>
-                              <span className="break-all text-emerald-400">
-                                {r.expected}
-                              </span>
-                            </div>
-                          )}
-                          {r.actual != null && (
-                            <div>
-                              <span className="text-muted-foreground">
-                                Got:{" "}
-                              </span>
-                              <span
-                                className={cn(
-                                  "break-all",
-                                  r.passed
-                                    ? "text-emerald-400"
-                                    : "text-rose-400",
-                                )}
-                              >
-                                {r.actual}
-                              </span>
-                            </div>
-                          )}
-                        </>
-                      )}
-                      {r.error && (
-                        <div className="whitespace-pre-wrap text-rose-400">
-                          {r.error}
-                        </div>
-                      )}
+                  <div
+                    key={n}
+                    className="bg-accent/30 rounded-lg border border-white/5 p-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold">Test {n}</span>
+                      <span
+                        className={cn(
+                          "text-[10px] font-bold uppercase",
+                          r.passed ? "text-emerald-500" : "text-rose-500",
+                        )}
+                      >
+                        {r.passed ? "Passed" : "Failed"}
+                      </span>
                     </div>
-                  )}
-                </div>
-              ))}
+                    {(r.input != null ||
+                      r.expected != null ||
+                      r.actual != null ||
+                      r.error) && (
+                      <div className="mt-2 space-y-1 font-mono text-[11px]">
+                        {r.input != null && (
+                          <div>
+                            <span className="text-muted-foreground">
+                              Input:{" "}
+                            </span>
+                            <span className="break-all">{r.input}</span>
+                          </div>
+                        )}
+                        {!r.passed && r.expected != null && r.actual != null ? (
+                          <DiffValue expected={r.expected} actual={r.actual} />
+                        ) : (
+                          <>
+                            {r.expected != null && (
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Expected:{" "}
+                                </span>
+                                <span className="break-all text-emerald-400">
+                                  {r.expected}
+                                </span>
+                              </div>
+                            )}
+                            {r.actual != null && (
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Got:{" "}
+                                </span>
+                                <span
+                                  className={cn(
+                                    "break-all",
+                                    r.passed
+                                      ? "text-emerald-400"
+                                      : "text-rose-400",
+                                  )}
+                                >
+                                  {r.actual}
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {r.error && (
+                          <div className="whitespace-pre-wrap text-rose-400">
+                            {r.error}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
             </div>
           </div>
         )}

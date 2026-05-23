@@ -10,6 +10,7 @@
  */
 
 import type { Edge, Node } from "@xyflow/react";
+
 import type {
   BlockDefinition,
   BlockNodeData,
@@ -17,32 +18,32 @@ import type {
   PortProtocol,
   SimulationResults,
 } from "../types.ts";
-import {
-  getBlockDefinition,
-  TRAFFIC_SOURCE_BLOCK,
-} from "../block-registry.ts";
+import { getBlockDefinition, TRAFFIC_SOURCE_BLOCK } from "../block-registry.ts";
 import { SimulationEngine } from "../simulation-engine.ts";
 import { computeTopologyWarnings } from "../topology-warnings.ts";
 
 // ─── Public types ────────────────────────────────────────────────────────────
 
 export interface DesignSpec {
-  blocks: Record<string, { type: string; provider?: string; replicas?: number }>;
+  blocks: Record<
+    string,
+    { type: string; provider?: string; replicas?: number }
+  >;
   // each edge: [fromKey, toKey, protocol?] — protocol defaults to "HTTP"
   edges: Array<[string, string] | [string, string, PortProtocol]>;
 }
 
 export interface ScoreSummary {
-  stars: number;         // median stars across runs
-  minStars: number;      // worst-case across runs
-  maxStars: number;      // best-case across runs
-  passed: boolean;       // majority vote
-  costPerMonth: number;  // deterministic (no jitter)
-  costPercent: number;   // costPerMonth / level.budget * 100
-  avgLatencyMs: number;  // median
-  p99LatencyMs: number;  // median
+  stars: number; // median stars across runs
+  minStars: number; // worst-case across runs
+  maxStars: number; // best-case across runs
+  passed: boolean; // majority vote
+  costPerMonth: number; // deterministic (no jitter)
+  costPercent: number; // costPerMonth / level.budget * 100
+  avgLatencyMs: number; // median
+  p99LatencyMs: number; // median
   uptimePercent: number; // median
-  warnings: string[];    // unique "severity: message" strings seen in any run
+  warnings: string[]; // unique "severity: message" strings seen in any run
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
@@ -111,7 +112,7 @@ function median(sorted: number[]): number {
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 1
     ? sorted[mid]!
-    : ((sorted[mid - 1]! + sorted[mid]!) / 2);
+    : (sorted[mid - 1]! + sorted[mid]!) / 2;
 }
 
 // ─── buildGraph ──────────────────────────────────────────────────────────────
@@ -125,7 +126,10 @@ export function buildGraph(spec: DesignSpec): {
   edges: Edge[];
 } {
   // Collect all valid node IDs up front for edge validation
-  const allIds = new Set<string>(["traffic-source", ...Object.keys(spec.blocks)]);
+  const allIds = new Set<string>([
+    "traffic-source",
+    ...Object.keys(spec.blocks),
+  ]);
 
   // ── Nodes ──────────────────────────────────────────────────────────────────
 
@@ -172,7 +176,8 @@ export function buildGraph(spec: DesignSpec): {
   const edges: Edge[] = spec.edges.map((tuple) => {
     const fromKey = tuple[0];
     const toKey = tuple[1];
-    const proto: PortProtocol = (tuple[2] as PortProtocol | undefined) ?? "HTTP";
+    const proto: PortProtocol =
+      (tuple[2] as PortProtocol | undefined) ?? "HTTP";
 
     if (!allIds.has(fromKey)) {
       throw new Error(
@@ -281,7 +286,8 @@ export function score(
     const d = n.data as BlockNodeData;
     return sum + d.definition.costPerMonth * (d.replicas ?? 1);
   }, 0);
-  const costPercent = level.budget > 0 ? (costPerMonth / level.budget) * 100 : 0;
+  const costPercent =
+    level.budget > 0 ? (costPerMonth / level.budget) * 100 : 0;
 
   const results: SimulationResults[] = [];
   for (let i = 0; i < runs; i++) {

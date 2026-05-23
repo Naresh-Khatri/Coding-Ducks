@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod/v4";
 
-import { user, userProfile, submission, problem } from "@acme/db";
+import { problem, submission, user, userProfile } from "@acme/db";
 
 import { protectedProcedure } from "../trpc";
 

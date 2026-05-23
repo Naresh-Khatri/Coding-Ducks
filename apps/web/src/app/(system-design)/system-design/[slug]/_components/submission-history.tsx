@@ -1,7 +1,7 @@
 "use client";
 
-import { Star, CheckCircle, XCircle, LogIn } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { CheckCircle, LogIn, Star, XCircle } from "lucide-react";
 
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
@@ -89,9 +89,7 @@ export function SubmissionHistory({
 
   return (
     <ScrollArea
-      className={cn(
-        variant === "modal" ? "max-h-[280px]" : "h-full",
-      )}
+      className={cn(variant === "modal" ? "max-h-[280px]" : "h-full")}
     >
       <div className="space-y-1.5 p-2">
         {attempts.map((attempt) => (

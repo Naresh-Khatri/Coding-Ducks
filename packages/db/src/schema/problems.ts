@@ -1,5 +1,15 @@
-import { pgTable, serial, text, varchar, boolean, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import {
+  boolean,
+  integer,
+  jsonb,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
+
 import { difficultyEnum } from "./enums";
 
 export const problem = pgTable("problem", {
@@ -10,7 +20,10 @@ export const problem = pgTable("problem", {
   difficulty: difficultyEnum("difficulty").notNull(),
 
   // Tags array as text[]
-  tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
+  tags: text("tags")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
 
   // Test cases: [{input: string, output: string, isPublic: boolean}]
   testCases: jsonb("test_cases").notNull().$type<TestCase[]>(),
@@ -22,13 +35,19 @@ export const problem = pgTable("problem", {
   editorial: text("editorial"),
 
   // Progressive hints (revealed one at a time in the UI)
-  hints: text("hints").array().notNull().default(sql`'{}'::text[]`),
+  hints: text("hints")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
 
   // Constraints (Markdown, e.g. input bounds)
   constraints: text("constraints"),
 
   // Companies that have asked this problem
-  companies: text("companies").array().notNull().default(sql`'{}'::text[]`),
+  companies: text("companies")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
 
   // Follow-up prompt (Markdown)
   followUp: text("follow_up"),
@@ -64,10 +83,10 @@ export interface TestCase {
 
 export interface FunctionSignature {
   fnName: string;
-  params: Array<{
+  params: {
     name: string;
     type: string;
-  }>;
+  }[];
   returnType: string;
 }
 

@@ -32,7 +32,18 @@ export const playgroundRouter = createTRPCRouter({
     .input(
       z.object({
         code: z.string().min(1).max(50_000),
-        lang: z.enum(["py", "js", "ts", "java", "cpp", "c", "rs", "go", "rb", "php"]),
+        lang: z.enum([
+          "py",
+          "js",
+          "ts",
+          "java",
+          "cpp",
+          "c",
+          "rs",
+          "go",
+          "rb",
+          "php",
+        ]),
       }),
     )
     .mutation(async ({ input }) => {

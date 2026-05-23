@@ -2,13 +2,14 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, HelpCircle, RotateCcw, Undo2, Redo2 } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import { startSystemDesignTour } from "./onboarding-tour";
-import { useConfirm } from "~/hooks/use-confirm";
+import { ArrowLeft, HelpCircle, Redo2, RotateCcw, Undo2 } from "lucide-react";
+
 import { authClient } from "~/auth/client";
+import { Button } from "~/components/ui/button";
+import { useConfirm } from "~/hooks/use-confirm";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { cn } from "~/lib/utils";
+import { startSystemDesignTour } from "./onboarding-tour";
 
 const DIFFICULTY_COLORS = {
   beginner: "bg-green-500/10 text-green-500",
@@ -31,7 +32,12 @@ export function TopBar() {
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      )
+        return;
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
       if (mod && key === "z" && !e.shiftKey) {
@@ -97,7 +103,7 @@ export function TopBar() {
             phase === "building"
               ? "bg-blue-500"
               : phase === "production"
-                ? "bg-green-500 animate-pulse"
+                ? "animate-pulse bg-green-500"
                 : "bg-amber-500",
           )}
         />
@@ -133,7 +139,6 @@ export function TopBar() {
           </Button>
         </div>
       )}
-
 
       {!session?.user && (
         <Button

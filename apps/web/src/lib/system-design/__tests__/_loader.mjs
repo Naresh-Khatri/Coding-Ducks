@@ -1,7 +1,7 @@
 // Zero-dep resolve hook: lets Node's native TS type-stripping resolve the
 // simulator's extensionless relative imports (./foo -> ./foo.ts).
-import { registerHooks } from "node:module";
 import { existsSync } from "node:fs";
+import { registerHooks } from "node:module";
 import { fileURLToPath } from "node:url";
 
 registerHooks({

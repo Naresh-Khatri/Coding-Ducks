@@ -3,15 +3,10 @@
 import { useState } from "react";
 import { EyeOff, Pencil, Play, X } from "lucide-react";
 
-import { Button } from "~/components/ui/button";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/components/ui/tabs";
-import { cn } from "~/lib/utils";
 import type { ConsoleResult, ProblemDetail } from "../types";
+import { Button } from "~/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { cn } from "~/lib/utils";
 
 interface TestCasePanelProps {
   problem: ProblemDetail;
@@ -43,8 +38,7 @@ export function TestCasePanel({
 }: TestCasePanelProps) {
   const [isEditingCustom, setIsEditingCustom] = useState(false);
   const sig = problem.functionSignature;
-  const publicCases =
-    problem.testCases?.filter((tc) => tc.isPublic) ?? [];
+  const publicCases = problem.testCases?.filter((tc) => tc.isPublic) ?? [];
 
   const startCustomEdit = () => {
     const tc = publicCases[selectedTestCase] ?? publicCases[0];
@@ -188,8 +182,7 @@ export function TestCasePanel({
                 </div>
               ) : (
                 (() => {
-                  const tc =
-                    publicCases[selectedTestCase] ?? publicCases[0];
+                  const tc = publicCases[selectedTestCase] ?? publicCases[0];
                   if (!tc) return null;
                   return (
                     <div className="space-y-3">
@@ -199,7 +192,7 @@ export function TestCasePanel({
                             <div className="text-muted-foreground mb-1 text-xs font-medium">
                               {param.name} =
                             </div>
-                            <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
+                            <div className="text-foreground bg-accent/40 rounded-lg px-3 py-2 font-mono text-sm">
                               {tc.args?.[j]}
                             </div>
                           </div>
@@ -209,7 +202,7 @@ export function TestCasePanel({
                           <div className="text-muted-foreground mb-1 text-xs font-medium">
                             Input
                           </div>
-                          <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm whitespace-pre-wrap">
+                          <div className="text-foreground bg-accent/40 rounded-lg px-3 py-2 font-mono text-sm whitespace-pre-wrap">
                             {tc.input ?? ""}
                           </div>
                         </div>
@@ -230,8 +223,7 @@ export function TestCasePanel({
           {consoleOutput.length > 0 ? (
             (() => {
               const allPassed = consoleOutput.every((r) => r.passed);
-              const res =
-                consoleOutput[selectedOutputCase] ?? consoleOutput[0];
+              const res = consoleOutput[selectedOutputCase] ?? consoleOutput[0];
               const tc = publicCases[selectedOutputCase];
               if (!res) return null;
               return (
@@ -275,7 +267,7 @@ export function TestCasePanel({
                         <div className="text-muted-foreground mb-1 text-xs font-medium">
                           Error
                         </div>
-                        <div className="rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm whitespace-pre-wrap text-rose-400">
+                        <div className="bg-accent/40 rounded-lg px-3 py-2 font-mono text-sm whitespace-pre-wrap text-rose-400">
                           {res.error}
                         </div>
                       </div>
@@ -288,7 +280,7 @@ export function TestCasePanel({
                             <div className="text-muted-foreground mb-1 text-xs font-medium">
                               {param.name} =
                             </div>
-                            <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
+                            <div className="text-foreground bg-accent/40 rounded-lg px-3 py-2 font-mono text-sm">
                               {tc?.args?.[j]}
                             </div>
                           </div>
@@ -298,7 +290,7 @@ export function TestCasePanel({
                           <div className="text-muted-foreground mb-1 text-xs font-medium">
                             Input
                           </div>
-                          <div className="text-foreground rounded-lg bg-accent/40 px-3 py-2 font-mono text-sm">
+                          <div className="text-foreground bg-accent/40 rounded-lg px-3 py-2 font-mono text-sm">
                             {res.input}
                           </div>
                         </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import type { Node } from "@xyflow/react";
+import { useEffect, useRef } from "react";
+
+import type { BlockNodeData, SimulationTick } from "~/lib/system-design/types";
 import { SimulationEngine } from "~/lib/system-design/simulation-engine";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { computeTopologyWarnings } from "~/lib/system-design/topology-warnings";
-import type { BlockNodeData, SimulationTick } from "~/lib/system-design/types";
 
 export function useSimulation() {
   const phase = useSystemDesignStore((s) => s.phase);
@@ -27,7 +28,7 @@ export function useSimulation() {
     if (precomputedRef.current) return;
 
     const engine = new SimulationEngine(
-      nodes as Node<BlockNodeData>[],
+      nodes,
       edges,
       level,
     );
@@ -42,11 +43,11 @@ export function useSimulation() {
 
     // Compute results
     const totalCost = nodes.reduce((sum, n) => {
-      const d = n.data as BlockNodeData;
+      const d = n.data;
       return sum + d.definition.costPerMonth * (d.replicas ?? 1);
     }, 0);
     const topologyWarnings = computeTopologyWarnings(
-      nodes as Node<BlockNodeData>[],
+      nodes,
       edges,
     );
 
@@ -63,7 +64,7 @@ export function useSimulation() {
         }
       }
       for (const n of nodes) {
-        const data = n.data as BlockNodeData;
+        const data = n.data;
         if (!requiredTypes.has(data.definition.type)) continue;
         if ((peakRps.get(n.id) ?? 0) >= 1) continue;
         topologyWarnings.push({

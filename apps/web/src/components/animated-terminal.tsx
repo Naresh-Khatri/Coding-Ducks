@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import Spline from "@splinetool/react-spline";
-import { Application } from "@splinetool/runtime";
+import type { Application } from "@splinetool/runtime";
 
 const LANGS = ["python", "javascript", "cpp", "java"] as const;
 type Language = (typeof LANGS)[number];

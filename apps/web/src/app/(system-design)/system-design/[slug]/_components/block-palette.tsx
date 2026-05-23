@@ -54,7 +54,7 @@ export function BlockPalette() {
   const addBlockToCenter = useSystemDesignStore((s) => s.addBlockToCenter);
 
   const budgetUsed = nodes.reduce((sum, n) => {
-    const d = n.data as BlockNodeData;
+    const d = n.data;
     return sum + d.definition.costPerMonth * (d.replicas ?? 1);
   }, 0);
 
@@ -73,120 +73,120 @@ export function BlockPalette() {
         {(Object.keys(CATEGORY_CONFIG) as BlockCategory[])
           .filter((category) => grouped[category].length > 0)
           .map((category, idx) => {
-          const blocks = grouped[category];
-          const config = CATEGORY_CONFIG[category];
-          const isCatExpanded = expandedCategories[category];
+            const blocks = grouped[category];
+            const config = CATEGORY_CONFIG[category];
+            const isCatExpanded = expandedCategories[category];
 
-          return (
-            <div key={category}>
-              {idx > 0 && <Separator className="my-1" />}
-              <button
-                className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium transition-colors"
-                onClick={() =>
-                  setExpandedCategories((s) => ({
-                    ...s,
-                    [category]: !s[category],
-                  }))
-                }
-              >
-                {config.icon}
-                <span className="flex-1 text-left">{config.label}</span>
-                <ChevronDown
-                  size={12}
-                  className={cn(
-                    "text-muted-foreground transition-transform",
-                    isCatExpanded && "rotate-180",
-                  )}
-                />
-              </button>
-              {isCatExpanded && (
-                <div className="mt-1 grid grid-cols-2 gap-1 pl-1">
-                  {blocks.map((block) => {
-                    const currentDefault =
-                      defaultProviders[block.type] ?? block.name;
-                    const providerData = block.providers?.find(
-                      (p) => p.provider === currentDefault,
-                    );
-                    const cost =
-                      providerData?.costPerMonth ?? block.costPerMonth;
-                    const providerCosts = block.providers?.map(
-                      (p) => p.costPerMonth,
-                    );
-                    const minCost = providerCosts?.length
-                      ? Math.min(...providerCosts)
-                      : block.costPerMonth;
-                    const maxCost = providerCosts?.length
-                      ? Math.max(...providerCosts)
-                      : block.costPerMonth;
-                    const hasRange = minCost !== maxCost;
-                    const costLabel = hasRange
-                      ? `$${minCost}–$${maxCost}`
-                      : `$${minCost}`;
-                    const wouldExceed =
-                      level !== null && budgetUsed + cost > level.budget;
-                    const isDisabled = phase !== "building" || wouldExceed;
+            return (
+              <div key={category}>
+                {idx > 0 && <Separator className="my-1" />}
+                <button
+                  className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium transition-colors"
+                  onClick={() =>
+                    setExpandedCategories((s) => ({
+                      ...s,
+                      [category]: !s[category],
+                    }))
+                  }
+                >
+                  {config.icon}
+                  <span className="flex-1 text-left">{config.label}</span>
+                  <ChevronDown
+                    size={12}
+                    className={cn(
+                      "text-muted-foreground transition-transform",
+                      isCatExpanded && "rotate-180",
+                    )}
+                  />
+                </button>
+                {isCatExpanded && (
+                  <div className="mt-1 grid grid-cols-2 gap-1 pl-1">
+                    {blocks.map((block) => {
+                      const currentDefault =
+                        defaultProviders[block.type] ?? block.name;
+                      const providerData = block.providers?.find(
+                        (p) => p.provider === currentDefault,
+                      );
+                      const cost =
+                        providerData?.costPerMonth ?? block.costPerMonth;
+                      const providerCosts = block.providers?.map(
+                        (p) => p.costPerMonth,
+                      );
+                      const minCost = providerCosts?.length
+                        ? Math.min(...providerCosts)
+                        : block.costPerMonth;
+                      const maxCost = providerCosts?.length
+                        ? Math.max(...providerCosts)
+                        : block.costPerMonth;
+                      const hasRange = minCost !== maxCost;
+                      const costLabel = hasRange
+                        ? `$${minCost}–$${maxCost}`
+                        : `$${minCost}`;
+                      const wouldExceed =
+                        level !== null && budgetUsed + cost > level.budget;
+                      const isDisabled = phase !== "building" || wouldExceed;
 
-                    const IconComponent =
-                      (
-                        Icons as unknown as Record<
-                          string,
-                          React.ComponentType<{ size?: number }>
+                      const IconComponent =
+                        (
+                          Icons as unknown as Record<
+                            string,
+                            React.ComponentType<{ size?: number }>
+                          >
+                        )[block.icon] ?? Icons.Box;
+
+                      return (
+                        <div
+                          key={block.type}
+                          draggable={!isDisabled}
+                          onDragStart={(e) =>
+                            onDragStart(e, block.type, currentDefault)
+                          }
+                          onClick={() => {
+                            if (isDisabled) return;
+                            const baseDef = getBlockDefinition(block.type);
+                            if (!baseDef) return;
+                            const provider = baseDef.providers?.find(
+                              (p) => p.provider === currentDefault,
+                            );
+                            const def = provider
+                              ? {
+                                  ...baseDef,
+                                  name: provider.provider,
+                                  costPerMonth: provider.costPerMonth,
+                                  maxRps: provider.maxRps,
+                                  maxConnections: provider.maxConnections,
+                                  baseLatencyMs: provider.baseLatencyMs,
+                                }
+                              : baseDef;
+                            addBlockToCenter(def);
+                          }}
+                          title={`${block.label} — ${costLabel}/mo`}
+                          className={cn(
+                            "bg-card flex items-center gap-2 rounded-md border p-2 transition-colors",
+                            !isDisabled &&
+                              "hover:bg-muted hover:border-foreground/20 cursor-grab active:cursor-grabbing",
+                            isDisabled && "cursor-not-allowed opacity-40",
+                          )}
                         >
-                      )[block.icon] ?? Icons.Box;
-
-                    return (
-                      <div
-                        key={block.type}
-                        draggable={!isDisabled}
-                        onDragStart={(e) =>
-                          onDragStart(e, block.type, currentDefault)
-                        }
-                        onClick={() => {
-                          if (isDisabled) return;
-                          const baseDef = getBlockDefinition(block.type);
-                          if (!baseDef) return;
-                          const provider = baseDef.providers?.find(
-                            (p) => p.provider === currentDefault,
-                          );
-                          const def = provider
-                            ? {
-                                ...baseDef,
-                                name: provider.provider,
-                                costPerMonth: provider.costPerMonth,
-                                maxRps: provider.maxRps,
-                                maxConnections: provider.maxConnections,
-                                baseLatencyMs: provider.baseLatencyMs,
-                              }
-                            : baseDef;
-                          addBlockToCenter(def);
-                        }}
-                        title={`${block.label} — ${costLabel}/mo`}
-                        className={cn(
-                          "bg-card flex items-center gap-2 rounded-md border p-2 transition-colors",
-                          !isDisabled &&
-                            "hover:bg-muted hover:border-foreground/20 cursor-grab active:cursor-grabbing",
-                          isDisabled && "cursor-not-allowed opacity-40",
-                        )}
-                      >
-                        <div className="bg-muted flex h-7 w-7 shrink-0 items-center justify-center rounded">
-                          <IconComponent size={14} />
-                        </div>
-                        <div className="flex min-w-0 flex-1 flex-col">
-                          <div className="truncate text-[11px] leading-tight font-medium">
-                            {block.label}
+                          <div className="bg-muted flex h-7 w-7 shrink-0 items-center justify-center rounded">
+                            <IconComponent size={14} />
                           </div>
-                          <span className="text-muted-foreground text-[10px] tabular-nums">
-                            {costLabel}
-                          </span>
+                          <div className="flex min-w-0 flex-1 flex-col">
+                            <div className="truncate text-[11px] leading-tight font-medium">
+                              {block.label}
+                            </div>
+                            <span className="text-muted-foreground text-[10px] tabular-nums">
+                              {costLabel}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
       </div>
     </ScrollArea>
   );

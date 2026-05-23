@@ -2,8 +2,8 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { z } from "zod/v4";
 
-import { problem, submission, user, userProfile } from "@acme/db/schema";
 import { user as userTable } from "@acme/db";
+import { problem, submission, user, userProfile } from "@acme/db/schema";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -54,7 +54,9 @@ export const profileRouter = createTRPCRouter({
 
       // Display streak as 0 if stale (lastSolveDate < yesterday)
       const today = new Date().toISOString().split("T")[0]!;
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0]!;
+      const yesterday = new Date(Date.now() - 86400000)
+        .toISOString()
+        .split("T")[0]!;
       const displayStreak =
         profile.lastSolveDate && profile.lastSolveDate >= yesterday
           ? profile.currentStreak
@@ -286,7 +288,10 @@ export const profileRouter = createTRPCRouter({
           .string()
           .min(3)
           .max(30)
-          .regex(/^[a-z0-9_]+$/, "Only lowercase letters, numbers, and underscores"),
+          .regex(
+            /^[a-z0-9_]+$/,
+            "Only lowercase letters, numbers, and underscores",
+          ),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -306,7 +311,10 @@ export const profileRouter = createTRPCRouter({
           .string()
           .min(3)
           .max(30)
-          .regex(/^[a-z0-9_]+$/, "Only lowercase letters, numbers, and underscores"),
+          .regex(
+            /^[a-z0-9_]+$/,
+            "Only lowercase letters, numbers, and underscores",
+          ),
       }),
     )
     .mutation(async ({ ctx, input }) => {

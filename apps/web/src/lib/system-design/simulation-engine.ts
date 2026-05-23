@@ -1,4 +1,5 @@
 import type { Edge, Node } from "@xyflow/react";
+
 import type {
   AttackSpike,
   BlockNodeData,
@@ -87,8 +88,8 @@ const ROLE: Record<string, Role> = {
 export function computeMissingLayerPenalties(
   reachableTypes: Set<string>,
   writeFraction: number,
-): Array<{ type: string; warning: string; resolved: boolean }> {
-  const out: Array<{ type: string; warning: string; resolved: boolean }> = [];
+): { type: string; warning: string; resolved: boolean }[] {
+  const out: { type: string; warning: string; resolved: boolean }[] = [];
 
   const hasReadOrigin =
     reachableTypes.has("object-storage") || reachableTypes.has("app-server");
@@ -273,7 +274,7 @@ export class SimulationEngine {
     let bestDnsAbsorb = 0;
     for (const id of reachable) {
       const n = this.graph.get(id);
-      if (!n || n.type !== "dns") continue;
+      if (n?.type !== "dns") continue;
       if (n.edgeLatencyReduction > bestDnsLatency) {
         bestDnsLatency = n.edgeLatencyReduction;
       }
@@ -361,9 +362,7 @@ export class SimulationEngine {
       const n = this.graph.get(id);
       if (!n || n.isAsync || n.isManaged || n.replicas >= 2) continue;
       const without = this.reachFrom(id);
-      const stillServed = servedSinks.some(
-        (s) => s !== id && without.has(s),
-      );
+      const stillServed = servedSinks.some((s) => s !== id && without.has(s));
       if (!stillServed) spof.push(id);
     }
 
@@ -409,8 +408,7 @@ export class SimulationEngine {
     const baseline = Math.max(this.readEma, 1);
     const ratio = readRps / baseline;
     const cool =
-      clamp((ratio - SIM.SURGE_TRIGGER) / SIM.SURGE_SLOPE, 0, 1) *
-      SIM.MAX_COOL;
+      clamp((ratio - SIM.SURGE_TRIGGER) / SIM.SURGE_SLOPE, 0, 1) * SIM.MAX_COOL;
     return base * (1 - cool);
   }
 
@@ -577,7 +575,11 @@ export class SimulationEngine {
         node.loadPercent = util * 100;
         node.currentRps = incoming;
         node.status = this.statusFor(util, dropped);
-        this.send(this.downstream(id), { read: 0, write: drained }, "round-robin");
+        this.send(
+          this.downstream(id),
+          { read: 0, write: drained },
+          "round-robin",
+        );
       } else if (node.role === "sink" && node.scalesReadsOnly) {
         // Datastore: replicas scale READS only; the primary caps writes.
         const wCap = node.baseMaxRps;
@@ -661,15 +663,12 @@ export class SimulationEngine {
         const cacheBaseRate =
           cacheTargets.length > 0
             ? Math.max(
-                ...cacheTargets.map(
-                  (t) => this.graph.get(t)?.baseHitRate ?? 0,
-                ),
+                ...cacheTargets.map((t) => this.graph.get(t)?.baseHitRate ?? 0),
               )
             : 0;
         const hit =
           cacheBaseRate > 0
-            ? this.effectiveHitRate(cacheBaseRate, this.readEma) *
-              tickHitBasis
+            ? this.effectiveHitRate(cacheBaseRate, this.readEma) * tickHitBasis
             : 0;
         if (cacheTargets.length > 0 && effR > 0)
           this.lastCacheHit = Math.max(this.lastCacheHit, hit);
@@ -727,8 +726,7 @@ export class SimulationEngine {
 
       // --- Latency accounting ------------------------------------------
       const ue = upstreamLat.get(id);
-      const upstream =
-        ue && ue.totalRps > 0 ? ue.weightedSum / ue.totalRps : 0;
+      const upstream = ue && ue.totalRps > 0 ? ue.weightedSum / ue.totalRps : 0;
       const e2e = node.currentLatencyMs + upstream;
       const handled = Math.max(0, effR + effW - unservedDropped);
 
@@ -833,10 +831,7 @@ export class SimulationEngine {
     let p99LatencyMs = 0;
     if (this.latencySamples.length > 0) {
       const sorted = [...this.latencySamples].sort((a, b) => a - b);
-      const idx = Math.min(
-        Math.floor(sorted.length * 0.99),
-        sorted.length - 1,
-      );
+      const idx = Math.min(Math.floor(sorted.length * 0.99), sorted.length - 1);
       const rawP99 = sorted[idx]!;
       const p99Reduction = Math.min(this.dnsLatencyReduction, rawP99 * 0.5);
       p99LatencyMs = rawP99 - p99Reduction;
@@ -853,8 +848,7 @@ export class SimulationEngine {
       uptimePercent >= level.passCondition.minUptimePercent &&
       avgLatencyMs <= level.passCondition.maxAvgLatencyMs;
 
-    const costPercent =
-      level.budget > 0 ? (totalCost / level.budget) * 100 : 0;
+    const costPercent = level.budget > 0 ? (totalCost / level.budget) * 100 : 0;
     // Stars are earned one axis at a time, cumulatively — each tier adds a new
     // binding constraint rather than re-tightening every metric at once:
     //   1★ Reliability — passes the SLA (uptime + latency floor, valid topology).
@@ -896,9 +890,7 @@ export class SimulationEngine {
 
     return {
       totalRequests: Math.round(this.totalRequests),
-      successfulRequests: Math.round(
-        this.totalRequests - this.failedRequests,
-      ),
+      successfulRequests: Math.round(this.totalRequests - this.failedRequests),
       failedRequests: Math.round(this.failedRequests),
       uptimePercent: Math.round(uptimePercent * 100) / 100,
       avgLatencyMs: Math.round(avgLatencyMs * 10) / 10,

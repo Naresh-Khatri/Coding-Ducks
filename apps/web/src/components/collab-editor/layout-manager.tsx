@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { HocuspocusProvider } from "@hocuspocus/provider";
+import type { HocuspocusProvider } from "@hocuspocus/provider";
 import { LayoutTemplate, Terminal } from "lucide-react";
-import * as Y from "yjs";
+import type * as Y from "yjs";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -12,7 +12,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useDebounce } from "~/hooks/use-debounce";
 import { useIsMobile } from "~/hooks/use-is-mobile";
-import { Console, LogEntry } from "./console";
+import type { LogEntry } from "./console";
+import { Console } from "./console";
 import { CollabEditor } from "./index";
 import { Preview } from "./preview";
 
@@ -191,7 +192,10 @@ export function LayoutManager({
               readOnly={readOnly}
             />
           </TabsContent>
-          <TabsContent value="preview" className="m-0 flex-1 overflow-hidden bg-white">
+          <TabsContent
+            value="preview"
+            className="m-0 flex-1 overflow-hidden bg-white"
+          >
             <Preview
               html={debouncedHtml}
               css={debouncedCss}

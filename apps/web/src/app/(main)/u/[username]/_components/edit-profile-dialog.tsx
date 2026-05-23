@@ -147,7 +147,9 @@ export function EditProfileDialog({
                 id="username"
                 value={username}
                 onChange={(e) =>
-                  setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
+                  setUsername(
+                    e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                  )
                 }
                 placeholder="username"
                 maxLength={30}
@@ -164,7 +166,7 @@ export function EditProfileDialog({
                 )}
               />
               {usernameChanged && usernameValid && (
-                <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                <div className="absolute top-1/2 right-2.5 -translate-y-1/2">
                   {isChecking || debouncedUsername !== username ? (
                     <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
                   ) : usernameAvailable ? (
@@ -177,13 +179,16 @@ export function EditProfileDialog({
             </div>
             {usernameChanged && !usernameValid && username.length > 0 && (
               <p className="text-destructive text-xs">
-                3-30 characters, lowercase letters, numbers, and underscores only
+                3-30 characters, lowercase letters, numbers, and underscores
+                only
               </p>
             )}
             {usernameChanged &&
               usernameValid &&
               usernameAvailable === false && (
-                <p className="text-destructive text-xs">Username already taken</p>
+                <p className="text-destructive text-xs">
+                  Username already taken
+                </p>
               )}
           </div>
 
@@ -203,9 +208,7 @@ export function EditProfileDialog({
             <Textarea
               id="bio"
               value={form.bio}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, bio: e.target.value }))
-              }
+              onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
               placeholder="Tell us about yourself"
               rows={3}
               maxLength={500}
@@ -264,9 +267,7 @@ export function EditProfileDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={!canSubmit}>
-              {isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save
             </Button>
           </div>

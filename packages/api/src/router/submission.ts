@@ -8,11 +8,7 @@ import { problem, submission, userProfile } from "@acme/db/schema";
 
 import { env } from "../../env";
 import { generateDriverWithTestCases, SUPPORTED_LANGS } from "../drivers";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 /** Verdict codes returned by the judge API */
 type JudgeVerdict = "OK" | "CE" | "RE" | "SG" | "TO" | "XX";
@@ -46,7 +42,6 @@ interface JudgeStatusResponse {
   processedAt: number | null;
   finishedAt: number | null;
 }
-
 
 // --- Judge API helpers ---
 
@@ -163,7 +158,7 @@ async function dispatchSubmission(
     hidePrivate: boolean;
   },
 ): Promise<{ id: number; jobId: string }> {
-  const signature = prob.functionSignature as FunctionSignature | null;
+  const signature = prob.functionSignature;
   const limits = { timeLimit: prob.timeLimit, memoryLimit: prob.memoryLimit };
 
   let pendingJobs: PendingJob[];
@@ -176,12 +171,19 @@ async function dispatchSubmission(
       opts.testCases,
       opts.hidePrivate,
     );
-    pendingJobs = [{ jobId: await submitToJudge(driverCode, opts.lang, limits) }];
+    pendingJobs = [
+      { jobId: await submitToJudge(driverCode, opts.lang, limits) },
+    ];
   } else {
     // stdin problem: one job per test case, raw user code, input on stdin.
     pendingJobs = await Promise.all(
       opts.testCases.map(async (tc) => ({
-        jobId: await submitToJudge(opts.code, opts.lang, limits, tc.input ?? ""),
+        jobId: await submitToJudge(
+          opts.code,
+          opts.lang,
+          limits,
+          tc.input ?? "",
+        ),
         expected: tc.output ?? "",
         input: tc.isPublic || !opts.hidePrivate ? (tc.input ?? "") : undefined,
         isPublic: opts.hidePrivate ? tc.isPublic : true,
@@ -341,9 +343,7 @@ export const submissionRouter = createTRPCRouter({
         .where(
           and(
             eq(submission.id, input.id),
-            userId
-              ? eq(submission.userId, userId)
-              : isNull(submission.userId),
+            userId ? eq(submission.userId, userId) : isNull(submission.userId),
           ),
         )
         .limit(1);
@@ -450,9 +450,7 @@ export const submissionRouter = createTRPCRouter({
           | "compile_error" = "wrong_answer";
         if (verdicts.includes("CE")) stdinStatus = "compile_error";
         else if (verdicts.includes("TO")) stdinStatus = "time_limit";
-        else if (
-          verdicts.some((v) => v === "RE" || v === "SG" || v === "XX")
-        )
+        else if (verdicts.some((v) => v === "RE" || v === "SG" || v === "XX"))
           stdinStatus = "runtime_error";
         else if (testsPassed === parsed.length) stdinStatus = "accepted";
 
@@ -653,7 +651,7 @@ export const submissionRouter = createTRPCRouter({
         )
         .limit(1);
 
-      if (!sub || sub.status !== "accepted") return null;
+      if (sub?.status !== "accepted") return null;
 
       const peers = and(
         eq(submission.problemId, sub.problemId),

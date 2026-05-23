@@ -26,10 +26,14 @@ export const socialMediaFeed: LevelDefinition = {
     { time: 120, rps: 3000 },
   ],
   attackSpikes: [
-    { time: 45, duration: 10, rps: 40000 },  // Bots scraping the viral post
+    { time: 45, duration: 10, rps: 40000 }, // Bots scraping the viral post
   ],
   chaosEvents: [
-    { time: 60, targetType: "app-server", label: "App server lost during surge" },
+    {
+      time: 60,
+      targetType: "app-server",
+      label: "App server lost during surge",
+    },
   ],
   requiredBlockTypes: [
     "dns",

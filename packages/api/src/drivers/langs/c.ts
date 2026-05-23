@@ -102,10 +102,7 @@ export function generateCDriver(
   }
 
   const argsInit = testData
-    .map(
-      (td) =>
-        `{${td.args.map((a) => cStringLiteral(a)).join(", ")}}`,
-    )
+    .map((td) => `{${td.args.map((a) => cStringLiteral(a)).join(", ")}}`)
     .join(",\n        ");
 
   const numParams = params.length;
@@ -174,4 +171,3 @@ ${serializeBlock}
 }
 `;
 }
-

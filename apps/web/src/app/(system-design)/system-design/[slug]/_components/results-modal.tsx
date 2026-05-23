@@ -8,9 +8,9 @@ import {
   ArrowLeft,
   Check,
   CheckCircle,
+  Lightbulb,
   Loader2,
   LogIn,
-  Lightbulb,
   RotateCcw,
   Star,
   XCircle,
@@ -25,16 +25,14 @@ import {
 } from "recharts";
 
 import type { BlockNodeData } from "~/lib/system-design/types";
+import type { WhatIfSuggestion } from "~/lib/system-design/what-if-coach";
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useSystemDesignStore } from "~/lib/system-design/store";
+import { generateSuggestions } from "~/lib/system-design/what-if-coach";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
-import {
-  generateSuggestions,
-  type WhatIfSuggestion,
-} from "~/lib/system-design/what-if-coach";
 import { SubmissionHistory } from "./submission-history";
 
 export function ResultsModal() {
@@ -102,9 +100,9 @@ export function ResultsModal() {
           type: n.type,
           position: n.position,
           data: {
-            definitionType: (n.data as BlockNodeData).definition.type,
-            provider: (n.data as BlockNodeData).definition.name,
-            replicas: (n.data as BlockNodeData).replicas ?? 1,
+            definitionType: (n.data).definition.type,
+            provider: (n.data).definition.name,
+            replicas: (n.data).replicas ?? 1,
           },
         })),
         edges: edges.map((e) => ({
@@ -156,7 +154,7 @@ export function ResultsModal() {
       nodes: store.nodes.map((n) => ({
         ...n,
         data: {
-          ...(n.data as BlockNodeData),
+          ...(n.data),
           currentRps: 0,
           currentLatencyMs: 0,
           loadPercent: 0,
@@ -228,7 +226,7 @@ export function ResultsModal() {
             ))}
           </div>
           {results.starsCappedByTopology && (
-            <div className="text-amber-500/80 mt-1 text-[11px]">
+            <div className="mt-1 text-[11px] text-amber-500/80">
               Stars capped at 2 — fix topology issues for 3-star
             </div>
           )}
@@ -262,7 +260,7 @@ export function ResultsModal() {
         {results.topologyWarnings.filter((w) => w.severity === "warn").length >
           0 && (
           <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-            <div className="text-amber-500 mb-1.5 flex items-center gap-1.5 text-xs font-medium">
+            <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-amber-500">
               <AlertTriangle size={12} />
               Topology issues
             </div>
@@ -274,7 +272,7 @@ export function ResultsModal() {
                     key={w.id}
                     className="text-muted-foreground flex items-start gap-1.5 text-[11px] leading-tight"
                   >
-                    <span className="text-amber-500/60 mt-0.5">•</span>
+                    <span className="mt-0.5 text-amber-500/60">•</span>
                     {w.message}
                   </li>
                 ))}

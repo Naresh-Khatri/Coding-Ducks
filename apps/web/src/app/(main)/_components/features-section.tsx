@@ -1,13 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  Code2,
-  Network,
-  Palette,
-  Users,
-} from "lucide-react";
+import { ArrowUpRight, Code2, Network, Palette, Users } from "lucide-react";
+
 import { Reveal, SectionLabel } from "./primitives";
 import { SpotlightCard } from "./spotlight-card";
 
@@ -68,7 +63,7 @@ export function FeaturesSection() {
   return (
     <section className="relative border-t border-white/5 bg-black py-28">
       {/* faint grid texture */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(157,78,221,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(157,78,221,0.06)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,black,transparent)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(157,78,221,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(157,78,221,0.06)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,black,transparent)] [background-size:48px_48px]" />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 lg:px-10">
         <Reveal>
@@ -88,10 +83,7 @@ export function FeaturesSection() {
               className={feature.className}
             >
               <SpotlightCard glow={feature.glow} className="h-full">
-                <Link
-                  href={feature.href}
-                  className="flex h-full flex-col p-7"
-                >
+                <Link href={feature.href} className="flex h-full flex-col p-7">
                   <div className="mb-5 flex size-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-fuchsia-300 transition-colors duration-300 group-hover:border-fuchsia-400/40 group-hover:text-fuchsia-200">
                     <feature.icon className="size-5" />
                   </div>

@@ -27,12 +27,19 @@ export const eCommerceCheckout: LevelDefinition = {
     { time: 90, rps: 1200 },
   ],
   attackSpikes: [
-    { time: 32, duration: 8, rps: 35000 },  // DDoS during flash sale peak
+    { time: 32, duration: 8, rps: 35000 }, // DDoS during flash sale peak
   ],
   chaosEvents: [
     { time: 45, targetType: "cache", label: "Cache node failure mid-sale" },
   ],
-  requiredBlockTypes: ["dns", "cdn", "load-balancer", "app-server", "sql-db", "cache"],
+  requiredBlockTypes: [
+    "dns",
+    "cdn",
+    "load-balancer",
+    "app-server",
+    "sql-db",
+    "cache",
+  ],
   passCondition: {
     minUptimePercent: 92,
     maxAvgLatencyMs: 350,

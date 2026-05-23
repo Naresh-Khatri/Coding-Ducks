@@ -11,10 +11,9 @@ import {
 } from "lucide-react";
 
 import { authClient } from "~/auth/client";
-import { getAvatarUrl } from "~/lib/avatar";
 import { Button } from "~/components/ui/button";
+import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
-
 import { AvatarPicker } from "./avatar-picker";
 import { EditProfileDialog } from "./edit-profile-dialog";
 

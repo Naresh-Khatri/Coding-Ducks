@@ -1,11 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, Loader2, Plus, Shield, ShieldAlert, Trash2, UserPlus, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Check,
+  Copy,
+  Loader2,
+  Plus,
+  Shield,
+  ShieldAlert,
+  Trash2,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -16,6 +27,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -23,14 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/components/ui/tabs";
-import { Badge } from "~/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useTRPC } from "~/trpc/react";
 
 interface ShareModalProps {
@@ -40,11 +45,7 @@ interface ShareModalProps {
   isPublic: boolean;
 }
 
-export function ShareModal({
-  duckletId,
-  isOwner,
-  isPublic,
-}: ShareModalProps) {
+export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [inviteUsername, setInviteUsername] = useState("");
@@ -53,65 +54,85 @@ export function ShareModal({
 
   // Queries
   const { data: ducklet, isLoading } = useQuery(
-    trpc.ducklet.byId.queryOptions({ id: duckletId }, { enabled: isOpen })
+    trpc.ducklet.byId.queryOptions({ id: duckletId }, { enabled: isOpen }),
   );
 
   // Mutations
-  const inviteMutation = useMutation(trpc.ducklet.inviteUser.mutationOptions({
-    onSuccess: () => {
-      toast.success("Invitation sent successfully");
-      setInviteUsername("");
-      queryClient.invalidateQueries(trpc.ducklet.byId.queryFilter({ id: duckletId }));
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  }));
+  const inviteMutation = useMutation(
+    trpc.ducklet.inviteUser.mutationOptions({
+      onSuccess: () => {
+        toast.success("Invitation sent successfully");
+        setInviteUsername("");
+        queryClient.invalidateQueries(
+          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+        );
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    }),
+  );
 
-  const removeMemberMutation = useMutation(trpc.ducklet.removeMember.mutationOptions({
-    onSuccess: () => {
-      toast.success("Member removed");
-      queryClient.invalidateQueries(trpc.ducklet.byId.queryFilter({ id: duckletId }));
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  }));
+  const removeMemberMutation = useMutation(
+    trpc.ducklet.removeMember.mutationOptions({
+      onSuccess: () => {
+        toast.success("Member removed");
+        queryClient.invalidateQueries(
+          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+        );
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    }),
+  );
 
-  const updateMemberRoleMutation = useMutation(trpc.ducklet.updateMemberRole.mutationOptions({
-    onSuccess: () => {
-      toast.success("Role updated");
-      queryClient.invalidateQueries(trpc.ducklet.byId.queryFilter({ id: duckletId }));
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  }));
+  const updateMemberRoleMutation = useMutation(
+    trpc.ducklet.updateMemberRole.mutationOptions({
+      onSuccess: () => {
+        toast.success("Role updated");
+        queryClient.invalidateQueries(
+          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+        );
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    }),
+  );
 
-  const respondRequestMutation = useMutation(trpc.ducklet.respondToRequest.mutationOptions({
-    onSuccess: (data, variables) => {
-      toast.success(variables.accept ? "Request approved" : "Request denied");
-      queryClient.invalidateQueries(trpc.ducklet.byId.queryFilter({ id: duckletId }));
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  }));
+  const respondRequestMutation = useMutation(
+    trpc.ducklet.respondToRequest.mutationOptions({
+      onSuccess: (data, variables) => {
+        toast.success(variables.accept ? "Request approved" : "Request denied");
+        queryClient.invalidateQueries(
+          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+        );
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    }),
+  );
 
-  const updateDuckletMutation = useMutation(trpc.ducklet.update.mutationOptions({
-    onSuccess: (data) => {
-      if (!data) return;
-      toast.success(`Ducklet is now ${data.isPublic ? "Public" : "Private"}`);
-      const queryKey = trpc.ducklet.byId.queryKey({ id: duckletId });
-      queryClient.setQueryData(queryKey, (prev) =>
-        prev ? { ...prev, isPublic: data.isPublic } : prev,
-      );
-      queryClient.invalidateQueries(trpc.ducklet.byId.queryFilter({ id: duckletId }));
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  }));
+  const updateDuckletMutation = useMutation(
+    trpc.ducklet.update.mutationOptions({
+      onSuccess: (data) => {
+        if (!data) return;
+        toast.success(`Ducklet is now ${data.isPublic ? "Public" : "Private"}`);
+        const queryKey = trpc.ducklet.byId.queryKey({ id: duckletId });
+        queryClient.setQueryData(queryKey, (prev) =>
+          prev ? { ...prev, isPublic: data.isPublic } : prev,
+        );
+        queryClient.invalidateQueries(
+          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+        );
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    }),
+  );
 
   const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,8 +150,12 @@ export function ShareModal({
     toast.success("Link copied to clipboard");
   };
 
-  const pendingRequests = ducklet?.members.filter(m => m.status === "requested") || [];
-  const activeMembers = ducklet?.members.filter(m => m.status === "active" || m.status === "invited") || [];
+  const pendingRequests =
+    ducklet?.members.filter((m) => m.status === "requested") || [];
+  const activeMembers =
+    ducklet?.members.filter(
+      (m) => m.status === "active" || m.status === "invited",
+    ) || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -139,7 +164,10 @@ export function ShareModal({
           <UserPlus className="h-4 w-4" />
           Share
           {pendingRequests.length > 0 && isOwner && (
-            <Badge variant="destructive" className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]">
+            <Badge
+              variant="destructive"
+              className="flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
+            >
               {pendingRequests.length}
             </Badge>
           )}
@@ -157,7 +185,9 @@ export function ShareModal({
           <div className="grid flex-1 gap-2">
             <Input
               id="link"
-              defaultValue={typeof window !== "undefined" ? window.location.href : ""}
+              defaultValue={
+                typeof window !== "undefined" ? window.location.href : ""
+              }
               readOnly
               className="h-8 text-xs"
             />
@@ -175,18 +205,25 @@ export function ShareModal({
         </div>
 
         {isOwner && (
-          <div className="flex items-center justify-between py-2 border-b">
+          <div className="flex items-center justify-between border-b py-2">
             <div className="flex flex-col">
               <span className="text-sm font-medium">General Access</span>
-              <span className="text-xs text-muted-foreground">
-                {isPublic ? "Anyone with the link can view" : "Only invited members can access"}
+              <span className="text-muted-foreground text-xs">
+                {isPublic
+                  ? "Anyone with the link can view"
+                  : "Only invited members can access"}
               </span>
             </div>
             <Select
               value={isPublic ? "public" : "private"}
-              onValueChange={(val) => updateDuckletMutation.mutate({ id: duckletId, isPublic: val === "public" })}
+              onValueChange={(val) =>
+                updateDuckletMutation.mutate({
+                  id: duckletId,
+                  isPublic: val === "public",
+                })
+              }
             >
-              <SelectTrigger className="w-[110px] h-8 text-xs">
+              <SelectTrigger className="h-8 w-[110px] text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -197,13 +234,16 @@ export function ShareModal({
           </div>
         )}
 
-        <Tabs defaultValue="invite" className="w-full mt-2">
+        <Tabs defaultValue="invite" className="mt-2 w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="invite">Invite</TabsTrigger>
             <TabsTrigger value="members">
               Members
               {pendingRequests.length > 0 && isOwner && (
-                <Badge variant="secondary" className="ml-2 h-4 px-1 text-[10px]">
+                <Badge
+                  variant="secondary"
+                  className="ml-2 h-4 px-1 text-[10px]"
+                >
                   {pendingRequests.length}
                 </Badge>
               )}
@@ -223,9 +263,11 @@ export function ShareModal({
                 </div>
                 <Select
                   value={inviteRole}
-                  onValueChange={(val) => setInviteRole(val as "editor" | "viewer")}
+                  onValueChange={(val) =>
+                    setInviteRole(val as "editor" | "viewer")
+                  }
                 >
-                  <SelectTrigger className="w-[100px] h-8">
+                  <SelectTrigger className="h-8 w-[100px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -233,12 +275,20 @@ export function ShareModal({
                     <SelectItem value="editor">Editor</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button type="submit" size="sm" disabled={inviteMutation.isPending}>
-                  {inviteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Invite"}
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={inviteMutation.isPending}
+                >
+                  {inviteMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Invite"
+                  )}
                 </Button>
               </form>
             ) : (
-              <div className="text-center py-4 text-sm text-muted-foreground">
+              <div className="text-muted-foreground py-4 text-center text-sm">
                 Only the owner can invite new members.
               </div>
             )}
@@ -250,18 +300,29 @@ export function ShareModal({
                 {/* Pending Requests */}
                 {isOwner && pendingRequests.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase">Pending Requests</h4>
+                    <h4 className="text-muted-foreground mb-2 text-xs font-semibold uppercase">
+                      Pending Requests
+                    </h4>
                     <div className="space-y-2">
                       {pendingRequests.map((member) => (
-                        <div key={member.userId} className="flex items-center justify-between bg-muted/30 p-2 rounded-md">
+                        <div
+                          key={member.userId}
+                          className="bg-muted/30 flex items-center justify-between rounded-md p-2"
+                        >
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
                               <AvatarImage src={member.photoURL ?? undefined} />
-                              <AvatarFallback>{member.username?.[0]?.toUpperCase()}</AvatarFallback>
+                              <AvatarFallback>
+                                {member.username?.[0]?.toUpperCase()}
+                              </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                              <span className="text-sm font-medium">{member.username}</span>
-                              <span className="text-[10px] text-muted-foreground">Requested access</span>
+                              <span className="text-sm font-medium">
+                                {member.username}
+                              </span>
+                              <span className="text-muted-foreground text-[10px]">
+                                Requested access
+                              </span>
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
@@ -269,8 +330,15 @@ export function ShareModal({
                               size="icon"
                               variant="ghost"
                               aria-label={`Approve ${member.username}`}
-                              className="h-6 w-6 text-green-500 hover:text-green-600 hover:bg-green-500/10"
-                              onClick={() => respondRequestMutation.mutate({ duckletId, userId: member.userId, accept: true, role: "editor" })}
+                              className="h-6 w-6 text-green-500 hover:bg-green-500/10 hover:text-green-600"
+                              onClick={() =>
+                                respondRequestMutation.mutate({
+                                  duckletId,
+                                  userId: member.userId,
+                                  accept: true,
+                                  role: "editor",
+                                })
+                              }
                             >
                               <Check className="h-3 w-3" />
                             </Button>
@@ -278,8 +346,14 @@ export function ShareModal({
                               size="icon"
                               variant="ghost"
                               aria-label={`Deny ${member.username}`}
-                              className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                              onClick={() => respondRequestMutation.mutate({ duckletId, userId: member.userId, accept: false })}
+                              className="h-6 w-6 text-red-500 hover:bg-red-500/10 hover:text-red-600"
+                              onClick={() =>
+                                respondRequestMutation.mutate({
+                                  duckletId,
+                                  userId: member.userId,
+                                  accept: false,
+                                })
+                              }
                             >
                               <X className="h-3 w-3" />
                             </Button>
@@ -295,30 +369,50 @@ export function ShareModal({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={ducklet?.owner?.photoURL ?? undefined} />
-                        <AvatarFallback>{ducklet?.owner?.username?.[0]?.toUpperCase()}</AvatarFallback>
+                        <AvatarImage
+                          src={ducklet?.owner?.photoURL ?? undefined}
+                        />
+                        <AvatarFallback>
+                          {ducklet?.owner?.username?.[0]?.toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-medium leading-none">{ducklet?.owner?.username}</p>
-                        <p className="text-xs text-muted-foreground">Owner</p>
+                        <p className="text-sm leading-none font-medium">
+                          {ducklet?.owner?.username}
+                        </p>
+                        <p className="text-muted-foreground text-xs">Owner</p>
                       </div>
                     </div>
                   </div>
 
                   {activeMembers.map((member) => (
-                    <div key={member.userId} className="flex items-center justify-between gap-2 group">
+                    <div
+                      key={member.userId}
+                      className="group flex items-center justify-between gap-2"
+                    >
                       <div className="flex min-w-0 items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={member.photoURL ?? undefined} />
-                          <AvatarFallback>{member.username?.[0]?.toUpperCase()}</AvatarFallback>
+                          <AvatarFallback>
+                            {member.username?.[0]?.toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium leading-none">
+                          <p className="truncate text-sm leading-none font-medium">
                             {member.username}
-                            {member.status === "invited" && <Badge variant="outline" className="ml-2 text-[10px] h-4 py-0">Invited</Badge>}
+                            {member.status === "invited" && (
+                              <Badge
+                                variant="outline"
+                                className="ml-2 h-4 py-0 text-[10px]"
+                              >
+                                Invited
+                              </Badge>
+                            )}
                           </p>
                           {!isOwner && (
-                            <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                            <p className="text-muted-foreground text-xs capitalize">
+                              {member.role}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -348,8 +442,13 @@ export function ShareModal({
                             variant="ghost"
                             size="icon"
                             aria-label={`Remove ${member.username}`}
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            onClick={() => removeMemberMutation.mutate({ duckletId, userId: member.userId })}
+                            className="text-muted-foreground hover:text-destructive h-7 w-7"
+                            onClick={() =>
+                              removeMemberMutation.mutate({
+                                duckletId,
+                                userId: member.userId,
+                              })
+                            }
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

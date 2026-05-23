@@ -66,9 +66,9 @@ export interface BlockDefinition {
   providers?: ProviderVariant[];
 
   // Enhanced simulation fields
-  queueLimit?: number;   // max buffered requests before dropping (0 = no queue)
-  hitRate?: number;       // base cache/CDN hit rate 0–1 (cooled dynamically under surge)
-  timeoutMs?: number;     // request timeout threshold
+  queueLimit?: number; // max buffered requests before dropping (0 = no queue)
+  hitRate?: number; // base cache/CDN hit rate 0–1 (cooled dynamically under surge)
+  timeoutMs?: number; // request timeout threshold
   scalesReadsOnly?: boolean; // datastores: replicas add read capacity, not write
   /**
    * How this block scales horizontally:
@@ -116,9 +116,9 @@ export interface StarCondition {
 }
 
 export interface AttackSpike {
-  time: number;        // when the attack starts (seconds)
-  duration: number;    // how long it lasts (seconds)
-  rps: number;         // extra malicious RPS on top of normal traffic
+  time: number; // when the attack starts (seconds)
+  duration: number; // how long it lasts (seconds)
+  rps: number; // extra malicious RPS on top of normal traffic
 }
 
 export interface ChaosEvent {
@@ -172,11 +172,11 @@ export interface SimulationResults {
   /** Node ids that are single points of failure on the critical path. */
   spofNodes: string[];
   /** Topology issues surfaced to the player (unreachable blocks, SPOFs, etc). */
-  topologyWarnings: Array<{
+  topologyWarnings: {
     id: string;
     severity: "error" | "warn" | "info";
     message: string;
-  }>;
+  }[];
   /** True if the star count was capped due to severity:"warn" topology issues. */
   starsCappedByTopology: boolean;
   /** True if the level was failed due to a severity:"error" topology issue. */

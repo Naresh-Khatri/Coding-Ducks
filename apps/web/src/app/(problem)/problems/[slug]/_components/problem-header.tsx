@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,10 +15,18 @@ import {
   Shuffle,
   Timer,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 
 import { authClient } from "~/auth/client";
+import { AnimatedThemeToggler } from "~/components/ui/animated-theme-toggler";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "~/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,15 +35,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "~/components/ui/drawer";
-import { AnimatedThemeToggler } from "~/components/ui/animated-theme-toggler";
-import { Badge } from "~/components/ui/badge";
 import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
@@ -70,7 +70,10 @@ export function ProblemHeader({
     if (isBusy) {
       startRef.current = Date.now();
       setElapsed(0);
-      const id = setInterval(() => setElapsed(Date.now() - startRef.current), 100);
+      const id = setInterval(
+        () => setElapsed(Date.now() - startRef.current),
+        100,
+      );
       return () => clearInterval(id);
     }
   }, [isBusy]);
@@ -88,8 +91,7 @@ export function ProblemHeader({
   // Prev/next/random over the first page of problems (limit 50).
   const items = problemsList?.items ?? [];
   const currentIndex = items.findIndex((p) => p.slug === slug);
-  const prevSlug =
-    currentIndex > 0 ? items[currentIndex - 1]?.slug : undefined;
+  const prevSlug = currentIndex > 0 ? items[currentIndex - 1]?.slug : undefined;
   const nextSlug =
     currentIndex >= 0 && currentIndex < items.length - 1
       ? items[currentIndex + 1]?.slug
@@ -239,7 +241,7 @@ export function ProblemHeader({
           </kbd>
         </Button>
         {isBusy && (
-          <span className="text-muted-foreground flex items-center gap-1 text-xs font-mono tabular-nums">
+          <span className="text-muted-foreground flex items-center gap-1 font-mono text-xs tabular-nums">
             <Timer className="h-3 w-3" />
             {(elapsed / 1000).toFixed(1)}s
           </span>

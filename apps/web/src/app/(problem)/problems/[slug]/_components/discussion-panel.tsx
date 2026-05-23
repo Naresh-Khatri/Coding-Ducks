@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { ArrowLeft, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import type { ProblemDetail } from "../types";
+import { authClient } from "~/auth/client";
+import { RichTextContent, RichTextEditor } from "~/components/rich-text-editor";
+import { ShikiCode } from "~/components/shiki-code";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,15 +30,8 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import {
-  RichTextContent,
-  RichTextEditor,
-} from "~/components/rich-text-editor";
-import { ShikiCode } from "~/components/shiki-code";
-import { authClient } from "~/auth/client";
 import { getLanguageLabel } from "~/lib/languages";
 import { useTRPC } from "~/trpc/react";
-import type { ProblemDetail } from "../types";
 
 type Comment = NonNullable<
   ReturnType<typeof useDiscussion>["comments"]
@@ -55,9 +52,7 @@ function fmtDate(d: Date) {
 
 function useDiscussion(problemId: number) {
   const trpc = useTRPC();
-  const commentsQuery = useQuery(
-    trpc.comment.list.queryOptions({ problemId }),
-  );
+  const commentsQuery = useQuery(trpc.comment.list.queryOptions({ problemId }));
   return { commentsQuery, comments: commentsQuery.data };
 }
 
@@ -216,9 +211,7 @@ export function DiscussionPanel({
                           description="This permanently deletes your reply. This cannot be undone."
                           disabled={deleteComment.isPending}
                           iconClassName="h-2.5 w-2.5"
-                          onConfirm={() =>
-                            deleteComment.mutate({ id: r.id })
-                          }
+                          onConfirm={() => deleteComment.mutate({ id: r.id })}
                         />
                       )}
                     </div>
@@ -251,9 +244,7 @@ export function DiscussionPanel({
               </div>
             </div>
           ) : (
-            <p className="text-muted-foreground text-xs">
-              Sign in to reply.
-            </p>
+            <p className="text-muted-foreground text-xs">Sign in to reply.</p>
           )}
         </div>
       </div>
@@ -326,9 +317,7 @@ export function DiscussionPanel({
                     type="submit"
                     size="sm"
                     disabled={
-                      !title.trim() ||
-                      !body.trim() ||
-                      createComment.isPending
+                      !title.trim() || !body.trim() || createComment.isPending
                     }
                     className="h-8 text-xs"
                   >
@@ -339,20 +328,14 @@ export function DiscussionPanel({
             </DialogContent>
           </Dialog>
         ) : (
-          <span className="text-muted-foreground text-xs">
-            Sign in to post
-          </span>
+          <span className="text-muted-foreground text-xs">Sign in to post</span>
         )}
       </div>
 
       {comments.length > 0 ? (
         <ul className="divide-y divide-white/5">
           {comments.map((c) => (
-            <ListRow
-              key={c.id}
-              comment={c}
-              onOpen={() => setOpenId(c.id)}
-            />
+            <ListRow key={c.id} comment={c} onOpen={() => setOpenId(c.id)} />
           ))}
         </ul>
       ) : (
@@ -387,7 +370,7 @@ function ConfirmDelete({
           type="button"
           disabled={disabled}
           aria-label={label}
-          className="text-muted-foreground/50 hover:text-rose-500 ml-auto transition-colors"
+          className="text-muted-foreground/50 ml-auto transition-colors hover:text-rose-500"
         >
           <Trash2 className={iconClassName ?? "h-3.5 w-3.5"} />
         </button>
@@ -432,9 +415,7 @@ function ListRow({
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
-            <span className="text-foreground/80 font-medium">
-              {c.userName}
-            </span>
+            <span className="text-foreground/80 font-medium">{c.userName}</span>
             <span>·</span>
             <span>{fmtDate(c.createdAt)}</span>
           </div>

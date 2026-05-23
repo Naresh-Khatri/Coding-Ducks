@@ -1,4 +1,5 @@
 import type { Edge, Node } from "@xyflow/react";
+
 import type { BlockNodeData } from "./types";
 
 export interface TopologyWarning {
@@ -22,7 +23,7 @@ const STORAGE_TYPES = new Set([
 const ASYNC_PROTOCOLS = new Set(["AMQP"]);
 
 interface Adjacency {
-  outgoing: Map<string, Array<{ targetId: string; protocol: string }>>;
+  outgoing: Map<string, { targetId: string; protocol: string }[]>;
 }
 
 function buildAdjacency(
@@ -31,13 +32,13 @@ function buildAdjacency(
 ): Adjacency {
   const outgoing = new Map<
     string,
-    Array<{ targetId: string; protocol: string }>
+    { targetId: string; protocol: string }[]
   >();
   for (const n of nodes) outgoing.set(n.id, []);
   for (const e of edges) {
     const src = nodes.find((n) => n.id === e.source);
     if (!src) continue;
-    const port = (src.data as BlockNodeData).definition.ports.find(
+    const port = (src.data).definition.ports.find(
       (p) => p.id === e.sourceHandle,
     );
     outgoing.get(e.source)?.push({
@@ -100,7 +101,7 @@ export function computeTopologyWarnings(
   // 1. Placed but unreachable blocks
   for (const n of nodes) {
     if (n.id === start) continue;
-    const data = n.data as BlockNodeData;
+    const data = n.data;
     if (data.isStartBlock) continue;
     if (!reachable.has(n.id)) {
       warnings.push({
@@ -118,7 +119,7 @@ export function computeTopologyWarnings(
   for (const id of sync) {
     const n = nodes.find((node) => node.id === id);
     if (!n) continue;
-    const t = (n.data as BlockNodeData).definition.type;
+    const t = (n.data).definition.type;
     if (
       t === "app-server" ||
       t === "websocket-server" ||
@@ -133,7 +134,7 @@ export function computeTopologyWarnings(
       if (id === start) continue;
       const n = nodes.find((node) => node.id === id);
       if (!n) continue;
-      const data = n.data as BlockNodeData;
+      const data = n.data;
       if (data.isStartBlock) continue;
       // Managed/HA blocks (DNS, CDN, LB, …) are not SPOFs even at 1 instance.
       if ((data.definition.scaling ?? "counter") === "managed") continue;
@@ -158,11 +159,11 @@ export function computeTopologyWarnings(
   // protocol port, but it's not a DB and doesn't need a Redis cache.
   for (const n of nodes) {
     if (!reachable.has(n.id)) continue;
-    const data = n.data as BlockNodeData;
+    const data = n.data;
     if (data.definition.type !== "app-server") continue;
     const out = adj.outgoing.get(n.id) ?? [];
     const targetType = (id: string) =>
-      (nodes.find((m) => m.id === id)?.data as BlockNodeData | undefined)
+      (nodes.find((m) => m.id === id)?.data)
         ?.definition.type;
     const hasDb = out.some((e) => {
       const t = targetType(e.targetId);

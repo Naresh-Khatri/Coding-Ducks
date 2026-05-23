@@ -21,7 +21,13 @@ export const asyncProcessing: LevelDefinition = {
     { time: 70, rps: 1500 },
     { time: 75, rps: 800 },
   ],
-  requiredBlockTypes: ["dns", "app-server", "message-queue", "worker", "object-storage"],
+  requiredBlockTypes: [
+    "dns",
+    "app-server",
+    "message-queue",
+    "worker",
+    "object-storage",
+  ],
   passCondition: {
     minUptimePercent: 95,
     maxAvgLatencyMs: 300,

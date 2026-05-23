@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, Terminal, X } from "lucide-react";
 
 import { authClient } from "~/auth/client";
-import { getAvatarUrl } from "~/lib/avatar";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -16,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
 import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
 
@@ -44,7 +44,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="bg-background/70 sticky top-0 z-50 border-b border-border/60 backdrop-blur-xl">
+    <header className="bg-background/70 border-border/60 sticky top-0 z-50 border-b backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
         {/* Logo */}
         <Link
@@ -59,21 +59,20 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 md:flex">
-          {navLinks
-            .map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                  pathname?.startsWith(link.href)
-                    ? "bg-primary/10 text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-primary/5",
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                pathname?.startsWith(link.href)
+                  ? "bg-primary/10 text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-primary/5",
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         {/* Right Side - Desktop */}
@@ -178,20 +177,20 @@ export function Navbar() {
         <div className="border-t md:hidden">
           <div className="container mx-auto space-y-3 px-6 py-4">
             {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "block rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                    pathname?.startsWith(link.href)
-                      ? "bg-primary/10 text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-primary/5",
-                  )}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "block rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                  pathname?.startsWith(link.href)
+                    ? "bg-primary/10 text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-primary/5",
+                )}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
             <div className="space-y-2 border-t pt-3">
               {user ? (
                 <>
