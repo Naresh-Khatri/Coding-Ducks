@@ -492,6 +492,7 @@ interface SavedGraphNode {
   data: {
     definitionType: string;
     provider?: string;
+    replicas?: number;
     isStartBlock?: boolean;
   };
 }
@@ -561,6 +562,7 @@ function reconstructGraph(graph: SavedGraph): {
         isStartBlock:
           saved.data.isStartBlock ||
           saved.data.definitionType === "traffic-source",
+        replicas: saved.data.replicas ?? 1,
         currentRps: 0,
         currentLatencyMs: 0,
         loadPercent: 0,

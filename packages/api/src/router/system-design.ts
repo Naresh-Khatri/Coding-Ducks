@@ -21,6 +21,7 @@ const savedNodeSchema = z.object({
   data: z.object({
     definitionType: z.string().min(1).max(64),
     provider: z.string().min(1).max(64),
+    replicas: z.number().int().min(1).max(20).optional(),
   }),
 });
 

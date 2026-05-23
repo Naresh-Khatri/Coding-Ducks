@@ -1,10 +1,10 @@
 "use client";
 
 import type { NodeProps } from "@xyflow/react";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Handle, Position } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { Copy, Trash2, X } from "lucide-react";
+import { Copy, Minus, Plus, Trash2, X } from "lucide-react";
 
 import type { BlockNodeData } from "~/lib/system-design/types";
 import {
@@ -54,15 +54,46 @@ function BlockNodeComponent({ id, data }: NodeProps) {
     isStartBlock,
     failedRequests,
     queueDepth,
+    readLoadPercent,
+    writeLoadPercent,
   } = blockData;
+  const replicas = blockData.replicas ?? 1;
   const phase = useSystemDesignStore((s) => s.phase);
   const removeBlock = useSystemDesignStore((s) => s.removeBlock);
   const duplicateBlock = useSystemDesignStore((s) => s.duplicateBlock);
   const removeEdge = useSystemDesignStore((s) => s.removeEdge);
   const changeProvider = useSystemDesignStore((s) => s.changeProvider);
+  const setReplicas = useSystemDesignStore((s) => s.setReplicas);
   const edges = useSystemDesignStore((s) => s.edges);
+  const nodes = useSystemDesignStore((s) => s.nodes);
+  const supportsReplicas =
+    !isStartBlock &&
+    definition.type !== "traffic-source" &&
+    (definition.scaling ?? "counter") === "counter";
+
+  // Compute blocks need an upstream distributor to scale: app-server/ws-server
+  // need a load-balancer, workers need a message-queue. Storage scales with no
+  // gate (read-replica routing happens client-side).
+  const requiredDistributor: "load-balancer" | "message-queue" | null =
+    definition.type === "app-server" || definition.type === "websocket-server"
+      ? "load-balancer"
+      : definition.type === "worker"
+        ? "message-queue"
+        : null;
+  const hasDistributor =
+    requiredDistributor === null ||
+    edges.some((e) => {
+      if (e.target !== id) return false;
+      const src = nodes.find((n) => n.id === e.source);
+      return (
+        (src?.data as BlockNodeData | undefined)?.definition.type ===
+        requiredDistributor
+      );
+    });
+  const replicasGated = supportsReplicas && !hasDistributor;
 
   const hasProviders = definition.providers && definition.providers.length > 1;
+  const [providerOpen, setProviderOpen] = useState(false);
 
   const IconComponent =
     (
@@ -71,6 +102,18 @@ function BlockNodeComponent({ id, data }: NodeProps) {
 
   const inPorts = definition.ports.filter((p) => p.direction === "in");
   const outPorts = definition.ports.filter((p) => p.direction === "out");
+
+  const backendCount =
+    definition.type === "load-balancer"
+      ? edges
+          .filter((e) => e.source === id)
+          .reduce((sum, e) => {
+            const target = nodes.find((n) => n.id === e.target);
+            const reps =
+              (target?.data as BlockNodeData | undefined)?.replicas ?? 1;
+            return sum + reps;
+          }, 0)
+      : 0;
 
   // Find edges connected to each handle
   const getEdgesForHandle = (handleId: string, type: "source" | "target") => {
@@ -124,10 +167,16 @@ function BlockNodeComponent({ id, data }: NodeProps) {
               e.stopPropagation();
               duplicateBlock(id);
             }}
-            title="Duplicate block"
+            title={
+              definition.scaling === "manual"
+                ? "Duplicate to add capacity — this block scales by adding more instances behind a load balancer."
+                : "Duplicate block"
+            }
           >
             <Copy size={11} />
-            <span>Duplicate</span>
+            <span>
+              {definition.scaling === "manual" ? "Duplicate to scale" : "Duplicate"}
+            </span>
           </button>
           <button
             className="bg-card hover:bg-destructive hover:text-destructive-foreground flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] shadow-sm transition-colors"
@@ -167,7 +216,20 @@ function BlockNodeComponent({ id, data }: NodeProps) {
                 </span>
               </div>
               <div className="text-muted-foreground text-[10px]">
-                ${definition.costPerMonth}/mo
+                ${definition.costPerMonth * replicas}/mo
+                {replicas > 1 && (
+                  <span className="text-primary ml-1 font-medium">
+                    {definition.scalesReadsOnly
+                      ? `1 primary + ${replicas - 1} replica${replicas > 2 ? "s" : ""}`
+                      : `${replicas}× (${definition.costPerMonth} ea)`}
+                  </span>
+                )}
+                {phase === "building" &&
+                  definition.type === "load-balancer" && (
+                    <span className="text-primary ml-1 font-medium">
+                      · {backendCount} backend{backendCount === 1 ? "" : "s"}
+                    </span>
+                  )}
               </div>
             </>
           )}
@@ -180,8 +242,14 @@ function BlockNodeComponent({ id, data }: NodeProps) {
           <Select
             value={definition.name}
             onValueChange={(val) => changeProvider(id, val)}
+            open={providerOpen}
+            onOpenChange={setProviderOpen}
           >
-            <SelectTrigger className="h-6 px-2 py-0 text-[10px] shadow-none">
+            <SelectTrigger
+              className="h-6 px-2 py-0 text-[10px] shadow-none"
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => setProviderOpen((v) => !v)}
+            >
               <div className="flex gap-2">
                 <ProviderIcon name={definition.name} size={14} colored />
                 <span className="flex items-center gap-1">
@@ -208,6 +276,84 @@ function BlockNodeComponent({ id, data }: NodeProps) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+      )}
+
+      {/* Replica stepper (building only) */}
+      {phase === "building" && supportsReplicas && (
+        <div className="nodrag mb-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <span
+              className={cn(
+                "text-[10px] font-medium",
+                replicasGated
+                  ? "text-muted-foreground/50"
+                  : "text-muted-foreground",
+              )}
+            >
+              Replicas
+            </span>
+            {definition.scalesReadsOnly && (
+              <span
+                className="rounded-sm bg-amber-500/15 px-1 py-px text-[9px] font-medium text-amber-600 dark:text-amber-400"
+                title={`Replicas add read capacity. Writes stay capped at the primary's ~${definition.maxRps.toLocaleString()} RPS regardless of replica count.`}
+              >
+                reads only
+              </span>
+            )}
+            {replicasGated && (
+              <span
+                className="rounded-sm bg-amber-500/15 px-1 py-px text-[9px] font-medium text-amber-600 dark:text-amber-400"
+                title={
+                  requiredDistributor === "load-balancer"
+                    ? "Connect a load balancer upstream to scale this block"
+                    : "Connect a message queue upstream to scale this block"
+                }
+              >
+                needs {requiredDistributor === "load-balancer" ? "LB" : "queue"}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              className="bg-muted hover:bg-muted/70 flex h-5 w-5 items-center justify-center rounded transition-colors disabled:opacity-30"
+              disabled={replicas <= 1 || replicasGated}
+              onClick={(e) => {
+                e.stopPropagation();
+                setReplicas(id, replicas - 1);
+              }}
+              title="Remove a replica"
+            >
+              <Minus size={11} />
+            </button>
+            <span
+              className={cn(
+                "w-6 text-center text-xs font-semibold tabular-nums",
+                replicasGated && "text-muted-foreground/50",
+              )}
+            >
+              {replicas}×
+            </span>
+            <button
+              className="bg-muted hover:bg-muted/70 flex h-5 w-5 items-center justify-center rounded transition-colors disabled:opacity-30"
+              disabled={replicasGated}
+              onClick={(e) => {
+                e.stopPropagation();
+                setReplicas(id, replicas + 1);
+              }}
+              title={
+                replicasGated
+                  ? requiredDistributor === "load-balancer"
+                    ? "Connect a load balancer upstream first"
+                    : "Connect a message queue upstream first"
+                  : definition.scalesReadsOnly
+                    ? "Add a replica (scales reads & cost; writes stay on primary)"
+                    : "Add a replica (scales capacity & cost)"
+              }
+            >
+              <Plus size={11} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -253,6 +399,39 @@ function BlockNodeComponent({ id, data }: NodeProps) {
               {Math.round(loadPercent)}%
             </span>
           </div>
+          {/* Read/Write split for asymmetric sinks (e.g. SQL primary writes) */}
+          {definition.scalesReadsOnly &&
+            readLoadPercent !== undefined &&
+            writeLoadPercent !== undefined && (
+              <div className="flex justify-between text-[10px] tabular-nums">
+                <span
+                  className={cn(
+                    "font-medium",
+                    writeLoadPercent > 90
+                      ? "text-red-500"
+                      : writeLoadPercent > 70
+                        ? "text-amber-500"
+                        : "text-muted-foreground",
+                  )}
+                  title={`Writes are capped at the primary's ~${definition.maxRps.toLocaleString()} RPS — replicas don't help.`}
+                >
+                  W {Math.round(writeLoadPercent)}%
+                </span>
+                <span
+                  className={cn(
+                    "font-medium",
+                    readLoadPercent > 90
+                      ? "text-red-500"
+                      : readLoadPercent > 70
+                        ? "text-amber-500"
+                        : "text-muted-foreground",
+                  )}
+                  title={`Reads scale to ~${(definition.maxRps * replicas).toLocaleString()} RPS across ${replicas} replica${replicas > 1 ? "s" : ""}.`}
+                >
+                  R {Math.round(readLoadPercent)}%
+                </span>
+              </div>
+            )}
           {/* Queue depth indicator */}
           {queueDepth > 0 && (
             <div className="flex items-center gap-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-500">
@@ -274,6 +453,9 @@ function BlockNodeComponent({ id, data }: NodeProps) {
       {inPorts.map((port, i) => {
         const connectedEdges = getEdgesForHandle(port.id, "target");
         const topPercent = ((i + 1) / (inPorts.length + 1)) * 100;
+        const handleTitle = port.label
+          ? `${port.protocol} in · ${port.label}`
+          : `${port.protocol} in`;
 
         return (
           <div key={port.id}>
@@ -281,14 +463,26 @@ function BlockNodeComponent({ id, data }: NodeProps) {
               type="target"
               position={Position.Left}
               id={port.id}
+              title={handleTitle}
               style={{
                 top: `${topPercent}%`,
-                background: PROTOCOL_COLORS[port.protocol] ?? "#6b7280",
-                width: 10,
-                height: 10,
-                border: "2px solid var(--color-card)",
+                background: "transparent",
+                border: "none",
+                width: 22,
+                height: 22,
+                borderRadius: 9999,
               }}
-            />
+            >
+              <div
+                className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{
+                  width: 10,
+                  height: 10,
+                  background: PROTOCOL_COLORS[port.protocol] ?? "#6b7280",
+                  border: "2px solid var(--color-card)",
+                }}
+              />
+            </Handle>
             {/* Per-link unlink buttons */}
             {phase === "building" &&
               connectedEdges.map((edge) => (
@@ -318,6 +512,9 @@ function BlockNodeComponent({ id, data }: NodeProps) {
       {outPorts.map((port, i) => {
         const connectedEdges = getEdgesForHandle(port.id, "source");
         const topPercent = ((i + 1) / (outPorts.length + 1)) * 100;
+        const handleTitle = port.label
+          ? `${port.protocol} out · ${port.label}`
+          : `${port.protocol} out`;
 
         return (
           <div key={port.id}>
@@ -325,14 +522,26 @@ function BlockNodeComponent({ id, data }: NodeProps) {
               type="source"
               position={Position.Right}
               id={port.id}
+              title={handleTitle}
               style={{
                 top: `${topPercent}%`,
-                background: PROTOCOL_COLORS[port.protocol] ?? "#6b7280",
-                width: 10,
-                height: 10,
-                border: "2px solid var(--color-card)",
+                background: "transparent",
+                border: "none",
+                width: 22,
+                height: 22,
+                borderRadius: 9999,
               }}
-            />
+            >
+              <div
+                className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{
+                  width: 10,
+                  height: 10,
+                  background: PROTOCOL_COLORS[port.protocol] ?? "#6b7280",
+                  border: "2px solid var(--color-card)",
+                }}
+              />
+            </Handle>
             {/* Per-link unlink buttons */}
             {phase === "building" &&
               connectedEdges.map((edge) => (

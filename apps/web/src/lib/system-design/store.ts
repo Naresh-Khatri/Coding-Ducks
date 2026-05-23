@@ -41,6 +41,7 @@ interface SavedCanvas {
     position: { x: number; y: number };
     definitionType: string;
     providerName: string;
+    replicas?: number;
     isStartBlock?: boolean;
   }>;
   edges: Array<{
@@ -62,6 +63,7 @@ function saveCanvas(slug: string, nodes: Node<BlockNodeData>[], edges: Edge[]) {
           position: n.position,
           definitionType: d.definition.type,
           providerName: d.definition.name,
+          replicas: d.replicas,
           isStartBlock: d.isStartBlock,
         };
       }),
@@ -111,6 +113,15 @@ function loadCanvas(
               maxRps: provider.maxRps,
               maxConnections: provider.maxConnections,
               baseLatencyMs: provider.baseLatencyMs,
+              ...(provider.hitRate !== undefined && {
+                hitRate: provider.hitRate,
+              }),
+              ...(provider.edgeLatencyReduction !== undefined && {
+                edgeLatencyReduction: provider.edgeLatencyReduction,
+              }),
+              ...(provider.attackAbsorbRate !== undefined && {
+                attackAbsorbRate: provider.attackAbsorbRate,
+              }),
             }
           : baseDef;
       }
@@ -118,6 +129,12 @@ function loadCanvas(
       // Keep nodeIdCounter above any restored IDs
       const idNum = parseInt(saved.id.replace("block-", ""), 10);
       if (!isNaN(idNum)) bumpCounter(idNum);
+
+      // Non-counter blocks can never have replicas > 1, even if an older
+      // saved canvas has them. Clamp on load so capacity math stays honest.
+      const savedReplicas = saved.replicas ?? 1;
+      const replicas =
+        (definition.scaling ?? "counter") === "counter" ? savedReplicas : 1;
 
       nodes.push({
         id: saved.id,
@@ -127,6 +144,7 @@ function loadCanvas(
           definition,
           instanceId: saved.id,
           isStartBlock: saved.isStartBlock,
+          replicas,
           currentRps: 0,
           currentLatencyMs: 0,
           loadPercent: 0,
@@ -137,14 +155,30 @@ function loadCanvas(
       });
     }
 
-    const edges: Edge[] = data.edges.map((e) => ({
-      id: e.id,
-      source: e.source,
-      target: e.target,
-      sourceHandle: e.sourceHandle,
-      targetHandle: e.targetHandle,
-      type: "customEdge",
-    }));
+    // Migrate stale LB output handles (used to be http-out-1 / http-out-2
+    // for the labeled Server slots; now there's a single backend pool port).
+    const nodeTypeById = new Map<string, string>();
+    for (const n of nodes) {
+      nodeTypeById.set(n.id, (n.data as BlockNodeData).definition.type);
+    }
+
+    const edges: Edge[] = data.edges.map((e) => {
+      let sourceHandle = e.sourceHandle;
+      if (
+        nodeTypeById.get(e.source) === "load-balancer" &&
+        (sourceHandle === "http-out-1" || sourceHandle === "http-out-2")
+      ) {
+        sourceHandle = "http-out-0";
+      }
+      return {
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        sourceHandle,
+        targetHandle: e.targetHandle,
+        type: "customEdge",
+      };
+    });
 
     return { nodes, edges };
   } catch {
@@ -245,6 +279,7 @@ interface SystemDesignStore {
   disconnectBlock: (nodeId: string) => void;
   removeEdge: (edgeId: string) => void;
   changeProvider: (nodeId: string, providerName: string) => void;
+  setReplicas: (nodeId: string, replicas: number) => void;
   onConnect: (connection: Connection) => void;
 
   simulationTick: number;
@@ -332,6 +367,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
         definition: TRAFFIC_SOURCE_BLOCK,
         instanceId: "traffic-source",
         isStartBlock: true,
+        replicas: 1,
         currentRps: 0,
         currentLatencyMs: 0,
         loadPercent: 0,
@@ -367,10 +403,10 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
 
   addBlock: (definition, position) => {
     const { nodes, level } = get();
-    const budgetUsed = nodes.reduce(
-      (sum, n) => sum + (n.data as BlockNodeData).definition.costPerMonth,
-      0,
-    );
+    const budgetUsed = nodes.reduce((sum, n) => {
+      const d = n.data as BlockNodeData;
+      return sum + d.definition.costPerMonth * (d.replicas ?? 1);
+    }, 0);
     if (level && budgetUsed + definition.costPerMonth > level.budget) {
       toast.error("Budget exceeded", {
         description: `Adding ${definition.label} ($${definition.costPerMonth}/mo) would exceed the $${level.budget}/mo budget.`,
@@ -386,6 +422,7 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
       data: {
         definition,
         instanceId,
+        replicas: 1,
         currentRps: 0,
         currentLatencyMs: 0,
         loadPercent: 0,
@@ -484,10 +521,53 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
             maxRps: provider.maxRps,
             maxConnections: provider.maxConnections,
             baseLatencyMs: provider.baseLatencyMs,
+            ...(provider.edgeLatencyReduction !== undefined && {
+              edgeLatencyReduction: provider.edgeLatencyReduction,
+            }),
+            ...(provider.attackAbsorbRate !== undefined && {
+              attackAbsorbRate: provider.attackAbsorbRate,
+            }),
           },
         },
       };
     });
+    set({ nodes: newNodes });
+    persistCanvas({ ...get(), nodes: newNodes });
+    pushHistory(newNodes, get().edges);
+  },
+
+  setReplicas: (nodeId, replicas) => {
+    const { nodes, level } = get();
+    const node = nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+    const data = node.data as BlockNodeData;
+    if (data.isStartBlock) return;
+    if ((data.definition.scaling ?? "counter") !== "counter") return;
+
+    let next = Math.max(1, Math.min(20, Math.round(replicas)));
+    if (level) {
+      const others = nodes.reduce((sum, n) => {
+        if (n.id === nodeId) return sum;
+        const d = n.data as BlockNodeData;
+        return sum + d.definition.costPerMonth * (d.replicas ?? 1);
+      }, 0);
+      const affordable = Math.floor(
+        (level.budget - others) / data.definition.costPerMonth,
+      );
+      if (next > affordable) {
+        next = Math.max(1, affordable);
+        toast.error("Budget exceeded", {
+          description: `Capped ${data.definition.label} at ${next}× — more replicas would exceed the $${level.budget}/mo budget.`,
+        });
+      }
+    }
+    if (next === (data.replicas ?? 1)) return;
+
+    const newNodes = nodes.map((n) =>
+      n.id === nodeId
+        ? { ...n, data: { ...(n.data as BlockNodeData), replicas: next } }
+        : n,
+    );
     set({ nodes: newNodes });
     persistCanvas({ ...get(), nodes: newNodes });
     pushHistory(newNodes, get().edges);
@@ -574,6 +654,8 @@ export const useSystemDesignStore = create<SystemDesignStore>((set, get) => ({
             currentRps: stats.rps,
             currentLatencyMs: stats.latencyMs,
             loadPercent: stats.loadPercent,
+            readLoadPercent: stats.readLoadPercent,
+            writeLoadPercent: stats.writeLoadPercent,
             failedRequests: stats.failedRps,
             queueDepth: stats.queueDepth,
             status: stats.status as BlockNodeData["status"],

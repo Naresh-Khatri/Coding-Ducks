@@ -12,10 +12,10 @@ export function StatsPanel() {
 
   if (!level) return null;
 
-  const budgetUsed = nodes.reduce(
-    (sum, n) => sum + (n.data as BlockNodeData).definition.costPerMonth,
-    0,
-  );
+  const budgetUsed = nodes.reduce((sum, n) => {
+    const d = n.data as BlockNodeData;
+    return sum + d.definition.costPerMonth * (d.replicas ?? 1);
+  }, 0);
 
   // Only compute stats up to the current tick position
   const ticksUpToCurrent = simulationTimeline.slice(0, simulationTick + 1);

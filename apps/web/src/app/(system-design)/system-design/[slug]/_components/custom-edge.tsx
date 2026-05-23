@@ -6,6 +6,7 @@ import { useSystemDesignStore } from "~/lib/system-design/store";
 
 function CustomEdgeComponent({
   id,
+  source,
   sourceX,
   sourceY,
   targetX,
@@ -15,6 +16,12 @@ function CustomEdgeComponent({
   style = {},
 }: EdgeProps) {
   const phase = useSystemDesignStore((s) => s.phase);
+  // An edge only carries flow if its source node is actually processing
+  // traffic this tick. Disconnected / bypassed branches stay dark.
+  const sourceRps = useSystemDesignStore((s) => {
+    const n = s.nodes.find((node) => node.id === source);
+    return (n?.data?.currentRps as number | undefined) ?? 0;
+  });
 
   const [edgePath] = getBezierPath({
     sourceX,
@@ -26,11 +33,12 @@ function CustomEdgeComponent({
   });
 
   const isProduction = phase === "production";
+  const hasFlow = isProduction && sourceRps > 0;
 
   return (
     <g>
       {/* Glow layer */}
-      {isProduction && (
+      {hasFlow && (
         <path
           d={edgePath}
           fill="none"
@@ -47,13 +55,13 @@ function CustomEdgeComponent({
         d={edgePath}
         style={{
           ...style,
-          strokeWidth: isProduction ? 3 : 1.5,
-          stroke: isProduction ? "#3b82f6" : "#6b7280",
+          strokeWidth: hasFlow ? 3 : 1.5,
+          stroke: hasFlow ? "#3b82f6" : "#6b7280",
           fill: "none",
         }}
       />
       {/* Animated flowing dots along the path (source → target) */}
-      {isProduction && (
+      {hasFlow && (
         <path
           d={edgePath}
           fill="none"

@@ -9,10 +9,11 @@ import {
   YAxis,
 } from "recharts";
 import { useMemo } from "react";
-import { AlertTriangle, Check, Circle } from "lucide-react";
+import { AlertTriangle, Check, Circle, Info } from "lucide-react";
 import { getReachableTypes } from "~/lib/system-design/connection-validator";
-import { MISSING_LAYER_PENALTIES } from "~/lib/system-design/simulation-engine";
+import { computeMissingLayerPenalties } from "~/lib/system-design/simulation-engine";
 import { useSystemDesignStore } from "~/lib/system-design/store";
+import { computeTopologyWarnings } from "~/lib/system-design/topology-warnings";
 import type { BlockNodeData } from "~/lib/system-design/types";
 import { cn } from "~/lib/utils";
 
@@ -23,14 +24,22 @@ export function CanvasInfoOverlay() {
 
   if (!level) return null;
 
-  const budgetUsed = nodes.reduce(
-    (sum, n) => sum + (n.data as BlockNodeData).definition.costPerMonth,
-    0,
-  );
+  const budgetUsed = nodes.reduce((sum, n) => {
+    const d = n.data as BlockNodeData;
+    return sum + d.definition.costPerMonth * (d.replicas ?? 1);
+  }, 0);
   const budgetPercent = (budgetUsed / level.budget) * 100;
 
   const reachableTypes = useMemo(
     () => getReachableTypes(nodes as Parameters<typeof getReachableTypes>[0], edges),
+    [nodes, edges],
+  );
+  const topologyWarnings = useMemo(
+    () =>
+      computeTopologyWarnings(
+        nodes as Parameters<typeof computeTopologyWarnings>[0],
+        edges,
+      ),
     [nodes, edges],
   );
   const requiredBlocks = level.requiredBlockTypes ?? [];
@@ -144,13 +153,11 @@ export function CanvasInfoOverlay() {
 
         {/* Missing layer warnings */}
         {(() => {
-          const penalties = Object.entries(MISSING_LAYER_PENALTIES).map(
-            ([type, penalty]) => ({
-              type,
-              warning: penalty.warning,
-              resolved: reachableTypes.has(type),
-            }),
+          const penalties = computeMissingLayerPenalties(
+            reachableTypes,
+            level.writeFraction ?? 0.1,
           );
+          if (penalties.length === 0) return null;
           if (penalties.every((p) => p.resolved)) return null;
           return (
             <div className="mt-1">
@@ -176,6 +183,36 @@ export function CanvasInfoOverlay() {
             </div>
           );
         })()}
+
+        {/* Live topology warnings */}
+        {topologyWarnings.length > 0 && (
+          <div className="mt-2">
+            <div className="text-muted-foreground mb-1 flex items-center gap-1 text-[11px] font-medium">
+              <AlertTriangle size={11} className="text-amber-500" />
+              Topology
+            </div>
+            <div className="space-y-0.5">
+              {topologyWarnings.map((w) => (
+                <div
+                  key={w.id}
+                  className={cn(
+                    "flex items-start gap-1 text-[10px] leading-tight",
+                    w.severity === "warn"
+                      ? "text-amber-500/80"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {w.severity === "warn" ? (
+                    <AlertTriangle size={9} className="mt-0.5 shrink-0" />
+                  ) : (
+                    <Info size={9} className="mt-0.5 shrink-0" />
+                  )}
+                  <span>{w.message}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </Panel>
   );
