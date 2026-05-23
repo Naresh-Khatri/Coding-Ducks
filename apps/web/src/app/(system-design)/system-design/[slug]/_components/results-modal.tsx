@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertTriangle,
   ArrowLeft,
   Check,
   CheckCircle,
   Loader2,
   LogIn,
+  Lightbulb,
   RotateCcw,
   Star,
   XCircle,
@@ -29,6 +31,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
+import {
+  generateSuggestions,
+  type WhatIfSuggestion,
+} from "~/lib/system-design/what-if-coach";
 import { SubmissionHistory } from "./submission-history";
 
 export function ResultsModal() {
@@ -42,6 +48,33 @@ export function ResultsModal() {
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   const hasSaved = useRef(false);
+  const [suggestions, setSuggestions] = useState<WhatIfSuggestion[] | null>(
+    null,
+  );
+
+  // Defer what-if simulations so they don't block first paint of the modal.
+  useEffect(() => {
+    if (!results || !level) {
+      setSuggestions(null);
+      return;
+    }
+    setSuggestions(null);
+    const handle = setTimeout(() => {
+      try {
+        setSuggestions(
+          generateSuggestions(
+            nodes as unknown as Parameters<typeof generateSuggestions>[0],
+            edges,
+            level,
+            results,
+          ),
+        );
+      } catch {
+        setSuggestions([]);
+      }
+    }, 50);
+    return () => clearTimeout(handle);
+  }, [results, level, nodes, edges]);
 
   const saveAttempt = useMutation(
     trpc.systemDesign.saveAttempt.mutationOptions({
@@ -71,6 +104,7 @@ export function ResultsModal() {
           data: {
             definitionType: (n.data as BlockNodeData).definition.type,
             provider: (n.data as BlockNodeData).definition.name,
+            replicas: (n.data as BlockNodeData).replicas ?? 1,
           },
         })),
         edges: edges.map((e) => ({
@@ -193,7 +227,60 @@ export function ResultsModal() {
               />
             ))}
           </div>
+          {results.starsCappedByTopology && (
+            <div className="text-amber-500/80 mt-1 text-[11px]">
+              Stars capped at 2 — fix topology issues for 3-star
+            </div>
+          )}
         </div>
+
+        {/* Topology errors — invalid design, fails the level */}
+        {results.topologyWarnings.filter((w) => w.severity === "error").length >
+          0 && (
+          <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3">
+            <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-red-500">
+              <XCircle size={12} />
+              Invalid topology
+            </div>
+            <ul className="space-y-1">
+              {results.topologyWarnings
+                .filter((w) => w.severity === "error")
+                .map((w) => (
+                  <li
+                    key={w.id}
+                    className="text-muted-foreground flex items-start gap-1.5 text-[11px] leading-tight"
+                  >
+                    <span className="mt-0.5 text-red-500/60">•</span>
+                    {w.message}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Topology warnings */}
+        {results.topologyWarnings.filter((w) => w.severity === "warn").length >
+          0 && (
+          <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+            <div className="text-amber-500 mb-1.5 flex items-center gap-1.5 text-xs font-medium">
+              <AlertTriangle size={12} />
+              Topology issues
+            </div>
+            <ul className="space-y-1">
+              {results.topologyWarnings
+                .filter((w) => w.severity === "warn")
+                .map((w) => (
+                  <li
+                    key={w.id}
+                    className="text-muted-foreground flex items-start gap-1.5 text-[11px] leading-tight"
+                  >
+                    <span className="text-amber-500/60 mt-0.5">•</span>
+                    {w.message}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
 
         {/* Tabbed content */}
         <Tabs defaultValue="results" className="mb-4">
@@ -237,12 +324,9 @@ export function ResultsModal() {
                     results.avgLatencyMs > level.passCondition.maxAvgLatencyMs
                       ? "text-red-500"
                       : results.avgLatencyMs <=
-                          level.starConditions.threeStar.maxAvgLatencyMs
+                          level.starConditions.twoStar.maxAvgLatencyMs
                         ? "text-green-500"
-                        : results.avgLatencyMs <=
-                            level.starConditions.twoStar.maxAvgLatencyMs
-                          ? "text-amber-500"
-                          : "text-foreground",
+                        : "text-amber-500",
                   )}
                 >
                   {results.avgLatencyMs.toFixed(0)}ms
@@ -257,7 +341,7 @@ export function ResultsModal() {
                   className={cn(
                     "text-lg font-bold tabular-nums",
                     results.p99LatencyMs <=
-                      level.starConditions.threeStar.maxAvgLatencyMs * 2
+                      level.starConditions.twoStar.maxAvgLatencyMs * 2
                       ? "text-green-500"
                       : results.p99LatencyMs <=
                           level.passCondition.maxAvgLatencyMs * 2
@@ -278,10 +362,7 @@ export function ResultsModal() {
                       : budgetUsedPercent <=
                           level.starConditions.threeStar.maxCostPercent
                         ? "text-green-500"
-                        : budgetUsedPercent <=
-                            level.starConditions.twoStar.maxCostPercent
-                          ? "text-amber-500"
-                          : "text-foreground",
+                        : "text-amber-500",
                   )}
                 >
                   {budgetUsedPercent.toFixed(0)}%
@@ -337,6 +418,24 @@ export function ResultsModal() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+
+            {/* What-if coach */}
+            {suggestions === null ? (
+              <div className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
+                <Loader2 size={12} className="animate-spin" />
+                Looking for improvements…
+              </div>
+            ) : suggestions.length > 0 ? (
+              <div className="space-y-2">
+                <div className="text-muted-foreground flex items-center gap-1.5 text-[11px] font-medium">
+                  <Lightbulb size={12} className="text-amber-400" />
+                  Try this next
+                </div>
+                {suggestions.map((s, idx) => (
+                  <SuggestionCard key={idx} suggestion={s} />
+                ))}
+              </div>
+            ) : null}
           </TabsContent>
 
           <TabsContent value="history" className="mt-3">
@@ -415,6 +514,55 @@ export function ResultsModal() {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function SuggestionCard({ suggestion }: { suggestion: WhatIfSuggestion }) {
+  const { label, rationale, delta } = suggestion;
+  const uptimeUp = delta.uptimePercent > 0.1;
+  const latencyDown = delta.avgLatencyMs < -1;
+  const costUp = delta.totalCostPerMonth > 0;
+  return (
+    <div className="bg-muted/40 space-y-1.5 rounded-md border p-2.5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-xs font-semibold">{label}</div>
+        {delta.nowPasses && (
+          <span className="rounded-sm bg-green-500/15 px-1.5 py-0.5 text-[10px] font-medium text-green-500">
+            passes
+          </span>
+        )}
+      </div>
+      <div className="text-muted-foreground text-[10px]">{rationale}</div>
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] tabular-nums">
+        <span
+          className={cn(
+            "flex items-center gap-1",
+            uptimeUp ? "text-green-500" : "text-muted-foreground",
+          )}
+        >
+          Uptime {delta.uptimePercent >= 0 ? "+" : ""}
+          {delta.uptimePercent.toFixed(1)}%
+        </span>
+        <span
+          className={cn(
+            "flex items-center gap-1",
+            latencyDown ? "text-green-500" : "text-muted-foreground",
+          )}
+        >
+          Latency {delta.avgLatencyMs >= 0 ? "+" : ""}
+          {delta.avgLatencyMs.toFixed(0)}ms
+        </span>
+        <span
+          className={cn(
+            "flex items-center gap-1",
+            costUp ? "text-amber-500" : "text-green-500",
+          )}
+        >
+          Cost {delta.totalCostPerMonth >= 0 ? "+" : ""}$
+          {delta.totalCostPerMonth.toFixed(0)}/mo
+        </span>
       </div>
     </div>
   );
