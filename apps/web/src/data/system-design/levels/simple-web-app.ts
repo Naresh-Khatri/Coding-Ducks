@@ -9,25 +9,28 @@ export const simpleWebApp: LevelDefinition = {
   difficulty: "beginner",
   budget: 320,
   durationSeconds: 60,
+  writeFraction: 0.2,
   trafficPattern: [
-    { time: 0, rps: 100 },
-    { time: 10, rps: 300 },
-    { time: 20, rps: 1500 },
-    { time: 30, rps: 1700 },
-    { time: 40, rps: 4500 },
-    { time: 45, rps: 1800 },
-    { time: 50, rps: 1600 },
-    { time: 60, rps: 400 },
+    { time: 0, rps: 200 },
+    { time: 10, rps: 500 },
+    { time: 20, rps: 2000 },
+    { time: 30, rps: 3000 },
+    { time: 40, rps: 6000 },
+    { time: 45, rps: 2800 },
+    { time: 50, rps: 2200 },
+    { time: 60, rps: 700 },
   ],
-  requiredBlockTypes: ["load-balancer", "sql-db"],
+  requiredBlockTypes: ["dns", "cdn", "load-balancer", "sql-db"],
   passCondition: {
     minUptimePercent: 95,
-    maxAvgLatencyMs: 500,
+    maxAvgLatencyMs: 300,
   },
+  // Calibrated empirically (see __tests__/calibration.test.ts):
+  //   3★ Cloud DNS + Cloudflare CDN + Traefik + Go×2 + Memcached + MySQL ≈ $243 (76%)
+  //   2★ Route 53 + CloudFront + Nginx + Node×3 + Redis + PostgreSQL     ≈ $300 (94%)
   starConditions: {
-    oneStar: { maxCostPercent: 100, maxAvgLatencyMs: 500 },
-    twoStar: { maxCostPercent: 75, maxAvgLatencyMs: 250 },
-    threeStar: { maxCostPercent: 52, maxAvgLatencyMs: 120 },
+    twoStar: { maxCostPercent: 90, maxAvgLatencyMs: 170 },
+    threeStar: { maxCostPercent: 80, maxAvgLatencyMs: 90 },
   },
   hints: [
     "A load balancer distributes traffic across multiple app servers",

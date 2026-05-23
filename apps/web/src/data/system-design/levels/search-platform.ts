@@ -8,26 +8,29 @@ export const searchPlatform: LevelDefinition = {
     "A relational database is too slow for search — use a dedicated search engine " +
     "and cache hot queries for sub-100ms responses.",
   difficulty: "intermediate",
-  budget: 200,
+  budget: 290,
   durationSeconds: 60,
+  writeFraction: 0.03,
   trafficPattern: [
-    { time: 0, rps: 1000 },
-    { time: 10, rps: 3000 },
-    { time: 20, rps: 6000 },
-    { time: 30, rps: 8000 },
-    { time: 40, rps: 5000 },
-    { time: 50, rps: 3000 },
-    { time: 60, rps: 1500 },
+    { time: 0, rps: 1500 },
+    { time: 10, rps: 5000 },
+    { time: 20, rps: 10000 },
+    { time: 30, rps: 14000 },
+    { time: 40, rps: 9000 },
+    { time: 50, rps: 5000 },
+    { time: 60, rps: 2500 },
   ],
-  requiredBlockTypes: ["search-engine", "app-server"],
+  requiredBlockTypes: ["dns", "search-engine", "app-server"],
   passCondition: {
     minUptimePercent: 96,
-    maxAvgLatencyMs: 300,
+    maxAvgLatencyMs: 200,
   },
+  // Calibrated empirically (see __tests__/calibration.test.ts):
+  //   3★ Cloud DNS + Traefik + Go×2 + Memcached + Typesense×2     ≈ $228 (79%)
+  //   2★ Route 53 + Nginx + Node×4 + Redis + Elasticsearch×2      ≈ $345 (over budget)
   starConditions: {
-    oneStar: { maxCostPercent: 100, maxAvgLatencyMs: 300 },
-    twoStar: { maxCostPercent: 68, maxAvgLatencyMs: 150 },
-    threeStar: { maxCostPercent: 48, maxAvgLatencyMs: 60 },
+    twoStar: { maxCostPercent: 90, maxAvgLatencyMs: 90 },
+    threeStar: { maxCostPercent: 82, maxAvgLatencyMs: 40 },
   },
   hints: [
     "Elasticsearch handles full-text search much faster than SQL queries",

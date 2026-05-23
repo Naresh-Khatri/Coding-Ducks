@@ -7,29 +7,32 @@ export const cdnStaticSite: LevelDefinition = {
     "Serve a marketing website with global reach. Most requests are for static assets — " +
     "use a CDN to handle the load cheaply and keep latency low worldwide.",
   difficulty: "beginner",
-  budget: 110,
+  budget: 60,
   durationSeconds: 45,
+  writeFraction: 0.02,
+  // Calibrated empirically (see __tests__/calibration.test.ts):
+  //   3★ Cloud DNS + Cloudflare CDN + R2 origin   ≈ $33 (55%)
+  //   2★ Route 53 + CloudFront + S3 (defaults)    ≈ $75 (125%, over budget)
   trafficPattern: [
-    { time: 0, rps: 200 },
-    { time: 10, rps: 800 },
-    { time: 20, rps: 2000 },
-    { time: 30, rps: 1200 },
-    { time: 40, rps: 600 },
-    { time: 45, rps: 300 },
+    { time: 0, rps: 3000 },
+    { time: 10, rps: 12000 },
+    { time: 20, rps: 30000 },
+    { time: 30, rps: 18000 },
+    { time: 40, rps: 9000 },
+    { time: 45, rps: 5000 },
   ],
-  requiredBlockTypes: ["cdn"],
+  requiredBlockTypes: ["dns", "cdn"],
   passCondition: {
-    minUptimePercent: 99,
-    maxAvgLatencyMs: 200,
+    minUptimePercent: 96,
+    maxAvgLatencyMs: 120,
   },
   starConditions: {
-    oneStar: { maxCostPercent: 100, maxAvgLatencyMs: 200 },
-    twoStar: { maxCostPercent: 70, maxAvgLatencyMs: 80 },
-    threeStar: { maxCostPercent: 50, maxAvgLatencyMs: 40 },
+    twoStar: { maxCostPercent: 90, maxAvgLatencyMs: 50 },
+    threeStar: { maxCostPercent: 60, maxAvgLatencyMs: 25 },
   },
   hints: [
     "A CDN caches static content at edge locations close to users",
-    "You still need an app server behind the CDN as the origin",
+    "The CDN still needs an origin — object storage works great for static files, an app server works for dynamic pages",
     "DNS routes users to the nearest CDN edge",
   ],
 };
