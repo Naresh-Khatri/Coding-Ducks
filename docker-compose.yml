@@ -1,7 +1,5 @@
-# Local development dependencies (Postgres + Redis).
-# Run `pnpm dev` on the host against these services.
-#
-#   docker compose up -d
+# Local development only. Provides Postgres + Redis.
+# The app (turbo) is deployed separately — run `pnpm dev` on the host.
 services:
   db:
     image: postgres:15-alpine

@@ -1,7 +1,7 @@
 # Default target
 help:
 	@echo "Available commands:"
-	@echo "  make services           - Start dependencies (db, redis) for local dev"
+	@echo "  make services           - Start db + redis for local dev"
 	@echo "  make down               - Stop all containers"
 	@echo "  make logs               - Follow container logs"
 	@echo "  make clean              - Stop containers (preserves data)"
