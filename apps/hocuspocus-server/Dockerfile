@@ -73,7 +73,6 @@ COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-RUN chown -R hocuspocus:nodejs /app
 USER hocuspocus
 
 EXPOSE 5000
