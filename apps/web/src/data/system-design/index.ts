@@ -5,8 +5,10 @@ import { apiWithCache } from "./levels/api-with-cache";
 import { eCommerceCheckout } from "./levels/e-commerce-checkout";
 import { asyncProcessing } from "./levels/async-processing";
 import { searchPlatform } from "./levels/search-platform";
+import { realtimeChat } from "./levels/realtime-chat";
 import { socialMediaFeed } from "./levels/social-media-feed";
 import { globalApi } from "./levels/global-api";
+import { iotTelemetry } from "./levels/iot-telemetry";
 
 export const LEVELS: LevelDefinition[] = [
   // Beginner
@@ -17,6 +19,8 @@ export const LEVELS: LevelDefinition[] = [
   eCommerceCheckout,
   asyncProcessing,
   searchPlatform,
+  realtimeChat,
+  iotTelemetry,
   // Advanced
   socialMediaFeed,
   globalApi,
