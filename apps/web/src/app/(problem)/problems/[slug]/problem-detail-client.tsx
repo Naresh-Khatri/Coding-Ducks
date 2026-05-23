@@ -134,8 +134,7 @@ export function ProblemDetailClient() {
       problem.id !== lastProblemId ||
       (!draftsLoadedRef.current && savedDrafts)
     ) {
-      const starterCodes =
-        (problem.starterCode!) || {};
+      const starterCodes = problem.starterCode! || {};
       const mergedCodes = { ...starterCodes, ...(savedDrafts || {}) };
       setCodes(mergedCodes);
 
@@ -286,9 +285,7 @@ export function ProblemDetailClient() {
     );
   }
 
-  const availableLanguages = Object.keys(
-    (problem.starterCode!) || {},
-  );
+  const availableLanguages = Object.keys(problem.starterCode! || {});
 
   // --- Render ---
 
@@ -322,8 +319,7 @@ export function ProblemDetailClient() {
         }
       }}
       onResetToDefault={() => {
-        const starterCode =
-          (problem.starterCode)?.[language] ?? "";
+        const starterCode = problem.starterCode?.[language] ?? "";
         setCode(starterCode);
         toast.success("Code reset to default");
       }}
