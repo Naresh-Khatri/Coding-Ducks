@@ -1,18 +1,14 @@
 # Default target
 help:
 	@echo "Available commands:"
-	@echo "  make dev                - Start full development environment (incl. app container)"
-	@echo "  make services           - Start ONLY dependencies (db, redis) for local dev"
+	@echo "  make services           - Start dependencies (db, redis) for local dev"
 	@echo "  make down               - Stop all containers"
 	@echo "  make logs               - Follow container logs"
 	@echo "  make clean              - Stop containers (preserves data)"
 	@echo "  make dangerously-clean  - Stop containers AND DELETE ALL DATA"
 
-dev:
-	docker compose up -d
-
 services:
-	docker compose up -d db redis
+	docker compose up -d
 
 down:
 	docker compose down --remove-orphans

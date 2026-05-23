@@ -1,53 +1,34 @@
+# Build from the monorepo root:
+#   docker build -f apps/web/Dockerfile -t codingducks-web .
+
 # ============================================
-# STAGE 1: Base with system dependencies
+# STAGE 1: Base
 # ============================================
-FROM ubuntu:22.04 AS base
+FROM node:23-bookworm-slim AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install runtime dependencies + Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    openjdk-21-jdk-headless \
-    g++ \
-    build-essential \
-    make \
-    git \
-    sudo \
-    pkg-config \
-    libsystemd-dev \
-    libcap-dev \
-    curl \
-    ca-certificates && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
+    ca-certificates \
+    curl && \
     corepack enable && \
     apt-get clean && \
     rm -rf /var/cache/apt/* /var/lib/apt/lists/* /tmp/*
 
 # ============================================
-# STAGE 2: Install isolate sandbox
-# ============================================
-FROM base AS isolate-builder
-
-WORKDIR /build
-COPY packages/jobs/install-isolate.sh .
-RUN chmod +x install-isolate.sh && ./install-isolate.sh
-
-# ============================================
-# STAGE 3: Install dependencies
+# STAGE 2: Install dependencies
 # ============================================
 FROM base AS deps
 
 WORKDIR /app
 
-# Copy dependency manifests
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
+COPY apps/hocuspocus-server/package.json apps/hocuspocus-server/
 COPY packages/api/package.json packages/api/
 COPY packages/auth/package.json packages/auth/
 COPY packages/db/package.json packages/db/
-COPY packages/jobs/package.json packages/jobs/
+COPY packages/storage/package.json packages/storage/
 COPY packages/validators/package.json packages/validators/
 COPY tooling/eslint/package.json tooling/eslint/
 COPY tooling/github/package.json tooling/github/
@@ -55,26 +36,23 @@ COPY tooling/prettier/package.json tooling/prettier/
 COPY tooling/tailwind/package.json tooling/tailwind/
 COPY tooling/typescript/package.json tooling/typescript/
 
-# Install ALL dependencies (needed for build)
 RUN pnpm install --frozen-lockfile
 
 # ============================================
-# STAGE 4: Build application
+# STAGE 3: Build
 # ============================================
 FROM deps AS builder
 
 WORKDIR /app
 
-# Copy source code
 COPY . .
 
-# Build the application
 ENV NODE_ENV=production
 ENV SKIP_ENV_VALIDATION=1
-RUN pnpm build
+RUN pnpm -F @acme/nextjs build
 
 # ============================================
-# STAGE 5: Production runtime
+# STAGE 4: Runtime
 # ============================================
 FROM base AS runner
 
@@ -83,33 +61,20 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy isolate from builder
-COPY --from=isolate-builder /usr/local/bin/isolate /usr/local/bin/isolate
-COPY --from=isolate-builder /usr/local/etc/isolate /usr/local/etc/isolate
-
-# Create non-root user for Next.js (isolate needs root for sandbox)
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs nextjs
 
-# Copy built application
 COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/public ./apps/web/public
-
-# Copy packages needed at runtime (jobs for isolate, db for migrations)
-COPY --from=builder /app/packages/jobs ./packages/jobs
 COPY --from=builder /app/packages/db ./packages/db
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 
-# Set ownership
 RUN chown -R nextjs:nodejs /app
+USER nextjs
 
 EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Note: Running as root is required for isolate sandbox
-# The Next.js server itself runs unprivileged within the container
 CMD ["node", "apps/web/server.js"]

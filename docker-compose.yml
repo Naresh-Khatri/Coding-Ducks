@@ -1,7 +1,7 @@
-# Local development only. Not used for production.
+# Local development dependencies (Postgres + Redis).
+# Run `pnpm dev` on the host against these services.
 #
-#   docker compose up -d db redis   # deps only; run `pnpm dev` on the host
-#   docker compose up -d            # full stack incl. the app container
+#   docker compose up -d
 services:
   db:
     image: postgres:15-alpine
@@ -38,33 +38,6 @@ services:
       timeout: 5s
       retries: 5
     command: redis-server --appendonly yes --maxmemory 256mb
-    networks:
-      - codingducks-network
-
-  turbo:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: turbo-dev
-    volumes:
-      - .:/app
-      - /app/node_modules
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-      - TURBO_TELEMETRY_DISABLED=1
-      # Override connection strings to use internal docker hostnames so that
-      # .env can keep "localhost" values for running `pnpm dev` on the host.
-      - POSTGRES_URL=postgres://dev:dev@db:5432/codingducks
-      - REDIS_URL=redis://redis:6379
-    command: pnpm dev
-    privileged: true
-    depends_on:
-      - db
-      - redis
     networks:
       - codingducks-network
 
