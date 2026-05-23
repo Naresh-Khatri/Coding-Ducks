@@ -1,8 +1,8 @@
 "use client";
 
+import { Suspense, useEffect, useRef } from "react";
 import Spline from "@splinetool/react-spline";
 import { Application } from "@splinetool/runtime";
-import { Suspense, useEffect, useRef } from "react";
 
 const LANGS = ["python", "javascript", "cpp", "java"] as const;
 type Language = (typeof LANGS)[number];
@@ -36,14 +36,14 @@ interface SplineElements {
 }
 
 const AnimatedTerminal = () => {
-  const splineRef = useRef<Application>();
-  const elementsRef = useRef<SplineElements>();
-  const typingIntervalRef = useRef<NodeJS.Timeout>();
-  const blinkingIntervalRef = useRef<NodeJS.Timeout>();
+  const splineRef = useRef<Application>(undefined);
+  const elementsRef = useRef<SplineElements>(undefined);
+  const typingIntervalRef = useRef<NodeJS.Timeout>(undefined);
+  const blinkingIntervalRef = useRef<NodeJS.Timeout>(undefined);
   const isDropdownOpen = useRef(false);
   const lastToggleAt = useRef(0);
   const targetRotation = useRef({ x: 0, y: 0 });
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number>(undefined);
 
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
@@ -229,8 +229,10 @@ const AnimatedTerminal = () => {
     const tick = () => {
       const terminal = elementsRef.current?.terminal;
       if (terminal) {
-        terminal.rotation.x += (targetRotation.current.x - terminal.rotation.x) * 0.08;
-        terminal.rotation.y += (targetRotation.current.y - terminal.rotation.y) * 0.08;
+        terminal.rotation.x +=
+          (targetRotation.current.x - terminal.rotation.x) * 0.08;
+        terminal.rotation.y +=
+          (targetRotation.current.y - terminal.rotation.y) * 0.08;
       }
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -250,7 +252,8 @@ const AnimatedTerminal = () => {
   useEffect(() => {
     return () => {
       if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-      if (blinkingIntervalRef.current) clearInterval(blinkingIntervalRef.current);
+      if (blinkingIntervalRef.current)
+        clearInterval(blinkingIntervalRef.current);
     };
   }, []);
 
