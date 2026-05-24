@@ -15,6 +15,7 @@ import {
   Star,
   XCircle,
 } from "lucide-react";
+import confetti from "canvas-confetti";
 import {
   Area,
   AreaChart,
@@ -46,9 +47,37 @@ export function ResultsModal() {
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   const hasSaved = useRef(false);
+  const starsRef = useRef<HTMLDivElement | null>(null);
+  const hasCelebrated = useRef(false);
   const [suggestions, setSuggestions] = useState<WhatIfSuggestion[] | null>(
     null,
   );
+
+  // Subtle 3-star celebration. Anchored to the stars row so the burst feels
+  // tied to the icons rather than dropping from the top of the screen.
+  useEffect(() => {
+    if (!results || results.stars !== 3 || hasCelebrated.current) return;
+    hasCelebrated.current = true;
+    const el = starsRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const origin = {
+      x: (rect.left + rect.width / 2) / window.innerWidth,
+      y: (rect.top + rect.height / 2) / window.innerHeight,
+    };
+    const colors = ["#fbbf24", "#f59e0b", "#a78bfa", "#f472b6"];
+    confetti({
+      particleCount: 40,
+      spread: 60,
+      startVelocity: 28,
+      ticks: 120,
+      scalar: 0.75,
+      gravity: 0.9,
+      origin,
+      colors,
+      disableForReducedMotion: true,
+    });
+  }, [results]);
 
   // Defer what-if simulations so they don't block first paint of the modal.
   useEffect(() => {
@@ -211,7 +240,7 @@ export function ResultsModal() {
           )}
 
           {/* Stars */}
-          <div className="mt-2 flex justify-center gap-1">
+          <div ref={starsRef} className="mt-2 flex justify-center gap-1">
             {[1, 2, 3].map((star) => (
               <Star
                 key={star}
