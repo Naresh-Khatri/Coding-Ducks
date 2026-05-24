@@ -4,15 +4,16 @@ export const cdnStaticSite: LevelDefinition = {
   slug: "cdn-static-site",
   title: "Static Site with CDN",
   description:
-    "Serve a marketing website with global reach. Most requests are for static assets — " +
-    "use a CDN to handle the load cheaply and keep latency low worldwide.",
+    "Serve a marketing website with global reach. The site is fully static — prebuilt HTML, CSS, JS, and images, " +
+    "no app server or database needed. Drop the assets into object storage so S3 alone can serve them, then put a " +
+    "CDN in front to handle the load cheaply and keep latency low worldwide.",
   difficulty: "beginner",
-  budget: 60,
+  budget: 85,
   durationSeconds: 45,
   writeFraction: 0.02,
   // Calibrated empirically (see __tests__/calibration.test.ts):
-  //   3★ Cloud DNS + Cloudflare CDN + R2 origin   ≈ $33 (55%)
-  //   2★ Route 53 + CloudFront + S3 (defaults)    ≈ $75 (125%, over budget)
+  //   3★ Cloud DNS + Cloudflare CDN + R2 origin   ≈ $33 (39%)
+  //   2★ Route 53 + CloudFront + S3 (defaults)    ≈ $75 (88%)
   trafficPattern: [
     { time: 0, rps: 3000 },
     { time: 10, rps: 12000 },
@@ -21,7 +22,7 @@ export const cdnStaticSite: LevelDefinition = {
     { time: 40, rps: 9000 },
     { time: 45, rps: 5000 },
   ],
-  requiredBlockTypes: ["dns", "cdn"],
+  requiredBlockTypes: ["dns", "cdn", "object-storage"],
   passCondition: {
     minUptimePercent: 96,
     maxAvgLatencyMs: 120,
