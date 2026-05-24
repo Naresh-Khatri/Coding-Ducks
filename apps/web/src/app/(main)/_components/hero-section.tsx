@@ -66,12 +66,6 @@ export function HeroSection() {
               <ArrowRight className="size-3.5 text-fuchsia-300 transition-transform duration-300 group-hover:translate-x-0.5" />
             </Link>
 
-            <div className="mb-6 flex items-center gap-3">
-              <span className="h-px w-12 bg-gradient-to-r from-fuchsia-500 to-transparent" />
-              <span className="font-mono text-xs tracking-[0.25em] text-neutral-400 uppercase">
-                The playground for coders
-              </span>
-            </div>
             <h1 className="text-6xl leading-[0.9] font-black tracking-tight text-white md:text-7xl xl:text-8xl">
               BUILD. BATTLE.
               <br />
@@ -79,7 +73,11 @@ export function HeroSection() {
                 BELONG.
               </span>
             </h1>
-            <div className="mt-8 flex flex-wrap items-center gap-6">
+            <p className="mt-6 max-w-md text-base text-neutral-400 md:text-lg">
+              Problems, UI battles, and real-time collaboration — all in one
+              place.
+            </p>
+            <div className="mt-8">
               <Link href="/problems">
                 <Button
                   size="lg"
@@ -88,10 +86,6 @@ export function HeroSection() {
                   Start coding
                 </Button>
               </Link>
-              <p className="max-w-xs text-sm text-neutral-400">
-                Problems, UI battles, and real-time collaboration — all in one
-                place.
-              </p>
             </div>
           </motion.div>
         </div>
