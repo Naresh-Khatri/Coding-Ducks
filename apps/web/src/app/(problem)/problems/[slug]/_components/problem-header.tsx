@@ -35,7 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { track } from "~/lib/analytics";
+import { useSignIn } from "~/components/sign-in-dialog";
 import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
@@ -61,6 +61,7 @@ export function ProblemHeader({
   const slug = params.slug as string;
   const { data: session } = authClient.useSession();
   const user = session?.user;
+  const { openSignIn } = useSignIn();
 
   // Execution timer
   const isBusy = isRunning || isSubmitting;
@@ -298,16 +299,7 @@ export function ProblemHeader({
             variant="outline"
             size="sm"
             className="h-8 text-xs"
-            onClick={async () => {
-              track("auth-signin", {
-                provider: "google",
-                source: "problem-header",
-              });
-              await authClient.signIn.social({
-                provider: "google",
-                callbackURL: window.location.pathname,
-              });
-            }}
+            onClick={() => openSignIn({ source: "problem-header" })}
           >
             Sign In
           </Button>

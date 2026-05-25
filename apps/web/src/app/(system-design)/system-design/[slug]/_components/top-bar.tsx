@@ -5,9 +5,9 @@ import Link from "next/link";
 import { ArrowLeft, HelpCircle, Redo2, RotateCcw, Undo2 } from "lucide-react";
 
 import { authClient } from "~/auth/client";
+import { useSignIn } from "~/components/sign-in-dialog";
 import { Button } from "~/components/ui/button";
 import { useConfirm } from "~/hooks/use-confirm";
-import { track } from "~/lib/analytics";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { cn } from "~/lib/utils";
 import { startSystemDesignTour } from "./onboarding-tour";
@@ -29,6 +29,7 @@ export function TopBar() {
   const canUndo = useSystemDesignStore((s) => s.canUndo);
   const canRedo = useSystemDesignStore((s) => s.canRedo);
   const { data: session } = authClient.useSession();
+  const { openSignIn } = useSignIn();
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
@@ -146,16 +147,7 @@ export function TopBar() {
           size="sm"
           variant="ghost"
           className="text-xs"
-          onClick={() => {
-            track("auth-signin", {
-              provider: "google",
-              source: "sd-topbar",
-            });
-            authClient.signIn.social({
-              provider: "google",
-              callbackURL: window.location.pathname,
-            });
-          }}
+          onClick={() => openSignIn({ source: "sd-topbar" })}
         >
           Sign In
         </Button>

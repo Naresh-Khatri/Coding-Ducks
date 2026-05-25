@@ -28,6 +28,7 @@ import {
 import type { BlockNodeData } from "~/lib/system-design/types";
 import type { WhatIfSuggestion } from "~/lib/system-design/what-if-coach";
 import { authClient } from "~/auth/client";
+import { useSignIn } from "~/components/sign-in-dialog";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { track } from "~/lib/analytics";
@@ -47,6 +48,7 @@ export function ResultsModal() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
+  const { openSignIn } = useSignIn();
   const hasSaved = useRef(false);
   const starsRef = useRef<HTMLDivElement | null>(null);
   const hasCelebrated = useRef(false);
@@ -544,16 +546,7 @@ export function ResultsModal() {
                 size="sm"
                 variant="ghost"
                 className="ml-auto h-7 text-xs"
-                onClick={() => {
-                  track("auth-signin", {
-                    provider: "google",
-                    source: "sd-results-modal",
-                  });
-                  authClient.signIn.social({
-                    provider: "google",
-                    callbackURL: window.location.pathname,
-                  });
-                }}
+                onClick={() => openSignIn({ source: "sd-results-modal" })}
               >
                 Sign in
               </Button>

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, Terminal, X } from "lucide-react";
 
 import { authClient } from "~/auth/client";
+import { useSignIn } from "~/components/sign-in-dialog";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { track } from "~/lib/analytics";
 import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
 import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
@@ -31,6 +31,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = authClient.useSession();
+  const { openSignIn } = useSignIn();
 
   const user = session?.user;
 
@@ -136,31 +137,23 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground"
-                onClick={async () => {
-                  track("auth-signin", {
-                    provider: "google",
+                onClick={() =>
+                  openSignIn({
                     source: "navbar-signin",
-                  });
-                  await authClient.signIn.social({
-                    provider: "google",
                     callbackURL: "/problems",
-                  });
-                }}
+                  })
+                }
               >
                 Sign In
               </Button>
               <Button
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
-                onClick={async () => {
-                  track("auth-signin", {
-                    provider: "google",
+                onClick={() =>
+                  openSignIn({
                     source: "navbar-getstarted",
-                  });
-                  await authClient.signIn.social({
-                    provider: "google",
                     callbackURL: "/problems",
-                  });
-                }}
+                  })
+                }
               >
                 Get Started
               </Button>
@@ -251,14 +244,10 @@ export function Navbar() {
                   <Button
                     variant="ghost"
                     className="text-muted-foreground hover:text-foreground justify-center"
-                    onClick={async () => {
+                    onClick={() => {
                       setIsMobileMenuOpen(false);
-                      track("auth-signin", {
-                        provider: "google",
+                      openSignIn({
                         source: "navbar-mobile-signin",
-                      });
-                      await authClient.signIn.social({
-                        provider: "google",
                         callbackURL: "/problems",
                       });
                     }}
@@ -267,14 +256,10 @@ export function Navbar() {
                   </Button>
                   <Button
                     className="bg-primary text-primary-foreground hover:bg-primary/90 justify-center font-semibold"
-                    onClick={async () => {
+                    onClick={() => {
                       setIsMobileMenuOpen(false);
-                      track("auth-signin", {
-                        provider: "google",
+                      openSignIn({
                         source: "navbar-mobile-getstarted",
-                      });
-                      await authClient.signIn.social({
-                        provider: "google",
                         callbackURL: "/problems",
                       });
                     }}

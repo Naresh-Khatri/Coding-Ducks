@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { CheckCircle, LogIn, Star, XCircle } from "lucide-react";
 
 import { authClient } from "~/auth/client";
+import { useSignIn } from "~/components/sign-in-dialog";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import { track } from "~/lib/analytics";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
 
@@ -34,6 +34,7 @@ export function SubmissionHistory({
 }: SubmissionHistoryProps) {
   const trpc = useTRPC();
   const { data: session } = authClient.useSession();
+  const { openSignIn } = useSignIn();
 
   const { data: attempts, isLoading } = useQuery(
     trpc.systemDesign.myAttempts.queryOptions(
@@ -56,18 +57,9 @@ export function SubmissionHistory({
           size="sm"
           variant="outline"
           className="gap-1.5"
-          onClick={() => {
-            track("auth-signin", {
-              provider: "google",
-              source: "sd-submission-history",
-            });
-            authClient.signIn.social({
-              provider: "google",
-              callbackURL: window.location.pathname,
-            });
-          }}
+          onClick={() => openSignIn({ source: "sd-submission-history" })}
         >
-          Sign in with Google
+          Sign in
         </Button>
       </div>
     );

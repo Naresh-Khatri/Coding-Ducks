@@ -23,6 +23,7 @@ import { authClient } from "~/auth/client";
 import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
 import { SettingsModal } from "~/components/collab-editor/settings-modal";
 import { ShareModal } from "~/components/collab-editor/share-modal";
+import { useSignIn } from "~/components/sign-in-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -572,6 +573,7 @@ function AccessDeniedScreen({
   isAuthed: boolean;
 }) {
   const trpc = useTRPC();
+  const { openSignIn } = useSignIn();
   const requestAccess = useMutation(
     trpc.ducklet.requestAccess.mutationOptions({
       onSuccess: (data, variables) => {
@@ -606,16 +608,12 @@ function AccessDeniedScreen({
           </Button>
         ) : (
           <Button
-            onClick={() => {
-              track("auth-signin", {
-                provider: "google",
+            onClick={() =>
+              openSignIn({
                 source: "ducklet-access-denied",
-              });
-              authClient.signIn.social({
-                provider: "google",
                 callbackURL: `/ducklets/${duckletId}`,
-              });
-            }}
+              })
+            }
           >
             Sign in to request access
           </Button>

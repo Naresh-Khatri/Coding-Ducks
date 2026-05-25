@@ -3,23 +3,21 @@
 import { useRouter } from "next/navigation";
 
 import { authClient } from "~/auth/client";
+import { useSignIn } from "~/components/sign-in-dialog";
 import { Button } from "~/components/ui/button";
-import { track } from "~/lib/analytics";
 
 export function AuthShowcase() {
   const { data: session } = authClient.useSession();
   const router = useRouter();
+  const { openSignIn } = useSignIn();
 
   if (!session) {
     return (
       <Button
         size="lg"
-        onClick={async () => {
-          track("auth-signin", { provider: "google", source: "hero" });
-          authClient.signIn.social({ provider: "google" });
-        }}
+        onClick={() => openSignIn({ source: "hero", callbackURL: "/problems" })}
       >
-        Sign in with Google
+        Get started
       </Button>
     );
   }
