@@ -30,6 +30,7 @@ import type { WhatIfSuggestion } from "~/lib/system-design/what-if-coach";
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { track } from "~/lib/analytics";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { generateSuggestions } from "~/lib/system-design/what-if-coach";
 import { cn } from "~/lib/utils";
@@ -52,6 +53,20 @@ export function ResultsModal() {
   const [suggestions, setSuggestions] = useState<WhatIfSuggestion[] | null>(
     null,
   );
+
+  // Fires once per modal mount; saveAttempt is gated on auth, this isn't.
+  const hasTrackedResult = useRef(false);
+  useEffect(() => {
+    if (!results || !level || hasTrackedResult.current) return;
+    hasTrackedResult.current = true;
+    track("sd-simulation-result", {
+      levelSlug: level.slug,
+      passed: results.passed,
+      stars: results.stars,
+      uptimePercent: results.uptimePercent,
+      avgLatencyMs: results.avgLatencyMs,
+    });
+  }, [results, level]);
 
   // Subtle 3-star celebration. Anchored to the stars row so the burst feels
   // tied to the icons rather than dropping from the top of the screen.
@@ -529,12 +544,16 @@ export function ResultsModal() {
                 size="sm"
                 variant="ghost"
                 className="ml-auto h-7 text-xs"
-                onClick={() =>
+                onClick={() => {
+                  track("auth-signin", {
+                    provider: "google",
+                    source: "sd-results-modal",
+                  });
                   authClient.signIn.social({
                     provider: "google",
                     callbackURL: window.location.pathname,
-                  })
-                }
+                  });
+                }}
               >
                 Sign in
               </Button>

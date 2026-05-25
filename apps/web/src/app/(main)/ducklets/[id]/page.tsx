@@ -34,6 +34,7 @@ import {
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useIsMobile } from "~/hooks/use-is-mobile";
 import { useSocketDucklet } from "~/hooks/use-socket";
+import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
 
 // CodeMirror + y-codemirror.next add ~200kB to the bundle. Defer them
@@ -104,6 +105,8 @@ export default function DuckletPage({
     token: collabAuth?.token,
   });
 
+  const queryClient = useQueryClient();
+
   // Settings state - synced via Y.js Map
   const [head, setHead] = useState("");
   const [body, setBody] = useState("");
@@ -133,6 +136,23 @@ export default function DuckletPage({
     };
   }, [ydoc]);
 
+  // The Hocuspocus server bumps a `meta` Y.Map field whenever ducklet
+  // membership / visibility changes (driven by the API → Redis →
+  // Hocuspocus bridge). Refetch `byId` so the share modal's pending
+  // requests, member list, and visibility state stay in sync without
+  // needing the user to refresh.
+  useEffect(() => {
+    if (!ydoc) return;
+    const meta = ydoc.getMap("meta");
+    const onChange = () => {
+      void queryClient.invalidateQueries(
+        trpc.ducklet.byId.queryFilter({ id: duckletId }),
+      );
+    };
+    meta.observe(onChange);
+    return () => meta.unobserve(onChange);
+  }, [ydoc, queryClient, trpc, duckletId]);
+
   // Update Y.js when head/body change
   const handleHeadChange = (value: string) => {
     if (!ydoc) return;
@@ -155,11 +175,11 @@ export default function DuckletPage({
   }, [isMobile]);
   const [renameOpen, setRenameOpen] = useState(false);
 
-  const queryClient = useQueryClient();
   const forkMutation = useMutation(
     trpc.ducklet.fork.mutationOptions({
       onSuccess: (forked) => {
         if (!forked) return;
+        track("ducklet-fork", { from: "detail", sourceId: duckletId });
         toast.success("Forked to your ducklets");
         void queryClient.invalidateQueries(
           trpc.ducklet.list.infiniteQueryFilter(),
@@ -554,7 +574,8 @@ function AccessDeniedScreen({
   const trpc = useTRPC();
   const requestAccess = useMutation(
     trpc.ducklet.requestAccess.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: (data, variables) => {
+        track("ducklet-request-access", { id: variables.duckletId });
         toast.success(data.message ?? "Request sent");
       },
       onError: (err) => toast.error(err.message),
@@ -585,12 +606,16 @@ function AccessDeniedScreen({
           </Button>
         ) : (
           <Button
-            onClick={() =>
+            onClick={() => {
+              track("auth-signin", {
+                provider: "google",
+                source: "ducklet-access-denied",
+              });
               authClient.signIn.social({
                 provider: "google",
                 callbackURL: `/ducklets/${duckletId}`,
-              })
-            }
+              });
+            }}
           >
             Sign in to request access
           </Button>

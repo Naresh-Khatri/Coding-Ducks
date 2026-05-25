@@ -6,6 +6,7 @@ import { CheckCircle, LogIn, Star, XCircle } from "lucide-react";
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { track } from "~/lib/analytics";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
 
@@ -55,12 +56,16 @@ export function SubmissionHistory({
           size="sm"
           variant="outline"
           className="gap-1.5"
-          onClick={() =>
+          onClick={() => {
+            track("auth-signin", {
+              provider: "google",
+              source: "sd-submission-history",
+            });
             authClient.signIn.social({
               provider: "google",
               callbackURL: window.location.pathname,
-            })
-          }
+            });
+          }}
         >
           Sign in with Google
         </Button>

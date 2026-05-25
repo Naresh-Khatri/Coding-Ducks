@@ -7,6 +7,7 @@ import { ArrowLeft, HelpCircle, Redo2, RotateCcw, Undo2 } from "lucide-react";
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
 import { useConfirm } from "~/hooks/use-confirm";
+import { track } from "~/lib/analytics";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { cn } from "~/lib/utils";
 import { startSystemDesignTour } from "./onboarding-tour";
@@ -145,12 +146,16 @@ export function TopBar() {
           size="sm"
           variant="ghost"
           className="text-xs"
-          onClick={() =>
+          onClick={() => {
+            track("auth-signin", {
+              provider: "google",
+              source: "sd-topbar",
+            });
             authClient.signIn.social({
               provider: "google",
               callbackURL: window.location.pathname,
-            })
-          }
+            });
+          }}
         >
           Sign In
         </Button>

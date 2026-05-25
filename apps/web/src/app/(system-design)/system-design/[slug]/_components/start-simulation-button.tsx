@@ -10,6 +10,7 @@ import {
   getReachableTypes,
   hasCycle,
 } from "~/lib/system-design/connection-validator";
+import { track } from "~/lib/analytics";
 import { useSystemDesignStore } from "~/lib/system-design/store";
 import { cn } from "~/lib/utils";
 
@@ -121,7 +122,15 @@ export function StartSimulationButton() {
       </AnimatePresence>
       <Button
         size="lg"
-        onClick={() => canStart && setPhase("production")}
+        onClick={() => {
+          if (!canStart) return;
+          track("sd-simulation-start", {
+            levelSlug: level?.slug,
+            nodes: userNodes.length,
+            edges: edges.length,
+          });
+          setPhase("production");
+        }}
         disabled={!canStart}
         className="gap-2 rounded-full px-6 shadow-lg"
         title={hint}

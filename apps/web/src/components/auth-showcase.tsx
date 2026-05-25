@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { authClient } from "~/auth/client";
 import { Button } from "~/components/ui/button";
+import { track } from "~/lib/analytics";
 
 export function AuthShowcase() {
   const { data: session } = authClient.useSession();
@@ -14,6 +15,7 @@ export function AuthShowcase() {
       <Button
         size="lg"
         onClick={async () => {
+          track("auth-signin", { provider: "google", source: "hero" });
           authClient.signIn.social({ provider: "google" });
         }}
       >

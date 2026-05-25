@@ -18,6 +18,7 @@ import {
 } from "~/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useIsMobile } from "~/hooks/use-is-mobile";
+import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
 import { CodeEditorPanel } from "./_components/code-editor-panel";
 import { LeftPanel } from "./_components/left-panel";
@@ -109,6 +110,11 @@ export function ProblemDetailClient() {
           toast.success("Execution completed");
         }
       } else if (pollingType === "submit") {
+        track("problem-submit-result", {
+          slug,
+          lang: data.lang,
+          status: data.status,
+        });
         if (data.status === "accepted") {
           toast.success("🎉 Accepted!", {
             description: "Nice work — all test cases passed.",
@@ -228,6 +234,7 @@ export function ProblemDetailClient() {
 
   const handleRun = () => {
     if (!problem || !currentCode) return;
+    track("problem-run", { slug, lang: language });
     setPollingType("run");
     const sig = problem.functionSignature;
     const customArgs =
@@ -248,6 +255,7 @@ export function ProblemDetailClient() {
 
   const handleSubmit = () => {
     if (!problem || !currentCode) return;
+    track("problem-submit", { slug, lang: language });
     setPollingType("submit");
     submitMutation.mutate({
       problemId: problem.id,
@@ -307,7 +315,12 @@ export function ProblemDetailClient() {
       code={currentCode}
       onCodeChange={setCode}
       language={language}
-      onLanguageChange={setLanguage}
+      onLanguageChange={(next) => {
+        if (next !== language) {
+          track("problem-language-switch", { slug, from: language, to: next });
+        }
+        setLanguage(next);
+      }}
       availableLanguages={availableLanguages}
       saveStatus={saveStatus}
       hasLastSubmission={!!submissions?.some((s) => s.lang === language)}

@@ -3,13 +3,19 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { ChevronLeft, Info } from "lucide-react";
 import * as Y from "yjs";
 
 import { authClient } from "~/auth/client";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { useSocketDucklet } from "~/hooks/use-socket";
+import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
 import { GuestEditor } from "./guest-editor";
 
@@ -22,10 +28,13 @@ export default function GuestDuckletPage({
   const duckletId = parseInt(duckletIdStr);
   const router = useRouter();
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   // Auth state
   const { data: session } = authClient.useSession();
   const userId = session?.user?.id;
+  const username = session?.user?.name ?? "Anonymous";
+  const photoURL = session?.user?.image ?? undefined;
 
   // Fetch ducklet data
   const {
@@ -36,6 +45,47 @@ export default function GuestDuckletPage({
   } = useQuery(
     trpc.ducklet.byId.queryOptions({ id: duckletId }, { enabled: !!duckletId }),
   );
+
+  // Authed guests on a public ducklet get a `viewer` collab token from
+  // the API, which lets them open a read-only Hocuspocus connection. We
+  // use that connection purely to observe `meta` Y.Map updates so we
+  // can auto-redirect once the owner accepts the access request.
+  const { data: collabAuth } = useQuery(
+    trpc.ducklet.getCollabToken.queryOptions(
+      { duckletId },
+      {
+        enabled: !!duckletId && !!userId && !!ducklet?.isPublic,
+        staleTime: 30 * 60 * 1000,
+        // Owner cycling visibility / revoking access can flip this from
+        // 200 to FORBIDDEN — don't loop on the error.
+        retry: false,
+      },
+    ),
+  );
+
+  const { ydoc } = useSocketDucklet({
+    duckletId: duckletIdStr,
+    userId,
+    username,
+    photoURL,
+    token: collabAuth?.token,
+  });
+
+  useEffect(() => {
+    if (!ydoc) return;
+    const meta = ydoc.getMap("meta");
+    const onChange = () => {
+      void queryClient.invalidateQueries(
+        trpc.ducklet.byId.queryFilter({ id: duckletId }),
+      );
+    };
+    meta.observe(onChange);
+    return () => meta.unobserve(onChange);
+  }, [ydoc, queryClient, trpc, duckletId]);
+
+  useEffect(() => {
+    track("ducklet-guest-view", { id: duckletId, signedIn: !!userId });
+  }, [duckletId, userId]);
 
   // Local state for code (not synced)
   const [html, setHtml] = useState("");
@@ -169,7 +219,13 @@ export default function GuestDuckletPage({
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => requestAccessMutation.mutate({ duckletId })}
+                onClick={() => {
+                  track("ducklet-guest-cta", {
+                    id: duckletId,
+                    action: "request-access",
+                  });
+                  requestAccessMutation.mutate({ duckletId });
+                }}
                 disabled={requestAccessMutation.isPending}
               >
                 Request Access
@@ -183,7 +239,17 @@ export default function GuestDuckletPage({
           )}
 
           {!userId && (
-            <Button size="sm" variant="secondary" asChild>
+            <Button
+              size="sm"
+              variant="secondary"
+              asChild
+              onClick={() =>
+                track("ducklet-guest-cta", {
+                  id: duckletId,
+                  action: "signin",
+                })
+              }
+            >
               <Link href="/auth/signin">Sign In to Request Access</Link>
             </Button>
           )}

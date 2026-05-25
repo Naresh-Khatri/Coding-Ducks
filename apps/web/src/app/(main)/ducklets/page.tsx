@@ -75,6 +75,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useDebounce } from "~/hooks/use-debounce";
+import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
 
 type DuckletSort = "recent" | "updated" | "oldest";
@@ -150,6 +151,7 @@ export default function DuckletsPage() {
           trpc.ducklet.list.infiniteQueryFilter(),
         );
         if (ducklet) {
+          track("ducklet-create", { id: ducklet.id });
           void router.push(`/ducklets/${ducklet.id}`);
         }
       },
@@ -206,8 +208,9 @@ h1 {
 
   const forkDuckletMutation = useMutation(
     trpc.ducklet.fork.mutationOptions({
-      onSuccess: (forked) => {
+      onSuccess: (forked, variables) => {
         if (!forked) return;
+        track("ducklet-fork", { from: "list", sourceId: variables.id });
         toast.success("Forked to your ducklets");
         void queryClient.invalidateQueries(
           trpc.ducklet.list.infiniteQueryFilter(),

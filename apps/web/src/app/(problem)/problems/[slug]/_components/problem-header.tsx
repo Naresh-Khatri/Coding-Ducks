@@ -35,6 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { track } from "~/lib/analytics";
 import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
@@ -298,6 +299,10 @@ export function ProblemHeader({
             size="sm"
             className="h-8 text-xs"
             onClick={async () => {
+              track("auth-signin", {
+                provider: "google",
+                source: "problem-header",
+              });
               await authClient.signIn.social({
                 provider: "google",
                 callbackURL: window.location.pathname,

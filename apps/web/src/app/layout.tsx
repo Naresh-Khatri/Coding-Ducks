@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "~/app/styles.css";
 
 import { Providers } from "~/components/providers";
+import { UmamiScript } from "~/lib/analytics";
 import { cn } from "~/lib/utils";
 
 export const metadata: Metadata = {
@@ -45,6 +46,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <Providers>{props.children}</Providers>
+        <UmamiScript />
       </body>
     </html>
   );

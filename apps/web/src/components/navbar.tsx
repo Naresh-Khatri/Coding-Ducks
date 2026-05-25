@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { track } from "~/lib/analytics";
 import { getAvatarUrl } from "~/lib/avatar";
 import { cn } from "~/lib/utils";
 import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
@@ -136,6 +137,10 @@ export function Navbar() {
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground"
                 onClick={async () => {
+                  track("auth-signin", {
+                    provider: "google",
+                    source: "navbar-signin",
+                  });
                   await authClient.signIn.social({
                     provider: "google",
                     callbackURL: "/problems",
@@ -147,6 +152,10 @@ export function Navbar() {
               <Button
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
                 onClick={async () => {
+                  track("auth-signin", {
+                    provider: "google",
+                    source: "navbar-getstarted",
+                  });
                   await authClient.signIn.social({
                     provider: "google",
                     callbackURL: "/problems",
@@ -244,6 +253,10 @@ export function Navbar() {
                     className="text-muted-foreground hover:text-foreground justify-center"
                     onClick={async () => {
                       setIsMobileMenuOpen(false);
+                      track("auth-signin", {
+                        provider: "google",
+                        source: "navbar-mobile-signin",
+                      });
                       await authClient.signIn.social({
                         provider: "google",
                         callbackURL: "/problems",
@@ -256,6 +269,10 @@ export function Navbar() {
                     className="bg-primary text-primary-foreground hover:bg-primary/90 justify-center font-semibold"
                     onClick={async () => {
                       setIsMobileMenuOpen(false);
+                      track("auth-signin", {
+                        provider: "google",
+                        source: "navbar-mobile-getstarted",
+                      });
                       await authClient.signIn.social({
                         provider: "google",
                         callbackURL: "/problems",
