@@ -3,6 +3,7 @@ import type { HocuspocusProvider } from "@hocuspocus/provider";
 import { LayoutTemplate, Terminal } from "lucide-react";
 import type * as Y from "yjs";
 
+import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 import { Button } from "~/components/ui/button";
 import {
   ResizableHandle,
@@ -232,6 +233,8 @@ export function LayoutManager({
         >
           Left
         </Button>
+        <div className="bg-border mx-1 h-4 w-px" />
+        <EditorSettingsDialog showShortcuts={false} />
       </div>
 
       <div className="flex-1 overflow-hidden">

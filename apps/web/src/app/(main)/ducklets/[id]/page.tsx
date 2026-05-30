@@ -240,7 +240,7 @@ export default function DuckletPage({
 
   if (isDuckletLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+      <div className="flex h-[100dvh] items-center justify-center">
         <div className="text-muted-foreground animate-pulse">
           Loading ducklet...
         </div>
@@ -254,7 +254,7 @@ export default function DuckletPage({
       return <AccessDeniedScreen duckletId={duckletId} isAuthed={!!userId} />;
     }
     return (
-      <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
+      <div className="flex h-[100dvh] flex-col items-center justify-center gap-4">
         <h2 className="text-destructive text-xl font-bold">
           {code === "NOT_FOUND" ? "Ducklet not found" : "Error loading ducklet"}
         </h2>
@@ -585,7 +585,7 @@ function AccessDeniedScreen({
   );
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="mx-auto flex h-[100dvh] max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
       <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
         <Lock className="text-muted-foreground h-7 w-7" />
       </div>

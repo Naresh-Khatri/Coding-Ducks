@@ -8,12 +8,18 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { ChevronLeft, Info } from "lucide-react";
+import { ChevronLeft, Eye, PanelLeft, PanelTop } from "lucide-react";
 import * as Y from "yjs";
 
 import { authClient } from "~/auth/client";
-import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 import { useSocketDucklet } from "~/hooks/use-socket";
 import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
@@ -94,6 +100,10 @@ export default function GuestDuckletPage({
   const [head, setHead] = useState("");
   const [body, setBody] = useState("");
 
+  // Editor layout — lifted here so the toggle can live in the header
+  // instead of taking up its own toolbar row.
+  const [layout, setLayout] = useState<"top" | "left">("top");
+
   // Initialize from ducklet's Y.js data
   useEffect(() => {
     if (!ducklet?.yjsData) return;
@@ -157,7 +167,7 @@ export default function GuestDuckletPage({
 
   if (isDuckletLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+      <div className="flex h-[100dvh] items-center justify-center">
         <div className="text-muted-foreground animate-pulse">
           Loading ducklet...
         </div>
@@ -167,7 +177,7 @@ export default function GuestDuckletPage({
 
   if (error || !ducklet) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
+      <div className="flex h-[100dvh] flex-col items-center justify-center gap-4">
         <h2 className="text-destructive text-xl font-bold">
           Error loading ducklet
         </h2>
@@ -181,20 +191,67 @@ export default function GuestDuckletPage({
 
   return (
     <div className="flex h-[100dvh] flex-col">
-      <header className="bg-muted/20 flex items-center justify-between border-b px-4 py-2">
-        <div className="flex items-center gap-2">
+      <header className="bg-muted/20 flex items-center justify-between gap-2 border-b px-2 py-2 sm:px-4">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link href="/ducklets">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="px-2 sm:px-3">
               <ChevronLeft className="h-4 w-4" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Button>
           </Link>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="truncate font-semibold">{ducklet.name}</h1>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant="outline"
+                    className="text-muted-foreground shrink-0 cursor-default gap-1 font-normal"
+                  >
+                    <Eye className="h-3 w-3" />
+                    Read-only
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  You're viewing this public ducklet as a guest. Edits stay
+                  local and won't be saved or synced — request access to
+                  collaborate.
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            {ducklet.description && (
+              <p className="text-muted-foreground hidden truncate text-xs sm:block">
+                {ducklet.description}
+              </p>
+            )}
+          </div>
         </div>
-        <div>
-          <h1 className="font-semibold">{ducklet.name}</h1>
-          <p className="text-muted-foreground text-xs">{ducklet.description}</p>
-        </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="hidden items-center rounded-md border p-0.5 sm:flex">
+            <Button
+              variant={layout === "top" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-6 gap-1 px-2 text-xs"
+              onClick={() => setLayout("top")}
+              title="Editors on top"
+            >
+              <PanelTop className="h-3 w-3" />
+              Top
+            </Button>
+            <Button
+              variant={layout === "left" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-6 gap-1 px-2 text-xs"
+              onClick={() => setLayout("left")}
+              title="Editors on left"
+            >
+              <PanelLeft className="h-3 w-3" />
+              Left
+            </Button>
+          </div>
+
+          <EditorSettingsDialog showShortcuts={false} />
+
           {/* Access Request UI */}
           {userId && userStatus === "invited" && (
             <div className="flex items-center gap-2 rounded bg-blue-500/10 px-2 py-1">
@@ -256,17 +313,6 @@ export default function GuestDuckletPage({
         </div>
       </header>
 
-      {/* Guest Mode Banner */}
-      <Alert className="m-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30">
-        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        <AlertDescription className="text-sm text-blue-900 dark:text-blue-100">
-          <strong>Guest Mode:</strong> You're viewing this public ducklet in
-          read-only mode. You can edit the code locally, but changes won't be
-          saved or synced. Request access to collaborate with full edit
-          permissions.
-        </AlertDescription>
-      </Alert>
-
       <div className="flex-1 overflow-hidden">
         <GuestEditor
           html={html}
@@ -274,6 +320,7 @@ export default function GuestDuckletPage({
           js={js}
           head={head}
           body={body}
+          layout={layout}
           onHtmlChange={setHtml}
           onCssChange={setCss}
           onJsChange={setJs}

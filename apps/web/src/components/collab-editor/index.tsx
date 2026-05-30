@@ -16,6 +16,8 @@ import { useTheme } from "next-themes";
 import { yCollab } from "y-codemirror.next";
 import * as Y from "yjs";
 
+import { useEditorSettingsExtensions } from "./use-editor-settings-extensions";
+
 interface CollabEditorProps {
   roomId?: string;
   userId?: string;
@@ -72,6 +74,16 @@ export function CollabEditor({
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
 
+  // Per-user editor preferences (font, tab size, keymap, …). These live
+  // outside the collab/undo extensions so changing a setting reconfigures
+  // CodeMirror without tearing down the Y.js binding.
+  const { extensions: settingsExtensions, showLineNumbers } =
+    useEditorSettingsExtensions();
+  const allExtensions = useMemo(
+    () => [...extensions, ...settingsExtensions],
+    [extensions, settingsExtensions],
+  );
+
   useEffect(() => {
     if (!ydoc || !provider) return;
 
@@ -116,7 +128,8 @@ export function CollabEditor({
         className="h-full"
         height="100%"
         theme={isDark ? oneDark : "light"}
-        extensions={extensions}
+        extensions={allExtensions}
+        basicSetup={{ lineNumbers: showLineNumbers }}
         value={initialValue} // Set initial value, then yCollab takes over
         readOnly={readOnly}
       />

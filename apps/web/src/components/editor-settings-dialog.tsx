@@ -20,7 +20,24 @@ import {
 import { Switch } from "~/components/ui/switch";
 import { FONT_OPTIONS, useEditorSettings } from "~/hooks/use-editor-settings";
 
-export function EditorSettingsDialog() {
+interface EditorSettingsDialogProps {
+  /**
+   * Show the run / submit keyboard-shortcut toggles. These only make sense
+   * where the editor can run or submit code (the problem editor), so the
+   * ducklet editors hide them.
+   */
+  showShortcuts?: boolean;
+}
+
+/**
+ * Editor preferences shared across every CodeMirror surface in the app.
+ * Settings are persisted to a single localStorage store (see
+ * `useEditorSettings`), so changes apply to the problem editor and the
+ * ducklet editors alike.
+ */
+export function EditorSettingsDialog({
+  showShortcuts = true,
+}: EditorSettingsDialogProps) {
   const s = useEditorSettings();
 
   return (
@@ -138,23 +155,25 @@ export function EditorSettingsDialog() {
           </Row>
 
           {/* Shortcuts */}
-          <div className="space-y-3">
-            <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-              Shortcuts
-            </span>
-            <Row label="Run code" sublabel="Ctrl+Enter">
-              <Switch
-                checked={s.runShortcut}
-                onCheckedChange={(v) => s.set({ runShortcut: v })}
-              />
-            </Row>
-            <Row label="Submit code" sublabel="Ctrl+Shift+Enter">
-              <Switch
-                checked={s.submitShortcut}
-                onCheckedChange={(v) => s.set({ submitShortcut: v })}
-              />
-            </Row>
-          </div>
+          {showShortcuts && (
+            <div className="space-y-3">
+              <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+                Shortcuts
+              </span>
+              <Row label="Run code" sublabel="Ctrl+Enter">
+                <Switch
+                  checked={s.runShortcut}
+                  onCheckedChange={(v) => s.set({ runShortcut: v })}
+                />
+              </Row>
+              <Row label="Submit code" sublabel="Ctrl+Shift+Enter">
+                <Switch
+                  checked={s.submitShortcut}
+                  onCheckedChange={(v) => s.set({ submitShortcut: v })}
+                />
+              </Row>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

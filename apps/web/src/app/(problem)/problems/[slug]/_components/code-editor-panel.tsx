@@ -23,11 +23,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 import { useConfirm } from "~/hooks/use-confirm";
 import { useEditorSettings } from "~/hooks/use-editor-settings";
 import { LANGUAGES } from "~/lib/languages";
 import { cn } from "~/lib/utils";
-import { EditorSettingsDialog } from "./editor-settings-dialog";
 
 interface CodeEditorPanelProps {
   code: string;

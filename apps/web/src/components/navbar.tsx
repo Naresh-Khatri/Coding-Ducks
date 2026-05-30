@@ -35,6 +35,12 @@ export function Navbar() {
 
   const user = session?.user;
 
+  // Ducklet editor + guest views (`/ducklets/<id>`) are full-screen apps that
+  // render their own header. Suppress the global nav so they don't double up.
+  if (/^\/ducklets\/[^/]+/.test(pathname ?? "")) {
+    return null;
+  }
+
   const handleLogout = async () => {
     await authClient.signOut({
       fetchOptions: {
