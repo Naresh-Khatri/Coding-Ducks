@@ -36,6 +36,7 @@ import { useSystemDesignStore } from "~/lib/system-design/store";
 import { generateSuggestions } from "~/lib/system-design/what-if-coach";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
+import { CommunityComparison } from "./community-comparison";
 import { SubmissionHistory } from "./submission-history";
 
 export function ResultsModal() {
@@ -326,11 +327,18 @@ export function ResultsModal() {
           </div>
         )}
 
-        {/* Tabbed content */}
-        <Tabs defaultValue="results" className="mb-4">
+        {/* Tabbed content. On a 3-star run there's nothing left to optimize,
+            so lead with Compare ("how do I rank?") instead of the coach. */}
+        <Tabs
+          defaultValue={results.stars === 3 ? "compare" : "results"}
+          className="mb-4"
+        >
           <TabsList className="w-full">
             <TabsTrigger value="results" className="flex-1">
               This Attempt
+            </TabsTrigger>
+            <TabsTrigger value="compare" className="flex-1">
+              Compare
             </TabsTrigger>
             <TabsTrigger value="history" className="flex-1">
               Past Attempts
@@ -480,6 +488,15 @@ export function ResultsModal() {
                 ))}
               </div>
             ) : null}
+          </TabsContent>
+
+          <TabsContent value="compare" className="mt-3">
+            <CommunityComparison
+              levelSlug={level.slug}
+              uptimePercent={results.uptimePercent}
+              avgLatencyMs={results.avgLatencyMs}
+              totalCost={results.totalCostPerMonth}
+            />
           </TabsContent>
 
           <TabsContent value="history" className="mt-3">
