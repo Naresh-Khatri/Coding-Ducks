@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { syntaxTree } from "@codemirror/language";
-import type { Diagnostic} from "@codemirror/lint";
+import type { Diagnostic } from "@codemirror/lint";
 import { linter, lintGutter } from "@codemirror/lint";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
@@ -16,107 +16,103 @@ import { useTheme } from "next-themes";
 import { yCollab } from "y-codemirror.next";
 import * as Y from "yjs";
 
+import { extname } from "@acme/ducklet-fs";
+
 import { useEditorSettingsExtensions } from "./use-editor-settings-extensions";
 
-interface CollabEditorProps {
-  roomId?: string;
-  userId?: string;
-  username?: string;
-  language?: "html" | "css" | "js";
-  field: string; // The Y.js text field name to bind to
-  onCursorChange?: (position: { line: number; column: number }) => void;
-  provider: HocuspocusProvider | null;
-  ydoc: Y.Doc;
+interface FileEditorProps {
+  path: string;
+  ytext: Y.Text;
+  provider: HocuspocusProvider;
   readOnly?: boolean;
 }
 
-const languageExtensions = {
-  html: () => html(),
-  css: () => css(),
-  js: () => javascript(),
-};
+/** CodeMirror language extension for a file, inferred from its extension. */
+function languageForPath(path: string): Extension | null {
+  switch (extname(path)) {
+    case "js":
+    case "jsx":
+    case "mjs":
+    case "cjs":
+      return javascript({ jsx: true });
+    case "ts":
+    case "tsx":
+      return javascript({ jsx: true, typescript: true });
+    case "css":
+      return css();
+    case "html":
+    case "htm":
+      return html();
+    default:
+      return null; // json/md/vue/svelte/etc. — plain text, still collaborative
+  }
+}
 
-// Syntax linter that extracts errors from the Lezer parse tree
+// Extract parser error nodes as lint diagnostics (same approach as the legacy
+// editor, but applies to whichever language is active).
 const syntaxLinter = linter((view) => {
   const diagnostics: Diagnostic[] = [];
-  const tree = syntaxTree(view.state);
-
-  // Traverse the syntax tree to find error nodes
-  tree.iterate({
-    enter: (node: { type: { isError: boolean }; from: number; to: number }) => {
+  syntaxTree(view.state).iterate({
+    enter: (node) => {
       if (node.type.isError) {
-        const errorText = view.state.doc.sliceString(node.from, node.to);
         diagnostics.push({
           from: node.from,
           to: node.to,
           severity: "error",
-          message: errorText.trim()
-            ? `Syntax error: unexpected "${errorText}"`
-            : "Syntax error: unexpected token",
+          message: "Syntax error",
         });
       }
     },
   });
-
   return diagnostics;
 });
 
-export function CollabEditor({
-  language = "html",
-  field,
-  onCursorChange,
+export function FileEditor({
+  path,
+  ytext,
   provider,
-  ydoc,
   readOnly = false,
-}: CollabEditorProps) {
+}: FileEditorProps) {
   const [extensions, setExtensions] = useState<Extension[]>([]);
   const [initialValue, setInitialValue] = useState("");
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
 
-  // Per-user editor preferences (font, tab size, keymap, …). These live
-  // outside the collab/undo extensions so changing a setting reconfigures
-  // CodeMirror without tearing down the Y.js binding.
   const { extensions: settingsExtensions, showLineNumbers } =
     useEditorSettingsExtensions();
+
   const allExtensions = useMemo(
     () => [...extensions, ...settingsExtensions],
     [extensions, settingsExtensions],
   );
 
   useEffect(() => {
-    if (!ydoc || !provider) return;
-
-    const ytext = ydoc.getText(field);
-
-    // Get initial value before setting up collab
     setInitialValue(ytext.toString());
 
     const undoManager = new Y.UndoManager(ytext);
-    const extensions = [
-      languageExtensions[language](),
+    const lang = languageForPath(path);
+    setExtensions([
+      ...(lang ? [lang] : []),
       EditorView.lineWrapping,
       yCollab(ytext, provider.awareness, { undoManager }),
-      syntaxLinter, // Extracts syntax errors from parse tree
-      lintGutter(), // Shows error/warning indicators in the gutter
-    ];
-    setExtensions(extensions);
+      syntaxLinter,
+      lintGutter(),
+    ]);
 
     return () => {
-      // Stop tracking changes in undo manager
       undoManager.stopCapturing();
       undoManager.destroy();
     };
-  }, [ydoc, provider, field, language]);
+  }, [ytext, provider, path]);
 
-  if (!ydoc || !provider || extensions.length === 0) {
+  if (extensions.length === 0) {
     return (
       <div
         className={`flex h-full w-full items-center justify-center ${
           isDark ? "bg-[#282c34] text-gray-400" : "bg-white text-gray-500"
         }`}
       >
-        Loading editor...
+        Loading…
       </div>
     );
   }
@@ -124,13 +120,13 @@ export function CollabEditor({
   return (
     <div className="h-full w-full overflow-hidden">
       <CodeMirror
-        key={field} // Force remount on field change
+        key={path}
         className="h-full"
         height="100%"
         theme={isDark ? oneDark : "light"}
         extensions={allExtensions}
         basicSetup={{ lineNumbers: showLineNumbers }}
-        value={initialValue} // Set initial value, then yCollab takes over
+        value={initialValue}
         readOnly={readOnly}
       />
     </div>

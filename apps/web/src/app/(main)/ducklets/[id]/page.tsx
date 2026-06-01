@@ -23,8 +23,11 @@ import { toast } from "sonner";
 
 import type { ChatMessage, UserPresence } from "~/hooks/use-socket";
 import { authClient } from "~/auth/client";
+import {
+  DesktopOnlyGate,
+  useWebContainerSupport,
+} from "~/components/collab-editor/desktop-only-gate";
 import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
-import { SettingsModal } from "~/components/collab-editor/settings-modal";
 import { ShareModal } from "~/components/collab-editor/share-modal";
 import { useSignIn } from "~/components/sign-in-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -47,13 +50,11 @@ import { useSocketDucklet } from "~/hooks/use-socket";
 import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
 
-// CodeMirror + y-codemirror.next add ~200kB to the bundle. Defer them
-// until the page is interactive so they don't block first paint.
-const LayoutManager = dynamic(
+// The workspace pulls in CodeMirror, xterm, and the WebContainer runtime —
+// a heavy, browser-only bundle. Defer it until the page is interactive.
+const Workspace = dynamic(
   () =>
-    import("~/components/collab-editor/layout-manager").then(
-      (m) => m.LayoutManager,
-    ),
+    import("~/components/collab-editor/workspace").then((m) => m.Workspace),
   {
     ssr: false,
     loading: () => (
@@ -146,35 +147,6 @@ export default function DuckletPage({
     }),
   );
 
-  // Settings state - synced via Y.js Map
-  const [head, setHead] = useState("");
-  const [body, setBody] = useState("");
-
-  // Sync head and body scripts from Y.js Map
-  useEffect(() => {
-    if (!ydoc) return;
-
-    const settingsMap = ydoc.getMap("settings");
-
-    const updateSettings = () => {
-      const headScripts = settingsMap.get("headScripts") as string | undefined;
-      const bodyScripts = settingsMap.get("bodyScripts") as string | undefined;
-
-      setHead(headScripts ?? "");
-      setBody(bodyScripts ?? "");
-    };
-
-    // Initial sync
-    updateSettings();
-
-    // Listen for changes
-    settingsMap.observe(updateSettings);
-
-    return () => {
-      settingsMap.unobserve(updateSettings);
-    };
-  }, [ydoc]);
-
   // Realtime events over SSE (separate from the editor websocket).
   // Membership / visibility changes refetch `byId`; chat messages append.
   useSubscription(
@@ -206,19 +178,6 @@ export default function DuckletPage({
       },
     ),
   );
-
-  // Update Y.js when head/body change
-  const handleHeadChange = (value: string) => {
-    if (!ydoc) return;
-    const settingsMap = ydoc.getMap("settings");
-    settingsMap.set("headScripts", value);
-  };
-
-  const handleBodyChange = (value: string) => {
-    if (!ydoc) return;
-    const settingsMap = ydoc.getMap("settings");
-    settingsMap.set("bodyScripts", value);
-  };
 
   const [newMessage, setNewMessage] = useState("");
   const isMobile = useIsMobile();
@@ -309,6 +268,13 @@ export default function DuckletPage({
       provider.off("authenticationFailed", handleAuthFailure);
     };
   }, [provider, ducklet, isOwner, duckletId, router]);
+
+  // The WebContainer runtime is desktop Chromium/Firefox only. Gate before
+  // rendering the workspace so unsupported browsers get a clear message.
+  const support = useWebContainerSupport();
+  if (support.checked && !support.supported) {
+    return <DesktopOnlyGate reason={support.reason} />;
+  }
 
   if (isDuckletLoading) {
     return (
@@ -413,13 +379,6 @@ export default function DuckletPage({
             </Button>
           )}
 
-          <SettingsModal
-            head={head}
-            onHeadChange={handleHeadChange}
-            body={body}
-            onBodyChange={handleBodyChange}
-          />
-
           <ShareModal
             duckletId={duckletId}
             isOwner={isOwner}
@@ -458,13 +417,7 @@ export default function DuckletPage({
           {/* Main Editor Area */}
           <ResizablePanel defaultSize={80} minSize={50}>
             {provider && ydoc ? (
-              <LayoutManager
-                provider={provider}
-                ydoc={ydoc}
-                head={head}
-                body={body}
-                readOnly={!canEdit}
-              />
+              <Workspace provider={provider} ydoc={ydoc} readOnly={!canEdit} />
             ) : (
               <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
                 Connecting to room...

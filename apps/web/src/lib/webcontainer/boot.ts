@@ -9,14 +9,18 @@
 import type { WebContainer } from "@webcontainer/api";
 
 let bootPromise: Promise<WebContainer> | null = null;
+let teardownPromise: Promise<void> | null = null;
 
 /**
  * Boot (or return the already-booting/booted) WebContainer for this tab.
  * Lazily imports `@webcontainer/api` so the ~heavy runtime isn't pulled into
- * the bundle until a user actually starts a session.
+ * the bundle until a user actually starts a session. Waits for any in-flight
+ * teardown first, so React's dev double-mount doesn't try to boot a second
+ * instance before the first is gone (WebContainer allows only one per tab).
  */
 export function bootWebContainer(): Promise<WebContainer> {
   bootPromise ??= (async () => {
+    if (teardownPromise) await teardownPromise.catch(() => undefined);
     const { WebContainer } = await import("@webcontainer/api");
     // `credentialless` matches the COEP header we set for ducklet routes.
     return WebContainer.boot({ coep: "credentialless" });
@@ -29,10 +33,14 @@ export async function teardownWebContainer(): Promise<void> {
   const pending = bootPromise;
   if (!pending) return;
   bootPromise = null;
-  try {
-    const instance = await pending;
-    instance.teardown();
-  } catch {
-    // Boot never resolved — nothing to tear down.
-  }
+  teardownPromise = (async () => {
+    try {
+      const instance = await pending;
+      instance.teardown();
+    } catch {
+      // Boot never resolved — nothing to tear down.
+    }
+  })();
+  await teardownPromise;
+  teardownPromise = null;
 }
