@@ -13,6 +13,8 @@ import {
 } from "@acme/db/schema";
 import { getPublicUrl } from "@acme/storage";
 
+import type { ChatMessageDTO } from "../realtime";
+import { publishDuckletEvent, subscribeDuckletEvents } from "../realtime";
 import { track } from "../telemetry";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -204,6 +206,61 @@ export const duckletRouter = createTRPCRouter({
         members,
         currentUserStatus,
       };
+    }),
+
+  /**
+   * SSE stream of a ducklet's realtime events. Same read access as `byId`:
+   * public → anyone (incl. guests), private → owner or active member.
+   */
+  onEvent: publicProcedure
+    .input(z.object({ duckletId: z.number() }))
+    .subscription(async function* (opts) {
+      const { ctx, input, signal } = opts;
+
+      const [existing] = await ctx.db
+        .select({
+          id: ducklet.id,
+          ownerId: ducklet.ownerId,
+          isPublic: ducklet.isPublic,
+        })
+        .from(ducklet)
+        .where(eq(ducklet.id, input.duckletId))
+        .limit(1);
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Ducklet not found" });
+      }
+
+      if (!existing.isPublic) {
+        const userId = ctx.session?.user.id;
+        if (!userId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        }
+        if (existing.ownerId !== userId) {
+          const [member] = await ctx.db
+            .select({ userId: duckletMember.userId })
+            .from(duckletMember)
+            .where(
+              and(
+                eq(duckletMember.duckletId, input.duckletId),
+                eq(duckletMember.userId, userId),
+                eq(duckletMember.status, "active"),
+              ),
+            )
+            .limit(1);
+
+          if (!member) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Access denied",
+            });
+          }
+        }
+      }
+
+      for await (const event of subscribeDuckletEvents(input.duckletId, signal)) {
+        yield event;
+      }
     }),
 
   /**
@@ -412,6 +469,18 @@ export const duckletRouter = createTRPCRouter({
         .where(eq(ducklet.id, id))
         .returning();
 
+      if (
+        updated &&
+        typeof updates.isPublic === "boolean" &&
+        updates.isPublic !== existing.isPublic
+      ) {
+        publishDuckletEvent({
+          type: "visibility:changed",
+          duckletId: id,
+          isPublic: updated.isPublic,
+        });
+      }
+
       return updated;
     }),
 
@@ -528,6 +597,11 @@ export const duckletRouter = createTRPCRouter({
         role: input.role,
       });
 
+      publishDuckletEvent({
+        type: "members:changed",
+        duckletId: input.duckletId,
+      });
+
       return { success: true };
     }),
 
@@ -566,6 +640,11 @@ export const duckletRouter = createTRPCRouter({
         duckletId: input.duckletId,
         actorId: ctx.session.user.id,
         memberId: input.userId,
+      });
+
+      publishDuckletEvent({
+        type: "members:changed",
+        duckletId: input.duckletId,
       });
 
       return { success: true };
@@ -649,6 +728,10 @@ export const duckletRouter = createTRPCRouter({
                 eq(duckletMember.userId, targetUser.userId),
               ),
             );
+          publishDuckletEvent({
+            type: "members:changed",
+            duckletId: input.duckletId,
+          });
           return { success: true, message: "Request approved" };
         }
       }
@@ -666,6 +749,11 @@ export const duckletRouter = createTRPCRouter({
         inviterId: ctx.session.user.id,
         inviteeId: targetUser.userId,
         role: input.role,
+      });
+
+      publishDuckletEvent({
+        type: "members:changed",
+        duckletId: input.duckletId,
       });
 
       return { success: true, message: "Invitation sent" };
@@ -747,6 +835,11 @@ export const duckletRouter = createTRPCRouter({
         userId: ctx.session.user.id,
       });
 
+      publishDuckletEvent({
+        type: "members:changed",
+        duckletId: input.duckletId,
+      });
+
       return { success: true };
     }),
 
@@ -795,6 +888,11 @@ export const duckletRouter = createTRPCRouter({
             ),
           );
       }
+
+      publishDuckletEvent({
+        type: "members:changed",
+        duckletId: input.duckletId,
+      });
 
       return { success: true };
     }),
@@ -863,6 +961,11 @@ export const duckletRouter = createTRPCRouter({
             ),
           );
       }
+
+      publishDuckletEvent({
+        type: "members:changed",
+        duckletId: input.duckletId,
+      });
 
       return { success: true };
     }),
@@ -957,6 +1060,91 @@ export const duckletRouter = createTRPCRouter({
         : undefined;
 
       return { items, nextCursor };
+    }),
+
+  /**
+   * Send a chat message. Persists to Postgres and pushes it live via
+   * `ducklet.onEvent` — chat is NOT in the Y.Doc. Only owner / active members
+   * may send. The client-supplied `id` dedups the echo and collapses retries.
+   */
+  sendMessage: protectedProcedure
+    .input(
+      z.object({
+        duckletId: z.number(),
+        id: z.string().min(1).max(100),
+        content: z.string().trim().min(1).max(4000),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [existing] = await ctx.db
+        .select({ id: ducklet.id, ownerId: ducklet.ownerId })
+        .from(ducklet)
+        .where(eq(ducklet.id, input.duckletId))
+        .limit(1);
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Ducklet not found" });
+      }
+
+      const userId = ctx.session.user.id;
+      if (existing.ownerId !== userId) {
+        const [member] = await ctx.db
+          .select({ userId: duckletMember.userId })
+          .from(duckletMember)
+          .where(
+            and(
+              eq(duckletMember.duckletId, input.duckletId),
+              eq(duckletMember.userId, userId),
+              eq(duckletMember.status, "active"),
+            ),
+          )
+          .limit(1);
+
+        if (!member) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only members can send messages",
+          });
+        }
+      }
+
+      const sessionUser = ctx.session.user as {
+        name?: string;
+        username?: string;
+        image?: string | null;
+      };
+      const username = sessionUser.username ?? sessionUser.name ?? "User";
+      const createdAt = new Date();
+
+      await ctx.db
+        .insert(duckletMessage)
+        .values({
+          id: input.id,
+          duckletId: input.duckletId,
+          userId,
+          authorUsername: username.slice(0, 100),
+          content: input.content,
+          createdAt,
+        })
+        .onConflictDoNothing();
+
+      const message: ChatMessageDTO = {
+        id: input.id,
+        duckletId: input.duckletId,
+        userId,
+        username,
+        photoURL: sessionUser.image ?? null,
+        content: input.content,
+        createdAt: createdAt.getTime(),
+      };
+
+      publishDuckletEvent({
+        type: "chat:message",
+        duckletId: input.duckletId,
+        message,
+      });
+
+      return message;
     }),
 
   /**

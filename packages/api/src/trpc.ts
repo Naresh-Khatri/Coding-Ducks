@@ -48,6 +48,12 @@ export const createTRPCContext = async (opts: {
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
+  // Keep idle SSE subscriptions alive with pings; clients reconnect if the
+  // pings stop.
+  sse: {
+    ping: { enabled: true, intervalMs: 5_000 },
+    client: { reconnectAfterInactivityMs: 15_000 },
+  },
   errorFormatter: ({ shape, error }) => ({
     ...shape,
     data: {

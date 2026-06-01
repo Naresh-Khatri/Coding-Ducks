@@ -48,11 +48,9 @@ export default function GuestDuckletPage({
     trpc.ducklet.byId.queryOptions({ id: duckletId }, { enabled: !!duckletId }),
   );
 
-  // A guest only needs realtime here to auto-redirect the moment the owner
-  // accepts their request (or flips visibility). That's a single SSE
-  // subscription — no Hocuspocus websocket — so we refetch `byId` on any
-  // membership / visibility change and let the redirect effect below react.
-  // Public ducklets allow even unauthenticated guests to subscribe.
+  // Guests need realtime only to auto-redirect once the owner accepts (or
+  // visibility flips). One SSE subscription, no websocket: refetch `byId` and
+  // the redirect effect below reacts.
   useSubscription(
     trpc.ducklet.onEvent.subscriptionOptions(
       { duckletId },

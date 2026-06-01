@@ -2,23 +2,12 @@ import { createServer } from "node:http";
 import { Server } from "@hocuspocus/server";
 import { applyUpdate, encodeStateAsUpdate } from "yjs";
 
-import { verifyCollabToken } from "@acme/auth/collab-token";
 import type { CollabTokenPayload } from "@acme/auth/collab-token";
-import {
-  and,
-  db,
-  ducklet,
-  duckletMember,
-  duckletMessage,
-  eq,
-  sql,
-} from "@acme/db";
+import { verifyCollabToken } from "@acme/auth/collab-token";
+import { and, db, ducklet, duckletMember, eq, sql } from "@acme/db";
 
 import { env } from "./env.js";
-import {
-  cancelPreviewSchedules,
-  schedulePreview,
-} from "./services/preview.js";
+import { cancelPreviewSchedules, schedulePreview } from "./services/preview.js";
 
 interface CollabContext {
   user: {
@@ -30,57 +19,10 @@ interface CollabContext {
   isReadOnly: boolean;
 }
 
-interface ChatMessage {
-  id: string;
-  userId: string;
-  username: string;
-  text: string;
-  timestamp: number;
-}
-
 const allowedOrigins = (env.ALLOWED_WS_ORIGINS ?? "")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
-
-// Per-ducklet cache of (ownerId + active member IDs) used to validate
-// chat-message authorship at persist time. onStoreDocument fires on every
-// save tick — re-querying every time fans out one extra round trip per
-// keystroke burst.
-const MEMBERSHIP_TTL_MS = 30 * 1000;
-const membershipCache = new Map<
-  number,
-  { allowed: Set<string>; expiresAt: number }
->();
-
-async function getAllowedAuthorIds(
-  duckletId: number,
-  ownerId: string,
-): Promise<Set<string>> {
-  const cached = membershipCache.get(duckletId);
-  const now = Date.now();
-  if (cached && cached.expiresAt > now) {
-    return cached.allowed;
-  }
-
-  const members = await db
-    .select({ userId: duckletMember.userId })
-    .from(duckletMember)
-    .where(
-      and(
-        eq(duckletMember.duckletId, duckletId),
-        eq(duckletMember.status, "active"),
-      ),
-    );
-
-  const allowed = new Set<string>([ownerId, ...members.map((m) => m.userId)]);
-  membershipCache.set(duckletId, {
-    allowed,
-    expiresAt: now + MEMBERSHIP_TTL_MS,
-  });
-  return allowed;
-}
-
 
 function originAllowed(origin: string | undefined): boolean {
   if (allowedOrigins.length === 0) return true;
@@ -105,7 +47,10 @@ const server = Server.configure({
       throw new Error("Origin not allowed");
     }
 
-    const expectedDuckletId = parseInt(documentName.replace("ducklet-", ""), 10);
+    const expectedDuckletId = parseInt(
+      documentName.replace("ducklet-", ""),
+      10,
+    );
     if (!Number.isFinite(expectedDuckletId)) {
       throw new Error("Invalid document name");
     }
@@ -258,47 +203,8 @@ const server = Server.configure({
         })
         .where(eq(ducklet.id, duckletId));
 
-      // Persist chat messages. Only keep ones whose userId is either the
-      // ducklet owner or an active member — this prevents a forged chat
-      // message from being attributed to an arbitrary user in the DB.
-      const messagesArray = document.getArray<ChatMessage>("messages");
-      const messages = messagesArray.toArray();
-
-      if (messages.length > 0) {
-        const candidateUserIds = Array.from(
-          new Set(messages.map((m) => m.userId).filter(Boolean)),
-        );
-
-        const allowedUserIds =
-          candidateUserIds.length > 0
-            ? await getAllowedAuthorIds(duckletId, duckletData.ownerId)
-            : new Set<string>();
-
-        const values = messages
-          .filter(
-            (msg) =>
-              typeof msg.userId === "string" &&
-              !msg.userId.startsWith("anon-") &&
-              allowedUserIds.has(msg.userId) &&
-              typeof msg.text === "string" &&
-              msg.text.length > 0,
-          )
-          .map((msg) => ({
-            id: msg.id,
-            duckletId,
-            userId: msg.userId,
-            authorUsername:
-              typeof msg.username === "string"
-                ? msg.username.slice(0, 100)
-                : null,
-            content: msg.text.slice(0, 4000),
-            createdAt: new Date(msg.timestamp),
-          }));
-
-        if (values.length > 0) {
-          await db.insert(duckletMessage).values(values).onConflictDoNothing();
-        }
-      }
+      // Chat is persisted via the `ducklet.sendMessage` mutation, not here —
+      // it intentionally no longer lives in the Y.Doc.
 
       // Preview generation is throttled per ducklet (leading+trailing edge)
       // so rapid edits don't fan out into a Puppeteer launch per debounce tick.

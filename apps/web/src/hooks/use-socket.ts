@@ -1,8 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import * as Y from "yjs";
+
+// Chat lives in Postgres, not the Y.Doc — delivered live via the
+// `ducklet.onEvent` SSE subscription. This is the chat panel's view shape;
+// messages come from `ducklet.chatHistory` + the `chat:message` event. The
+// websocket this hook manages now only carries editor state and presence.
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
@@ -58,7 +63,6 @@ export function useSocketDucklet({
   token,
 }: UseSocketDuckletOptions) {
   const [users, setUsers] = useState<UserPresence[]>([]);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
   // Y.Doc should be recreated if the duckletId changes to ensure clean state
@@ -121,62 +125,14 @@ export function useSocketDucklet({
 
     newProvider.awareness!.on("change", handleAwarenessUpdate);
 
-    const messagesArray = ydoc.getArray<ChatMessage>("messages");
-
-    const updateMessages = () => {
-      setMessages(messagesArray.toArray());
-    };
-
-    messagesArray.observe(updateMessages);
-    updateMessages();
-
     return () => {
       newProvider.destroy();
     };
   }, [duckletId, userId, username, photoURL, userColor, ydoc, token]);
 
-  const sendMessage = useCallback(
-    (text: string) => {
-      if (!ydoc || !userId) return;
-
-      const message: ChatMessage = {
-        id: `${Date.now()}-${userId}`,
-        userId,
-        username,
-        text,
-        timestamp: Date.now(),
-      };
-
-      const messagesArray = ydoc.getArray<ChatMessage>("messages");
-      messagesArray.push([message]);
-
-      if (messagesArray.length > 500) {
-        messagesArray.delete(0, messagesArray.length - 500);
-      }
-    },
-    [userId, username, ydoc],
-  );
-
-  const updateCursor = useCallback(
-    (position: { line: number; column: number }) => {
-      if (!provider) return;
-      provider.setAwarenessField("user", {
-        id: userId,
-        name: username,
-        photoURL,
-        color: userColor,
-        cursor: position,
-      });
-    },
-    [provider, userId, username, photoURL, userColor],
-  );
-
   return {
     users,
-    messages,
     isConnected,
-    sendMessage,
-    updateCursor,
     provider,
     ydoc,
   };

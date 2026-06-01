@@ -5,6 +5,11 @@ import { appRouter, createTRPCContext } from "@acme/api";
 
 import { auth } from "~/auth/server";
 
+// ducklet.onEvent needs the Node runtime (EventEmitter) and must stream
+// unbuffered — keep this route dynamic.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 /**
  * Configure basic CORS headers
  * You should extend this to match your needs

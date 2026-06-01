@@ -109,10 +109,9 @@ export default function DuckletPage({
 
   const queryClient = useQueryClient();
 
-  // Chat: history comes from Postgres (newest-first, paginated); live
-  // messages arrive over the `ducklet.onEvent` SSE subscription as
-  // `chat:message` events. We keep a flat, oldest→newest view list and dedup
-  // by id so the sender's optimistic append and its own echo collapse to one.
+  // Chat history from Postgres; live messages via the SSE subscription.
+  // Flat oldest→newest list, deduped by id so the optimistic append and its
+  // echo collapse to one.
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const appendMessage = useCallback((msg: ChatMessage) => {
@@ -176,17 +175,13 @@ export default function DuckletPage({
     };
   }, [ydoc]);
 
-  // Realtime ducklet events arrive over an SSE subscription (independent of
-  // the Hocuspocus websocket, which now only carries editor state/awareness).
-  // Membership / visibility changes refetch `byId` so the share modal's
-  // pending requests, member list, and visibility stay in sync without a
-  // refresh; chat messages are appended (deduped against our optimistic echo).
+  // Realtime events over SSE (separate from the editor websocket).
+  // Membership / visibility changes refetch `byId`; chat messages append.
   useSubscription(
     trpc.ducklet.onEvent.subscriptionOptions(
       { duckletId },
       {
-        // Only subscribe once `byId` has confirmed read access — otherwise a
-        // forbidden viewer would open a stream the server immediately rejects.
+        // Subscribe only after `byId` confirms read access.
         enabled: !!duckletId && !!ducklet,
         onData: (event) => {
           if (
@@ -197,7 +192,7 @@ export default function DuckletPage({
               trpc.ducklet.byId.queryFilter({ id: duckletId }),
             );
           } else {
-            // Narrowed to the chat:message variant.
+            // chat:message
             const m = event.message;
             appendMessage({
               id: m.id,
