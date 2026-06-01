@@ -18,15 +18,11 @@ const FOOTER_LINKS: {
     links: [
       { label: "Ducklets", href: "/ducklets" },
       { label: "Contests", href: "/contests" },
-      { label: "Dashboard", href: "/dashboard" },
     ],
   },
   {
     heading: "Account",
-    links: [
-      { label: "Sign in", href: "/login" },
-      { label: "Settings", href: "/dashboard/settings" },
-    ],
+    links: [{ label: "Sign in", href: "/login" }],
   },
 ];
 

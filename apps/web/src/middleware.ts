@@ -9,29 +9,6 @@ export async function middleware(request: NextRequest) {
   // Get the pathname
   const pathname = request.nextUrl.pathname;
 
-  // Check if the route is a dashboard route
-  if (pathname.startsWith("/dashboard")) {
-    try {
-      // Check for valid session
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-
-      // If no session, redirect to landing page
-      if (!session) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/";
-        return NextResponse.redirect(url);
-      }
-    } catch (error) {
-      // If there's an error checking session, redirect to landing page
-      console.error("Session check error:", error);
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      return NextResponse.redirect(url);
-    }
-  }
-
   // Check if the route is an admin route
   if (pathname.startsWith("/admin")) {
     try {
@@ -47,7 +24,7 @@ export async function middleware(request: NextRequest) {
       }
 
       // Check if user is admin
-      if (!(session.user as any).isAdmin) {
+      if (!(session.user as { isAdmin?: boolean }).isAdmin) {
         const url = request.nextUrl.clone();
         url.pathname = "/";
         return NextResponse.redirect(url);

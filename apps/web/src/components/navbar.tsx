@@ -115,19 +115,6 @@ export function Navbar() {
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="w-full cursor-pointer">
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/dashboard/settings"
-                      className="w-full cursor-pointer"
-                    >
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive cursor-pointer"
@@ -221,20 +208,6 @@ export function Navbar() {
                       My Profile
                     </Link>
                   )}
-                  <Link
-                    href="/dashboard"
-                    className="text-muted-foreground hover:text-foreground hover:bg-primary/5 block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/dashboard/settings"
-                    className="text-muted-foreground hover:text-foreground hover:bg-primary/5 block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Settings
-                  </Link>
                   <button
                     className="text-destructive hover:bg-destructive/10 w-full rounded-lg px-4 py-2 text-left text-sm font-medium transition-colors"
                     onClick={() => {

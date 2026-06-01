@@ -280,11 +280,6 @@ export function ProblemHeader({
                   </Link>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings" className="cursor-pointer">
-                  Settings
-                </Link>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive cursor-pointer"
