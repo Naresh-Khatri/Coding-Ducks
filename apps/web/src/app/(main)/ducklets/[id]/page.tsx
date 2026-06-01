@@ -1,15 +1,18 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSubscription } from "@trpc/tanstack-react-query";
 import {
   ChevronLeft,
   Copy,
+  Eye,
   Lock,
   MessageSquare,
+  Pencil,
   Send,
   Users,
   Wifi,
@@ -25,6 +28,7 @@ import { SettingsModal } from "~/components/collab-editor/settings-modal";
 import { ShareModal } from "~/components/collab-editor/share-modal";
 import { useSignIn } from "~/components/sign-in-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -33,6 +37,11 @@ import {
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { useIsMobile } from "~/hooks/use-is-mobile";
 import { useSocketDucklet } from "~/hooks/use-socket";
 import { track } from "~/lib/analytics";
@@ -90,15 +99,7 @@ export default function DuckletPage({
   );
 
   // Connect to Socket Server
-  const {
-    users,
-    messages,
-    isConnected,
-    sendMessage,
-    updateCursor,
-    provider,
-    ydoc,
-  } = useSocketDucklet({
+  const { users, isConnected, provider, ydoc } = useSocketDucklet({
     duckletId: duckletIdStr,
     userId,
     username,
@@ -107,6 +108,44 @@ export default function DuckletPage({
   });
 
   const queryClient = useQueryClient();
+
+  // Chat: history comes from Postgres (newest-first, paginated); live
+  // messages arrive over the `ducklet.onEvent` SSE subscription as
+  // `chat:message` events. We keep a flat, oldest→newest view list and dedup
+  // by id so the sender's optimistic append and its own echo collapse to one.
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  const appendMessage = useCallback((msg: ChatMessage) => {
+    setMessages((prev) =>
+      prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
+    );
+  }, []);
+
+  const { data: chatHistory } = useQuery(
+    trpc.ducklet.chatHistory.queryOptions(
+      { duckletId, limit: 50 },
+      { enabled: !!duckletId && !!userId, refetchOnWindowFocus: false },
+    ),
+  );
+
+  useEffect(() => {
+    if (!chatHistory) return;
+    setMessages(
+      [...chatHistory.items].reverse().map((m) => ({
+        id: m.id,
+        userId: m.userId ?? "",
+        username: m.username,
+        text: m.content,
+        timestamp: m.createdAt.getTime(),
+      })),
+    );
+  }, [chatHistory]);
+
+  const sendMessageMutation = useMutation(
+    trpc.ducklet.sendMessage.mutationOptions({
+      onError: (err) => toast.error(err.message),
+    }),
+  );
 
   // Settings state - synced via Y.js Map
   const [head, setHead] = useState("");
@@ -137,22 +176,41 @@ export default function DuckletPage({
     };
   }, [ydoc]);
 
-  // The Hocuspocus server bumps a `meta` Y.Map field whenever ducklet
-  // membership / visibility changes (driven by the API → Redis →
-  // Hocuspocus bridge). Refetch `byId` so the share modal's pending
-  // requests, member list, and visibility state stay in sync without
-  // needing the user to refresh.
-  useEffect(() => {
-    if (!ydoc) return;
-    const meta = ydoc.getMap("meta");
-    const onChange = () => {
-      void queryClient.invalidateQueries(
-        trpc.ducklet.byId.queryFilter({ id: duckletId }),
-      );
-    };
-    meta.observe(onChange);
-    return () => meta.unobserve(onChange);
-  }, [ydoc, queryClient, trpc, duckletId]);
+  // Realtime ducklet events arrive over an SSE subscription (independent of
+  // the Hocuspocus websocket, which now only carries editor state/awareness).
+  // Membership / visibility changes refetch `byId` so the share modal's
+  // pending requests, member list, and visibility stay in sync without a
+  // refresh; chat messages are appended (deduped against our optimistic echo).
+  useSubscription(
+    trpc.ducklet.onEvent.subscriptionOptions(
+      { duckletId },
+      {
+        // Only subscribe once `byId` has confirmed read access — otherwise a
+        // forbidden viewer would open a stream the server immediately rejects.
+        enabled: !!duckletId && !!ducklet,
+        onData: (event) => {
+          if (
+            event.type === "members:changed" ||
+            event.type === "visibility:changed"
+          ) {
+            void queryClient.invalidateQueries(
+              trpc.ducklet.byId.queryFilter({ id: duckletId }),
+            );
+          } else {
+            // Narrowed to the chat:message variant.
+            const m = event.message;
+            appendMessage({
+              id: m.id,
+              userId: m.userId ?? "",
+              username: m.username,
+              text: m.content,
+              timestamp: m.createdAt,
+            });
+          }
+        },
+      },
+    ),
+  );
 
   // Update Y.js when head/body change
   const handleHeadChange = (value: string) => {
@@ -192,8 +250,13 @@ export default function DuckletPage({
   );
 
   const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
-    sendMessage(newMessage);
+    const text = newMessage.trim();
+    if (!text || !userId) return;
+    // Client-generated id: lets the server insert idempotently and lets us
+    // dedup the broadcast echo of our own optimistic append.
+    const id = `${Date.now()}-${userId}-${Math.random().toString(36).slice(2, 8)}`;
+    appendMessage({ id, userId, username, text, timestamp: Date.now() });
+    sendMessageMutation.mutate({ duckletId, id, content: text });
     setNewMessage("");
   };
 
@@ -201,11 +264,25 @@ export default function DuckletPage({
   const isOwner = ducklet?.ownerId === userId;
   const userStatus = ducklet?.currentUserStatus;
   const isMember = userStatus === "active";
-  const canEdit =
-    isOwner ||
-    (isMember &&
-      ducklet?.members.find((m) => m.userId === userId)?.role === "editor");
+  const myRole = ducklet?.members.find((m) => m.userId === userId)?.role;
+  const canEdit = isOwner || (isMember && myRole === "editor");
   const isPublic = ducklet?.isPublic ?? false;
+
+  // Notify the current user when the owner changes their permissions live
+  // (members:changed → byId refetch updates `myRole`). We skip the owner
+  // (whose role is undefined) and the initial load, only toasting on an
+  // actual transition between known roles.
+  const prevRoleRef = useRef<typeof myRole>(undefined);
+  useEffect(() => {
+    const prev = prevRoleRef.current;
+    prevRoleRef.current = myRole;
+    if (isOwner || !myRole || !prev || prev === myRole) return;
+    toast.info(
+      myRole === "editor"
+        ? "You can now edit this ducklet"
+        : "Your access is now view-only",
+    );
+  }, [myRole, isOwner]);
 
   // Redirect non-members to guest page for public ducklets
   // This also handles access revocation during active session
@@ -297,6 +374,32 @@ export default function DuckletPage({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant="outline"
+                className="text-muted-foreground hidden shrink-0 cursor-default gap-1 font-normal sm:inline-flex"
+              >
+                {canEdit ? (
+                  <>
+                    <Pencil className="h-3 w-3" />
+                    Can edit
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3 w-3" />
+                    Read-only
+                  </>
+                )}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              {canEdit
+                ? "You can edit this ducklet — your changes sync to everyone."
+                : "You have view-only access. Ask the owner for editor access to make changes."}
+            </TooltipContent>
+          </Tooltip>
+
           <ConnectionBadge
             isConnected={isConnected}
             hasToken={!!collabAuth?.token}
