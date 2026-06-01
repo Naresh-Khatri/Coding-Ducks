@@ -15,6 +15,7 @@ const config = {
     "@acme/api",
     "@acme/auth",
     "@acme/db",
+    "@acme/ducklet-fs",
     "@acme/jobs",
     "@acme/ui",
     "@acme/validators",
@@ -37,6 +38,31 @@ const config = {
         pathname: "/**",
       },
     ],
+  },
+
+  /**
+   * WebContainers (the ducklet runtime) require the page to be
+   * cross-origin isolated. We scope these headers to ducklet *rooms*
+   * (`/ducklets/<id>` and nested routes) and deliberately NOT to the
+   * `/ducklets` list page, so the rest of the app is unaffected.
+   *
+   * COEP is `credentialless` rather than `require-corp` so cross-origin
+   * subresources without a CORP header (Google/GitHub avatars, the CDN,
+   * analytics) still load — they're just fetched without credentials.
+   * `credentialless` is supported in Chromium and Firefox, which matches
+   * WebContainers' desktop-only support; unsupported browsers hit the
+   * desktop-only gate before any container boots.
+   */
+  async headers() {
+    const isolation = [
+      { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+      { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
+    ];
+    return [
+      // `:id+` is one-or-more segments, so `/ducklets` (list) is excluded
+      // while `/ducklets/123` and `/ducklets/123/guest` are included.
+      { source: "/ducklets/:id+", headers: isolation },
+    ];
   },
 };
 

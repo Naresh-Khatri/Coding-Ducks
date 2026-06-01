@@ -13,13 +13,10 @@
   "dependencies": {
     "@acme/auth": "workspace:*",
     "@acme/db": "workspace:*",
-    "@acme/storage": "workspace:^",
+    "@acme/ducklet-fs": "workspace:*",
     "@hocuspocus/server": "^2.13.5",
-    "@sparticuz/chromium": "^143.0.4",
     "@t3-oss/env-core": "^0.13.8",
     "dotenv": "^16.4.5",
-    "node-html-to-image": "^5.0.0",
-    "puppeteer-core": "^24.35.0",
     "tsx": "^4.7.1",
     "yjs": "^13.6.29",
     "zod": "catalog:"

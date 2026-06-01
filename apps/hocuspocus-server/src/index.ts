@@ -7,7 +7,6 @@ import { verifyCollabToken } from "@acme/auth/collab-token";
 import { and, db, ducklet, duckletMember, eq, sql } from "@acme/db";
 
 import { env } from "./env.js";
-import { cancelPreviewSchedules, schedulePreview } from "./services/preview.js";
 
 interface CollabContext {
   user: {
@@ -205,22 +204,6 @@ const server = Server.configure({
 
       // Chat is persisted via the `ducklet.sendMessage` mutation, not here —
       // it intentionally no longer lives in the Y.Doc.
-
-      // Preview generation is throttled per ducklet (leading+trailing edge)
-      // so rapid edits don't fan out into a Puppeteer launch per debounce tick.
-      const html = document.getText("html").toString();
-      const css = document.getText("css").toString();
-      const js = document.getText("js").toString();
-      const settingsMap = document.getMap("settings");
-      const headScripts = (settingsMap.get("headScripts") as string) ?? "";
-
-      schedulePreview({
-        duckletId,
-        html,
-        css,
-        js,
-        headScripts,
-      });
     } catch (err) {
       console.error("Failed to store document:", err);
     }
@@ -255,7 +238,6 @@ healthServer.listen(healthPort, () => {
 const shutdown = async (signal: string) => {
   console.log(`Received ${signal}, shutting down gracefully...`);
   try {
-    cancelPreviewSchedules();
     await server.destroy();
     healthServer.close();
   } catch (err) {

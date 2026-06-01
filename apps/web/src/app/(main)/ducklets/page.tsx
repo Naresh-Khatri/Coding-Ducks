@@ -23,11 +23,11 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import * as Y from "yjs";
 
 import type { RouterOutputs } from "@acme/api";
 
 import { authClient } from "~/auth/client";
+import { CreateDuckletDialog } from "~/components/collab-editor/create-ducklet-dialog";
 import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
 import {
   AlertDialog,
@@ -51,22 +51,12 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -97,17 +87,6 @@ const item = {
 
 type DuckletListItem = RouterOutputs["ducklet"]["list"]["items"][number];
 
-// Browser-safe base64 encoding for binary data (Y.js updates).
-function uint8ArrayToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  const chunkSize = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.subarray(i, i + chunkSize);
-    binary += String.fromCharCode(...chunk);
-  }
-  return btoa(binary);
-}
-
 export default function DuckletsPage() {
   const router = useRouter();
   const trpc = useTRPC();
@@ -115,7 +94,6 @@ export default function DuckletsPage() {
   const { data: session } = authClient.useSession();
   const currentUserId = session?.user?.id;
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [newDuckletName, setNewDuckletName] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<DuckletSort>("recent");
   const debouncedSearch = useDebounce(search.trim(), 250);
@@ -141,60 +119,6 @@ export default function DuckletsPage() {
   );
 
   const allDucklets = ducklets?.pages.flatMap((p) => p.items) ?? [];
-
-  const createDuckletMutation = useMutation(
-    trpc.ducklet.create.mutationOptions({
-      onSuccess: (ducklet) => {
-        setIsCreateOpen(false);
-        setNewDuckletName("");
-        void queryClient.invalidateQueries(
-          trpc.ducklet.list.infiniteQueryFilter(),
-        );
-        if (ducklet) {
-          track("ducklet-create", { id: ducklet.id });
-          void router.push(`/ducklets/${ducklet.id}`);
-        }
-      },
-    }),
-  );
-
-  const handleCreate = () => {
-    if (!newDuckletName.trim()) return;
-
-    const htmlContent = `
-<div class="container">
-  <h1>Hello World</h1>
-  <p>Start coding!</p>
-</div>
-`.trim();
-
-    const cssContent = `
-.container {
-  padding: 2rem;
-  font-family: sans-serif;
-}
-h1 {
-  color: #3b82f6;
-}
-`.trim();
-
-    const jsContent = `console.log('Hello from your new Ducklet!');`;
-
-    // Create YJS doc and populate it
-    const doc = new Y.Doc();
-    doc.getText("html").insert(0, htmlContent);
-    doc.getText("css").insert(0, cssContent);
-    doc.getText("js").insert(0, jsContent);
-
-    // Encode state (browser-safe, no Node Buffer)
-    const yjsData = uint8ArrayToBase64(Y.encodeStateAsUpdate(doc));
-
-    createDuckletMutation.mutate({
-      name: newDuckletName,
-      isPublic: true,
-      yjsData,
-    });
-  };
 
   const deleteDuckletMutation = useMutation(
     trpc.ducklet.delete.mutationOptions({
@@ -233,60 +157,17 @@ h1 {
           </p>
         </div>
 
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button
-              size="lg"
-              className="shadow-lg transition-all hover:scale-[1.01]"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              New Ducklet
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Create a Ducklet</DialogTitle>
-              <DialogDescription>
-                Create a new room to start coding with others.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-6 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name" className="text-left">
-                  Ducklet Name
-                </Label>
-                <Input
-                  id="name"
-                  value={newDuckletName}
-                  onChange={(e) => setNewDuckletName(e.target.value)}
-                  placeholder="e.g. Interview with John"
-                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsCreateOpen(false)}
-                disabled={createDuckletMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreate}
-                disabled={
-                  createDuckletMutation.isPending || !newDuckletName.trim()
-                }
-              >
-                {createDuckletMutation.isPending
-                  ? "Creating..."
-                  : "Create Ducklet"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button
+          size="lg"
+          className="shadow-lg transition-all hover:scale-[1.01]"
+          onClick={() => setIsCreateOpen(true)}
+        >
+          <Plus className="mr-2 h-5 w-5" />
+          New Ducklet
+        </Button>
       </div>
+
+      <CreateDuckletDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
 
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
