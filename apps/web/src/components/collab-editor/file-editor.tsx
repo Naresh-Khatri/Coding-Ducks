@@ -23,7 +23,8 @@ import { useEditorSettingsExtensions } from "./use-editor-settings-extensions";
 interface FileEditorProps {
   path: string;
   ytext: Y.Text;
-  provider: HocuspocusProvider;
+  /** Null for non-collaborative (guest, read-only) editing — skips yCollab. */
+  provider: HocuspocusProvider | null;
   readOnly?: boolean;
 }
 
@@ -89,8 +90,21 @@ export function FileEditor({
   useEffect(() => {
     setInitialValue(ytext.toString());
 
-    const undoManager = new Y.UndoManager(ytext);
     const lang = languageForPath(path);
+    // Collaborative when a provider is present; guests get a plain read-only
+    // view of the snapshot (no yCollab / awareness).
+    if (!provider) {
+      setExtensions([
+        ...(lang ? [lang] : []),
+        EditorView.lineWrapping,
+        EditorView.editable.of(false),
+        syntaxLinter,
+        lintGutter(),
+      ]);
+      return;
+    }
+
+    const undoManager = new Y.UndoManager(ytext);
     setExtensions([
       ...(lang ? [lang] : []),
       EditorView.lineWrapping,

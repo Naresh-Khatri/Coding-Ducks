@@ -1,15 +1,19 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSubscription } from "@trpc/tanstack-react-query";
-import { ChevronLeft, Eye, PanelLeft, PanelTop } from "lucide-react";
+import { ChevronLeft, Eye } from "lucide-react";
 import * as Y from "yjs";
 
 import { authClient } from "~/auth/client";
-import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
+import {
+  DesktopOnlyGate,
+  useWebContainerSupport,
+} from "~/components/collab-editor/desktop-only-gate";
 import { useSignIn } from "~/components/sign-in-dialog";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -20,7 +24,19 @@ import {
 } from "~/components/ui/tooltip";
 import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
-import { GuestEditor } from "./guest-editor";
+
+const Workspace = dynamic(
+  () =>
+    import("~/components/collab-editor/workspace").then((m) => m.Workspace),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
+        Loading editor…
+      </div>
+    ),
+  },
+);
 
 export default function GuestDuckletPage({
   params,
@@ -74,47 +90,20 @@ export default function GuestDuckletPage({
     track("ducklet-guest-view", { id: duckletId, signedIn: !!userId });
   }, [duckletId, userId]);
 
-  // Local state for code (not synced)
-  const [html, setHtml] = useState("");
-  const [css, setCss] = useState("");
-  const [js, setJs] = useState("");
-  const [head, setHead] = useState("");
-  const [body, setBody] = useState("");
-
-  // Editor layout — lifted here so the toggle can live in the header
-  // instead of taking up its own toolbar row.
-  const [layout, setLayout] = useState<"top" | "left">("top");
-
-  // Initialize from ducklet's Y.js data
-  useEffect(() => {
-    if (!ducklet?.yjsData) return;
-
+  // Build a local, non-collaborative Y.Doc from the fetched snapshot. The
+  // read-only workspace renders + previews this; edits aren't synced anywhere.
+  const localDoc = useMemo(() => {
+    if (!ducklet?.yjsData) return null;
     try {
-      // Decode base64 Y.js data
-      const uint8Array = Uint8Array.from(atob(ducklet.yjsData), (c) =>
+      const bytes = Uint8Array.from(atob(ducklet.yjsData), (c) =>
         c.charCodeAt(0),
       );
-      const ydoc = new Y.Doc();
-      Y.applyUpdate(ydoc, uint8Array);
-
-      // Extract content
-      const htmlContent = ydoc.getText("html").toString();
-      const cssContent = ydoc.getText("css").toString();
-      const jsContent = ydoc.getText("js").toString();
-
-      setHtml(htmlContent);
-      setCss(cssContent);
-      setJs(jsContent);
-
-      // Extract settings
-      const settingsMap = ydoc.getMap("settings");
-      const headScripts = settingsMap.get("headScripts") as string | undefined;
-      const bodyScripts = settingsMap.get("bodyScripts") as string | undefined;
-
-      setHead(headScripts ?? "");
-      setBody(bodyScripts ?? "");
+      const doc = new Y.Doc();
+      Y.applyUpdate(doc, bytes);
+      return doc;
     } catch (err) {
-      console.error("Failed to decode Y.js data:", err);
+      console.error("Failed to decode ducklet snapshot:", err);
+      return null;
     }
   }, [ducklet?.yjsData]);
 
@@ -145,6 +134,11 @@ export default function GuestDuckletPage({
       },
     }),
   );
+
+  const support = useWebContainerSupport();
+  if (support.checked && !support.supported) {
+    return <DesktopOnlyGate reason={support.reason} />;
+  }
 
   if (isDuckletLoading) {
     return (
@@ -194,9 +188,9 @@ export default function GuestDuckletPage({
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  You're viewing this public ducklet as a guest. Edits stay
-                  local and won't be saved or synced — request access to
-                  collaborate.
+                  You're viewing this public ducklet as a guest. It runs locally
+                  in your browser; edits won't be saved or synced — request
+                  access to collaborate.
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -208,31 +202,6 @@ export default function GuestDuckletPage({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <div className="hidden items-center rounded-md border p-0.5 sm:flex">
-            <Button
-              variant={layout === "top" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-6 gap-1 px-2 text-xs"
-              onClick={() => setLayout("top")}
-              title="Editors on top"
-            >
-              <PanelTop className="h-3 w-3" />
-              Top
-            </Button>
-            <Button
-              variant={layout === "left" ? "secondary" : "ghost"}
-              size="sm"
-              className="h-6 gap-1 px-2 text-xs"
-              onClick={() => setLayout("left")}
-              title="Editors on left"
-            >
-              <PanelLeft className="h-3 w-3" />
-              Left
-            </Button>
-          </div>
-
-          <EditorSettingsDialog showShortcuts={false} />
-
           {/* Access Request UI */}
           {userId && userStatus === "invited" && (
             <div className="flex items-center gap-2 rounded bg-blue-500/10 px-2 py-1">
@@ -298,17 +267,13 @@ export default function GuestDuckletPage({
       </header>
 
       <div className="flex-1 overflow-hidden">
-        <GuestEditor
-          html={html}
-          css={css}
-          js={js}
-          head={head}
-          body={body}
-          layout={layout}
-          onHtmlChange={setHtml}
-          onCssChange={setCss}
-          onJsChange={setJs}
-        />
+        {localDoc ? (
+          <Workspace provider={null} ydoc={localDoc} readOnly />
+        ) : (
+          <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+            This ducklet has no content yet.
+          </div>
+        )}
       </div>
     </div>
   );

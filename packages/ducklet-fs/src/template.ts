@@ -6,7 +6,7 @@
  */
 import * as Y from "yjs";
 
-import { getFilesMap, writeFile } from "./model.js";
+import { getFilesMap, writeFile } from "./model";
 
 /** Write many files at once in a single transaction (used to seed a doc). */
 export function seedFiles(doc: Y.Doc, files: Record<string, string>): void {

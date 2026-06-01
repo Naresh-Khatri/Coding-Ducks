@@ -22,7 +22,8 @@ import { PreviewPanel } from "./preview-panel";
 import { TerminalPanel } from "./terminal-panel";
 
 interface WorkspaceProps {
-  provider: HocuspocusProvider;
+  /** Null for the read-only guest view (no collaboration / presence). */
+  provider: HocuspocusProvider | null;
   ydoc: Y.Doc;
   readOnly?: boolean;
 }

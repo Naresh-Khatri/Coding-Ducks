@@ -14,7 +14,7 @@
  */
 import * as Y from "yjs";
 
-import { ancestorDirs, dirname, isUnder, normalizePath } from "./paths.js";
+import { ancestorDirs, dirname, isUnder, normalizePath } from "./paths";
 
 export const FILES_KEY = "files";
 export const DIRS_KEY = "dirs";
