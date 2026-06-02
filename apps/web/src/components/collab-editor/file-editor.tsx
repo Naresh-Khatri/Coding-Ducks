@@ -107,7 +107,6 @@ export function FileEditor({
     if (!provider) {
       setExtensions([
         ...(lang ? [lang] : []),
-        EditorView.lineWrapping,
         EditorView.editable.of(false),
         syntaxLinter,
         lintGutter(),
@@ -118,7 +117,6 @@ export function FileEditor({
     const undoManager = new Y.UndoManager(ytext);
     setExtensions([
       ...(lang ? [lang] : []),
-      EditorView.lineWrapping,
       yCollab(ytext, provider.awareness, { undoManager }),
       syntaxLinter,
       lintGutter(),

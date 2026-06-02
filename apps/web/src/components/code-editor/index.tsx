@@ -83,7 +83,6 @@ export function CodeEditor({
     const exts = [
       ...(vimMode ? [vim()] : []),
       langExt(),
-      EditorView.lineWrapping,
       indentUnit.of(" ".repeat(tabSize)),
       EditorView.theme({
         "&": { height },
