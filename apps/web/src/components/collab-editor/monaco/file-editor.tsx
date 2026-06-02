@@ -72,6 +72,13 @@ export function FileEditor({
       theme: themeName(isDark),
     });
     editorRef.current = editor;
+
+    // Ctrl/Cmd+S formats the document instead of opening the browser's
+    // native save dialog.
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      void editor.getAction("editor.action.formatDocument")?.run();
+    });
+
     return () => {
       editor.dispose();
       editorRef.current = null;
