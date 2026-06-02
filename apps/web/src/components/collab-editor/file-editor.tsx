@@ -18,6 +18,7 @@ import * as Y from "yjs";
 
 import { extname } from "@acme/ducklet-fs";
 
+import { aiCompletionExtension } from "./ai-completion";
 import { useEditorSettingsExtensions } from "./use-editor-settings-extensions";
 
 interface FileEditorProps {
@@ -79,12 +80,22 @@ export function FileEditor({
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
 
-  const { extensions: settingsExtensions, showLineNumbers } =
-    useEditorSettingsExtensions();
+  const {
+    extensions: settingsExtensions,
+    showLineNumbers,
+    aiCompletion,
+  } = useEditorSettingsExtensions();
 
+  // AI completion is editable-only (needs a provider) and toggleable. Kept out
+  // of the effect below so flipping it reconfigures live without tearing down
+  // the yCollab binding / undo history.
   const allExtensions = useMemo(
-    () => [...extensions, ...settingsExtensions],
-    [extensions, settingsExtensions],
+    () => [
+      ...extensions,
+      ...settingsExtensions,
+      ...(provider && aiCompletion ? [aiCompletionExtension()] : []),
+    ],
+    [extensions, settingsExtensions, provider, aiCompletion],
   );
 
   useEffect(() => {
@@ -140,6 +151,10 @@ export function FileEditor({
         theme={isDark ? oneDark : "light"}
         extensions={allExtensions}
         basicSetup={{ lineNumbers: showLineNumbers }}
+        // Seeds the initial document. yCollab only applies *future* deltas, so
+        // without this the editor would start empty. `initialValue` is captured
+        // once per mounted path (the component is keyed by `path`), so this
+        // reference stays stable and never re-controls the doc mid-edit.
         value={initialValue}
         readOnly={readOnly}
       />

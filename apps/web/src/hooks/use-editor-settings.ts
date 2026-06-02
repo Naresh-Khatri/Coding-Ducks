@@ -9,6 +9,7 @@ export interface EditorSettings {
   keymap: "default" | "vim";
   runShortcut: boolean;
   submitShortcut: boolean;
+  aiCompletion: boolean;
 }
 
 export const FONT_OPTIONS = [
@@ -29,6 +30,7 @@ const defaults: EditorSettings = {
   keymap: "default",
   runShortcut: true,
   submitShortcut: true,
+  aiCompletion: true,
 };
 
 let listeners: (() => void)[] = [];

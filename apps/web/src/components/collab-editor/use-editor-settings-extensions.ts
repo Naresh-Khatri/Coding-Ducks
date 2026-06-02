@@ -21,6 +21,7 @@ export function useEditorSettingsExtensions() {
     tabSize,
     relativeLineNumbers,
     keymap,
+    aiCompletion,
   } = useEditorSettings();
 
   const extensions = useMemo<Extension[]>(() => {
@@ -59,5 +60,5 @@ export function useEditorSettingsExtensions() {
     return exts;
   }, [fontSize, fontFamily, fontLigatures, tabSize, relativeLineNumbers, keymap]);
 
-  return { extensions, showLineNumbers: !relativeLineNumbers };
+  return { extensions, showLineNumbers: !relativeLineNumbers, aiCompletion };
 }

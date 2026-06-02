@@ -13,18 +13,22 @@ export function EditorTabs({
   onSelect,
   onClose,
   presenceByPath,
+  actions,
 }: {
   openPaths: string[];
   activePath: string | null;
   onSelect: (path: string) => void;
   onClose: (path: string) => void;
   presenceByPath: Record<string, PresenceUser[]>;
+  /** Right-pinned toolbar content (e.g. editor settings). */
+  actions?: React.ReactNode;
 }) {
-  if (openPaths.length === 0) return null;
+  if (openPaths.length === 0 && !actions) return null;
 
   return (
-    <div className="bg-muted/20 flex items-stretch overflow-x-auto border-b">
-      {openPaths.map((path) => {
+    <div className="bg-muted/20 flex items-stretch border-b">
+      <div className="flex items-stretch overflow-x-auto">
+        {openPaths.map((path) => {
         const isActive = path === activePath;
         const name = path.slice(path.lastIndexOf("/") + 1);
         return (
@@ -54,8 +58,14 @@ export function EditorTabs({
               <X className="h-3 w-3" />
             </button>
           </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      {actions && (
+        <div className="ml-auto flex shrink-0 items-center px-1.5">
+          {actions}
+        </div>
+      )}
     </div>
   );
 }

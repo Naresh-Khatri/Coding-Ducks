@@ -27,6 +27,7 @@
     "@codemirror/lang-python": "^6.2.1",
     "@codemirror/language": "^6.12.1",
     "@codemirror/lint": "^6.9.2",
+    "@codemirror/state": "^6.6.0",
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.39.8",
     "@dnd-kit/core": "^6.3.1",

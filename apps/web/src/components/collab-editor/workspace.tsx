@@ -15,6 +15,8 @@ import {
 } from "~/components/ui/resizable";
 import { useFilePresence } from "~/lib/webcontainer/use-file-presence";
 import { useWebContainerRuntime } from "~/lib/webcontainer/use-runtime";
+import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
+
 import { EditorTabs } from "./editor-tabs";
 import { FileEditor } from "./file-editor";
 import { FileExplorer } from "./file-explorer";
@@ -131,6 +133,7 @@ export function Workspace({ provider, ydoc, readOnly = false }: WorkspaceProps) 
             onSelect={setActivePath}
             onClose={closeFile}
             presenceByPath={presenceByPath}
+            actions={<EditorSettingsDialog showShortcuts={false} />}
           />
 
           <ResizablePanelGroup direction="vertical" className="flex-1">

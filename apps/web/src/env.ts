@@ -14,7 +14,11 @@ export const env = createEnv({
    * Specify your server-side environment variables schema here.
    * This way you can ensure the app isn't built with invalid env vars.
    */
-  server: {},
+  server: {
+    // Codestral API key for AI ghost-text completion. Optional — when unset,
+    // the /api/ai/complete route degrades to "no completion".
+    MISTRAL_API_KEY: z.string().optional(),
+  },
 
   /**
    * Specify your client-side environment variables schema here.

@@ -154,6 +154,14 @@ export function EditorSettingsDialog({
             </Select>
           </Row>
 
+          {/* AI Completion */}
+          <Row label="AI Completion" sublabel="Tab to accept">
+            <Switch
+              checked={s.aiCompletion}
+              onCheckedChange={(v) => s.set({ aiCompletion: v })}
+            />
+          </Row>
+
           {/* Shortcuts */}
           {showShortcuts && (
             <div className="space-y-3">
