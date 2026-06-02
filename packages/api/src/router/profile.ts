@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, ne, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
 import { z } from "zod/v4";
 
 import { user as userTable } from "@acme/db";
@@ -244,6 +244,43 @@ export const profileRouter = createTRPCRouter({
         .limit(input.limit);
 
       return recent;
+    }),
+
+  search: protectedProcedure
+    .input(
+      z.object({
+        query: z.string().trim().min(2).max(60),
+        limit: z.number().int().min(1).max(20).default(8),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const escaped = input.query.replace(/[\\%_]/g, (m) => `\\${m}`);
+      const contains = `%${escaped}%`;
+      // Email matching is gated behind an "@" in the query so we don't
+      // expose substring-scans over everyone's email address.
+      const matchEmail = input.query.includes("@");
+
+      const orClauses = [
+        ilike(userProfile.username, contains),
+        ilike(userProfile.fullname, contains),
+        ilike(user.name, contains),
+        ...(matchEmail ? [ilike(user.email, contains)] : []),
+      ];
+
+      return ctx.db
+        .select({
+          userId: userProfile.userId,
+          username: userProfile.username,
+          fullname: userProfile.fullname,
+          photoURL: userProfile.photoURL,
+        })
+        .from(userProfile)
+        .innerJoin(user, eq(user.id, userProfile.userId))
+        .where(
+          and(ne(userProfile.userId, ctx.session.user.id), or(...orClauses)),
+        )
+        .orderBy(userProfile.username)
+        .limit(input.limit);
     }),
 
   updateProfile: protectedProcedure
