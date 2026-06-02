@@ -256,6 +256,12 @@ function wireSync(
       void container.fs
         .readFile(filename, "utf-8")
         .then((content) => {
+          // Echo of our own Yjs→fs write (shadow already holds this content),
+          // or a change we've already absorbed: ignore it. Without this guard,
+          // a write triggers a watch event whose async read can land after the
+          // user has typed more, making `content` look stale and clobbering the
+          // Y.Text wholesale — which resets every collaborator's cursor.
+          if (fsShadow.get(filename) === content) return;
           fsShadow.set(filename, content);
           const text = filesMap.get(filename);
           if (!text || text.toString() !== content) {
