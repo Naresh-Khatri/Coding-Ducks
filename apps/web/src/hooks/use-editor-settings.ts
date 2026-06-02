@@ -10,6 +10,7 @@ export interface EditorSettings {
   runShortcut: boolean;
   submitShortcut: boolean;
   aiCompletion: boolean;
+  tsIntelligence: boolean;
 }
 
 export const FONT_OPTIONS = [
@@ -31,6 +32,7 @@ const defaults: EditorSettings = {
   runShortcut: true,
   submitShortcut: true,
   aiCompletion: true,
+  tsIntelligence: true,
 };
 
 let listeners: (() => void)[] = [];

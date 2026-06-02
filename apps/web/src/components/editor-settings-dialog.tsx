@@ -162,6 +162,14 @@ export function EditorSettingsDialog({
             />
           </Row>
 
+          {/* TypeScript Intelligence */}
+          <Row label="TypeScript Intelligence" sublabel="types · auto-imports">
+            <Switch
+              checked={s.tsIntelligence}
+              onCheckedChange={(v) => s.set({ tsIntelligence: v })}
+            />
+          </Row>
+
           {/* Shortcuts */}
           {showShortcuts && (
             <div className="space-y-3">

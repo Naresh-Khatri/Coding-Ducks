@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useMonaco } from "@monaco-editor/react";
 import type { HocuspocusProvider } from "@hocuspocus/provider";
 import { TerminalIcon } from "lucide-react";
 import type * as Y from "yjs";
@@ -13,13 +14,18 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
+import { useEditorSettings } from "~/hooks/use-editor-settings";
 import { useFilePresence } from "~/lib/webcontainer/use-file-presence";
 import { useWebContainerRuntime } from "~/lib/webcontainer/use-runtime";
 import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 
+import "./monaco/setup";
 import { EditorTabs } from "./editor-tabs";
-import { FileEditor } from "./file-editor";
 import { FileExplorer } from "./file-explorer";
+import { FileEditor } from "./monaco/file-editor";
+import { useAiInlineCompletion } from "./monaco/use-ai-inline-completion";
+import { useDuckletModels } from "./monaco/use-models";
+import { useTsDefaults } from "./monaco/use-ts-defaults";
 import { PreviewPanel } from "./preview-panel";
 import { TerminalPanel } from "./terminal-panel";
 
@@ -53,6 +59,15 @@ function pickDefaultFile(ydoc: Y.Doc): string | null {
 export function Workspace({ provider, ydoc, readOnly = false }: WorkspaceProps) {
   const runtime = useWebContainerRuntime({ ydoc, enabled: true });
   const { byPath: presenceByPath, setActiveFile } = useFilePresence(provider);
+
+  // Monaco (loaded once via the pinned CDN loader) powers TS intelligence,
+  // collaboration and AI completion. Its hooks live at the workspace level so
+  // one language service + model set is shared across all open files.
+  const monaco = useMonaco();
+  const { aiCompletion, tsIntelligence } = useEditorSettings();
+  const { models, ready: modelsReady } = useDuckletModels({ monaco, ydoc });
+  useTsDefaults({ monaco, ydoc, enabled: tsIntelligence });
+  useAiInlineCompletion({ monaco, enabled: !!provider && aiCompletion });
 
   const [openPaths, setOpenPaths] = useState<string[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
@@ -110,6 +125,8 @@ export function Workspace({ provider, ydoc, readOnly = false }: WorkspaceProps) 
   }, [ydoc]);
 
   const activeText = activePath ? getFileText(ydoc, activePath) : undefined;
+  const activeModel =
+    monaco && modelsReady && activePath ? (models?.get(activePath) ?? null) : null;
 
   return (
     <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -138,9 +155,14 @@ export function Workspace({ provider, ydoc, readOnly = false }: WorkspaceProps) 
 
           <ResizablePanelGroup direction="vertical" className="flex-1">
             <ResizablePanel defaultSize={70} minSize={20}>
-              {activePath && activeText ? (
+              {!monaco ? (
+                <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+                  Loading editor…
+                </div>
+              ) : activePath && activeText && activeModel ? (
                 <FileEditor
-                  path={activePath}
+                  monaco={monaco}
+                  model={activeModel}
                   ytext={activeText}
                   provider={provider}
                   readOnly={readOnly}
