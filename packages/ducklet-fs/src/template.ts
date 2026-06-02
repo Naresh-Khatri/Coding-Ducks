@@ -430,6 +430,109 @@ export default app;
   },
 };
 
+const NEXT_TS_TAILWIND_TEMPLATE: DuckletTemplate = {
+  id: "next-ts-tailwind",
+  label: "Next.js + TS + Tailwind",
+  description: "Next.js App Router with TypeScript and Tailwind CSS.",
+  startCommand: "npm run dev",
+  port: 3000,
+  install: true,
+  files: {
+    "package.json": pkg({
+      name: "ducklet",
+      private: true,
+      scripts: {
+        dev: "next dev",
+        build: "next build",
+        start: "next start",
+      },
+      dependencies: {
+        next: "^15.1.0",
+        react: "^19.0.0",
+        "react-dom": "^19.0.0",
+      },
+      devDependencies: {
+        "@tailwindcss/postcss": "^4.0.0",
+        "@types/node": "^22.10.0",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        tailwindcss: "^4.0.0",
+        typescript: "^5.7.0",
+      },
+    }),
+    "tsconfig.json": pkg({
+      compilerOptions: {
+        target: "ES2022",
+        lib: ["ES2022", "DOM", "DOM.Iterable"],
+        module: "ESNext",
+        moduleResolution: "bundler",
+        jsx: "preserve",
+        strict: true,
+        noEmit: true,
+        esModuleInterop: true,
+        resolveJsonModule: true,
+        isolatedModules: true,
+        incremental: true,
+        skipLibCheck: true,
+        plugins: [{ name: "next" }],
+        paths: { "@/*": ["./*"] },
+      },
+      include: ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+      exclude: ["node_modules"],
+    }),
+    "next.config.ts": `import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {};
+
+export default nextConfig;
+`,
+    "postcss.config.mjs": `const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+`,
+    "app/layout.tsx": `import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Ducklet",
+  description: "Created with Next.js",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+`,
+    "app/page.tsx": `export default function Home() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 font-sans">
+      <h1 className="text-4xl font-bold text-blue-500">
+        Hello from Next.js 🦆
+      </h1>
+      <p className="text-gray-500">
+        Edit <code className="rounded bg-gray-100 px-1 py-0.5">app/page.tsx</code>{" "}
+        and save to reload.
+      </p>
+    </main>
+  );
+}
+`,
+    "app/globals.css": `@import "tailwindcss";
+`,
+  },
+};
+
 const NODE_TEMPLATE: DuckletTemplate = {
   id: "node",
   label: "Node.js",
@@ -464,6 +567,7 @@ export const TEMPLATES: DuckletTemplate[] = [
   REACT_TS_TEMPLATE,
   VUE_TEMPLATE,
   SVELTE_TEMPLATE,
+  NEXT_TS_TAILWIND_TEMPLATE,
   NODE_TEMPLATE,
 ];
 
