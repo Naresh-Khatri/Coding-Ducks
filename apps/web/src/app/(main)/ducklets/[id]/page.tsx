@@ -181,11 +181,8 @@ export default function DuckletPage({
 
   const [newMessage, setNewMessage] = useState("");
   const isMobile = useIsMobile();
-  // Chat collapses by default on mobile so editors get the full viewport.
+  // Chat is closed by default; users open it from the header when they want it.
   const [isChatOpen, setIsChatOpen] = useState(false);
-  useEffect(() => {
-    setIsChatOpen(!isMobile);
-  }, [isMobile]);
   const [renameOpen, setRenameOpen] = useState(false);
 
   const forkMutation = useMutation(
