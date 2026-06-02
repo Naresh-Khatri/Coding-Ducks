@@ -20,7 +20,10 @@ export const simpleWebApp: LevelDefinition = {
     { time: 50, rps: 2200 },
     { time: 60, rps: 700 },
   ],
-  requiredBlockTypes: ["dns", "cdn", "load-balancer", "sql-db"],
+  // Cache is required: without it, defaults-everywhere + skip-cache 3-stars
+  // at 72% cost trivially. Forcing a cache on the path pushes the all-defaults
+  // build to $265 (~83%), so 3★ now requires at least one cheaper provider swap.
+  requiredBlockTypes: ["dns", "cdn", "load-balancer", "cache", "sql-db"],
   passCondition: {
     minUptimePercent: 95,
     maxAvgLatencyMs: 300,
@@ -28,6 +31,7 @@ export const simpleWebApp: LevelDefinition = {
   // Calibrated empirically (see __tests__/calibration.test.ts):
   //   3★ Cloud DNS + Cloudflare CDN + Traefik + Go×2 + Memcached + MySQL ≈ $243 (76%)
   //   2★ Route 53 + CloudFront + Nginx + Node×3 + Redis + PostgreSQL     ≈ $300 (94%)
+  //   2★ all-defaults @ Node×2 + Redis + PostgreSQL                       ≈ $265 (83%)
   starConditions: {
     twoStar: { maxCostPercent: 90, maxAvgLatencyMs: 170 },
     threeStar: { maxCostPercent: 80, maxAvgLatencyMs: 90 },
