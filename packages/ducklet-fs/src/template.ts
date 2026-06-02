@@ -447,7 +447,12 @@ const NEXT_TS_TAILWIND_TEMPLATE: DuckletTemplate = {
         start: "next start",
       },
       dependencies: {
-        next: "^15.1.0",
+        // Pinned: Next.js 15.5.x crashes in WebContainers with
+        // "Invariant: Expected workUnitAsyncStorage to have a store".
+        // 15.4.1 is the last version that boots. A caret range would
+        // resolve back up to 15.5.x, so keep this exact.
+        // https://github.com/stackblitz/webcontainer-core/issues/1978
+        next: "15.4.1",
         react: "^19.0.0",
         "react-dom": "^19.0.0",
       },
