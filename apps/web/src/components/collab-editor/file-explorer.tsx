@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
+  Eye,
+  EyeOff,
   FilePlus,
   FolderPlus,
   Pencil,
@@ -49,6 +51,17 @@ function collectDirs(node: TreeNode, acc: string[] = []): string[] {
   return acc;
 }
 
+/** Drop dotfiles/dot-folders (and their contents) from the tree. */
+function filterHidden(node: TreeNode): TreeNode {
+  if (!node.children) return node;
+  return {
+    ...node,
+    children: node.children
+      .filter((child) => !child.name.startsWith("."))
+      .map(filterHidden),
+  };
+}
+
 export function FileExplorer({
   ydoc,
   readOnly,
@@ -59,6 +72,12 @@ export function FileExplorer({
   const [tree, setTree] = useState<TreeNode>(() => buildTree(ydoc));
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [seededExpand, setSeededExpand] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
+
+  const visibleTree = useMemo(
+    () => (showHidden ? tree : filterHidden(tree)),
+    [tree, showHidden],
+  );
 
   // Recompute the tree whenever files/dirs change anywhere in the doc.
   useEffect(() => {
@@ -141,32 +160,47 @@ export function FileExplorer({
         <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
           Files
         </span>
-        {!readOnly && (
-          <div className="flex items-center gap-0.5">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={handleNewFile}
-              title="New file"
-            >
-              <FilePlus className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={handleNewFolder}
-              title="New folder"
-            >
-              <FolderPlus className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => setShowHidden((v) => !v)}
+            title={showHidden ? "Hide hidden files" : "Show hidden files"}
+          >
+            {showHidden ? (
+              <EyeOff className="h-3.5 w-3.5" />
+            ) : (
+              <Eye className="h-3.5 w-3.5" />
+            )}
+          </Button>
+          {!readOnly && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={handleNewFile}
+                title="New file"
+              >
+                <FilePlus className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={handleNewFolder}
+                title="New folder"
+              >
+                <FolderPlus className="h-3.5 w-3.5" />
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto py-1">
-        {(tree.children ?? []).map((child) => (
+        {(visibleTree.children ?? []).map((child) => (
           <TreeRow
             key={child.path}
             node={child}
