@@ -93,12 +93,45 @@ export function writeFile(doc: Y.Doc, path: string, content: string): Y.Text {
       files.set(p, text);
       ensureParentDirs(doc, p);
     }
-    if (text.toString() !== content) {
-      text.delete(0, text.length);
-      if (content) text.insert(0, content);
-    }
+    patchText(text, content);
   });
   return text!;
+}
+
+/**
+ * Apply the minimal edit that turns `text` into `content`, touching only the
+ * region that actually differs (common prefix + suffix are left in place).
+ *
+ * The naive approach — `delete(0, len)` then `insert(0, content)` — replaces
+ * every character, so yCollab maps each collaborator's caret (a *relative*
+ * position) through a full-document replacement and collapses it to offset 0,
+ * yanking every cursor to the top-left. Editing only the differing slice keeps
+ * the untouched characters' identities stable, so carets anchored in them stay
+ * put. A no-op write (content unchanged) produces zero deltas.
+ */
+function patchText(text: Y.Text, content: string): void {
+  const prev = text.toString();
+  if (prev === content) return;
+
+  // Longest common prefix.
+  let start = 0;
+  const max = Math.min(prev.length, content.length);
+  while (start < max && prev[start] === content[start]) start++;
+
+  // Longest common suffix that doesn't overlap the shared prefix.
+  let endPrev = prev.length;
+  let endNext = content.length;
+  while (
+    endPrev > start &&
+    endNext > start &&
+    prev[endPrev - 1] === content[endNext - 1]
+  ) {
+    endPrev--;
+    endNext--;
+  }
+
+  if (endPrev > start) text.delete(start, endPrev - start);
+  if (endNext > start) text.insert(start, content.slice(start, endNext));
 }
 
 /** Delete a single file. No-op if absent. */

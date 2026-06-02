@@ -201,6 +201,30 @@ function wireSync(
   const dirty = new Set<string>();
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // Per-path serialized write queue. Writes to the same path are chained so
+  // they can't reorder (which would leave stale content on disk), and a path
+  // stays in `writing` from the moment we enqueue until its last write settles.
+  // The fs→Yjs watcher uses `writing` to ignore the disk churn we cause
+  // ourselves — see the watcher comment below.
+  const writeQueue = new Map<string, Promise<void>>();
+  const writing = new Set<string>();
+
+  const enqueueFsWrite = (path: string, op: () => Promise<void>) => {
+    writing.add(path);
+    const prev = writeQueue.get(path) ?? Promise.resolve();
+    const next = prev
+      .catch(() => undefined)
+      .then(op)
+      .finally(() => {
+        // Only the last write in the chain clears the flags.
+        if (writeQueue.get(path) === next) {
+          writeQueue.delete(path);
+          writing.delete(path);
+        }
+      });
+    writeQueue.set(path, next);
+  };
+
   const flush = () => {
     flushTimer = null;
     for (const path of dirty) {
@@ -208,21 +232,28 @@ function wireSync(
       if (!text) {
         // Deleted in Yjs → remove from fs.
         fsShadow.delete(path);
-        void container.fs.rm(path, { force: true, recursive: true }).catch(
-          () => undefined,
+        enqueueFsWrite(path, () =>
+          container.fs
+            .rm(path, { force: true, recursive: true })
+            .catch(() => undefined),
         );
         continue;
       }
       const content = text.toString();
       if (fsShadow.get(path) === content) continue;
       fsShadow.set(path, content);
-      void writeToContainer(container, path, content);
+      enqueueFsWrite(path, () => writeToContainer(container, path, content));
     }
     dirty.clear();
   };
 
+  // Trailing debounce: reset on each change so the container fs (and thus the
+  // dev server's HMR / preview) only updates once the user pauses typing,
+  // rather than repeatedly mid-keystroke.
+  const FLUSH_DEBOUNCE_MS = 300;
   const scheduleFlush = () => {
-    flushTimer ??= setTimeout(flush, 80);
+    if (flushTimer) clearTimeout(flushTimer);
+    flushTimer = setTimeout(flush, FLUSH_DEBOUNCE_MS);
   };
 
   const findPath = (target: unknown): string | undefined => {
@@ -253,14 +284,22 @@ function wireSync(
     (_event, filename) => {
       if (cancelledRef) return;
       if (typeof filename !== "string" || isIgnoredPath(filename)) return;
+      // While our own Yjs→fs write for this path is in flight the disk is
+      // mid-transition: a read here can return the *previous* content (the
+      // write hasn't landed yet) or the new one. Acting on that stale read
+      // would write outdated text back into the Y.Text the user is typing in,
+      // clobbering it and snapping every collaborator's cursor to the top. Skip
+      // it — once the write settles, disk matches the shadow and the guard
+      // below correctly ignores the echo.
+      if (writing.has(filename)) return;
       void container.fs
         .readFile(filename, "utf-8")
         .then((content) => {
+          // Re-check: a write may have started between the watch event and this
+          // async read resolving.
+          if (writing.has(filename)) return;
           // Echo of our own Yjs→fs write (shadow already holds this content),
-          // or a change we've already absorbed: ignore it. Without this guard,
-          // a write triggers a watch event whose async read can land after the
-          // user has typed more, making `content` look stale and clobbering the
-          // Y.Text wholesale — which resets every collaborator's cursor.
+          // or a change we've already absorbed: ignore it.
           if (fsShadow.get(filename) === content) return;
           fsShadow.set(filename, content);
           const text = filesMap.get(filename);
