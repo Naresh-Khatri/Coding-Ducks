@@ -28,6 +28,7 @@ import { useDuckletModels } from "./monaco/use-models";
 import { useTsDefaults } from "./monaco/use-ts-defaults";
 import { PreviewPanel } from "./preview-panel";
 import { TerminalPanel } from "./terminal-panel";
+import { useIframeFocusGuard } from "./use-iframe-focus-guard";
 
 interface WorkspaceProps {
   /** Null for the read-only guest view (no collaboration / presence). */
@@ -59,6 +60,10 @@ function pickDefaultFile(ydoc: Y.Doc): string | null {
 export function Workspace({ provider, ydoc, readOnly = false }: WorkspaceProps) {
   const runtime = useWebContainerRuntime({ ydoc, enabled: true });
   const { byPath: presenceByPath, setActiveFile } = useFilePresence(provider);
+
+  // Keep the preview iframe (e.g. a Next.js error overlay) from stealing the
+  // caret out of the editor while the user is typing.
+  useIframeFocusGuard();
 
   // Monaco (loaded once via the pinned CDN loader) powers TS intelligence,
   // collaboration and AI completion. Its hooks live at the workspace level so
