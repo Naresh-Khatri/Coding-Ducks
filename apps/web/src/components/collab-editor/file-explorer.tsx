@@ -157,10 +157,10 @@ export function FileExplorer({
   return (
     <div className="bg-muted/10 flex h-full flex-col">
       <div className="flex items-center justify-between border-b px-2 py-1.5">
-        <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+        <span className="text-muted-foreground min-w-0 truncate text-xs font-semibold tracking-wide uppercase">
           Files
         </span>
-        <div className="flex items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-0.5">
           <Button
             variant="ghost"
             size="icon"
