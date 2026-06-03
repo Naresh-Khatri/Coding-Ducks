@@ -414,7 +414,12 @@ export default function DuckletPage({
           {/* Main Editor Area */}
           <ResizablePanel defaultSize={80} minSize={50}>
             {provider && ydoc ? (
-              <Workspace provider={provider} ydoc={ydoc} readOnly={!canEdit} />
+              <Workspace
+                provider={provider}
+                ydoc={ydoc}
+                readOnly={!canEdit}
+                duckletId={duckletId}
+              />
             ) : (
               <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
                 Connecting to room...

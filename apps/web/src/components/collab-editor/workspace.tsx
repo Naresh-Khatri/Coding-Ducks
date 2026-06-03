@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMonaco } from "@monaco-editor/react";
 import type { HocuspocusProvider } from "@hocuspocus/provider";
-import { TerminalIcon } from "lucide-react";
+import { Camera, TerminalIcon } from "lucide-react";
 import type * as Y from "yjs";
 
 import { getFileText, listFilePaths } from "@acme/ducklet-fs";
@@ -28,6 +28,7 @@ import { useDuckletModels } from "./monaco/use-models";
 import { useTsDefaults } from "./monaco/use-ts-defaults";
 import { PreviewPanel } from "./preview-panel";
 import { TerminalPanel } from "./terminal-panel";
+import { useDuckletPreviewCapture } from "./use-preview-capture";
 import { useIframeFocusGuard } from "./use-iframe-focus-guard";
 
 interface WorkspaceProps {
@@ -35,6 +36,8 @@ interface WorkspaceProps {
   provider: HocuspocusProvider | null;
   ydoc: Y.Doc;
   readOnly?: boolean;
+  /** Numeric ducklet id — enables auto preview-image capture when editable. */
+  duckletId?: number;
 }
 
 const ENTRY_CANDIDATES = [
@@ -57,13 +60,29 @@ function pickDefaultFile(ydoc: Y.Doc): string | null {
   return [...files].sort()[0] ?? null;
 }
 
-export function Workspace({ provider, ydoc, readOnly = false }: WorkspaceProps) {
+export function Workspace({
+  provider,
+  ydoc,
+  readOnly = false,
+  duckletId,
+}: WorkspaceProps) {
   const runtime = useWebContainerRuntime({ ydoc, enabled: true });
   const { byPath: presenceByPath, setActiveFile } = useFilePresence(provider);
 
   // Keep the preview iframe (e.g. a Next.js error overlay) from stealing the
   // caret out of the editor while the user is typing.
   useIframeFocusGuard();
+
+  // Auto-capture the preview as the ducklet's thumbnail / OG image (editable
+  // sessions only; one uploader per room via awareness leader election).
+  const editable = !readOnly && !!provider && duckletId != null;
+  const { captureNow } = useDuckletPreviewCapture({
+    ydoc,
+    provider,
+    runtime,
+    duckletId: duckletId ?? 0,
+    enabled: editable,
+  });
 
   // Monaco (loaded once via the pinned CDN loader) powers TS intelligence,
   // collaboration and AI completion. Its hooks live at the workspace level so
@@ -77,6 +96,24 @@ export function Workspace({ provider, ydoc, readOnly = false }: WorkspaceProps) 
   const [openPaths, setOpenPaths] = useState<string[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
   const [showTerminal, setShowTerminal] = useState(true);
+  const [capturing, setCapturing] = useState(false);
+
+  // Manual "update thumbnail now" — forces an immediate capture + upload.
+  const handleCapture = useCallback(async () => {
+    setCapturing(true);
+    try {
+      await captureNow();
+    } catch (err) {
+      console.error("[ducklet] thumbnail capture failed:", err);
+      window.alert(
+        `Thumbnail capture failed: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    } finally {
+      setCapturing(false);
+    }
+  }, [captureNow]);
 
   // Open a sensible entry file on first load.
   useEffect(() => {
@@ -200,6 +237,19 @@ export function Workspace({ provider, ydoc, readOnly = false }: WorkspaceProps) 
               <TerminalIcon className="mr-1 h-3 w-3" />
               Terminal
             </Button>
+            {editable && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-1 h-5 rounded-xs px-2 text-xs"
+                onClick={handleCapture}
+                disabled={!runtime.previewUrl || capturing}
+                title="Capture the preview now and save it as this ducklet's thumbnail"
+              >
+                <Camera className="mr-1 h-3 w-3" />
+                {capturing ? "Saving…" : "Thumbnail"}
+              </Button>
+            )}
           </div>
         </div>
       </ResizablePanel>

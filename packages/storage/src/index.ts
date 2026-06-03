@@ -48,12 +48,14 @@ export const uploadFile = async (
   key: string,
   body: Buffer | string,
   contentType: string,
+  cacheControl?: string,
 ) => {
   const command = new PutObjectCommand({
     Bucket: env.R2_BUCKET,
     Key: key,
     Body: body,
     ContentType: contentType,
+    CacheControl: cacheControl,
   });
 
   await s3.send(command);

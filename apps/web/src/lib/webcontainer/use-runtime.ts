@@ -12,6 +12,8 @@ import {
 } from "@acme/ducklet-fs";
 
 import { bootWebContainer, teardownWebContainer } from "./boot";
+import type { CapturePreviewOptions } from "./capture-preview";
+import { buildCaptureScript, capturePreview } from "./capture-preview";
 import { inferBootPlan, isIgnoredPath, toFileSystemTree } from "./tree";
 
 export type RuntimeStatus =
@@ -34,6 +36,12 @@ export interface WebContainerRuntime {
   resize: (cols: number, rows: number) => void;
   /** Re-run the inferred boot command (Ctrl-C then start). */
   restart: () => void;
+  /**
+   * Screenshot the running preview off-screen at a fixed resolution (default
+   * 1920×1080) and resolve to a PNG data URL. Rejects if the dev server isn't
+   * up yet. Invisible to the user.
+   */
+  capture: (options?: CapturePreviewOptions) => Promise<string>;
 }
 
 /**
@@ -54,6 +62,10 @@ export function useWebContainerRuntime({
   const [status, setStatus] = useState<RuntimeStatus>("idle");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Mirror of previewUrl so `capture` always reads the latest without being
+  // re-created on every URL change.
+  const previewUrlRef = useRef<string | null>(null);
 
   const inputWriterRef = useRef<WritableStreamDefaultWriter<string> | null>(
     null,
@@ -88,6 +100,12 @@ export function useWebContainerRuntime({
     writeInput(`${cmd}\n`);
   }, [writeInput]);
 
+  const capture = useCallback((options?: CapturePreviewOptions) => {
+    const url = previewUrlRef.current;
+    if (!url) return Promise.reject(new Error("preview is not running yet"));
+    return capturePreview(url, options);
+  }, []);
+
   useEffect(() => {
     if (!enabled) return;
 
@@ -111,8 +129,18 @@ export function useWebContainerRuntime({
         if (cancelled) return;
 
         container.on("server-ready", (_port, url) => {
-          if (!cancelled) setPreviewUrl(url);
+          if (cancelled) return;
+          previewUrlRef.current = url;
+          setPreviewUrl(url);
         });
+
+        // Inject the off-screen screenshot helper into every preview page.
+        // Must be set before the dev server serves pages so they include it.
+        await container.setPreviewScript(
+          buildCaptureScript(window.location.origin),
+          { type: "module" },
+        );
+        if (cancelled) return;
 
         setStatus("mounting");
         const initialFiles = readAllFiles(ydoc);
@@ -170,6 +198,7 @@ export function useWebContainerRuntime({
       shellRef.current = null;
       inputWriterRef.current = null;
       outputBufferRef.current = [];
+      previewUrlRef.current = null;
       void teardownWebContainer();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -183,6 +212,7 @@ export function useWebContainerRuntime({
     writeInput,
     resize,
     restart,
+    capture,
   };
 }
 

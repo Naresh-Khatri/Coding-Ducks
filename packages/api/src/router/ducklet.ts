@@ -11,7 +11,7 @@ import {
   duckletSnapshot,
   userProfile,
 } from "@acme/db/schema";
-import { getPublicUrl } from "@acme/storage";
+import { getPublicUrl, uploadFile } from "@acme/storage";
 
 import type { ChatMessageDTO } from "../realtime";
 import { publishDuckletEvent, subscribeDuckletEvents } from "../realtime";
@@ -332,6 +332,84 @@ export const duckletRouter = createTRPCRouter({
       );
 
       return { token, role };
+    }),
+
+  /**
+   * Store an auto-captured preview screenshot for a ducklet (used as the
+   * gallery thumbnail and OG image). Only the owner or an active editor may
+   * write it. The image is uploaded to R2 under a stable per-ducklet key, so
+   * each capture overwrites the last — no orphaned objects, stable public URL.
+   */
+  updatePreviewImage: protectedProcedure
+    .input(
+      z.object({
+        duckletId: z.number(),
+        contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+        // base64-encoded image bytes (no data: prefix). Capped at ~4MB base64.
+        image: z.string().min(1).max(4_000_000),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const [existing] = await ctx.db
+        .select({
+          ownerId: ducklet.ownerId,
+          previewImage: ducklet.previewImage,
+        })
+        .from(ducklet)
+        .where(eq(ducklet.id, input.duckletId))
+        .limit(1);
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Ducklet not found" });
+      }
+
+      // Owner, or an active editor member — viewers cannot write thumbnails.
+      if (existing.ownerId !== userId) {
+        const [member] = await ctx.db
+          .select({ role: duckletMember.role })
+          .from(duckletMember)
+          .where(
+            and(
+              eq(duckletMember.duckletId, input.duckletId),
+              eq(duckletMember.userId, userId),
+              eq(duckletMember.status, "active"),
+            ),
+          )
+          .limit(1);
+
+        if (member?.role !== "editor") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        }
+      }
+
+      const ext =
+        input.contentType === "image/png"
+          ? "png"
+          : input.contentType === "image/webp"
+            ? "webp"
+            : "jpg";
+      const key = `ducklet-previews/${input.duckletId}.${ext}`;
+
+      await uploadFile(
+        key,
+        Buffer.from(input.image, "base64"),
+        input.contentType,
+        // Short TTL so the stable URL still refreshes for OG/thumbnail viewers.
+        "public, max-age=300",
+      );
+
+      // Only touch the row when the stored key actually changes, so repeat
+      // captures don't needlessly bump `updatedAt` (gallery sort order).
+      if (existing.previewImage !== key) {
+        await ctx.db
+          .update(ducklet)
+          .set({ previewImage: key })
+          .where(eq(ducklet.id, input.duckletId));
+      }
+
+      return { previewImage: getPublicUrl(key) };
     }),
 
   /**
