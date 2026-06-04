@@ -235,12 +235,20 @@ export class SimulationEngine {
       this.edgeMap.set(node.id, { byProtocol: new Map(), all: [] });
     }
 
+    // Build a Map<nodeId, Map<portId, port>> once for O(1) lookups in the edge loop below
+    const portMapByNode = new Map<string, Map<string, SimNode["ports"][number]>>();
+    for (const [nodeId, node] of this.graph) {
+      const pm = new Map<string, SimNode["ports"][number]>();
+      for (const p of node.ports) pm.set(p.id, p);
+      portMapByNode.set(nodeId, pm);
+    }
+
     for (const edge of rawEdges) {
       const sourceNode = this.graph.get(edge.source);
       if (!sourceNode) continue;
-      const sourcePort = sourceNode.ports.find(
-        (p) => p.id === edge.sourceHandle,
-      );
+      const sourcePort = edge.sourceHandle
+        ? portMapByNode.get(edge.source)?.get(edge.sourceHandle)
+        : undefined;
       const protocol = sourcePort?.protocol ?? "HTTP";
       this.edges.push({
         sourceId: edge.source,
@@ -830,6 +838,8 @@ export class SimulationEngine {
 
     let p99LatencyMs = 0;
     if (this.latencySamples.length > 0) {
+      // tsconfig targets ES2022; toSorted() requires ES2023 — using spread+sort instead
+      // react-doctor-disable-next-line react-doctor/js-tosorted-immutable
       const sorted = [...this.latencySamples].sort((a, b) => a - b);
       const idx = Math.min(Math.floor(sorted.length * 0.99), sorted.length - 1);
       const rawP99 = sorted[idx]!;

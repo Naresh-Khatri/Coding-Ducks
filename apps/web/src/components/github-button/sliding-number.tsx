@@ -2,7 +2,7 @@
 
 import type { MotionValue, SpringOptions } from "motion/react";
 import * as React from "react";
-import { motion, useSpring, useTransform } from "motion/react";
+import { LazyMotion, domAnimation, m, useSpring, useTransform } from "motion/react";
 
 import { cn } from "~/lib/utils";
 
@@ -66,14 +66,16 @@ function SlidingNumberDisplay({
   });
 
   return (
-    <motion.span
-      data-slot="sliding-number-display"
-      style={{ y }}
-      className="absolute inset-0 flex items-center justify-center"
-      transition={{ ...transition, type: "spring" }}
-    >
-      {number}
-    </motion.span>
+    <LazyMotion features={domAnimation}>
+      <m.span
+        data-slot="sliding-number-display"
+        style={{ y }}
+        className="absolute inset-0 flex items-center justify-center"
+        transition={{ ...transition, type: "spring" }}
+      >
+        {number}
+      </m.span>
+    </LazyMotion>
   );
 }
 

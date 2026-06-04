@@ -23,9 +23,13 @@ function markDismissed() {
 }
 
 export function CanvasEmptyState() {
+  // Intentional SSR-safe default: hidden=true prevents flash before localStorage is read
+  // react-doctor-disable-next-line react-doctor/rendering-hydration-no-flicker
+  // react-doctor-disable-next-line react-doctor/no-initialize-state
   const [hidden, setHidden] = useState(true);
 
-  // Read persisted preference on mount (client-only) to avoid SSR mismatch.
+  // Read persisted preference on mount (client-only, localStorage) to avoid SSR mismatch.
+  // Must stay in effect — localStorage is a browser-only API, unsafe during SSR render.
   useEffect(() => {
     setHidden(isDismissed());
   }, []);
@@ -40,7 +44,7 @@ export function CanvasEmptyState() {
       <div className="flex flex-col items-center gap-4 text-center">
         {/* Animated drag hint */}
         <div className="relative">
-          <div className="bg-muted/60 flex h-20 w-20 items-center justify-center rounded-2xl border border-dashed">
+          <div className="bg-muted/60 flex size-20 items-center justify-center rounded-2xl border border-dashed">
             <MousePointerClick size={32} className="text-muted-foreground/60" />
           </div>
           {/* Animated arrow pointing left toward palette */}
@@ -59,7 +63,7 @@ export function CanvasEmptyState() {
           </p>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => {
             markDismissed();
             setHidden(true);

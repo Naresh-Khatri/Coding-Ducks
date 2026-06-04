@@ -1,3 +1,5 @@
+// Page metadata is provided by the sibling server layout.tsx (this is a client component).
+// react-doctor-disable-next-line react-doctor/nextjs-missing-metadata
 "use client";
 
 import { useState } from "react";
@@ -21,7 +23,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { domAnimation, LazyMotion, m } from "motion/react";
 import { toast } from "sonner";
 
 import type { RouterOutputs } from "@acme/api";
@@ -146,6 +148,7 @@ export default function DuckletsPage() {
   );
 
   return (
+    <LazyMotion features={domAnimation}>
     <div className="container mx-auto py-12">
       <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -162,7 +165,7 @@ export default function DuckletsPage() {
           className="shadow-lg transition-all hover:scale-[1.01]"
           onClick={() => setIsCreateOpen(true)}
         >
-          <Plus className="mr-2 h-5 w-5" />
+          <Plus className="mr-2 size-5" />
           New Ducklet
         </Button>
       </div>
@@ -171,7 +174,7 @@ export default function DuckletsPage() {
 
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             type="search"
             placeholder="Search ducklets…"
@@ -211,13 +214,13 @@ export default function DuckletsPage() {
           ))}
         </div>
       ) : allDucklets.length === 0 ? (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-muted/30 flex flex-col items-center justify-center rounded-2xl border border-dashed py-24 text-center"
         >
-          <div className="bg-muted mb-6 flex h-20 w-20 items-center justify-center rounded-full">
-            <Plus className="text-muted-foreground h-10 w-10" />
+          <div className="bg-muted mb-6 flex size-20 items-center justify-center rounded-full">
+            <Plus className="text-muted-foreground size-10" />
           </div>
           <h3 className="text-2xl font-semibold">
             {debouncedSearch ? "No matches" : "No ducklets found"}
@@ -232,10 +235,10 @@ export default function DuckletsPage() {
               Create Your First Ducklet
             </Button>
           )}
-        </motion.div>
+        </m.div>
       ) : (
         <>
-          <motion.div
+          <m.div
             variants={container}
             initial="hidden"
             animate="show"
@@ -261,7 +264,7 @@ export default function DuckletsPage() {
                 }
               />
             ))}
-          </motion.div>
+          </m.div>
           {hasNextPage && (
             <div className="mt-10 flex justify-center">
               <Button
@@ -277,6 +280,7 @@ export default function DuckletsPage() {
         </>
       )}
     </div>
+    </LazyMotion>
   );
 }
 
@@ -302,7 +306,8 @@ function DuckletCard({
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
-    <motion.div variants={item}>
+    <LazyMotion features={domAnimation}>
+    <m.div variants={item}>
       <Card className="group border-muted/40 hover:border-primary/40 flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl">
         <Link href={`/ducklets/${ducklet.id}`} className="block">
           <div className="relative aspect-[1200/630] w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
@@ -310,12 +315,13 @@ function DuckletCard({
               <Image
                 src={ducklet.previewImage}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 alt={`Preview of ${ducklet.name}`}
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center opacity-20 transition-opacity group-hover:opacity-30">
-                <Plus className="h-12 w-12" />
+                <Plus className="size-12" />
               </div>
             )}
             <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
@@ -325,9 +331,9 @@ function DuckletCard({
                 className="bg-background/80 backdrop-blur-md"
               >
                 {ducklet.isPublic ? (
-                  <Globe className="mr-1 h-3 w-3" />
+                  <Globe className="mr-1 size-3" />
                 ) : (
-                  <Lock className="mr-1 h-3 w-3" />
+                  <Lock className="mr-1 size-3" />
                 )}
                 {ducklet.isPublic ? "Public" : "Private"}
               </Badge>
@@ -347,7 +353,7 @@ function DuckletCard({
                 </Link>
               </CardTitle>
               <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                <Avatar className="h-5 w-5">
+                <Avatar className="size-5">
                   <AvatarImage src={ducklet.owner?.photoURL ?? undefined} />
                   <AvatarFallback className="text-[10px]">
                     {ducklet.owner?.username?.charAt(0).toUpperCase() ?? "U"}
@@ -369,17 +375,17 @@ function DuckletCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="size-8"
                   aria-label={`More actions for ${ducklet.name}`}
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => router.push(`/ducklets/${ducklet.id}`)}
                 >
-                  <ExternalLink className="mr-2 h-4 w-4" />
+                  <ExternalLink className="mr-2 size-4" />
                   Open Ducklet
                 </DropdownMenuItem>
                 {isSignedIn && (
@@ -390,7 +396,7 @@ function DuckletCard({
                       onFork();
                     }}
                   >
-                    <Copy className="mr-2 h-4 w-4" />
+                    <Copy className="mr-2 size-4" />
                     {isForking ? "Forking…" : "Fork"}
                   </DropdownMenuItem>
                 )}
@@ -402,7 +408,7 @@ function DuckletCard({
                         setRenameOpen(true);
                       }}
                     >
-                      <Pencil className="mr-2 h-4 w-4" />
+                      <Pencil className="mr-2 size-4" />
                       Rename
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -412,7 +418,7 @@ function DuckletCard({
                         setDeleteOpen(true);
                       }}
                     >
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 className="mr-2 size-4" />
                       Delete
                     </DropdownMenuItem>
                   </>
@@ -469,11 +475,12 @@ function DuckletCard({
           >
             <Link href={`/ducklets/${ducklet.id}`}>
               Join Session
-              <ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+              <ExternalLink className="ml-2 size-4 transition-transform group-hover/btn:translate-x-1" />
             </Link>
           </Button>
         </CardFooter>
       </Card>
-    </motion.div>
+    </m.div>
+    </LazyMotion>
   );
 }

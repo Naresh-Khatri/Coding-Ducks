@@ -161,7 +161,7 @@ function BlockNodeComponent({ id, data }: NodeProps) {
       {/* Action buttons (building only, not for start block) */}
       {phase === "building" && !isStartBlock && (
         <div className="absolute -top-8 left-1/2 flex -translate-x-1/2 gap-1 opacity-0 transition-opacity group-hover/node:opacity-100">
-          <button
+          <button type="button"
             className="bg-card hover:bg-muted flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] shadow-sm transition-colors"
             onClick={(e) => {
               e.stopPropagation();
@@ -180,7 +180,7 @@ function BlockNodeComponent({ id, data }: NodeProps) {
                 : "Duplicate"}
             </span>
           </button>
-          <button
+          <button type="button"
             className="bg-card hover:bg-destructive hover:text-destructive-foreground flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] shadow-sm transition-colors"
             onClick={(e) => {
               e.stopPropagation();
@@ -317,8 +317,8 @@ function BlockNodeComponent({ id, data }: NodeProps) {
             )}
           </div>
           <div className="flex items-center gap-1">
-            <button
-              className="bg-muted hover:bg-muted/70 flex h-5 w-5 items-center justify-center rounded transition-colors disabled:opacity-30"
+            <button type="button"
+              className="bg-muted hover:bg-muted/70 flex size-5 items-center justify-center rounded transition-colors disabled:opacity-30"
               disabled={replicas <= 1 || replicasGated}
               onClick={(e) => {
                 e.stopPropagation();
@@ -336,8 +336,8 @@ function BlockNodeComponent({ id, data }: NodeProps) {
             >
               {replicas}×
             </span>
-            <button
-              className="bg-muted hover:bg-muted/70 flex h-5 w-5 items-center justify-center rounded transition-colors disabled:opacity-30"
+            <button type="button"
+              className="bg-muted hover:bg-muted/70 flex size-5 items-center justify-center rounded transition-colors disabled:opacity-30"
               disabled={replicasGated}
               onClick={(e) => {
                 e.stopPropagation();
@@ -437,14 +437,14 @@ function BlockNodeComponent({ id, data }: NodeProps) {
           {/* Queue depth indicator */}
           {queueDepth > 0 && (
             <div className="flex items-center gap-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-500">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+              <span className="inline-block size-1.5 rounded-full bg-amber-500" />
               {Math.round(queueDepth)} queued
             </div>
           )}
           {/* Failed requests indicator */}
           {status === "failing" && failedRequests > 0 && (
             <div className="flex items-center gap-1 rounded bg-red-600/20 px-1.5 py-0.5 text-[10px] font-medium text-red-500">
-              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+              <span className="inline-block size-1.5 animate-pulse rounded-full bg-red-500" />
               {Math.round(failedRequests)} req/s failing
             </div>
           )}
@@ -488,7 +488,7 @@ function BlockNodeComponent({ id, data }: NodeProps) {
             {/* Per-link unlink buttons */}
             {phase === "building" &&
               connectedEdges.map((edge) => (
-                <button
+                <button type="button"
                   key={edge.id}
                   className="absolute opacity-0 transition-opacity group-hover/node:opacity-100"
                   style={{
@@ -501,7 +501,7 @@ function BlockNodeComponent({ id, data }: NodeProps) {
                   }}
                   title="Remove this connection"
                 >
-                  <span className="bg-card flex h-4 w-4 items-center justify-center rounded-full border shadow-sm transition-colors hover:bg-amber-500/10 hover:text-amber-500">
+                  <span className="bg-card flex size-4 items-center justify-center rounded-full border shadow-sm transition-colors hover:bg-amber-500/10 hover:text-amber-500">
                     <X size={8} />
                   </span>
                 </button>
@@ -547,7 +547,7 @@ function BlockNodeComponent({ id, data }: NodeProps) {
             {/* Per-link unlink buttons */}
             {phase === "building" &&
               connectedEdges.map((edge) => (
-                <button
+                <button type="button"
                   key={edge.id}
                   className="absolute opacity-0 transition-opacity group-hover/node:opacity-100"
                   style={{
@@ -560,7 +560,7 @@ function BlockNodeComponent({ id, data }: NodeProps) {
                   }}
                   title="Remove this connection"
                 >
-                  <span className="bg-card flex h-4 w-4 items-center justify-center rounded-full border shadow-sm transition-colors hover:bg-amber-500/10 hover:text-amber-500">
+                  <span className="bg-card flex size-4 items-center justify-center rounded-full border shadow-sm transition-colors hover:bg-amber-500/10 hover:text-amber-500">
                     <X size={8} />
                   </span>
                 </button>

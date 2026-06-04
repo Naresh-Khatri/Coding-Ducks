@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { RetroGrid } from "@/components/ui/retro-grid";
 import { ArrowRight } from "lucide-react";
-import { motion } from "motion/react";
+import { LazyMotion, domAnimation, m } from "motion/react";
 
 const AnimatedTerminal = dynamic(
   () => import("@/components/animated-terminal"),
@@ -14,6 +14,7 @@ const AnimatedTerminal = dynamic(
 
 export function HeroSection() {
   return (
+    <LazyMotion features={domAnimation}>
     <section className="relative min-h-[calc(100dvh-4rem)] overflow-hidden">
       {/* Retro "sky" — deep indigo/violet fading toward the horizon */}
       <div className="absolute inset-0 z-[5] bg-[linear-gradient(to_bottom,#1a0033_0%,#2d0b4e_28%,rgba(60,20,90,0.4)_46%,transparent_55%)]" />
@@ -48,7 +49,7 @@ export function HeroSection() {
       {/* Baseline hero — cohesive text column, vertically centered */}
       <div className="pointer-events-none absolute inset-0 z-20 flex items-center">
         <div className="mx-auto w-full max-w-7xl px-6 lg:px-10">
-          <motion.div
+          <m.div
             className="pointer-events-auto"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -87,12 +88,12 @@ export function HeroSection() {
                 </Button>
               </Link>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
 
       {/* scroll cue */}
-      <motion.div
+      <m.div
         className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2"
         animate={{ y: [0, 8, 0] }}
         transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
@@ -100,7 +101,8 @@ export function HeroSection() {
         <span className="font-mono text-[10px] tracking-[0.3em] text-neutral-500 uppercase">
           scroll
         </span>
-      </motion.div>
+      </m.div>
     </section>
+    </LazyMotion>
   );
 }

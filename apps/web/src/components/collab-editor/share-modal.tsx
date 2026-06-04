@@ -207,7 +207,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                   className="bg-muted/30 flex items-center justify-between rounded-md p-2"
                 >
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
+                    <Avatar className="size-6">
                       <AvatarImage src={member.photoURL ?? undefined} />
                       <AvatarFallback>
                         {member.username?.[0]?.toUpperCase()}
@@ -227,7 +227,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                       size="icon"
                       variant="ghost"
                       aria-label={`Approve ${member.username}`}
-                      className="h-6 w-6 text-green-500 hover:bg-green-500/10 hover:text-green-600"
+                      className="size-6 text-green-500 hover:bg-green-500/10 hover:text-green-600"
                       onClick={() =>
                         respondRequestMutation.mutate({
                           duckletId,
@@ -237,13 +237,13 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                         })
                       }
                     >
-                      <Check className="h-3 w-3" />
+                      <Check className="size-3" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
                       aria-label={`Deny ${member.username}`}
-                      className="h-6 w-6 text-red-500 hover:bg-red-500/10 hover:text-red-600"
+                      className="size-6 text-red-500 hover:bg-red-500/10 hover:text-red-600"
                       onClick={() =>
                         respondRequestMutation.mutate({
                           duckletId,
@@ -252,7 +252,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                         })
                       }
                     >
-                      <X className="h-3 w-3" />
+                      <X className="size-3" />
                     </Button>
                   </div>
                 </div>
@@ -265,7 +265,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
+              <Avatar className="size-8">
                 <AvatarImage src={ducklet?.owner?.photoURL ?? undefined} />
                 <AvatarFallback>
                   {ducklet?.owner?.username?.[0]?.toUpperCase()}
@@ -286,7 +286,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
               className="group flex items-center justify-between gap-2"
             >
               <div className="flex min-w-0 items-center gap-2">
-                <Avatar className="h-8 w-8">
+                <Avatar className="size-8">
                   <AvatarImage src={member.photoURL ?? undefined} />
                   <AvatarFallback>
                     {member.username?.[0]?.toUpperCase()}
@@ -337,7 +337,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                     variant="ghost"
                     size="icon"
                     aria-label={`Remove ${member.username}`}
-                    className="text-muted-foreground hover:text-destructive h-7 w-7"
+                    className="text-muted-foreground hover:text-destructive size-7"
                     onClick={() =>
                       removeMemberMutation.mutate({
                         duckletId,
@@ -345,7 +345,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                       })
                     }
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="size-3.5" />
                   </Button>
                 )}
               </div>
@@ -360,12 +360,12 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <UserPlus className="h-4 w-4" />
+          <UserPlus className="size-4" />
           Share
           {pendingRequests.length > 0 && isOwner && (
             <Badge
               variant="destructive"
-              className="flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
+              className="flex size-5 items-center justify-center rounded-full p-0 text-[10px]"
             >
               {pendingRequests.length}
             </Badge>
@@ -399,7 +399,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
             aria-label="Copy ducklet link"
           >
             <span className="sr-only">Copy</span>
-            <Copy className="h-4 w-4" />
+            <Copy className="size-4" />
           </Button>
         </div>
 
@@ -478,7 +478,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                     >
                       {isSearching ? (
                         <div className="text-muted-foreground flex items-center gap-2 px-2 py-3 text-xs">
-                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <Loader2 className="size-3 animate-spin" />
                           Searching…
                         </div>
                       ) : filteredResults.length === 0 ? (
@@ -497,7 +497,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                                 }}
                                 className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left"
                               >
-                                <Avatar className="h-7 w-7">
+                                <Avatar className="size-7">
                                   <AvatarImage src={u.photoURL ?? undefined} />
                                   <AvatarFallback>
                                     {u.username[0]?.toUpperCase()}
@@ -539,7 +539,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                   disabled={inviteMutation.isPending || !inviteUsername.trim()}
                 >
                   {inviteMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
                     "Invite"
                   )}

@@ -313,8 +313,13 @@ export function ProblemFormDialog({
     ),
   );
 
-  // Reset form when dialog opens or id changes
+  // Reset form when dialog opens or id changes. This must run in an effect:
+  // it reacts to async-loaded query data (`existingProblem`) and drives the
+  // react-hook-form imperative `form.reset()` API, which can't be called
+  // during render — so this is not the prop-mirroring anti-pattern the rule targets.
+  // react-doctor-disable-next-line react-doctor/no-event-handler
   useEffect(() => {
+    // react-doctor-disable-next-line react-doctor/no-event-handler
     if (open) {
       if (problemId && existingProblem) {
         form.reset({
@@ -336,6 +341,8 @@ export function ProblemFormDialog({
           functionSignature: existingProblem.functionSignature as any,
         });
         if (existingProblem.functionSignature) {
+          // signature is editable by user and loaded from async query data — not a simple derived value
+          // react-doctor-disable-next-line react-doctor/no-derived-state
           setSignature(existingProblem.functionSignature as any);
         }
       } else if (!problemId) {
@@ -356,6 +363,8 @@ export function ProblemFormDialog({
           testCases: [{ input: "", output: "", isPublic: true }],
           starterCode: DEFAULT_STARTER_CODE,
         });
+        // Part of the async-data-driven form reset above (not prop mirroring).
+        // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
         setSignature(undefined);
       }
     }
@@ -456,6 +465,7 @@ export function ProblemFormDialog({
                 type="file"
                 accept=".json"
                 className="hidden"
+                aria-label="Import problem from JSON file"
                 onChange={handleFileUpload}
               />
               <Button
@@ -465,7 +475,7 @@ export function ProblemFormDialog({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading}
               >
-                <Upload className="mr-2 h-4 w-4" />
+                <Upload className="mr-2 size-4" />
                 Import
               </Button>
               <Button
@@ -475,7 +485,7 @@ export function ProblemFormDialog({
                 onClick={handleExport}
                 disabled={isLoading}
               >
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 size-4" />
                 Export
               </Button>
             </div>
@@ -485,7 +495,7 @@ export function ProblemFormDialog({
         <div className="flex-1 overflow-y-auto p-6">
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
-              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+              <Loader2 className="text-muted-foreground size-8 animate-spin" />
             </div>
           ) : (
             <Form {...form}>
@@ -495,7 +505,7 @@ export function ProblemFormDialog({
               >
                 {Object.keys(form.formState.errors).length > 0 && (
                   <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
+                    <AlertCircle className="size-4" />
                     <AlertDescription>
                       Please fix the following errors:
                       <ul className="mt-2 list-inside list-disc space-y-1">
@@ -837,9 +847,9 @@ export function ProblemFormDialog({
             disabled={isSubmitting || isLoading}
           >
             {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-4 animate-spin" />
             ) : (
-              <Save className="mr-2 h-4 w-4" />
+              <Save className="mr-2 size-4" />
             )}
             {problemId ? "Save Changes" : "Create Problem"}
           </Button>

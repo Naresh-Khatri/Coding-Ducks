@@ -1,7 +1,7 @@
 "use client";
 
 import type { VariantProps } from "class-variance-authority";
-import { useMemo } from "react";
+import { memo } from "react";
 import { cva } from "class-variance-authority";
 
 import { Label } from "~/components/ui/label";
@@ -84,6 +84,8 @@ function Field({
   orientation = "vertical",
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof fieldVariants>) {
+  // role="group" is the correct ARIA role for a generic form field wrapper; <address> is for contact info only
+  // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
   return (
     <div
       role="group"
@@ -184,6 +186,27 @@ function FieldSeparator({
   );
 }
 
+const ErrorList = memo(function ErrorList({
+  errors,
+}: {
+  errors: ({ message?: string } | undefined)[];
+}) {
+  const uniqueErrors = [
+    ...new Map(errors.map((error) => [error?.message, error])).values(),
+  ];
+  if (uniqueErrors.length === 1) {
+    return <>{uniqueErrors[0]?.message}</>;
+  }
+  return (
+    <ul className="ml-4 flex list-disc flex-col gap-1">
+      {uniqueErrors.map(
+        (error) =>
+          error?.message && <li key={error.message}>{error.message}</li>,
+      )}
+    </ul>
+  );
+});
+
 function FieldError({
   className,
   children,
@@ -192,34 +215,9 @@ function FieldError({
 }: React.ComponentProps<"div"> & {
   errors?: ({ message?: string } | undefined)[];
 }) {
-  const content = useMemo(() => {
-    if (children) {
-      return children;
-    }
+  const hasErrors = !!errors?.length;
 
-    if (!errors?.length) {
-      return null;
-    }
-
-    const uniqueErrors = [
-      ...new Map(errors.map((error) => [error?.message, error])).values(),
-    ];
-
-    if (uniqueErrors?.length == 1) {
-      return uniqueErrors[0]?.message;
-    }
-
-    return (
-      <ul className="ml-4 flex list-disc flex-col gap-1">
-        {uniqueErrors.map(
-          (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>,
-        )}
-      </ul>
-    );
-  }, [children, errors]);
-
-  if (!content) {
+  if (!children && !hasErrors) {
     return null;
   }
 
@@ -230,7 +228,7 @@ function FieldError({
       className={cn("text-destructive text-sm font-normal", className)}
       {...props}
     >
-      {content}
+      {children ?? (errors ? <ErrorList errors={errors} /> : null)}
     </div>
   );
 }

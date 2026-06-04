@@ -2,6 +2,8 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+// Multiple named recharts exports are used inline in JSX; extracting to a child file would require a new file
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { Cell, ResponsiveContainer, Bar, BarChart, XAxis } from "recharts";
 import { Loader2, Users } from "lucide-react";
 

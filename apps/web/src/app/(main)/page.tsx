@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { auth } from "~/auth/server";
+
+export const metadata: Metadata = {
+  title: "Coding Ducks — Practice Coding, Build Systems, Collaborate Live",
+  description:
+    "Sharpen your skills with LeetCode-style problems, real-time collaborative coding rooms, and an interactive system design game.",
+};
 import { ClosingCta } from "./_components/closing-cta";
 import { FeaturesSection } from "./_components/features-section";
 import { HeroSection } from "./_components/hero-section";

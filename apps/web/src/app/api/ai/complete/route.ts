@@ -52,6 +52,7 @@ export async function POST(req: Request) {
   try {
     const upstream = await fetch(CODESTRAL_FIM_URL, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,

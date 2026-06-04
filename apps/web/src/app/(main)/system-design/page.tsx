@@ -1,3 +1,5 @@
+// Page metadata is provided by the sibling server layout.tsx (this is a client component).
+// react-doctor-disable-next-line react-doctor/nextjs-missing-metadata
 "use client";
 
 import type { Edge, Node } from "@xyflow/react";
@@ -88,7 +90,7 @@ export default function SystemDesignPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3">
-          <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+          <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
             <Cpu className="text-primary" size={20} />
           </div>
           <div>
@@ -107,7 +109,7 @@ export default function SystemDesignPage() {
           {LEVELS.length} {LEVELS.length === 1 ? "Level" : "Levels"}
         </h2>
         <div className="bg-muted flex rounded-lg p-0.5">
-          <button
+          <button type="button"
             onClick={() => handleViewChange("grid")}
             className={cn(
               "rounded-md p-1.5 transition-colors",
@@ -119,7 +121,7 @@ export default function SystemDesignPage() {
           >
             <LayoutGrid size={14} />
           </button>
-          <button
+          <button type="button"
             onClick={() => handleViewChange("table")}
             className={cn(
               "rounded-md p-1.5 transition-colors",
@@ -270,7 +272,7 @@ export default function SystemDesignPage() {
                 <th className="text-muted-foreground hidden px-4 py-2.5 text-xs font-medium md:table-cell">
                   Best Latency
                 </th>
-                <th className="text-muted-foreground px-4 py-2.5 text-right text-xs font-medium" />
+                <th className="text-muted-foreground px-4 py-2.5 text-right text-xs font-medium" aria-label="Actions" />
               </tr>
             </thead>
             <tbody>
@@ -346,7 +348,7 @@ export default function SystemDesignPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 w-7 p-0"
+                            className="size-7 p-0"
                             onClick={() => setHistorySlug(level.slug)}
                             title="View history"
                           >
@@ -693,7 +695,7 @@ function AttemptHistoryDialog({
                 </div>
 
                 {/* View graph button */}
-                <button
+                <button type="button"
                   onClick={() => setViewingGraph(a.graph as SavedGraph)}
                   className="text-muted-foreground hover:text-foreground shrink-0 transition-colors"
                   title="View design"

@@ -125,12 +125,13 @@ export function generateSuggestions(
   }
   candidates.sort((a, b) => b.load - a.load);
 
+  const nodesById = new Map(nodes.map((n) => [n.id, n]));
   const evaluated: WhatIfSuggestion[] = [];
   const triedCount = Math.min(candidates.length, 5);
 
   for (let i = 0; i < triedCount; i++) {
     const cand = candidates[i]!;
-    const node = nodes.find((n) => n.id === cand.nodeId);
+    const node = nodesById.get(cand.nodeId);
     if (!node) continue;
     const data = node.data;
     const currentReplicas = data.replicas ?? 1;

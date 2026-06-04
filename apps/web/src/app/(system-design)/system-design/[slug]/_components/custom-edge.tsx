@@ -6,6 +6,8 @@ import { getBezierPath } from "@xyflow/react";
 
 import { useSystemDesignStore } from "~/lib/system-design/store";
 
+const EMPTY_STYLE: React.CSSProperties = {};
+
 function CustomEdgeComponent({
   id,
   source,
@@ -15,7 +17,7 @@ function CustomEdgeComponent({
   targetY,
   sourcePosition,
   targetPosition,
-  style = {},
+  style = EMPTY_STYLE,
 }: EdgeProps) {
   const phase = useSystemDesignStore((s) => s.phase);
   // An edge only carries flow if its source node is actually processing

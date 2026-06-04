@@ -16,7 +16,7 @@ export function CanvasHintsOverlay() {
   return (
     <Panel position="bottom-right" className="!m-3">
       <div className="bg-card/90 w-60 rounded-xl border shadow-lg backdrop-blur-sm">
-        <button
+        <button type="button"
           onClick={() => setExpanded(!expanded)}
           className="hover:bg-muted/50 flex w-full items-center gap-2 rounded-xl px-3 py-2 transition-colors"
         >
@@ -37,7 +37,7 @@ export function CanvasHintsOverlay() {
           <div className="border-t px-3 pt-2 pb-3">
             <ol className="space-y-2">
               {level.hints.map((hint, i) => (
-                <li key={i} className="flex gap-2 text-[11px]">
+                <li key={hint} className="flex gap-2 text-[11px]">
                   <span className="text-muted-foreground mt-px shrink-0 font-mono text-[10px]">
                     {i + 1}.
                   </span>

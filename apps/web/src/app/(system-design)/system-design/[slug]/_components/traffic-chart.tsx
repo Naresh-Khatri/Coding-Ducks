@@ -8,6 +8,8 @@ import {
   SkipForward,
   SlidersHorizontal,
 } from "lucide-react";
+// recharts is deeply integrated into this chart component — dynamic import would require extracting the entire component
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import {
   Area,
   AreaChart,
@@ -60,6 +62,14 @@ export function TrafficChart() {
   const setTimelineMode = useSystemDesignStore((s) => s.setTimelineMode);
   const setPhase = useSystemDesignStore((s) => s.setPhase);
 
+  const handleSeek = useCallback(
+    (value: number) => {
+      const idx = simulationTimeline.findIndex((t) => t.time >= value);
+      if (idx >= 0) seekToTick(idx);
+    },
+    [simulationTimeline, seekToTick],
+  );
+
   if (!level) return null;
 
   const isLive = timelineMode === "live";
@@ -82,14 +92,6 @@ export function TrafficChart() {
       ? simulationTimeline[simulationTick]?.time
       : simulationTimeline[simulationTimeline.length - 1]?.time;
 
-  const handleSeek = useCallback(
-    (value: number) => {
-      const idx = simulationTimeline.findIndex((t) => t.time >= value);
-      if (idx >= 0) seekToTick(idx);
-    },
-    [simulationTimeline, seekToTick],
-  );
-
   const totalDuration = level.durationSeconds;
 
   return (
@@ -97,16 +99,16 @@ export function TrafficChart() {
       {/* Controls bar */}
       <div className="flex items-center gap-2 border-b px-3 py-1">
         {/* Play/Pause */}
-        <button
+        <button type="button"
           onClick={togglePause}
-          className="hover:bg-muted flex h-6 w-6 items-center justify-center rounded-md transition-colors"
+          className="hover:bg-muted flex size-6 items-center justify-center rounded-md transition-colors"
         >
           {simulationPaused ? <Play size={12} /> : <Pause size={12} />}
         </button>
 
         {/* Mode toggle */}
         <div className="bg-muted flex items-center gap-0.5 rounded-md p-0.5">
-          <button
+          <button type="button"
             onClick={() => setTimelineMode("live")}
             className={cn(
               "flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium transition-colors",
@@ -118,7 +120,7 @@ export function TrafficChart() {
             <Radio size={11} />
             Live
           </button>
-          <button
+          <button type="button"
             onClick={() => setTimelineMode("review")}
             className={cn(
               "flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium transition-colors",
@@ -135,7 +137,7 @@ export function TrafficChart() {
         {/* Speed selector */}
         <div className="bg-muted flex items-center gap-0.5 rounded-md p-0.5">
           {SPEEDS.map((speed) => (
-            <button
+            <button type="button"
               key={speed}
               onClick={() => setSimulationSpeed(speed)}
               className={cn(
@@ -260,6 +262,7 @@ export function TrafficChart() {
           </span>
           <input
             type="range"
+            aria-label="Simulation timeline"
             min={0}
             max={simulationTimeline.length - 1 || 0}
             value={Math.min(simulationTick, simulationTimeline.length - 1)}

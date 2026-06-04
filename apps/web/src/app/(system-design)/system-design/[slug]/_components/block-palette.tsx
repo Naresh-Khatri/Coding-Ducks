@@ -70,6 +70,8 @@ export function BlockPalette() {
         <div className="text-muted-foreground mb-1 px-2 text-xs font-medium tracking-wider uppercase">
           Blocks
         </div>
+        {/* CATEGORY_CONFIG has at most 5 categories — two-pass cost is negligible */}
+        {/* react-doctor-disable-next-line react-doctor/js-combine-iterations */}
         {(Object.keys(CATEGORY_CONFIG) as BlockCategory[])
           .filter((category) => grouped[category].length > 0)
           .map((category, idx) => {
@@ -80,7 +82,7 @@ export function BlockPalette() {
             return (
               <div key={category}>
                 {idx > 0 && <Separator className="my-1" />}
-                <button
+                <button type="button"
                   className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium transition-colors"
                   onClick={() =>
                     setExpandedCategories((s) => ({
@@ -135,7 +137,8 @@ export function BlockPalette() {
                         )[block.icon] ?? Icons.Box;
 
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={block.type}
                           draggable={!isDisabled}
                           onDragStart={(e) =>
@@ -168,7 +171,7 @@ export function BlockPalette() {
                             isDisabled && "cursor-not-allowed opacity-40",
                           )}
                         >
-                          <div className="bg-muted flex h-7 w-7 shrink-0 items-center justify-center rounded">
+                          <div className="bg-muted flex size-7 shrink-0 items-center justify-center rounded">
                             <IconComponent size={14} />
                           </div>
                           <div className="flex min-w-0 flex-1 flex-col">
@@ -179,7 +182,7 @@ export function BlockPalette() {
                               {costLabel}
                             </span>
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>

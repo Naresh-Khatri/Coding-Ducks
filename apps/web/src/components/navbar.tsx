@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, Terminal, X } from "lucide-react";
@@ -59,7 +60,7 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 text-xl font-bold tracking-tight"
         >
-          <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
+          <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
             <Terminal size={18} strokeWidth={3} />
           </div>
           <span>Coding Ducks</span>
@@ -91,11 +92,13 @@ export function Navbar() {
               <div className="bg-border h-8 w-px"></div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hover:bg-muted hover:border-border flex items-center gap-3 rounded-full border border-transparent p-1.5 pr-3 transition-colors">
-                    <img
+                  <button type="button" className="hover:bg-muted hover:border-border flex items-center gap-3 rounded-full border border-transparent p-1.5 pr-3 transition-colors">
+                    <Image
                       src={getAvatarUrl(user.username, 32)}
                       alt={user.name ?? "User"}
-                      className="bg-muted h-8 w-8 rounded-full"
+                      width={32}
+                      height={32}
+                      className="bg-muted rounded-full"
                     />
                     <span className="text-sm font-medium">
                       {user.name ?? "User"}
@@ -190,10 +193,12 @@ export function Navbar() {
               {user ? (
                 <>
                   <div className="flex items-center gap-3 px-4 py-2">
-                    <img
+                    <Image
                       src={getAvatarUrl(user.username, 32)}
                       alt={user.name ?? "User"}
-                      className="bg-muted h-8 w-8 rounded-full"
+                      width={32}
+                      height={32}
+                      className="bg-muted rounded-full"
                     />
                     <span className="text-sm font-medium">
                       {user.name ?? "User"}
@@ -208,7 +213,7 @@ export function Navbar() {
                       My Profile
                     </Link>
                   )}
-                  <button
+                  <button type="button"
                     className="text-destructive hover:bg-destructive/10 w-full rounded-lg px-4 py-2 text-left text-sm font-medium transition-colors"
                     onClick={() => {
                       setIsMobileMenuOpen(false);

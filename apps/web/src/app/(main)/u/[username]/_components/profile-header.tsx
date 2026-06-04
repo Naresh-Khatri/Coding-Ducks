@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Calendar,
   ExternalLink,
@@ -65,17 +66,19 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
     <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
       {/* Avatar */}
       <div className="relative shrink-0">
-        <img
+        <Image
           src={avatarUrl}
           alt={displayName}
-          className="bg-muted h-24 w-24 rounded-2xl shadow-lg"
+          width={128}
+          height={128}
+          className="bg-muted size-24 rounded-2xl shadow-lg"
         />
         {isOwnProfile && (
-          <button
+          <button type="button"
             onClick={() => setAvatarOpen(true)}
             className="bg-background border-border hover:bg-muted absolute -right-1 -bottom-1 rounded-full border p-1.5 shadow-sm transition-colors"
           >
-            <Pencil className="h-3 w-3" />
+            <Pencil className="size-3" />
           </button>
         )}
       </div>
@@ -94,7 +97,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               className="ml-auto gap-1.5"
               onClick={() => setEditOpen(true)}
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil className="size-3.5" />
               Edit Profile
             </Button>
           )}
@@ -107,7 +110,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         <div className="flex flex-wrap items-center gap-4 pt-1">
           {joinDate && (
             <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
-              <Calendar className="h-3.5 w-3.5" />
+              <Calendar className="size-3.5" />
               Joined {joinDate}
             </span>
           )}
@@ -121,7 +124,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
                 "text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors",
               )}
             >
-              <link.icon className="h-3.5 w-3.5" />
+              <link.icon className="size-3.5" />
               {link.label}
             </a>
           ))}

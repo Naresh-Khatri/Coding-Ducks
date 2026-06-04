@@ -92,8 +92,8 @@ export function TestCasePanel({
         >
           {publicCases.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="bg-accent/20 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-                <EyeOff className="text-muted-foreground/40 h-6 w-6" />
+              <div className="bg-accent/20 mb-4 flex size-12 items-center justify-center rounded-full">
+                <EyeOff className="text-muted-foreground/40 size-6" />
               </div>
               <p className="text-muted-foreground text-sm font-medium">
                 No public test cases available
@@ -102,9 +102,9 @@ export function TestCasePanel({
           ) : (
             <div className="p-4">
               <div className="mb-4 flex items-center gap-2">
-                {publicCases.map((_, i) => (
-                  <button
-                    key={i}
+                {publicCases.map((tc, i) => (
+                  <button type="button"
+                    key={tc.input ?? tc.expected ?? i}
                     onClick={() => {
                       onSelectTestCase(i);
                       if (isEditingCustom) clearCustom();
@@ -120,19 +120,19 @@ export function TestCasePanel({
                   </button>
                 ))}
                 {isEditingCustom ? (
-                  <button
+                  <button type="button"
                     onClick={clearCustom}
                     className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-medium transition-colors"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="size-3" />
                     Custom
                   </button>
                 ) : (
-                  <button
+                  <button type="button"
                     onClick={startCustomEdit}
                     className="bg-accent text-foreground flex items-center gap-1 rounded-lg border border-dashed border-white/10 px-3 py-1 text-xs font-medium transition-colors hover:border-white/20"
                   >
-                    <Pencil className="h-3 w-3" />
+                    <Pencil className="size-3" />
                     Custom
                   </button>
                 )}
@@ -147,6 +147,7 @@ export function TestCasePanel({
                           {param.name} =
                         </div>
                         <textarea
+                          aria-label={`${param.name} value`}
                           value={customTestCase[param.name] ?? ""}
                           onChange={(e) =>
                             onCustomTestCaseChange({
@@ -166,6 +167,7 @@ export function TestCasePanel({
                         Input (stdin)
                       </div>
                       <textarea
+                        aria-label="Standard input (stdin)"
                         value={customTestCase.stdin ?? ""}
                         onChange={(e) =>
                           onCustomTestCaseChange({
@@ -188,7 +190,7 @@ export function TestCasePanel({
                     <div className="space-y-3">
                       {tc.args && sig?.params ? (
                         sig.params.map((param, j) => (
-                          <div key={j}>
+                          <div key={param.name}>
                             <div className="text-muted-foreground mb-1 text-xs font-medium">
                               {param.name} =
                             </div>
@@ -240,8 +242,11 @@ export function TestCasePanel({
                     )}
                   </div>
                   <div className="mb-4 flex items-center gap-2">
+                    {/* consoleOutput items are positionally bound to test cases and never reorder */}
+                    {/* react-doctor-disable-next-line react-doctor/no-array-index-key */}
+                    {/* react-doctor-disable-next-line react-doctor/no-array-index-as-key */}
                     {consoleOutput.map((r, i) => (
-                      <button
+                      <button type="button"
                         key={i}
                         onClick={() => onSelectOutputCase(i)}
                         className={cn(
@@ -276,7 +281,7 @@ export function TestCasePanel({
                     <div className="space-y-3">
                       {tc?.args && sig?.params ? (
                         sig.params.map((param, j) => (
-                          <div key={j}>
+                          <div key={param.name}>
                             <div className="text-muted-foreground mb-1 text-xs font-medium">
                               {param.name} =
                             </div>
@@ -333,7 +338,7 @@ export function TestCasePanel({
             })()
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center opacity-50">
-              <Play className="text-muted-foreground mb-4 h-8 w-8" />
+              <Play className="text-muted-foreground mb-4 size-8" />
               <p className="text-muted-foreground text-xs font-medium">
                 Run your code to see results
               </p>

@@ -144,7 +144,7 @@ export function CodeEditorPanel({
                 return (
                   <SelectItem key={lang} value={lang}>
                     <div className="flex items-center gap-2">
-                      {Icon && <Icon className="h-4 w-4 shrink-0" />}
+                      {Icon && <Icon className="size-4 shrink-0" />}
                       <span>{langInfo?.label ?? lang}</span>
                     </div>
                   </SelectItem>
@@ -188,10 +188,10 @@ export function CodeEditorPanel({
                   variant="ghost"
                   size="icon"
                   aria-label="Re-indent code"
-                  className="h-6 w-6"
+                  className="size-6"
                   onClick={handleFormat}
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <Sparkles className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -204,11 +204,11 @@ export function CodeEditorPanel({
                   variant="ghost"
                   size="icon"
                   aria-label="Retrieve last submission"
-                  className="h-6 w-6"
+                  className="size-6"
                   onClick={triggerRetrieve}
                   disabled={!hasLastSubmission}
                 >
-                  <History className="h-3.5 w-3.5" />
+                  <History className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -221,10 +221,10 @@ export function CodeEditorPanel({
                   variant="ghost"
                   size="icon"
                   aria-label="Reset to default code"
-                  className="h-6 w-6"
+                  className="size-6"
                   onClick={triggerReset}
                 >
-                  <RotateCcw className="h-3.5 w-3.5" />
+                  <RotateCcw className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">

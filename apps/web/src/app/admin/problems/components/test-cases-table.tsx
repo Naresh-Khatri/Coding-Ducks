@@ -129,7 +129,7 @@ export function TestCasesTable({
         id: "drag-handle",
         header: "",
         size: 40,
-        cell: () => <GripVertical className="h-4 w-4" />,
+        cell: () => <GripVertical className="size-4" />,
       },
       // Dynamic Input Column(s)
       ...(signature?.params
@@ -244,9 +244,9 @@ export function TestCasesTable({
                         }
                       >
                         {field.value ? (
-                          <Eye className="h-4 w-4" />
+                          <Eye className="size-4" />
                         ) : (
-                          <EyeOff className="h-4 w-4" />
+                          <EyeOff className="size-4" />
                         )}
                       </button>
                     </FormControl>
@@ -257,11 +257,11 @@ export function TestCasesTable({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-8"
                 onClick={() => remove(index)}
                 title="Remove Test Case"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-4" />
               </Button>
             </div>
           );
@@ -305,7 +305,7 @@ export function TestCasesTable({
           size="sm"
           onClick={() => append({ input: "", output: "", isPublic: false })}
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 size-4" />
           Add Test Case
         </Button>
       </div>

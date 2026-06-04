@@ -1,3 +1,5 @@
+// Metadata is exported from the sibling layout.tsx (generateMetadata) — this is a "use client" page.
+// react-doctor-disable-next-line react-doctor/nextjs-missing-metadata
 "use client";
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
@@ -70,6 +72,8 @@ export default function DuckletPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // use(params) is the Next.js 15 async params pattern — not an event handler misuse
+  // react-doctor-disable-next-line react-doctor/no-event-handler
   const { id: duckletIdStr } = use(params);
   const duckletId = parseInt(duckletIdStr);
   const router = useRouter();
@@ -112,7 +116,8 @@ export default function DuckletPage({
 
   // Chat history from Postgres; live messages via the SSE subscription.
   // Flat oldest→newest list, deduped by id so the optimistic append and its
-  // echo collapse to one.
+  // echo collapse to one. Cannot be derived — merges server snapshot + live SSE stream.
+  // react-doctor-disable-next-line react-doctor/no-derived-state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const appendMessage = useCallback((msg: ChatMessage) => {
@@ -237,6 +242,8 @@ export default function DuckletPage({
 
   // Redirect non-members to guest page for public ducklets
   // This also handles access revocation during active session
+  // Redirect depends on client-only auth/membership state — cannot be a server redirect
+  // react-doctor-disable-next-line react-doctor/nextjs-no-client-side-redirect
   useEffect(() => {
     if (ducklet && isPublic && !isOwner && !isMember) {
       router.push(`/ducklets/${duckletId}/guest`);
@@ -244,6 +251,8 @@ export default function DuckletPage({
   }, [ducklet, isPublic, isOwner, isMember, duckletId, router]);
 
   // Listen to websocket disconnects for access revocation
+  // Redirect triggered by websocket close event — depends on runtime provider state, not server state
+  // react-doctor-disable-next-line react-doctor/nextjs-no-client-side-redirect
   useEffect(() => {
     if (!provider || !ducklet) return;
 
@@ -307,7 +316,7 @@ export default function DuckletPage({
         <div className="flex shrink-0 items-center gap-2">
           <Link href="/ducklets">
             <Button variant="outline" size="sm" className="px-2 sm:px-3">
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" />
               <span className="hidden sm:inline">Back</span>
             </Button>
           </Link>
@@ -340,12 +349,12 @@ export default function DuckletPage({
               >
                 {canEdit ? (
                   <>
-                    <Pencil className="h-3 w-3" />
+                    <Pencil className="size-3" />
                     Can edit
                   </>
                 ) : (
                   <>
-                    <Eye className="h-3 w-3" />
+                    <Eye className="size-3" />
                     Read-only
                   </>
                 )}
@@ -372,7 +381,7 @@ export default function DuckletPage({
               title="Fork this ducklet"
               aria-label="Fork ducklet"
             >
-              <Copy className="h-4 w-4" />
+              <Copy className="size-4" />
             </Button>
           )}
 
@@ -390,18 +399,18 @@ export default function DuckletPage({
             title={isChatOpen ? "Hide Chat" : "Show Chat"}
             aria-label={isChatOpen ? "Hide chat" : "Show chat"}
           >
-            <MessageSquare className="h-4 w-4" />
+            <MessageSquare className="size-4" />
           </Button>
 
           <div className="hidden -space-x-2 sm:flex">
             {users.slice(0, 5).map((u) => (
-              <Avatar key={u.id} className="border-background h-8 w-8 border-2">
+              <Avatar key={u.id} className="border-background size-8 border-2">
                 <AvatarImage src={u.photoURL} />
                 <AvatarFallback>{u.username[0]?.toUpperCase()}</AvatarFallback>
               </Avatar>
             ))}
             {users.length > 5 && (
-              <div className="bg-muted border-background flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs">
+              <div className="bg-muted border-background flex size-8 items-center justify-center rounded-full border-2 text-xs">
                 +{users.length - 5}
               </div>
             )}
@@ -450,7 +459,7 @@ export default function DuckletPage({
           <div className="bg-background fixed inset-0 z-40 flex flex-col md:hidden">
             <div className="flex items-center justify-between border-b p-3">
               <div className="flex items-center gap-2 font-medium">
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="size-4" />
                 Chat & Users
               </div>
               <Button
@@ -459,7 +468,7 @@ export default function DuckletPage({
                 onClick={() => setIsChatOpen(false)}
                 aria-label="Close chat"
               >
-                <X className="h-4 w-4" />
+                <X className="size-4" />
               </Button>
             </div>
             <ChatPanel
@@ -508,19 +517,19 @@ function ChatPanel({
     <div className="bg-muted/10 flex h-full flex-col border-l">
       {showHeader && (
         <div className="flex items-center gap-2 border-b p-3 font-medium">
-          <MessageSquare className="h-4 w-4" />
+          <MessageSquare className="size-4" />
           Chat & Users
         </div>
       )}
 
       <div className="border-b p-2">
         <div className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-semibold">
-          <Users className="h-3 w-3" /> Online ({users.length})
+          <Users className="size-3" /> Online ({users.length})
         </div>
         <div className="flex flex-wrap gap-1">
           {users.map((u) => (
             <div key={u.id} title={u.username} className="relative">
-              <Avatar className="border-border h-6 w-6 border">
+              <Avatar className="border-border size-6 border">
                 <AvatarImage src={u.photoURL} />
                 <AvatarFallback className="text-[9px]">
                   {u.username[0]?.toUpperCase()}
@@ -576,10 +585,10 @@ function ChatPanel({
           <Button
             size="icon"
             onClick={onSend}
-            className="h-8 w-8"
+            className="size-8"
             aria-label="Send"
           >
-            <Send className="h-4 w-4" />
+            <Send className="size-4" />
           </Button>
         </div>
       </div>
@@ -600,7 +609,7 @@ function ConnectionBadge({
         className="text-muted-foreground flex items-center gap-1 text-xs"
         title="Connected — changes sync in real time"
       >
-        <Wifi className="h-3.5 w-3.5 text-emerald-500" />
+        <Wifi className="size-3.5 text-emerald-500" />
         <span className="hidden sm:inline">Live</span>
       </span>
     );
@@ -610,7 +619,7 @@ function ConnectionBadge({
       className="flex items-center gap-1 text-xs text-amber-500"
       title={hasToken ? "Disconnected — reconnecting…" : "Connecting…"}
     >
-      <WifiOff className="h-3.5 w-3.5 animate-pulse" />
+      <WifiOff className="size-3.5 animate-pulse" />
       <span className="hidden sm:inline">
         {hasToken ? "Reconnecting…" : "Connecting…"}
       </span>
@@ -639,8 +648,8 @@ function AccessDeniedScreen({
 
   return (
     <div className="mx-auto flex h-[100dvh] max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
-      <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
-        <Lock className="text-muted-foreground h-7 w-7" />
+      <div className="bg-muted flex size-16 items-center justify-center rounded-full">
+        <Lock className="text-muted-foreground size-7" />
       </div>
       <h2 className="text-2xl font-semibold">This ducklet is private</h2>
       <p className="text-muted-foreground">

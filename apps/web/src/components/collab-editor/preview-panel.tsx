@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ExternalLink, Loader2, RotateCw } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -21,11 +21,16 @@ const STATUS_LABEL: Record<RuntimeStatus, string> = {
 export function PreviewPanel({ runtime }: { runtime: WebContainerRuntime }) {
   const { previewUrl, status, error, restart } = runtime;
   const [reloadKey, setReloadKey] = useState(0);
-  const [editableUrl, setEditableUrl] = useState("");
+  const [editableUrl, setEditableUrl] = useState(previewUrl ?? "");
+  // prevPreviewUrl is read during render for the prev-prop comparison below — not a handler-only state.
+  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [prevPreviewUrl, setPrevPreviewUrl] = useState(previewUrl);
 
-  useEffect(() => {
+  // Sync editableUrl when previewUrl arrives or changes (prev-prop pattern — no effect needed)
+  if (previewUrl !== prevPreviewUrl) {
+    setPrevPreviewUrl(previewUrl);
     if (previewUrl) setEditableUrl(previewUrl);
-  }, [previewUrl]);
+  }
 
   return (
     <div className="flex h-full flex-col bg-white dark:bg-[#1e1e1e]">
@@ -33,12 +38,12 @@ export function PreviewPanel({ runtime }: { runtime: WebContainerRuntime }) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className="size-6"
           disabled={!previewUrl}
           onClick={() => setReloadKey((k) => k + 1)}
           title="Reload preview"
         >
-          <RotateCw className="h-3.5 w-3.5" />
+          <RotateCw className="size-3.5" />
         </Button>
         <Input
           value={editableUrl}
@@ -51,12 +56,12 @@ export function PreviewPanel({ runtime }: { runtime: WebContainerRuntime }) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
+            className="size-6"
             asChild
             title="Open in new tab"
           >
             <a href={previewUrl} target="_blank" rel="noreferrer">
-              <ExternalLink className="h-3.5 w-3.5" />
+              <ExternalLink className="size-3.5" />
             </a>
           </Button>
         )}
@@ -70,6 +75,7 @@ export function PreviewPanel({ runtime }: { runtime: WebContainerRuntime }) {
             title="Preview"
             className="h-full w-full border-0 bg-white"
             allow="cross-origin-isolated"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
           />
         ) : (
           <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 text-sm">
@@ -82,7 +88,7 @@ export function PreviewPanel({ runtime }: { runtime: WebContainerRuntime }) {
               </>
             ) : (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="size-5 animate-spin" />
                 <p>{STATUS_LABEL[status]}</p>
                 <p className="text-muted-foreground/70 max-w-xs text-center text-xs">
                   First boot installs dependencies in your browser — this can

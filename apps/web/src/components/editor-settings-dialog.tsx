@@ -47,9 +47,9 @@ export function EditorSettingsDialog({
           variant="ghost"
           size="icon"
           aria-label="Editor settings"
-          className="h-6 w-6"
+          className="size-6"
         >
-          <Settings className="h-3.5 w-3.5" />
+          <Settings className="size-3.5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
@@ -63,11 +63,11 @@ export function EditorSettingsDialog({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-7 w-7"
+                className="size-7"
                 onClick={() => s.set({ fontSize: s.fontSize - 1 })}
                 disabled={s.fontSize <= 10}
               >
-                <Minus className="h-3 w-3" />
+                <Minus className="size-3" />
               </Button>
               <span className="w-6 text-center font-mono text-sm tabular-nums">
                 {s.fontSize}
@@ -75,11 +75,11 @@ export function EditorSettingsDialog({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-7 w-7"
+                className="size-7"
                 onClick={() => s.set({ fontSize: s.fontSize + 1 })}
                 disabled={s.fontSize >= 24}
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="size-3" />
               </Button>
             </div>
           </Row>

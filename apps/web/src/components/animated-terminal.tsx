@@ -250,10 +250,11 @@ const AnimatedTerminal = () => {
   }, [isMobile]);
 
   useEffect(() => {
+    const typingInterval = typingIntervalRef.current;
+    const blinkingInterval = blinkingIntervalRef.current;
     return () => {
-      if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-      if (blinkingIntervalRef.current)
-        clearInterval(blinkingIntervalRef.current);
+      if (typingInterval) clearInterval(typingInterval);
+      if (blinkingInterval) clearInterval(blinkingInterval);
     };
   }, []);
 

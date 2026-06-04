@@ -65,12 +65,15 @@ export function useSocketDucklet({
   const [users, setUsers] = useState<UserPresence[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Y.Doc should be recreated if the duckletId changes to ensure clean state
+  // duckletId is intentionally in deps to recreate Y.Doc when the room changes, even though it's not referenced in the factory
+  // react-doctor-disable-next-line react-doctor/exhaustive-deps
   const ydoc = useMemo(() => new Y.Doc(), [duckletId]);
 
   const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
   const userColor = useMemo(() => getRandomColor(), []);
 
+  // setState calls are spread across independent async event callbacks (onConnect, onDisconnect, awareness) — not cascading
+  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (!userId || !token) return;
 
@@ -126,6 +129,7 @@ export function useSocketDucklet({
     newProvider.awareness!.on("change", handleAwarenessUpdate);
 
     return () => {
+      newProvider.awareness!.off("change", handleAwarenessUpdate);
       newProvider.destroy();
     };
   }, [duckletId, userId, username, photoURL, userColor, ydoc, token]);

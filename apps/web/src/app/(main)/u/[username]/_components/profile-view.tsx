@@ -23,7 +23,7 @@ export function ProfileView({ username }: { username: string }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+        <Loader2 className="text-muted-foreground size-8 animate-spin" />
       </div>
     );
   }

@@ -45,7 +45,7 @@ export function SiteFooter() {
               href="/"
               className="flex items-center gap-2 font-bold tracking-tight"
             >
-              <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
+              <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
                 <Terminal size={18} strokeWidth={3} />
               </div>
               <span className="text-white">Coding Ducks</span>
@@ -79,7 +79,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 sm:flex-row">
-          <p className="font-mono text-xs text-neutral-600">
+          <p className="font-mono text-xs text-neutral-600" suppressHydrationWarning>
             © {new Date().getFullYear()} Coding Ducks. All rights reserved.
           </p>
           <div className="flex items-center gap-3">

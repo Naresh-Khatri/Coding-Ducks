@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -58,8 +59,20 @@ export function AvatarPicker({
 }: AvatarPickerProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  // selected is an editable copy of the currentSeed prop — it diverges once the user picks a new avatar
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [selected, setSelected] = useState(currentSeed);
+  // prevSeed is the prev-prop tracking state used during render for the comparison below — not a render-only side-effect
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
+  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [prevSeed, setPrevSeed] = useState(currentSeed);
   const [extraSeeds, setExtraSeeds] = useState<string[]>([]);
+
+  // Sync selected avatar when currentSeed prop changes (prev-prop pattern)
+  if (currentSeed !== prevSeed) {
+    setPrevSeed(currentSeed);
+    setSelected(currentSeed);
+  }
 
   const allSeeds = [...PRESET_SEEDS, ...extraSeeds];
 
@@ -85,17 +98,19 @@ export function AvatarPicker({
 
         {/* Current preview */}
         <div className="flex items-center justify-center py-2">
-          <img
+          <Image
             src={getAvatarUrl(selected, 160)}
             alt="Selected avatar"
-            className="bg-muted h-28 w-28 rounded-2xl shadow-md"
+            width={160}
+            height={160}
+            className="bg-muted size-28 rounded-2xl shadow-md"
           />
         </div>
 
         {/* Grid of presets */}
         <div className="grid grid-cols-6 gap-2">
           {allSeeds.map((seed) => (
-            <button
+            <button type="button"
               key={seed}
               onClick={() => setSelected(seed)}
               className={cn(
@@ -105,9 +120,11 @@ export function AvatarPicker({
                   : "hover:border-border border-transparent",
               )}
             >
-              <img
+              <Image
                 src={getAvatarUrl(seed, 80)}
                 alt={seed}
+                width={80}
+                height={80}
                 className="bg-muted h-full w-full rounded-lg"
               />
             </button>
@@ -122,7 +139,7 @@ export function AvatarPicker({
             onClick={() => setExtraSeeds(generateRandomSeeds(6))}
             className="gap-1.5"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className="size-3.5" />
             More options
           </Button>
           <div className="flex gap-2">
@@ -134,7 +151,7 @@ export function AvatarPicker({
               disabled={mutation.isPending || selected === currentSeed}
             >
               {mutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
               )}
               Save
             </Button>

@@ -1,8 +1,9 @@
 "use client";
 
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
-import { motion, useAnimation } from "motion/react";
+import { useCallback, useImperativeHandle, useRef } from "react";
+import type { Ref } from "react";
+import { LazyMotion, domAnimation, m, useAnimation } from "motion/react";
 
 import { cn } from "~/lib/utils";
 
@@ -13,52 +14,60 @@ export interface PlusIconHandle {
 
 interface PlusIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number;
+  ref?: Ref<PlusIconHandle>;
 }
 
-const PlusIcon = forwardRef<PlusIconHandle, PlusIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
-    const controls = useAnimation();
-    const isControlledRef = useRef(false);
+function PlusIcon({
+  onMouseEnter,
+  onMouseLeave,
+  className,
+  size = 28,
+  ref,
+  ...props
+}: PlusIconProps) {
+  const controls = useAnimation();
+  const isControlledRef = useRef(false);
 
-    useImperativeHandle(ref, () => {
-      isControlledRef.current = true;
+  useImperativeHandle(ref, () => {
+    isControlledRef.current = true;
 
-      return {
-        startAnimation: () => controls.start("animate"),
-        stopAnimation: () => controls.start("normal"),
-      };
-    });
+    return {
+      startAnimation: () => controls.start("animate"),
+      stopAnimation: () => controls.start("normal"),
+    };
+  });
 
-    const handleMouseEnter = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseEnter?.(e);
-        } else {
-          controls.start("animate");
-        }
-      },
-      [controls, onMouseEnter],
-    );
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isControlledRef.current) {
+        onMouseEnter?.(e);
+      } else {
+        controls.start("animate");
+      }
+    },
+    [controls, onMouseEnter],
+  );
 
-    const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseLeave?.(e);
-        } else {
-          controls.start("normal");
-        }
-      },
-      [controls, onMouseLeave],
-    );
+  const handleMouseLeave = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isControlledRef.current) {
+        onMouseLeave?.(e);
+      } else {
+        controls.start("normal");
+      }
+    },
+    [controls, onMouseLeave],
+  );
 
-    return (
+  return (
+    <LazyMotion features={domAnimation}>
       <div
         className={cn(className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         {...props}
       >
-        <motion.svg
+        <m.svg
           animate={controls}
           fill="none"
           height={size}
@@ -81,11 +90,11 @@ const PlusIcon = forwardRef<PlusIconHandle, PlusIconProps>(
         >
           <path d="M5 12h14" />
           <path d="M12 5v14" />
-        </motion.svg>
+        </m.svg>
       </div>
-    );
-  },
-);
+    </LazyMotion>
+  );
+}
 
 PlusIcon.displayName = "PlusIcon";
 

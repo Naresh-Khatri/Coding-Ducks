@@ -37,6 +37,9 @@ export function useDuckletModels({
   const [ready, setReady] = useState(false);
   const managerRef = useRef<DuckletModels | null>(null);
 
+  // setReady(true) on setup and setReady(false) in cleanup are a single flag
+  // managed by this effect; they do not cascade into further state updates.
+  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (!monaco) return;
 
@@ -100,6 +103,9 @@ export function useDuckletModels({
     filesMap.observeDeep(onChange);
 
     managerRef.current = { get: (path) => ensure(path) };
+    // Signals that Monaco models have been built for the doc; this is a
+    // one-time setup completion flag, not state mirrored from a prop.
+    // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
     setReady(true);
 
     return () => {

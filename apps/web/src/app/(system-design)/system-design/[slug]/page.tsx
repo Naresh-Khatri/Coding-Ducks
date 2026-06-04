@@ -1,3 +1,5 @@
+// Metadata is provided by the sibling layout.tsx which has generateMetadata for this route segment
+// react-doctor-disable-next-line react-doctor/nextjs-missing-metadata
 "use client";
 
 import { use, useEffect } from "react";
@@ -17,6 +19,8 @@ export default function SystemDesignLevelPage({
   const level = getLevelBySlug(slug);
   const setLevel = useSystemDesignStore((s) => s.setLevel);
 
+  // setLevel syncs route param → Zustand store; track fires once on load — neither is a user event handler
+  // react-doctor-disable-next-line react-doctor/no-event-handler
   useEffect(() => {
     if (level) {
       setLevel(level);

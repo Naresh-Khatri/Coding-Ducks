@@ -1,8 +1,8 @@
 "use client";
 
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
-import { motion, useAnimation } from "motion/react";
+import { useCallback, useImperativeHandle, useRef } from "react";
+import { domAnimation, LazyMotion, m, useAnimation } from "motion/react";
 
 import { cn } from "~/lib/utils";
 
@@ -13,52 +13,60 @@ export interface LockIconHandle {
 
 interface LockIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number;
+  ref?: React.Ref<LockIconHandle>;
 }
 
-const LockIcon = forwardRef<LockIconHandle, LockIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
-    const controls = useAnimation();
-    const isControlledRef = useRef(false);
+function LockIcon({
+  onMouseEnter,
+  onMouseLeave,
+  className,
+  size = 28,
+  ref,
+  ...props
+}: LockIconProps) {
+  const controls = useAnimation();
+  const isControlledRef = useRef(false);
 
-    useImperativeHandle(ref, () => {
-      isControlledRef.current = true;
+  useImperativeHandle(ref, () => {
+    isControlledRef.current = true;
 
-      return {
-        startAnimation: () => controls.start("animate"),
-        stopAnimation: () => controls.start("normal"),
-      };
-    });
+    return {
+      startAnimation: () => controls.start("animate"),
+      stopAnimation: () => controls.start("normal"),
+    };
+  });
 
-    const handleMouseEnter = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseEnter?.(e);
-        } else {
-          controls.start("animate");
-        }
-      },
-      [controls, onMouseEnter],
-    );
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isControlledRef.current) {
+        onMouseEnter?.(e);
+      } else {
+        controls.start("animate");
+      }
+    },
+    [controls, onMouseEnter],
+  );
 
-    const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseLeave?.(e);
-        } else {
-          controls.start("normal");
-        }
-      },
-      [controls, onMouseLeave],
-    );
+  const handleMouseLeave = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isControlledRef.current) {
+        onMouseLeave?.(e);
+      } else {
+        controls.start("normal");
+      }
+    },
+    [controls, onMouseLeave],
+  );
 
-    return (
+  return (
+    <LazyMotion features={domAnimation}>
       <div
         className={cn(className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         {...props}
       >
-        <motion.svg
+        <m.svg
           animate={controls}
           fill="none"
           height={size}
@@ -86,7 +94,7 @@ const LockIcon = forwardRef<LockIconHandle, LockIconProps>(
           xmlns="http://www.w3.org/2000/svg"
         >
           <rect height="11" rx="2" ry="2" width="18" x="3" y="11" />
-          <motion.path
+          <m.path
             animate={controls}
             d="M7 11V7a5 5 0 0 1 10 0v4"
             initial="normal"
@@ -103,11 +111,11 @@ const LockIcon = forwardRef<LockIconHandle, LockIconProps>(
               },
             }}
           />
-        </motion.svg>
+        </m.svg>
       </div>
-    );
-  },
-);
+    </LazyMotion>
+  );
+}
 
 LockIcon.displayName = "LockIcon";
 

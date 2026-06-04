@@ -3,20 +3,26 @@ import type { Components } from "react-markdown";
 import { ShikiCode } from "~/components/shiki-code";
 
 export const markdownComponents: Components = {
-  h1: ({ node, ...props }) => (
+  h1: ({ node, children, ...props }) => (
     <h1
       className="mt-0 mb-6 text-3xl font-extrabold tracking-tight"
       {...props}
-    />
+    >
+      {children}
+    </h1>
   ),
-  h2: ({ node, ...props }) => (
+  h2: ({ node, children, ...props }) => (
     <h2
       className="text-foreground/90 mt-8 mb-4 border-b border-white/5 pb-2 text-xl font-bold tracking-tight"
       {...props}
-    />
+    >
+      {children}
+    </h2>
   ),
-  h3: ({ node, ...props }) => (
-    <h3 className="text-foreground/80 mt-6 mb-3 text-lg font-bold" {...props} />
+  h3: ({ node, children, ...props }) => (
+    <h3 className="text-foreground/80 mt-6 mb-3 text-lg font-bold" {...props}>
+      {children}
+    </h3>
   ),
   p: ({ node, ...props }) => (
     <p className="text-foreground/70 mb-4 text-sm leading-relaxed" {...props} />
@@ -61,13 +67,15 @@ export const markdownComponents: Components = {
   em: ({ node, ...props }) => (
     <em className="text-foreground/80 italic" {...props} />
   ),
-  a: ({ node, ...props }) => (
+  a: ({ node, children, ...props }) => (
     <a
       className="text-primary font-medium underline underline-offset-2 hover:opacity-80"
       target="_blank"
       rel="noopener noreferrer"
       {...props}
-    />
+    >
+      {children}
+    </a>
   ),
   blockquote: ({ node, ...props }) => (
     <blockquote

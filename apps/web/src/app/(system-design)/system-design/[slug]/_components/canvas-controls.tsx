@@ -14,23 +14,23 @@ export function CanvasControls() {
         sidebarMode === "fixed" ? "left-2" : "left-12",
       )}
     >
-      <button
+      <button type="button"
         onClick={() => zoomIn()}
-        className="bg-card text-foreground hover:bg-muted flex h-7 w-7 items-center justify-center rounded-md border shadow-sm transition-colors"
+        className="bg-card text-foreground hover:bg-muted flex size-7 items-center justify-center rounded-md border shadow-sm transition-colors"
         title="Zoom in"
       >
         <Plus size={14} />
       </button>
-      <button
+      <button type="button"
         onClick={() => zoomOut()}
-        className="bg-card text-foreground hover:bg-muted flex h-7 w-7 items-center justify-center rounded-md border shadow-sm transition-colors"
+        className="bg-card text-foreground hover:bg-muted flex size-7 items-center justify-center rounded-md border shadow-sm transition-colors"
         title="Zoom out"
       >
         <Minus size={14} />
       </button>
-      <button
+      <button type="button"
         onClick={() => fitView({ padding: 0.2 })}
-        className="bg-card text-foreground hover:bg-muted flex h-7 w-7 items-center justify-center rounded-md border shadow-sm transition-colors"
+        className="bg-card text-foreground hover:bg-muted flex size-7 items-center justify-center rounded-md border shadow-sm transition-colors"
         title="Fit view"
       >
         <Fullscreen size={14} />

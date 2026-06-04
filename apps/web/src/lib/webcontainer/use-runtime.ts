@@ -76,6 +76,8 @@ export function useWebContainerRuntime({
   // Shell output fan-out with a replay buffer for late subscribers (xterm
   // mounts slightly after the shell starts).
   const outputBufferRef = useRef<string[]>([]);
+  // The Set is a stable fan-out registry — re-creating it on render would destroy existing subscriptions
+  // react-doctor-disable-next-line react-doctor/rerender-lazy-ref-init
   const listenersRef = useRef<Set<(data: string) => void>>(new Set());
 
   const subscribeOutput = useCallback((cb: (data: string) => void) => {
@@ -106,6 +108,13 @@ export function useWebContainerRuntime({
     return capturePreview(url, options);
   }, []);
 
+  // exhaustive-deps: shellRef.current is assigned asynchronously inside start();
+  // capturing it at the effect top would miss it, and cleanup correctly reads
+  // the current ref. effect-needs-cleanup: the `server-ready` listener IS
+  // unsubscribed via `unsubServerReady` in the cleanup below (plus the whole
+  // container is torn down) — the static check can't see it because the
+  // subscribe happens inside the nested async `start()`.
+  // react-doctor-disable-next-line react-doctor/exhaustive-deps, react-doctor/effect-needs-cleanup
   useEffect(() => {
     if (!enabled) return;
 
@@ -114,6 +123,7 @@ export function useWebContainerRuntime({
     const fsShadow = new Map<string, string>();
     const filesMap = getFilesMap(ydoc);
     let stopObserving: (() => void) | null = null;
+    let unsubServerReady: (() => void) | null = null;
 
     const emit = (data: string) => {
       const buf = outputBufferRef.current;
@@ -128,7 +138,7 @@ export function useWebContainerRuntime({
         const container = await bootWebContainer();
         if (cancelled) return;
 
-        container.on("server-ready", (_port, url) => {
+        unsubServerReady = container.on("server-ready", (_port, url) => {
           if (cancelled) return;
           previewUrlRef.current = url;
           setPreviewUrl(url);
@@ -193,6 +203,7 @@ export function useWebContainerRuntime({
 
     return () => {
       cancelled = true;
+      unsubServerReady?.();
       stopObserving?.();
       shellRef.current?.kill();
       shellRef.current = null;

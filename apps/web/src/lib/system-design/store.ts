@@ -14,6 +14,7 @@ import type {
   BlockDefinition,
   BlockNodeData,
   LevelDefinition,
+  ProviderVariant,
   SimulationResults,
 } from "./types";
 import { getBlockDefinition, TRAFFIC_SOURCE_BLOCK } from "./block-registry";
@@ -91,6 +92,9 @@ function loadCanvas(
     const data: SavedCanvas = JSON.parse(raw);
 
     // Reconstruct nodes from saved definitions
+    // Cache provider Maps per definitionType for O(1) lookup inside the loop
+    const providerMapByType = new Map<string, Map<string, ProviderVariant>>();
+
     const nodes: Node<BlockNodeData>[] = [];
     for (const saved of data.nodes) {
       let definition: BlockDefinition;
@@ -101,10 +105,15 @@ function loadCanvas(
         const baseDef = getBlockDefinition(saved.definitionType);
         if (!baseDef) continue;
 
-        // Apply saved provider
-        const provider = baseDef.providers?.find(
-          (p) => p.provider === saved.providerName,
-        );
+        // Apply saved provider — build Map once per definitionType for O(1) lookup
+        if (!providerMapByType.has(saved.definitionType) && baseDef.providers) {
+          const pm = new Map<string, ProviderVariant>();
+          for (const p of baseDef.providers) pm.set(p.provider, p);
+          providerMapByType.set(saved.definitionType, pm);
+        }
+        const provider = saved.providerName
+          ? providerMapByType.get(saved.definitionType)?.get(saved.providerName)
+          : undefined;
         definition = provider
           ? {
               ...baseDef,

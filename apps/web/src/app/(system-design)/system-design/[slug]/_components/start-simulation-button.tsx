@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Check, Zap } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, domAnimation, LazyMotion, m } from "motion/react";
 
 import type { BlockNodeData } from "~/lib/system-design/types";
 import { Button } from "~/components/ui/button";
@@ -60,6 +60,7 @@ export function StartSimulationButton() {
   const currentStep = !hasUserNodes ? 1 : 2;
 
   return (
+    <LazyMotion features={domAnimation}>
     <div
       data-tour="sd-start"
       className={cn(
@@ -71,7 +72,7 @@ export function StartSimulationButton() {
     >
       <AnimatePresence>
         {!canStart && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -88,7 +89,7 @@ export function StartSimulationButton() {
                   )}
                 >
                   {s.done ? (
-                    <div className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-green-500/20">
+                    <div className="flex size-3.5 shrink-0 items-center justify-center rounded-full bg-green-500/20">
                       <Check size={9} className="text-green-500" />
                     </div>
                   ) : (
@@ -117,7 +118,7 @@ export function StartSimulationButton() {
                 </div>
               </div>
             ))}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       <Button
@@ -139,5 +140,6 @@ export function StartSimulationButton() {
         Start Simulation
       </Button>
     </div>
+    </LazyMotion>
   );
 }

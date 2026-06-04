@@ -69,6 +69,9 @@ export function DiscussionPanel({
   const best = problem.bestSubmission;
   const canShare = best?.status === "accepted";
 
+  // These 6 state values are independent UI controls that rarely change together;
+  // collapsing them into a reducer would add boilerplate without a real benefit.
+  // react-doctor-disable-next-line react-doctor/prefer-useReducer
   const [openId, setOpenId] = useState<number | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -126,16 +129,16 @@ export function DiscussionPanel({
     const c = openPost;
     return (
       <div className="custom-scrollbar h-full overflow-y-auto p-6 pb-32">
-        <button
+        <button type="button"
           onClick={() => setOpenId(null)}
           className="text-muted-foreground hover:text-foreground mb-5 flex items-center gap-1.5 text-xs font-medium transition-colors"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="size-3.5" />
           Back to discussion
         </button>
 
         <div className="flex items-center gap-2">
-          <Avatar className="h-7 w-7 shrink-0">
+          <Avatar className="size-7 shrink-0">
             <AvatarImage src={c.userImage ?? undefined} alt="" />
             <AvatarFallback className="text-[10px]">
               {c.userName.slice(0, 2).toUpperCase()}
@@ -191,7 +194,7 @@ export function DiscussionPanel({
             <ul className="mb-6 space-y-4">
               {c.replies.map((r) => (
                 <li key={r.id} className="flex gap-2">
-                  <Avatar className="h-6 w-6 shrink-0">
+                  <Avatar className="size-6 shrink-0">
                     <AvatarImage src={r.userImage ?? undefined} alt="" />
                     <AvatarFallback className="text-[9px]">
                       {r.userName.slice(0, 2).toUpperCase()}
@@ -262,7 +265,7 @@ export function DiscussionPanel({
           <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="h-8 text-xs">
-                <Plus className="mr-1 h-3.5 w-3.5" />
+                <Plus className="mr-1 size-3.5" />
                 New post
               </Button>
             </DialogTrigger>
@@ -303,7 +306,7 @@ export function DiscussionPanel({
                         type="checkbox"
                         checked={attach}
                         onChange={(e) => setAttach(e.target.checked)}
-                        className="accent-primary h-3 w-3"
+                        className="accent-primary size-3"
                       />
                       Attach my accepted{" "}
                       {best ? getLanguageLabel(best.lang) : ""} solution
@@ -340,7 +343,7 @@ export function DiscussionPanel({
         </ul>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center opacity-50">
-          <MessageSquare className="text-muted-foreground mb-4 h-8 w-8" />
+          <MessageSquare className="text-muted-foreground mb-4 size-8" />
           <p className="text-muted-foreground text-xs font-medium">
             No discussion yet
           </p>
@@ -403,11 +406,11 @@ function ListRow({
 }) {
   return (
     <li>
-      <button
+      <button type="button"
         onClick={onOpen}
         className="flex w-full items-start gap-3 py-4 text-left transition-colors hover:bg-white/[0.02]"
       >
-        <Avatar className="h-8 w-8 shrink-0">
+        <Avatar className="size-8 shrink-0">
           <AvatarImage src={c.userImage ?? undefined} alt="" />
           <AvatarFallback className="text-[10px]">
             {c.userName.slice(0, 2).toUpperCase()}
@@ -429,7 +432,7 @@ function ListRow({
               </span>
             )}
             <span className="flex items-center gap-1">
-              <MessageSquare className="h-3 w-3" />
+              <MessageSquare className="size-3" />
               {c.replies.length}
             </span>
           </div>

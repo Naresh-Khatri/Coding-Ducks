@@ -57,8 +57,6 @@ export function TopBar() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  if (!level) return null;
-
   const handleReset = () => {
     reset();
     if (level) {
@@ -73,6 +71,8 @@ export function TopBar() {
     onConfirm: handleReset,
     confirmLabel: "Reset",
   });
+
+  if (!level) return null;
 
   return (
     <div className="bg-card flex h-12 items-center gap-3 border-b px-4">
@@ -124,7 +124,7 @@ export function TopBar() {
             variant="ghost"
             onClick={undo}
             disabled={!canUndo}
-            className="h-8 w-8 p-0"
+            className="size-8 p-0"
             title="Undo (Ctrl+Z)"
           >
             <Undo2 size={14} />
@@ -134,7 +134,7 @@ export function TopBar() {
             variant="ghost"
             onClick={redo}
             disabled={!canRedo}
-            className="h-8 w-8 p-0"
+            className="size-8 p-0"
             title="Redo (Ctrl+Shift+Z)"
           >
             <Redo2 size={14} />
@@ -157,7 +157,7 @@ export function TopBar() {
         size="sm"
         variant="ghost"
         onClick={() => startSystemDesignTour()}
-        className="h-8 w-8 p-0"
+        className="size-8 p-0"
         title="Restart tour"
       >
         <HelpCircle size={14} />
@@ -167,7 +167,7 @@ export function TopBar() {
         size="sm"
         variant="ghost"
         onClick={triggerReset}
-        className="h-8 w-8 p-0"
+        className="size-8 p-0"
         title="Reset canvas"
       >
         <RotateCcw size={14} />

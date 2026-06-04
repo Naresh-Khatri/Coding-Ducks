@@ -61,6 +61,8 @@ const DIFFICULTY_COLORS = {
   hard: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
+// States are independent (search/filter/dialog) — a reducer adds complexity without behavioral change
+// react-doctor-disable-next-line react-doctor/prefer-useReducer
 export default function AdminProblemsPage() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -156,7 +158,7 @@ export default function AdminProblemsPage() {
           </p>
         </div>
         <Button onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 size-4" />
           New Problem
         </Button>
       </div>
@@ -164,7 +166,7 @@ export default function AdminProblemsPage() {
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row">
         <div className="relative max-w-sm flex-1">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             placeholder="Search problems..."
             value={search}
@@ -203,7 +205,7 @@ export default function AdminProblemsPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-12 text-center">
-                  <Loader2 className="text-muted-foreground mx-auto h-6 w-6 animate-spin" />
+                  <Loader2 className="text-muted-foreground mx-auto size-6 animate-spin" />
                 </TableCell>
               </TableRow>
             ) : data?.items.length === 0 ? (
@@ -223,7 +225,7 @@ export default function AdminProblemsPage() {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <button
+                      <button type="button"
                         onClick={() => openEditDialog(problem.id)}
                         className="text-left font-medium hover:underline"
                       >
@@ -277,21 +279,21 @@ export default function AdminProblemsPage() {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="size-8">
+                          <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           onClick={() => openEditDialog(problem.id)}
                         >
-                          <Pencil className="mr-2 h-4 w-4" />
+                          <Pencil className="mr-2 size-4" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleDuplicate(problem.id)}
                         >
-                          <Copy className="mr-2 h-4 w-4" />
+                          <Copy className="mr-2 size-4" />
                           Duplicate
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -304,12 +306,12 @@ export default function AdminProblemsPage() {
                         >
                           {(problem as any).isActive !== false ? (
                             <>
-                              <EyeOff className="mr-2 h-4 w-4" />
+                              <EyeOff className="mr-2 size-4" />
                               Set as Draft
                             </>
                           ) : (
                             <>
-                              <Eye className="mr-2 h-4 w-4" />
+                              <Eye className="mr-2 size-4" />
                               Publish
                             </>
                           )}
@@ -319,7 +321,7 @@ export default function AdminProblemsPage() {
                           onClick={() => setDeleteId(problem.id)}
                           className="text-destructive focus:text-destructive"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="mr-2 size-4" />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>

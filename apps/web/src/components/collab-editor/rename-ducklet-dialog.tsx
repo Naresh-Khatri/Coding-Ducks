@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -33,11 +33,19 @@ export function RenameDuckletDialog({
 }: RenameDuckletDialogProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  // Reset name to currentName each time the dialog opens using the prev-prop
+  // pattern so it runs synchronously during render without an extra effect commit.
+  // name is an editable copy of the currentName prop that the user can change
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [name, setName] = useState(currentName);
-
-  useEffect(() => {
+  // prevOpen is read during render for the prev-prop comparison below
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
+  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) setName(currentName);
-  }, [open, currentName]);
+  }
 
   const renameMutation = useMutation(
     trpc.ducklet.update.mutationOptions({
@@ -105,7 +113,7 @@ export function RenameDuckletDialog({
               disabled={renameMutation.isPending || !name.trim()}
             >
               {renameMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               ) : (
                 "Save"
               )}

@@ -1,9 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Panel } from "@xyflow/react";
 import { AlertTriangle, Check, Circle, Info } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+
+const CanvasTrafficMini = dynamic(
+  () =>
+    import("./canvas-traffic-mini").then((m) => m.CanvasTrafficMini),
+  { ssr: false },
+);
 
 import type { BlockNodeData } from "~/lib/system-design/types";
 import { getReachableTypes } from "~/lib/system-design/connection-validator";
@@ -17,6 +23,15 @@ export function CanvasInfoOverlay() {
   const nodes = useSystemDesignStore((s) => s.nodes);
   const edges = useSystemDesignStore((s) => s.edges);
 
+  const reachableTypes = useMemo(
+    () => getReachableTypes(nodes, edges),
+    [nodes, edges],
+  );
+  const topologyWarnings = useMemo(
+    () => computeTopologyWarnings(nodes, edges),
+    [nodes, edges],
+  );
+
   if (!level) return null;
 
   const budgetUsed = nodes.reduce((sum, n) => {
@@ -24,23 +39,6 @@ export function CanvasInfoOverlay() {
     return sum + d.definition.costPerMonth * (d.replicas ?? 1);
   }, 0);
   const budgetPercent = (budgetUsed / level.budget) * 100;
-
-  const reachableTypes = useMemo(
-    () =>
-      getReachableTypes(
-        nodes,
-        edges,
-      ),
-    [nodes, edges],
-  );
-  const topologyWarnings = useMemo(
-    () =>
-      computeTopologyWarnings(
-        nodes,
-        edges,
-      ),
-    [nodes, edges],
-  );
   const requiredBlocks = level.requiredBlockTypes ?? [];
 
   return (
@@ -88,19 +86,7 @@ export function CanvasInfoOverlay() {
             Traffic Pattern
           </div>
           <div className="bg-muted/40 h-14 overflow-hidden rounded-lg">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={level.trafficPattern}>
-                <XAxis dataKey="time" hide />
-                <YAxis hide />
-                <Area
-                  type="monotone"
-                  dataKey="rps"
-                  stroke="#3b82f6"
-                  fill="#3b82f640"
-                  strokeWidth={1.5}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <CanvasTrafficMini trafficPattern={level.trafficPattern} />
           </div>
           <div className="text-muted-foreground mt-0.5 flex justify-between text-[9px]">
             <span>0s</span>

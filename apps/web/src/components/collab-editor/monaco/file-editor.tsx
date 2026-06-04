@@ -85,9 +85,12 @@ export function FileEditor({
     };
     // Created once — subsequent prop changes are handled by the effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // react-doctor-disable-next-line react-doctor/exhaustive-deps
   }, [monaco]);
 
-  // Swap model on file change.
+  // Swap model on file change — model is a prop driven by external file selection,
+  // not a user event inside this component, so the effect is the right place.
+  // react-doctor-disable-next-line react-doctor/no-event-handler
   useEffect(() => {
     const editor = editorRef.current;
     if (editor && editor.getModel() !== model) editor.setModel(model);
@@ -113,6 +116,8 @@ export function FileEditor({
   }, [monaco, isDark]);
 
   // Live-apply editor settings without recreating the editor or binding.
+  // model.updateOptions is a Monaco imperative API call, not passing data to parent.
+  // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;

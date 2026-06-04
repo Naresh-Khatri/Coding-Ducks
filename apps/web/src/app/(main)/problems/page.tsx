@@ -1,3 +1,5 @@
+// Page metadata is provided by the sibling server layout.tsx (this is a client component).
+// react-doctor-disable-next-line react-doctor/nextjs-missing-metadata
 "use client";
 
 import { useState } from "react";
@@ -61,7 +63,7 @@ export default function ProblemsPage() {
 
       {/* Tabs */}
       <div className="mb-6 flex items-center gap-6 border-b">
-        <button
+        <button type="button"
           onClick={() => setTab("all")}
           className={cn(
             "-mb-px border-b-2 pb-2.5 text-sm font-medium transition-colors",
@@ -73,7 +75,7 @@ export default function ProblemsPage() {
           All Problems
         </button>
         {session && (
-          <button
+          <button type="button"
             onClick={() => setTab("bookmarks")}
             className={cn(
               "-mb-px flex items-center gap-1.5 border-b-2 pb-2.5 text-sm font-medium transition-colors",
@@ -82,7 +84,7 @@ export default function ProblemsPage() {
                 : "text-muted-foreground hover:text-foreground border-transparent",
             )}
           >
-            <Bookmark className="h-3.5 w-3.5" />
+            <Bookmark className="size-3.5" />
             Bookmarks
           </button>
         )}
@@ -93,7 +95,7 @@ export default function ProblemsPage() {
           {/* Filters */}
           <div className="mb-6 flex flex-col gap-4 sm:flex-row">
             <div className="relative max-w-sm flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
               <Input
                 placeholder="Search problems..."
                 value={search}
@@ -127,7 +129,7 @@ export default function ProblemsPage() {
 
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+                <Loader2 className="text-muted-foreground size-6 animate-spin" />
               </div>
             ) : data?.items.length === 0 ? (
               <div className="text-muted-foreground py-12 text-center">
@@ -142,11 +144,11 @@ export default function ProblemsPage() {
                   >
                     <div className="flex w-8 justify-center">
                       {problem.userStatus === "solved" ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <CheckCircle className="size-5 text-green-500" />
                       ) : problem.userStatus === "attempted" ? (
-                        <Circle className="h-5 w-5 text-amber-500" />
+                        <Circle className="size-5 text-amber-500" />
                       ) : (
-                        <Circle className="text-muted-foreground/30 group-hover:text-muted-foreground/50 h-5 w-5 transition-colors" />
+                        <Circle className="text-muted-foreground/30 group-hover:text-muted-foreground/50 size-5 transition-colors" />
                       )}
                     </div>
                     <Link
@@ -207,11 +209,11 @@ export default function ProblemsPage() {
 
           {bookmarksLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+              <Loader2 className="text-muted-foreground size-6 animate-spin" />
             </div>
           ) : !bookmarks || bookmarks.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center gap-2 py-16">
-              <Bookmark className="h-10 w-10" />
+              <Bookmark className="size-10" />
               <p className="text-sm">No bookmarked problems yet</p>
               <p className="text-xs">
                 Click the bookmark icon on any problem to save it here

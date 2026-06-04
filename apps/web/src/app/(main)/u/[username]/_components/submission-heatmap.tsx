@@ -95,7 +95,7 @@ export function SubmissionHeatmap({ username }: { username: string }) {
         </h3>
         <div className="flex gap-1">
           {[currentYear - 1, currentYear].map((y) => (
-            <button
+            <button type="button"
               key={y}
               onClick={() => setYear(y)}
               className={cn(
@@ -130,9 +130,9 @@ export function SubmissionHeatmap({ username }: { username: string }) {
           </div>
 
           <div className="relative mb-1 h-4">
-            {monthLabels.map((m, i) => (
+            {monthLabels.map((m) => (
               <span
-                key={i}
+                key={`${m.label}-${m.col}`}
                 className="text-muted-foreground absolute text-[10px]"
                 style={{ left: 28 + m.col * 14 }}
               >
@@ -144,6 +144,9 @@ export function SubmissionHeatmap({ username }: { username: string }) {
           <div className="flex gap-0.5">
             {/* Day labels */}
             <div className="flex flex-col gap-0.5 pr-1">
+              {/* DAYS is a static 7-element array that never reorders */}
+              {/* react-doctor-disable-next-line react-doctor/no-array-index-key */}
+              {/* react-doctor-disable-next-line react-doctor/no-array-index-as-key */}
               {DAYS.map((d, i) => (
                 <div
                   key={i}
@@ -157,9 +160,9 @@ export function SubmissionHeatmap({ username }: { username: string }) {
             {/* Grid */}
             {grid.map((week, wi) => (
               <div key={wi} className="flex flex-col gap-0.5">
-                {week.map((day, di) => (
+                {week.map((day) => (
                   <div
-                    key={di}
+                    key={day.date}
                     className={cn(
                       "size-3 rounded-[2px] transition-colors",
                       INTENSITY_CLASSES[getIntensity(day.count)],
@@ -174,9 +177,9 @@ export function SubmissionHeatmap({ username }: { username: string }) {
           {/* Legend */}
           <div className="text-muted-foreground mt-3 flex items-center justify-end gap-1 text-xs">
             <span>Less</span>
-            {INTENSITY_CLASSES.map((cls, i) => (
+            {INTENSITY_CLASSES.map((cls) => (
               <div
-                key={i}
+                key={cls}
                 className={cn("h-[10px] w-[10px] rounded-[2px]", cls)}
               />
             ))}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle, Clock, FileCode2, XCircle } from "lucide-react";
 
@@ -37,7 +38,7 @@ export default function AdminPage() {
             <CardTitle className="text-sm font-medium">
               Total Problems
             </CardTitle>
-            <FileCode2 className="text-muted-foreground h-4 w-4" />
+            <FileCode2 className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -50,7 +51,7 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Easy</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CheckCircle className="size-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-500">
@@ -63,7 +64,7 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Medium</CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
+            <Clock className="size-4 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-500">
@@ -76,7 +77,7 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Hard</CardTitle>
-            <XCircle className="h-4 w-4 text-red-500" />
+            <XCircle className="size-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-500">
@@ -91,13 +92,13 @@ export default function AdminPage() {
       <div className="mt-8">
         <h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
         <div className="flex gap-4">
-          <a
+          <Link
             href="/admin/problems"
             className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"
           >
-            <FileCode2 className="h-4 w-4" />
+            <FileCode2 className="size-4" />
             Manage Problems
-          </a>
+          </Link>
         </div>
       </div>
     </div>

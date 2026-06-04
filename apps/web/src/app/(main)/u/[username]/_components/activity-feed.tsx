@@ -49,7 +49,7 @@ export function ActivityFeed({ username }: { username: string }) {
               href={`/problems/${item.problemSlug}`}
               className="hover:bg-muted/50 flex items-center gap-3 rounded-lg px-2 py-3 transition-colors"
             >
-              <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
+              <CheckCircle className="size-4 shrink-0 text-green-500" />
               <div className="min-w-0 flex-1">
                 <span className="block truncate font-medium">
                   {item.problemTitle}

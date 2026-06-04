@@ -32,9 +32,19 @@ export function EditorTabs({
         const isActive = path === activePath;
         const name = path.slice(path.lastIndexOf("/") + 1);
         return (
+          // Tab contains a nested <button> (close), so <button> nesting is invalid; role="button" is correct here
+          // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
           <div
             key={path}
+            role="button"
+            tabIndex={0}
             onClick={() => onSelect(path)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect(path);
+              }
+            }}
             className={cn(
               "group flex shrink-0 cursor-pointer items-center gap-1.5 border-r px-3 py-1.5 text-xs",
               isActive
@@ -55,7 +65,7 @@ export function EditorTabs({
                 onClose(path);
               }}
             >
-              <X className="h-3 w-3" />
+              <X className="size-3" />
             </button>
           </div>
           );

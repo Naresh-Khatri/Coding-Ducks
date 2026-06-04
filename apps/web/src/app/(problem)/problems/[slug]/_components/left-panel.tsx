@@ -118,7 +118,7 @@ export function LeftPanel({
                 }
                 disabled={toggleBookmark.isPending}
                 onClick={() => toggleBookmark.mutate({ problemId: problem.id })}
-                className="ml-auto h-8 w-8"
+                className="ml-auto size-8"
               >
                 <Bookmark
                   className={cn(
@@ -175,15 +175,15 @@ export function LeftPanel({
             <div className="mt-8 space-y-2">
               {problem.hints.map((hint, i) => (
                 <div
-                  key={i}
+                  key={hint.slice(0, 60)}
                   className="overflow-hidden rounded-lg border border-white/5"
                 >
-                  <button
+                  <button type="button"
                     onClick={() => toggleHint(i)}
                     aria-expanded={!!openHints[i]}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-white/[0.03]"
                   >
-                    <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                    <Lightbulb className="size-3.5 text-amber-500" />
                     Hint {i + 1}
                     <ChevronRight
                       className={cn(
@@ -362,7 +362,7 @@ export function LeftPanel({
         )}
         {(!submissions || submissions.length === 0) && (
           <div className="flex flex-col items-center justify-center py-16 text-center opacity-50">
-            <Send className="text-muted-foreground mb-4 h-8 w-8" />
+            <Send className="text-muted-foreground mb-4 size-8" />
             <p className="text-muted-foreground text-xs font-medium">
               No submissions yet
             </p>

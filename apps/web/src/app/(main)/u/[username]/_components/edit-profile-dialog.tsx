@@ -51,16 +51,34 @@ export function EditProfileDialog({
     websiteUrl: profile.websiteUrl ?? "",
   });
 
+  // username is an editable copy of the prop that the user can change; this is intentional
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [username, setUsername] = useState(profile.username);
+  // prevProfileUsername is read during render for the prev-prop comparison below
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
+  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [prevProfileUsername, setPrevProfileUsername] = useState(
+    profile.username,
+  );
   const [debouncedUsername, setDebouncedUsername] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Sync username when the profile prop changes (prev-prop pattern — no effect needed)
+  if (profile.username !== prevProfileUsername) {
+    setPrevProfileUsername(profile.username);
+    setUsername(profile.username);
+  }
 
   const usernameChanged = username !== profile.username;
   const usernameValid = /^[a-z0-9_]{3,30}$/.test(username);
 
-  // Debounce username for availability check
+  // Debounce username for availability check — two setDebouncedUsername paths (clear vs. set) are intentional
+  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (!usernameChanged || !usernameValid) {
+      // Clearing the debounced value is part of this debounce timer, not state
+      // mirrored from a prop.
+      // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
       setDebouncedUsername("");
       return;
     }
@@ -168,11 +186,11 @@ export function EditProfileDialog({
               {usernameChanged && usernameValid && (
                 <div className="absolute top-1/2 right-2.5 -translate-y-1/2">
                   {isChecking || debouncedUsername !== username ? (
-                    <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+                    <Loader2 className="text-muted-foreground size-4 animate-spin" />
                   ) : usernameAvailable ? (
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="size-4 text-green-500" />
                   ) : (
-                    <X className="h-4 w-4 text-red-500" />
+                    <X className="size-4 text-red-500" />
                   )}
                 </div>
               )}
@@ -267,7 +285,7 @@ export function EditProfileDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={!canSubmit}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
               Save
             </Button>
           </div>

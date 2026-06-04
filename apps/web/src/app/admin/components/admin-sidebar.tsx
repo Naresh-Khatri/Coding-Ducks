@@ -25,8 +25,8 @@ export function AdminSidebar() {
     <div className="border-border bg-card flex h-full w-64 flex-col border-r">
       {/* Header */}
       <div className="border-border flex items-center gap-3 border-b px-4 py-4">
-        <div className="bg-destructive/10 flex h-9 w-9 items-center justify-center rounded-lg">
-          <Shield className="text-destructive h-5 w-5" />
+        <div className="bg-destructive/10 flex size-9 items-center justify-center rounded-lg">
+          <Shield className="text-destructive size-5" />
         </div>
         <div>
           <h1 className="text-sm font-semibold">Coding Ducks Admin</h1>
@@ -54,7 +54,7 @@ export function AdminSidebar() {
                   : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="size-4" />
               {item.label}
             </Link>
           );
@@ -70,7 +70,7 @@ export function AdminSidebar() {
           asChild
         >
           <Link href="/problems">
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="size-4" />
             Back to Problems
           </Link>
         </Button>

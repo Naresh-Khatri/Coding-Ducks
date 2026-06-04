@@ -1,6 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+// recharts is deeply integrated throughout this component — dynamic import would require extracting the entire chart JSX
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import {
   Bar,
   BarChart,

@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Fira_Code,
+  Geist,
+  Geist_Mono,
+  IBM_Plex_Mono,
+  JetBrains_Mono,
+  Source_Code_Pro,
+} from "next/font/google";
 
 import "~/app/styles.css";
 
@@ -28,21 +35,43 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
 });
+const firaCode = Fira_Code({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-fira-code",
+  display: "swap",
+});
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+});
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+const sourceCodePro = Source_Code_Pro({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-source-code-pro",
+  display: "swap",
+});
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Code+Pro:wght@400;500;700&display=swap"
-        />
-      </head>
       <body
         className={cn(
           "bg-background text-foreground min-h-screen font-sans antialiased",
           geistSans.variable,
           geistMono.variable,
+          firaCode.variable,
+          ibmPlexMono.variable,
+          jetbrainsMono.variable,
+          sourceCodePro.variable,
         )}
       >
         <Providers>{props.children}</Providers>

@@ -34,13 +34,13 @@ function buildAdjacency(
     string,
     { targetId: string; protocol: string }[]
   >();
+  const nodeById = new Map(nodes.map((n) => [n.id, n]));
   for (const n of nodes) outgoing.set(n.id, []);
   for (const e of edges) {
-    const src = nodes.find((n) => n.id === e.source);
+    const src = nodeById.get(e.source);
     if (!src) continue;
-    const port = (src.data).definition.ports.find(
-      (p) => p.id === e.sourceHandle,
-    );
+    const portById = new Map(src.data.definition.ports.map((p) => [p.id, p]));
+    const port = e.sourceHandle ? portById.get(e.sourceHandle) : undefined;
     outgoing.get(e.source)?.push({
       targetId: e.target,
       protocol: port?.protocol ?? "HTTP",
@@ -97,6 +97,7 @@ export function computeTopologyWarnings(
   const adj = buildAdjacency(nodes, edges);
   const reachable = reachableFrom(adj, start);
   const sync = syncReachable(adj, start);
+  const nodeById = new Map(nodes.map((n) => [n.id, n]));
 
   // 1. Placed but unreachable blocks
   for (const n of nodes) {
@@ -117,7 +118,7 @@ export function computeTopologyWarnings(
   // least one downstream compute/sink unserved.
   const servedSinks: string[] = [];
   for (const id of sync) {
-    const n = nodes.find((node) => node.id === id);
+    const n = nodeById.get(id);
     if (!n) continue;
     const t = (n.data).definition.type;
     if (
@@ -132,7 +133,7 @@ export function computeTopologyWarnings(
   if (servedSinks.length > 0) {
     for (const id of sync) {
       if (id === start) continue;
-      const n = nodes.find((node) => node.id === id);
+      const n = nodeById.get(id);
       if (!n) continue;
       const data = n.data;
       if (data.isStartBlock) continue;
@@ -163,8 +164,7 @@ export function computeTopologyWarnings(
     if (data.definition.type !== "app-server") continue;
     const out = adj.outgoing.get(n.id) ?? [];
     const targetType = (id: string) =>
-      (nodes.find((m) => m.id === id)?.data)
-        ?.definition.type;
+      nodeById.get(id)?.data?.definition.type;
     const hasDb = out.some((e) => {
       const t = targetType(e.targetId);
       return t === "sql-db" || t === "nosql-db";

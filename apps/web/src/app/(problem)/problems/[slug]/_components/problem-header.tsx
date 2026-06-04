@@ -68,9 +68,15 @@ export function ProblemHeader({
   const [elapsed, setElapsed] = useState(0);
   const startRef = useRef<number>(0);
 
+  // setElapsed(0) resets the stopwatch then the interval fires repeatedly; these
+  // are not cascading state updates — they are a timer driving a single counter.
+  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (isBusy) {
       startRef.current = Date.now();
+      // Reset the on-screen stopwatch to 0 as a new run starts; this is a
+      // timer side effect, not state mirrored from a prop.
+      // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
       setElapsed(0);
       const id = setInterval(
         () => setElapsed(Date.now() - startRef.current),
@@ -110,9 +116,9 @@ export function ProblemHeader({
     <div className="bg-background flex h-12 shrink-0 items-center justify-between border-b px-3">
       {/* Left: back + problems list */}
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+        <Button variant="ghost" size="icon" asChild className="size-8">
           <Link href="/problems" aria-label="Back to problems">
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="size-4" />
           </Link>
         </Button>
 
@@ -122,9 +128,9 @@ export function ProblemHeader({
               variant="ghost"
               size="icon"
               aria-label="Open problems list"
-              className="h-8 w-8"
+              className="size-8"
             >
-              <List className="h-4 w-4" />
+              <List className="size-4" />
             </Button>
           </DrawerTrigger>
           <DrawerContent className="h-full w-80">
@@ -169,14 +175,14 @@ export function ProblemHeader({
           asChild={!!prevSlug}
           disabled={!prevSlug}
           aria-label="Previous problem"
-          className="h-8 w-8"
+          className="size-8"
         >
           {prevSlug ? (
             <Link href={`/problems/${prevSlug}`}>
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" />
             </Link>
           ) : (
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="size-4" />
           )}
         </Button>
         <Button
@@ -185,14 +191,14 @@ export function ProblemHeader({
           asChild={!!nextSlug}
           disabled={!nextSlug}
           aria-label="Next problem"
-          className="h-8 w-8"
+          className="size-8"
         >
           {nextSlug ? (
             <Link href={`/problems/${nextSlug}`}>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="size-4" />
             </Link>
           ) : (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="size-4" />
           )}
         </Button>
         <Button
@@ -201,9 +207,9 @@ export function ProblemHeader({
           onClick={goRandom}
           disabled={items.length <= 1}
           aria-label="Random problem"
-          className="h-8 w-8"
+          className="size-8"
         >
-          <Shuffle className="h-4 w-4" />
+          <Shuffle className="size-4" />
         </Button>
       </div>
 
@@ -217,9 +223,9 @@ export function ProblemHeader({
           className="h-8 gap-1.5 px-4 text-xs font-medium"
         >
           {isRunning ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="size-3.5 animate-spin" />
           ) : (
-            <Play className="h-3.5 w-3.5" />
+            <Play className="size-3.5" />
           )}
           Run
           <kbd className="text-muted-foreground/50 ml-1 hidden text-[10px] sm:inline">
@@ -233,9 +239,9 @@ export function ProblemHeader({
           className="h-8 gap-1.5 bg-emerald-600 px-4 text-xs font-medium text-white hover:bg-emerald-500"
         >
           {isSubmitting ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="size-3.5 animate-spin" />
           ) : (
-            <Send className="h-3.5 w-3.5" />
+            <Send className="size-3.5" />
           )}
           Submit
           <kbd className="ml-1 hidden text-[10px] text-white/40 sm:inline">
@@ -244,7 +250,7 @@ export function ProblemHeader({
         </Button>
         {isBusy && (
           <span className="text-muted-foreground flex items-center gap-1 font-mono text-xs tabular-nums">
-            <Timer className="h-3 w-3" />
+            <Timer className="size-3" />
             {(elapsed / 1000).toFixed(1)}s
           </span>
         )}
@@ -256,9 +262,9 @@ export function ProblemHeader({
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
+              <button type="button"
                 aria-label="Account menu"
-                className="flex h-7 w-7 items-center justify-center rounded-full"
+                className="flex size-7 items-center justify-center rounded-full"
               >
                 <Image
                   src={getAvatarUrl(user.username, 28)}
@@ -266,7 +272,7 @@ export function ProblemHeader({
                   width={28}
                   height={28}
                   unoptimized
-                  className="bg-muted h-7 w-7 rounded-full"
+                  className="bg-muted size-7 rounded-full"
                 />
               </button>
             </DropdownMenuTrigger>

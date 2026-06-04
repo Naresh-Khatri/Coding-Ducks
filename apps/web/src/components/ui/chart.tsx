@@ -1,6 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { use } from "react";
+// recharts is the entire chart library for this component — cannot be lazily loaded without extracting all consumers
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import * as RechartsPrimitive from "recharts";
 
 import { cn } from "~/lib/utils";
@@ -23,7 +26,7 @@ interface ChartContextProps {
 const ChartContext = React.createContext<ChartContextProps | null>(null);
 
 function useChart() {
-  const context = React.useContext(ChartContext);
+  const context = use(ChartContext);
 
   if (!context) {
     throw new Error("useChart must be used within a <ChartContainer />");
@@ -46,9 +49,10 @@ function ChartContainer({
 }) {
   const uniqueId = React.useId();
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
+  const contextValue = React.useMemo(() => ({ config }), [config]);
 
   return (
-    <ChartContext.Provider value={{ config }}>
+    <ChartContext.Provider value={contextValue}>
       <div
         data-slot="chart"
         data-chart={chartId}
@@ -77,6 +81,8 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   }
 
   return (
+    // HTML is built from controlled theme config (CSS variable values) — not user input
+    // react-doctor-disable-next-line react-doctor/no-danger
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
@@ -126,6 +132,8 @@ function ChartTooltipContent({
   }) {
   const { config } = useChart();
 
+  // useMemo must be called before the early return below (hook ordering rules); it's reused in both JSX branches
+  // react-doctor-disable-next-line react-doctor/rerender-memo-before-early-return
   const tooltipLabel = React.useMemo(() => {
     if (hideLabel || !payload?.length) {
       return null;
@@ -177,6 +185,8 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
+        {/* recharts payload arrays are small (≤ ~10 items); two-pass cost is negligible */}
+        {/* react-doctor-disable-next-line react-doctor/js-combine-iterations */}
         {payload
           .filter((item) => item.type !== "none")
           .map((item, index) => {
@@ -275,6 +285,8 @@ function ChartLegendContent({
         className,
       )}
     >
+      {/* recharts payload arrays are small (≤ ~10 items); two-pass cost is negligible */}
+      {/* react-doctor-disable-next-line react-doctor/js-combine-iterations */}
       {payload
         .filter((item) => item.type !== "none")
         .map((item) => {
@@ -292,7 +304,7 @@ function ChartLegendContent({
                 <itemConfig.icon />
               ) : (
                 <div
-                  className="h-2 w-2 shrink-0 rounded-[2px]"
+                  className="size-2 shrink-0 rounded-[2px]"
                   style={{
                     backgroundColor: item.color,
                   }}

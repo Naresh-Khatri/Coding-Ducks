@@ -101,7 +101,10 @@ export function FunctionSignatureEditor({
     value?.returnType || "integer[]",
   );
 
-  // Update parent when state changes
+  // onChange is a stable prop callback kept in sync here; correct for a sub-form.
+  // react-doctor-disable-next-line react-doctor/no-pass-live-state-to-parent
+  // react-doctor-disable-next-line react-doctor/no-prop-callback-in-effect
+  // react-doctor-disable-next-line react-doctor/exhaustive-deps
   useEffect(() => {
     onChange({ fnName, params, returnType });
   }, [fnName, params, returnType]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -160,7 +163,7 @@ export function FunctionSignatureEditor({
         <div className="flex items-center justify-between">
           <Label>Parameters</Label>
           <Button type="button" variant="outline" size="sm" onClick={addParam}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 size-4" />
             Add Parameter
           </Button>
         </div>
@@ -208,7 +211,7 @@ export function FunctionSignatureEditor({
                 onClick={() => removeParam(param.id)}
                 className="text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-4" />
               </Button>
             </div>
           ))}

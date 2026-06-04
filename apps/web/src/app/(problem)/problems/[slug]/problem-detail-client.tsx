@@ -44,7 +44,10 @@ export function ProblemDetailClient() {
   const [leftTab, setLeftTab] = useState("description");
   const [activeTab, setActiveTab] = useState("problem");
   const [consoleOutput, setConsoleOutput] = useState<ConsoleResult[]>([]);
-  const [lastProblemId, setLastProblemId] = useState<number | null>(null);
+  // Tracks the last problem we loaded drafts for; a ref (not state) because it
+  // only gates the merge effect below and is never rendered.
+  const lastProblemIdRef = useRef<number | null>(null);
+  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [pollingId, setPollingId] = useState<number | null>(null);
   const [pollingType, setPollingType] = useState<"run" | "submit" | null>(null);
   const [submissionsLimit, setSubmissionsLimit] = useState(10);
@@ -137,7 +140,7 @@ export function ProblemDetailClient() {
     if (isAuthenticated && savedDrafts === undefined) return;
 
     if (
-      problem.id !== lastProblemId ||
+      problem.id !== lastProblemIdRef.current ||
       (!draftsLoadedRef.current && savedDrafts)
     ) {
       const starterCodes = problem.starterCode! || {};
@@ -149,10 +152,13 @@ export function ProblemDetailClient() {
         setLanguage(availableLangs[0] as Language);
       }
 
-      setLastProblemId(problem.id);
+      lastProblemIdRef.current = problem.id;
       draftsLoadedRef.current = true;
     }
-  }, [problem, lastProblemId, language, savedDrafts, isAuthenticated]);
+    // This effect initializes editor state from async query data (problem +
+    // savedDrafts); the multiple setState calls are batched by React.
+    // react-doctor-disable-next-line react-doctor/no-cascading-set-state
+  }, [problem, language, savedDrafts, isAuthenticated]);
 
   // Remember the chosen language across problems / reloads.
   useEffect(() => {
@@ -269,7 +275,7 @@ export function ProblemDetailClient() {
   if (isLoading) {
     return (
       <div className="bg-background flex h-screen items-center justify-center">
-        <Loader2 className="text-primary h-10 w-10 animate-spin" />
+        <Loader2 className="text-primary size-10 animate-spin" />
       </div>
     );
   }
@@ -285,7 +291,7 @@ export function ProblemDetailClient() {
         </div>
         <Button asChild>
           <Link href="/problems">
-            <ChevronLeft className="mr-2 h-4 w-4" />
+            <ChevronLeft className="mr-2 size-4" />
             Back to Problems
           </Link>
         </Button>

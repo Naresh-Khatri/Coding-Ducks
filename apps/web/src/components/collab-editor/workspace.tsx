@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+// Monaco is loaded once via a pinned CDN loader (see ./monaco/setup) and shared
+// across the whole workspace — it isn't a route-level chunk to defer.
+// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { useMonaco } from "@monaco-editor/react";
 import type { HocuspocusProvider } from "@hocuspocus/provider";
 import { Camera, TerminalIcon } from "lucide-react";
@@ -54,10 +57,16 @@ const ENTRY_CANDIDATES = [
 
 function pickDefaultFile(ydoc: Y.Doc): string | null {
   const files = listFilePaths(ydoc);
+  const fileSet = new Set(files);
   for (const candidate of ENTRY_CANDIDATES) {
-    if (files.includes(candidate)) return candidate;
+    if (fileSet.has(candidate)) return candidate;
   }
-  return [...files].sort()[0] ?? null;
+  // Fall back to the alphabetically first file (single pass, no full sort).
+  let first: string | null = null;
+  for (const f of files) {
+    if (first === null || f < first) first = f;
+  }
+  return first;
 }
 
 export function Workspace({
@@ -115,17 +124,25 @@ export function Workspace({
     }
   }, [captureNow]);
 
-  // Open a sensible entry file on first load.
+  // Open a sensible entry file on first load. Initializes the editor from the
+  // external Y.Doc (and re-runs if the doc identity changes), so it must be an
+  // effect rather than render-time derived state.
   useEffect(() => {
+    // react-doctor-disable-next-line react-doctor/no-event-handler
     const initial = pickDefaultFile(ydoc);
     if (initial) {
+      // react-doctor-disable-next-line react-doctor/no-derived-state
       setOpenPaths([initial]);
+      // react-doctor-disable-next-line react-doctor/no-derived-state
       setActivePath(initial);
     }
   }, [ydoc]);
 
-  // Publish which file we're viewing so peers see our avatar on it.
+  // Publish which file we're viewing to the external Yjs awareness store so
+  // peers see our avatar on it — a side effect synced on selection change.
+  // react-doctor-disable-next-line react-doctor/no-effect-chain, react-doctor/no-derived-state-effect
   useEffect(() => {
+    // react-doctor-disable-next-line react-doctor/no-pass-live-state-to-parent
     setActiveFile(activePath);
   }, [activePath, setActiveFile]);
 
@@ -234,7 +251,7 @@ export function Workspace({
               onClick={() => setShowTerminal((v) => !v)}
               title="Toggle terminal"
             >
-              <TerminalIcon className="mr-1 h-3 w-3" />
+              <TerminalIcon className="mr-1 size-3" />
               Terminal
             </Button>
             {editable && (
@@ -246,7 +263,7 @@ export function Workspace({
                 disabled={!runtime.previewUrl || capturing}
                 title="Capture the preview now and save it as this ducklet's thumbnail"
               >
-                <Camera className="mr-1 h-3 w-3" />
+                <Camera className="mr-1 size-3" />
                 {capturing ? "Saving…" : "Thumbnail"}
               </Button>
             )}

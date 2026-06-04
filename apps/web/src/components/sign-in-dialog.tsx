@@ -1,13 +1,7 @@
 "use client";
 
 import type * as React from "react";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, use, useCallback, useMemo, useState } from "react";
 import { Loader2, Terminal } from "lucide-react";
 
 import { authClient } from "~/auth/client";
@@ -55,7 +49,7 @@ type SignInContextValue = {
 const SignInContext = createContext<SignInContextValue | null>(null);
 
 export function useSignIn() {
-  const ctx = useContext(SignInContext);
+  const ctx = use(SignInContext);
   if (!ctx) {
     throw new Error("useSignIn must be used inside <SignInProvider>");
   }
@@ -71,8 +65,10 @@ export function SignInProvider({ children }: { children: React.ReactNode }) {
     setOpen(true);
   }, []);
 
+  const ctxValue = useMemo(() => ({ openSignIn }), [openSignIn]);
+
   return (
-    <SignInContext.Provider value={{ openSignIn }}>
+    <SignInContext.Provider value={ctxValue}>
       {children}
       <SignInDialog
         open={open}
@@ -98,9 +94,17 @@ function SignInDialog({
   const [pending, setPending] = useState<Provider | null>(null);
   const [lastProvider, setLastProvider] = useState<Provider | null>(null);
 
-  useEffect(() => {
+  // Re-read the remembered provider each time the dialog opens. Done during
+  // render (prev-prop comparison) rather than in an effect so the value is
+  // correct on the first paint instead of after an extra commit.
+  // prevOpen is read during render for the prev-prop comparison below
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
+  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) setLastProvider(readLastProvider());
-  }, [open]);
+  }
 
   const handleSignIn = async (provider: Provider) => {
     if (pending) return;
@@ -131,7 +135,7 @@ function SignInDialog({
     >
       <DialogContent className="sm:max-w-md">
         <div className="flex flex-col items-center gap-5 pt-2 pb-1 text-center">
-          <div className="bg-primary text-primary-foreground flex h-12 w-12 items-center justify-center rounded-xl">
+          <div className="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-xl">
             <Terminal size={24} strokeWidth={3} />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -195,9 +199,9 @@ function ProviderButton({
         isLast && "border-primary/40 ring-primary/15 ring-1",
       )}
     >
-      <span className="flex h-5 w-5 items-center justify-center">
+      <span className="flex size-5 items-center justify-center">
         {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="size-4 animate-spin" />
         ) : provider === "google" ? (
           <GoogleIcon />
         ) : (
@@ -219,7 +223,7 @@ function ProviderButton({
 
 function GoogleIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
       <path
         fill="#4285F4"
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z"
@@ -244,7 +248,7 @@ function GitHubIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="h-5 w-5 fill-current"
+      className="size-5 fill-current"
       aria-hidden="true"
     >
       <path d="M12 .5C5.73.5.67 5.57.67 11.84c0 5.01 3.24 9.26 7.74 10.76.57.1.78-.25.78-.55 0-.27-.01-1-.02-1.96-3.15.68-3.81-1.52-3.81-1.52-.52-1.31-1.27-1.66-1.27-1.66-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.74 2.66 1.24 3.31.95.1-.74.4-1.24.72-1.53-2.51-.29-5.16-1.26-5.16-5.59 0-1.24.44-2.25 1.16-3.04-.12-.29-.5-1.43.11-2.98 0 0 .95-.3 3.11 1.16.9-.25 1.87-.38 2.83-.38.96 0 1.93.13 2.83.38 2.15-1.46 3.1-1.16 3.1-1.16.62 1.55.23 2.69.11 2.98.72.79 1.16 1.8 1.16 3.04 0 4.35-2.65 5.3-5.18 5.58.41.36.77 1.06.77 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.66.79.55 4.5-1.5 7.73-5.75 7.73-10.76C23.33 5.57 18.27.5 12 .5Z" />

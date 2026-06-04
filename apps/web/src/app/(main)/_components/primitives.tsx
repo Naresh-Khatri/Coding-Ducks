@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { motion } from "motion/react";
+import { domAnimation, LazyMotion, m } from "motion/react";
 
 /** Scroll-triggered fade + rise. Animates once when it enters the viewport. */
 export function Reveal({
@@ -15,15 +15,17 @@ export function Reveal({
   className?: string;
 }) {
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {children}
-    </motion.div>
+    <LazyMotion features={domAnimation}>
+      <m.div
+        className={className}
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {children}
+      </m.div>
+    </LazyMotion>
   );
 }
 
