@@ -2,13 +2,9 @@
 
 import { useEffect } from "react";
 import type { Monaco } from "@monaco-editor/react";
-import { setupTypeAcquisition } from "@typescript/ata";
-import * as ts from "typescript";
 import type * as Y from "yjs";
 
-import { getFileText, getFilesMap, readAllFiles } from "@acme/ducklet-fs";
-
-import { isTsLike } from "./lang";
+import { getFileText, getFilesMap } from "@acme/ducklet-fs";
 
 type TsNamespace = Monaco["languages"]["typescript"];
 type CompilerOptions = Parameters<
@@ -60,10 +56,12 @@ function compilerOptionsFromDoc(
 
 /**
  * Configure Monaco's first-party TS/JS language service for the ducklet:
- * compiler options derived from the project's `tsconfig.json`, plus automatic
- * type acquisition (ATA) that fetches dependency `.d.ts` from a CDN based on
- * the imports it sees — which is what makes auto-imports of `react`, `next`,
- * etc. resolve.
+ * compiler options derived from the project's `tsconfig.json`, re-applied
+ * whenever that file changes.
+ *
+ * Dependency `.d.ts` are *not* acquired here. They're mirrored from the
+ * WebContainer's real installed `node_modules` by `useNodeModulesTypes`, so the
+ * editor resolves `react`, `next`, etc. against exactly what compiles.
  */
 export function useTsDefaults({
   monaco,
@@ -105,54 +103,20 @@ export function useTsDefaults({
     });
     applyOptions();
 
-    // Automatic type acquisition for npm dependencies.
-    const addedLibs = new Set<string>();
-    const ata = setupTypeAcquisition({
-      projectName: "ducklet",
-      typescript: ts,
-      logger: console,
-      delegate: {
-        receivedFile: (code, path) => {
-          if (addedLibs.has(path)) return;
-          addedLibs.add(path);
-          try {
-            tsNs.typescriptDefaults.addExtraLib(code, `file://${path}`);
-          } catch {
-            // Already registered (e.g. across a re-run) — harmless.
-          }
-        },
-      },
-    });
-
-    // Feed ATA the package.json + every TS/JS source so it can discover imports.
-    let ataTimer: ReturnType<typeof setTimeout> | null = null;
-    const runAta = () => {
-      const files = readAllFiles(ydoc);
-      let src = files["package.json"] ? `${files["package.json"]}\n` : "";
-      for (const [path, content] of Object.entries(files)) {
-        if (isTsLike(path)) src += `\n${content}`;
-      }
-      void ata(src);
-    };
-    const scheduleAta = () => {
-      if (ataTimer) clearTimeout(ataTimer);
-      ataTimer = setTimeout(runAta, 800);
-    };
-
+    // Re-apply compiler options only when tsconfig.json actually changes —
+    // never on every keystroke. Dependency types are handled separately by
+    // useNodeModulesTypes (mirrored from the WebContainer's node_modules).
     const onChange = () => {
       const cur = getFileText(ydoc, "tsconfig.json")?.toJSON() ?? "";
       if (cur !== lastTsconfig) {
         lastTsconfig = cur;
         applyOptions(); // only when tsconfig.json actually changed
       }
-      scheduleAta();
     };
     filesMap.observeDeep(onChange);
-    scheduleAta();
 
     return () => {
       filesMap.unobserveDeep(onChange);
-      if (ataTimer) clearTimeout(ataTimer);
     };
   }, [monaco, ydoc, enabled]);
 }

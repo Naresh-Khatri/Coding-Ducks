@@ -28,6 +28,12 @@ export interface WebContainerRuntime {
   /** URL of the dev server once it's up (from the `server-ready` event). */
   previewUrl: string | null;
   error: string | null;
+  /**
+   * The booted WebContainer instance, or null until boot completes. Exposed so
+   * the editor's TS layer can read the real installed `node_modules` types off
+   * its filesystem (see `use-node-modules-types`).
+   */
+  container: WebContainer | null;
   /** Subscribe to shell output; replays buffered output first. Returns unsub. */
   subscribeOutput: (cb: (data: string) => void) => () => void;
   /** Forward terminal keystrokes into the shell. */
@@ -62,6 +68,9 @@ export function useWebContainerRuntime({
   const [status, setStatus] = useState<RuntimeStatus>("idle");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The booted container, surfaced so the Monaco TS layer can mirror the real
+  // installed `.d.ts` from `node_modules` (see use-node-modules-types).
+  const [webContainer, setWebContainer] = useState<WebContainer | null>(null);
 
   // Mirror of previewUrl so `capture` always reads the latest without being
   // re-created on every URL change.
@@ -137,6 +146,7 @@ export function useWebContainerRuntime({
         setStatus("booting");
         const container = await bootWebContainer();
         if (cancelled) return;
+        setWebContainer(container);
 
         unsubServerReady = container.on("server-ready", (_port, url) => {
           if (cancelled) return;
@@ -210,6 +220,7 @@ export function useWebContainerRuntime({
       inputWriterRef.current = null;
       outputBufferRef.current = [];
       previewUrlRef.current = null;
+      setWebContainer(null);
       void teardownWebContainer();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,6 +230,7 @@ export function useWebContainerRuntime({
     status,
     previewUrl,
     error,
+    container: webContainer,
     subscribeOutput,
     writeInput,
     resize,

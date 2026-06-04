@@ -36,18 +36,3 @@ export function monacoLanguage(path: string): string {
       return "plaintext";
   }
 }
-
-/** Whether a file participates in the TypeScript/JavaScript language service. */
-export function isTsLike(path: string): boolean {
-  const ext = extname(path);
-  return (
-    ext === "ts" ||
-    ext === "tsx" ||
-    ext === "mts" ||
-    ext === "cts" ||
-    ext === "js" ||
-    ext === "jsx" ||
-    ext === "mjs" ||
-    ext === "cjs"
-  );
-}

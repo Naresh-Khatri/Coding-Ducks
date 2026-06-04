@@ -28,6 +28,7 @@ import { FileExplorer } from "./file-explorer";
 import { FileEditor } from "./monaco/file-editor";
 import { useAiInlineCompletion } from "./monaco/use-ai-inline-completion";
 import { useDuckletModels } from "./monaco/use-models";
+import { useNodeModulesTypes } from "./monaco/use-node-modules-types";
 import { useTsDefaults } from "./monaco/use-ts-defaults";
 import { PreviewPanel } from "./preview-panel";
 import { TerminalPanel } from "./terminal-panel";
@@ -100,6 +101,13 @@ export function Workspace({
   const { aiCompletion, tsIntelligence } = useEditorSettings();
   const { models, ready: modelsReady } = useDuckletModels({ monaco, ydoc });
   useTsDefaults({ monaco, ydoc, enabled: tsIntelligence });
+  // Mirror the real installed node_modules .d.ts into Monaco once `npm install`
+  // finishes — the editor's source of truth for dependency types.
+  useNodeModulesTypes({
+    monaco,
+    container: runtime.container,
+    enabled: tsIntelligence,
+  });
   useAiInlineCompletion({ monaco, enabled: !!provider && aiCompletion });
 
   const [openPaths, setOpenPaths] = useState<string[]>([]);
