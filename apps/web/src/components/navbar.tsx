@@ -98,9 +98,9 @@ export function Navbar() {
                       alt={user.name ?? "User"}
                       width={32}
                       height={32}
-                      className="bg-muted rounded-full"
+                      className="bg-muted size-8 shrink-0 rounded-full"
                     />
-                    <span className="text-sm font-medium">
+                    <span className="max-w-[12rem] truncate text-sm font-medium whitespace-nowrap">
                       {user.name ?? "User"}
                     </span>
                   </button>
@@ -198,9 +198,9 @@ export function Navbar() {
                       alt={user.name ?? "User"}
                       width={32}
                       height={32}
-                      className="bg-muted rounded-full"
+                      className="bg-muted size-8 shrink-0 rounded-full"
                     />
-                    <span className="text-sm font-medium">
+                    <span className="truncate text-sm font-medium">
                       {user.name ?? "User"}
                     </span>
                   </div>
