@@ -275,14 +275,17 @@ export default function DuckletPage({
     };
   }, [provider, ducklet, isOwner, duckletId, router]);
 
-  // The WebContainer runtime is desktop Chromium/Firefox only. Gate before
-  // rendering the workspace so unsupported browsers get a clear message.
+  // WebContainer is desktop Chromium/Firefox only — gate genuinely unsupported
+  // browsers before rendering the workspace.
   const support = useWebContainerSupport();
   if (support.checked && !support.supported) {
     return <DesktopOnlyGate reason={support.reason} />;
   }
 
-  if (isDuckletLoading) {
+  // Hold on the spinner until the support check has run. `checked` stays false
+  // across the isolation-recovery reload; mounting the workspace before then
+  // would flash a runtime that can't boot.
+  if (!support.checked || isDuckletLoading) {
     return (
       <div className="flex h-[100dvh] items-center justify-center">
         <div className="text-muted-foreground animate-pulse">

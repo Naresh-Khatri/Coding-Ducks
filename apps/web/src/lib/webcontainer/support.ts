@@ -24,16 +24,11 @@ export function checkWebContainerSupport(): SupportResult {
     return { supported: false, reason: "ssr" };
   }
 
-  // The COOP/COEP headers (set on /ducklets/:id+) must have made the page
-  // cross-origin isolated, which is what unlocks SharedArrayBuffer.
-  if (!window.crossOriginIsolated) {
-    return { supported: false, reason: "not-cross-origin-isolated" };
-  }
-  if (typeof SharedArrayBuffer === "undefined") {
-    return { supported: false, reason: "no-shared-array-buffer" };
-  }
-
   const ua = navigator.userAgent;
+
+  // Check the *permanent* reasons (mobile/Safari) before the transient isolation
+  // check: those are never isolated either, but a clear reason also stops the
+  // caller from reloading to recover isolation it can never get.
 
   // Mobile browsers can't run WebContainers (no SAB threads / memory limits).
   if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) {
@@ -48,6 +43,17 @@ export function checkWebContainerSupport(): SupportResult {
     /^((?!chrome|chromium|crios|edg|android|fxios|firefox).)*safari/i.test(ua);
   if (isSafari) {
     return { supported: false, reason: "safari" };
+  }
+
+  // The COOP/COEP headers (on /ducklets/:id+) make the page cross-origin
+  // isolated, which unlocks SharedArrayBuffer. The one *transient* reason: a
+  // soft-nav into a room stays un-isolated until a real document load applies
+  // the headers, so callers reload once to recover (see the hook).
+  if (!window.crossOriginIsolated) {
+    return { supported: false, reason: "not-cross-origin-isolated" };
+  }
+  if (typeof SharedArrayBuffer === "undefined") {
+    return { supported: false, reason: "no-shared-array-buffer" };
   }
 
   return { supported: true };

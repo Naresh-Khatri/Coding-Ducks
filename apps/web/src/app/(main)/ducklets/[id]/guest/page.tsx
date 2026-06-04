@@ -145,7 +145,10 @@ export default function GuestDuckletPage({
     return <DesktopOnlyGate reason={support.reason} />;
   }
 
-  if (isDuckletLoading) {
+  // Hold on the spinner until the support check has run. `checked` stays false
+  // across the isolation-recovery reload; mounting the workspace before then
+  // would flash a runtime that can't boot.
+  if (!support.checked || isDuckletLoading) {
     return (
       <div className="flex h-[100dvh] items-center justify-center">
         <div className="text-muted-foreground animate-pulse">

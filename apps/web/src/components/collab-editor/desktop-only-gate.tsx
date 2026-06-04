@@ -11,10 +11,37 @@ import {
   unsupportedMessage,
 } from "~/lib/webcontainer/support";
 
+// Reload-loop guard, persisted across the reload; cleared once isolated (or
+// permanently unsupported).
+const COI_RELOAD_GUARD = "ducklet-coi-reload-attempted";
+
+function readGuard(): boolean {
+  try {
+    return sessionStorage.getItem(COI_RELOAD_GUARD) !== null;
+  } catch {
+    // Storage unavailable — treat as "already tried" so we never loop.
+    return true;
+  }
+}
+
+function writeGuard(value: boolean): void {
+  try {
+    if (value) sessionStorage.setItem(COI_RELOAD_GUARD, "1");
+    else sessionStorage.removeItem(COI_RELOAD_GUARD);
+  } catch {
+    // ignore — see readGuard()
+  }
+}
+
 /**
- * Runs the WebContainer support check on the client after mount (it depends on
- * `window.crossOriginIsolated`, navigator, etc.). `checked` is false until the
- * first client render so callers can avoid flashing the gate during SSR.
+ * Runs the WebContainer support check on the client after mount. `checked` is
+ * false until then so callers don't flash the gate during SSR.
+ *
+ * Cross-origin isolation comes from the COOP/COEP headers, scoped to
+ * `/ducklets/:id+`. A soft-nav into a room from a non-isolated page reuses the
+ * old, un-isolated document, so `crossOriginIsolated` stays false even though a
+ * direct load would be isolated. Reload once to re-fetch with the headers,
+ * guarded so a setup that can never isolate falls through to the gate.
  */
 export function useWebContainerSupport(): SupportResult & { checked: boolean } {
   // Initial value is a safe SSR fallback; real check uses window.crossOriginIsolated — browser-only, unsafe during SSR render
@@ -27,7 +54,17 @@ export function useWebContainerSupport(): SupportResult & { checked: boolean } {
   // Browser-only init: checkWebContainerSupport() reads window/navigator, must stay in effect for SSR safety
   // react-doctor-disable-next-line react-doctor/no-initialize-state
   useEffect(() => {
-    setResult({ ...checkWebContainerSupport(), checked: true });
+    const support = checkWebContainerSupport();
+
+    if (support.reason === "not-cross-origin-isolated" && !readGuard()) {
+      writeGuard(true);
+      window.location.reload();
+      return; // page is reloading — don't flip `checked` and flash the gate
+    }
+
+    // Isolated, or permanently unsupported: clear so a later soft-nav can retry.
+    writeGuard(false);
+    setResult({ ...support, checked: true });
   }, []);
 
   return result;
