@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 // Monaco is loaded once via a pinned CDN loader (see ./monaco/setup) and shared
 // across the whole workspace — it isn't a route-level chunk to defer.
 import { useMonaco } from "@monaco-editor/react";
-import { Camera, TerminalIcon } from "lucide-react";
+import { TerminalIcon } from "lucide-react";
 
 import { getFileText, listFilePaths } from "@acme/ducklet-fs";
 
@@ -87,7 +87,7 @@ export function Workspace({
   // Auto-capture the preview as the ducklet's thumbnail / OG image (editable
   // sessions only; one uploader per room via awareness leader election).
   const editable = !readOnly && !!provider && duckletId != null;
-  const { captureNow } = useDuckletPreviewCapture({
+  useDuckletPreviewCapture({
     ydoc,
     provider,
     runtime,
@@ -115,24 +115,6 @@ export function Workspace({
   const [activePath, setActivePath] = useState<string | null>(null);
   const [showTerminal, setShowTerminal] = useState(true);
   const [showConsole, setShowConsole] = useState(false);
-  const [capturing, setCapturing] = useState(false);
-
-  // Manual "update thumbnail now" — forces an immediate capture + upload.
-  const handleCapture = useCallback(async () => {
-    setCapturing(true);
-    try {
-      await captureNow();
-    } catch (err) {
-      console.error("[ducklet] thumbnail capture failed:", err);
-      window.alert(
-        `Thumbnail capture failed: ${
-          err instanceof Error ? err.message : String(err)
-        }`,
-      );
-    } finally {
-      setCapturing(false);
-    }
-  }, [captureNow]);
 
   // Open a sensible entry file on first load. Initializes the editor from the
   // external Y.Doc (and re-runs if the doc identity changes), so it must be an
@@ -261,19 +243,6 @@ export function Workspace({
               <TerminalIcon className="mr-1 size-3" />
               Terminal
             </Button>
-            {editable && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-1 h-5 rounded-xs px-2 text-xs"
-                onClick={handleCapture}
-                disabled={!runtime.previewUrl || capturing}
-                title="Capture the preview now and save it as this ducklet's thumbnail"
-              >
-                <Camera className="mr-1 size-3" />
-                {capturing ? "Saving…" : "Thumbnail"}
-              </Button>
-            )}
           </div>
         </div>
       </ResizablePanel>

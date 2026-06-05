@@ -15,6 +15,7 @@ import { useTRPC } from "~/trpc/react";
 const MIN_CHANGES = 5; // edits since the last shot before we bother
 const IDLE_MS = 10_000; // wait for the editor to go quiet
 const COOLDOWN_MS = 120_000; // at most one automatic upload per 2 min
+const INITIAL_CAPTURE_DELAY_MS = 4_000; // settle time after the preview boots
 
 // OG image dimensions (1.91:1); also serves as the gallery thumbnail.
 const CAPTURE = {
@@ -38,9 +39,6 @@ interface Options {
  * image (gallery thumbnail + OG image). To stop every collaborator uploading
  * the same shot, only the awareness "leader" — the lowest connected clientId —
  * performs captures.
- *
- * Returns `captureNow`, which forces an immediate capture+upload (still
- * editable/leader/preview-gated) — handy for a manual "update thumbnail".
  */
 export function useDuckletPreviewCapture({
   ydoc,
@@ -48,7 +46,7 @@ export function useDuckletPreviewCapture({
   runtime,
   duckletId,
   enabled,
-}: Options): { captureNow: () => Promise<void> } {
+}: Options): void {
   const trpc = useTRPC();
   const { mutateAsync } = useMutation(
     trpc.ducklet.updatePreviewImage.mutationOptions(),
@@ -65,6 +63,7 @@ export function useDuckletPreviewCapture({
   const changesRef = useRef(0);
   const lastCaptureAtRef = useRef(0);
   const capturingRef = useRef(false);
+  const initialCaptureDoneRef = useRef(false);
 
   // We capture if we're the lowest clientId among connected peers (stable as
   // long as that peer stays), so exactly one client uploads.
@@ -102,6 +101,22 @@ export function useDuckletPreviewCapture({
     [enabled, amLeader, duckletId],
   );
 
+  // First shot once the preview boots, so a thumbnail appears without any edits.
+  const previewUrl = runtime.previewUrl;
+  useEffect(() => {
+    if (!enabled || !previewUrl || initialCaptureDoneRef.current) return;
+
+    const timer = setTimeout(() => {
+      initialCaptureDoneRef.current = true;
+      void performCapture().catch((err) => {
+        initialCaptureDoneRef.current = false; // retry on next preview-url change
+        console.warn("[ducklet] initial preview capture failed:", err);
+      });
+    }, INITIAL_CAPTURE_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [enabled, previewUrl, performCapture]);
+
   // Debounced auto-capture: fire after the editor goes quiet, once enough has
   // changed and the cooldown has elapsed.
   useEffect(() => {
@@ -137,6 +152,4 @@ export function useDuckletPreviewCapture({
       filesMap.unobserveDeep(onChange);
     };
   }, [enabled, provider, ydoc, performCapture]);
-
-  return { captureNow: performCapture };
 }
