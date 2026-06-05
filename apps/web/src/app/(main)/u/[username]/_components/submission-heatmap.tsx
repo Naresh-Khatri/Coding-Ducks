@@ -144,9 +144,6 @@ export function SubmissionHeatmap({ username }: { username: string }) {
           <div className="flex gap-0.5">
             {/* Day labels */}
             <div className="flex flex-col gap-0.5 pr-1">
-              {/* DAYS is a static 7-element array that never reorders */}
-              {/* react-doctor-disable-next-line react-doctor/no-array-index-key */}
-              {/* react-doctor-disable-next-line react-doctor/no-array-index-as-key */}
               {DAYS.map((d, i) => (
                 <div
                   key={i}

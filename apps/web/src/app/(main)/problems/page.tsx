@@ -1,5 +1,4 @@
 // Page metadata is provided by the sibling server layout.tsx (this is a client component).
-// react-doctor-disable-next-line react-doctor/nextjs-missing-metadata
 "use client";
 
 import { useState } from "react";

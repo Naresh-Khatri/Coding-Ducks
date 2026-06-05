@@ -9,7 +9,6 @@
  * lockstep so the shared enums/classes line up.
  */
 // This module is a side-effect-only loader config; dynamic import would prevent it from running before Monaco mounts
-// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { loader } from "@monaco-editor/react";
 
 // Keep in sync with the `monaco-editor` version in apps/web/package.json.

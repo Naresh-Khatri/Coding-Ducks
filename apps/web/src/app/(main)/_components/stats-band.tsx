@@ -19,8 +19,6 @@ const STATS: Stat[] = [
 
 /** Eases a number from 0 → target once the element scrolls into view. */
 function useCountUp(target: number, run: boolean, duration = 1400) {
-  // Initial value of 0 is correct — the effect runs a rAF animation loop, not a browser-only init
-  // react-doctor-disable-next-line react-doctor/no-initialize-state
   const [value, setValue] = useState(0);
 
   useEffect(() => {

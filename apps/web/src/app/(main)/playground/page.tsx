@@ -572,7 +572,6 @@ export default function PlaygroundPage() {
       </div>
 
       {/* jsx and global are valid styled-jsx props consumed by the Next.js styled-jsx compiler */}
-      {/* react-doctor-disable-next-line react-doctor/no-unknown-property */}
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;

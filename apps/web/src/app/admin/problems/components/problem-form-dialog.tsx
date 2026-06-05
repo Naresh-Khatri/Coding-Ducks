@@ -316,10 +316,8 @@ export function ProblemFormDialog({
   // Reset form when dialog opens or id changes. This must run in an effect:
   // it reacts to async-loaded query data (`existingProblem`) and drives the
   // react-hook-form imperative `form.reset()` API, which can't be called
-  // during render — so this is not the prop-mirroring anti-pattern the rule targets.
-  // react-doctor-disable-next-line react-doctor/no-event-handler
+  // during render.
   useEffect(() => {
-    // react-doctor-disable-next-line react-doctor/no-event-handler
     if (open) {
       if (problemId && existingProblem) {
         form.reset({
@@ -342,7 +340,6 @@ export function ProblemFormDialog({
         });
         if (existingProblem.functionSignature) {
           // signature is editable by user and loaded from async query data — not a simple derived value
-          // react-doctor-disable-next-line react-doctor/no-derived-state
           setSignature(existingProblem.functionSignature as any);
         }
       } else if (!problemId) {
@@ -363,8 +360,6 @@ export function ProblemFormDialog({
           testCases: [{ input: "", output: "", isPublic: true }],
           starterCode: DEFAULT_STARTER_CODE,
         });
-        // Part of the async-data-driven form reset above (not prop mirroring).
-        // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
         setSignature(undefined);
       }
     }

@@ -45,14 +45,12 @@ function writeGuard(value: boolean): void {
  */
 export function useWebContainerSupport(): SupportResult & { checked: boolean } {
   // Initial value is a safe SSR fallback; real check uses window.crossOriginIsolated — browser-only, unsafe during SSR render
-  // react-doctor-disable-next-line react-doctor/rendering-hydration-no-flicker
   const [result, setResult] = useState<SupportResult & { checked: boolean }>({
     supported: false,
     checked: false,
   });
 
   // Browser-only init: checkWebContainerSupport() reads window/navigator, must stay in effect for SSR safety
-  // react-doctor-disable-next-line react-doctor/no-initialize-state
   useEffect(() => {
     const support = checkWebContainerSupport();
 

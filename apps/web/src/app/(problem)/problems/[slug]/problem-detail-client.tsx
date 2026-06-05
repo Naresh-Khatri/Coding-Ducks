@@ -47,7 +47,6 @@ export function ProblemDetailClient() {
   // Tracks the last problem we loaded drafts for; a ref (not state) because it
   // only gates the merge effect below and is never rendered.
   const lastProblemIdRef = useRef<number | null>(null);
-  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [pollingId, setPollingId] = useState<number | null>(null);
   const [pollingType, setPollingType] = useState<"run" | "submit" | null>(null);
   const [submissionsLimit, setSubmissionsLimit] = useState(10);
@@ -157,7 +156,6 @@ export function ProblemDetailClient() {
     }
     // This effect initializes editor state from async query data (problem +
     // savedDrafts); the multiple setState calls are batched by React.
-    // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   }, [problem, language, savedDrafts, isAuthenticated]);
 
   // Remember the chosen language across problems / reloads.

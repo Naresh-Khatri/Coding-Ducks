@@ -2,7 +2,6 @@
 
 // CodeEditor is the leaf consumer of codemirror — all named exports are used
 // directly in component logic; consumers should dynamic-import this component
-// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import type { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { useCallback, useMemo } from "react";
 import { cpp } from "@codemirror/lang-cpp";

@@ -81,18 +81,11 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions,
-    // TipTap content is the initial value; updates are handled via the editor's own onUpdate event
-    // react-doctor-disable-next-line react-doctor/no-event-handler
     content: value,
     immediatelyRender: false,
-    // TipTap requires editorProps and onUpdate to be passed in the config, not via effects
-    // react-doctor-disable-next-line react-doctor/no-event-handler
     editorProps: {
-      // react-doctor-disable-next-line react-doctor/no-event-handler
       attributes: { class: cn(proseClass, minHeightClass, "px-3 py-2") },
     },
-    // onChange is called inside TipTap's onUpdate hook (not a React event handler); this is the correct TipTap API
-    // react-doctor-disable-next-line react-doctor/no-event-handler
     onUpdate: ({ editor }) => onChange(editor.isEmpty ? "" : editor.getHTML()),
   });
 

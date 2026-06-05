@@ -1,5 +1,3 @@
-// Metadata is exported from the sibling layout.tsx (generateMetadata) — this is a "use client" page.
-// react-doctor-disable-next-line react-doctor/nextjs-missing-metadata
 "use client";
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
@@ -72,8 +70,6 @@ export default function DuckletPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // use(params) is the Next.js 15 async params pattern — not an event handler misuse
-  // react-doctor-disable-next-line react-doctor/no-event-handler
   const { id: duckletIdStr } = use(params);
   const duckletId = parseInt(duckletIdStr);
   const router = useRouter();
@@ -116,8 +112,7 @@ export default function DuckletPage({
 
   // Chat history from Postgres; live messages via the SSE subscription.
   // Flat oldest→newest list, deduped by id so the optimistic append and its
-  // echo collapse to one. Cannot be derived — merges server snapshot + live SSE stream.
-  // react-doctor-disable-next-line react-doctor/no-derived-state
+  // echo collapse to one.
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const appendMessage = useCallback((msg: ChatMessage) => {
@@ -242,8 +237,6 @@ export default function DuckletPage({
 
   // Redirect non-members to guest page for public ducklets
   // This also handles access revocation during active session
-  // Redirect depends on client-only auth/membership state — cannot be a server redirect
-  // react-doctor-disable-next-line react-doctor/nextjs-no-client-side-redirect
   useEffect(() => {
     if (ducklet && isPublic && !isOwner && !isMember) {
       router.push(`/ducklets/${duckletId}/guest`);
@@ -251,8 +244,6 @@ export default function DuckletPage({
   }, [ducklet, isPublic, isOwner, isMember, duckletId, router]);
 
   // Listen to websocket disconnects for access revocation
-  // Redirect triggered by websocket close event — depends on runtime provider state, not server state
-  // react-doctor-disable-next-line react-doctor/nextjs-no-client-side-redirect
   useEffect(() => {
     if (!provider || !ducklet) return;
 

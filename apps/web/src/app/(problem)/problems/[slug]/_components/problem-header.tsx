@@ -68,15 +68,9 @@ export function ProblemHeader({
   const [elapsed, setElapsed] = useState(0);
   const startRef = useRef<number>(0);
 
-  // setElapsed(0) resets the stopwatch then the interval fires repeatedly; these
-  // are not cascading state updates — they are a timer driving a single counter.
-  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (isBusy) {
       startRef.current = Date.now();
-      // Reset the on-screen stopwatch to 0 as a new run starts; this is a
-      // timer side effect, not state mirrored from a prop.
-      // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
       setElapsed(0);
       const id = setInterval(
         () => setElapsed(Date.now() - startRef.current),

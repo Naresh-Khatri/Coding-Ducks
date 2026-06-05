@@ -24,8 +24,6 @@ function markDismissed() {
 
 export function CanvasEmptyState() {
   // Intentional SSR-safe default: hidden=true prevents flash before localStorage is read
-  // react-doctor-disable-next-line react-doctor/rendering-hydration-no-flicker
-  // react-doctor-disable-next-line react-doctor/no-initialize-state
   const [hidden, setHidden] = useState(true);
 
   // Read persisted preference on mount (client-only, localStorage) to avoid SSR mismatch.

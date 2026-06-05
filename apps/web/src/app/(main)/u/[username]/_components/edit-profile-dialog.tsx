@@ -52,11 +52,8 @@ export function EditProfileDialog({
   });
 
   // username is an editable copy of the prop that the user can change; this is intentional
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [username, setUsername] = useState(profile.username);
   // prevProfileUsername is read during render for the prev-prop comparison below
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
-  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [prevProfileUsername, setPrevProfileUsername] = useState(
     profile.username,
   );
@@ -73,12 +70,8 @@ export function EditProfileDialog({
   const usernameValid = /^[a-z0-9_]{3,30}$/.test(username);
 
   // Debounce username for availability check — two setDebouncedUsername paths (clear vs. set) are intentional
-  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (!usernameChanged || !usernameValid) {
-      // Clearing the debounced value is part of this debounce timer, not state
-      // mirrored from a prop.
-      // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
       setDebouncedUsername("");
       return;
     }

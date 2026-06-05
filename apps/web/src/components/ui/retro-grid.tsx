@@ -697,7 +697,6 @@ export function RetroGrid({
       if (isContextLost) {
         stopAnimation();
         // WebGL context is browser-only; state cannot be initialized during SSR render.
-        // react-doctor-disable-next-line react-doctor/no-initialize-state
         setIsWebGlReady(false);
         return;
       }
@@ -706,7 +705,6 @@ export function RetroGrid({
         if (!initializePipeline()) {
           stopAnimation();
           // WebGL context is browser-only; state cannot be initialized during SSR render.
-          // react-doctor-disable-next-line react-doctor/no-initialize-state
           setIsWebGlReady(false);
           return;
         }
@@ -722,7 +720,6 @@ export function RetroGrid({
       updateLineColor();
       draw(performance.now());
       // WebGL context is browser-only; state cannot be initialized during SSR render.
-      // react-doctor-disable-next-line react-doctor/no-initialize-state
       setIsWebGlReady(true);
 
       if (reducedMotion.matches || !isVisible) {
@@ -780,7 +777,6 @@ export function RetroGrid({
       stopAnimation();
       releasePipeline(false);
       // WebGL context is browser-only; state cannot be initialized during SSR render.
-      // react-doctor-disable-next-line react-doctor/no-initialize-state
       setIsWebGlReady(false);
     };
 

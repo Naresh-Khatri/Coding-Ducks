@@ -53,9 +53,7 @@ export function useFilePresence(provider: HocuspocusProvider | null) {
     };
 
     // Compute the initial snapshot from the external Yjs awareness store, then
-    // keep it in sync via the subscription below. This reads an external store,
-    // not a prop, so it isn't the prop-mirroring anti-pattern.
-    // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
+    // keep it in sync via the subscription below.
     recompute();
     awareness.on("change", recompute);
     return () => awareness.off("change", recompute);

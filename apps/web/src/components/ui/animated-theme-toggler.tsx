@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 // flushSync is required here: the View Transition must observe the DOM update
 // synchronously before animating; React's concurrent scheduler would defer it.
-// react-doctor-disable-next-line react-doctor/no-flush-sync
 import { flushSync } from "react-dom";
 
 import { cn } from "~/lib/utils";
@@ -20,7 +19,6 @@ export const AnimatedThemeToggler = ({
   ...props
 }: AnimatedThemeTogglerProps) => {
   // isDark init reads document.documentElement which is browser-only; must stay in effect for SSR safety.
-  // react-doctor-disable-next-line react-doctor/no-initialize-state
   const [isDark, setIsDark] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -46,7 +44,6 @@ export const AnimatedThemeToggler = ({
     // document.startViewTransition is intentional: the circular clip-path animation
     // requires direct View Transition API control; React's <ViewTransition> does not
     // support custom pseudoElement keyframe animations on ::view-transition-new(root).
-    // react-doctor-disable-next-line react-doctor/no-document-start-view-transition
     await document.startViewTransition(() => {
       flushSync(() => {
         const newTheme = !isDark;

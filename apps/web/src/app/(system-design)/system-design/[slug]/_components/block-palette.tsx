@@ -71,7 +71,6 @@ export function BlockPalette() {
           Blocks
         </div>
         {/* CATEGORY_CONFIG has at most 5 categories — two-pass cost is negligible */}
-        {/* react-doctor-disable-next-line react-doctor/js-combine-iterations */}
         {(Object.keys(CATEGORY_CONFIG) as BlockCategory[])
           .filter((category) => grouped[category].length > 0)
           .map((category, idx) => {

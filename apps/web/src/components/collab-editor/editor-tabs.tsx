@@ -33,7 +33,6 @@ export function EditorTabs({
         const name = path.slice(path.lastIndexOf("/") + 1);
         return (
           // Tab contains a nested <button> (close), so <button> nesting is invalid; role="button" is correct here
-          // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
           <div
             key={path}
             role="button"

@@ -56,7 +56,6 @@ function filterHidden(node: TreeNode): TreeNode {
   if (!node.children) return node;
   // The two passes (filter + map) are over a small, shallow list of filesystem
   // entries — the clarity and recursive correctness outweigh the micro-optimisation.
-  // react-doctor-disable-next-line react-doctor/js-combine-iterations
   return {
     ...node,
     children: node.children
@@ -76,7 +75,6 @@ export function FileExplorer({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   // seededExpand gates the one-time auto-expand effect and is read in the deps
   // array; it's not purely handler-side state.
-  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [seededExpand, setSeededExpand] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
 

@@ -71,7 +71,6 @@ function GitHubStarsButton({
   const repoUrl = `https://github.com/${username}/${repo}`;
 
   // One-off external GitHub API fetch — no tRPC route exists for this
-  // react-doctor-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     fetch(`https://api.github.com/repos/${username}/${repo}`)
       .then((response) => response.json())
@@ -90,9 +89,7 @@ function GitHubStarsButton({
   }, []);
 
   // springVal is a MotionValue (external store subscription) — the subscription
-  // must stay active while the component is mounted; handleDisplayParticles is
-  // stable (useCallback with no deps) so this is not a real re-subscribe issue.
-  // react-doctor-disable-next-line react-doctor/prefer-use-effect-event
+  // must stay active while the component is mounted.
   useEffect(() => {
     const unsubscribe = springVal.on("change", (latest: number) => {
       const newValue = Math.round(latest);
@@ -109,9 +106,7 @@ function GitHubStarsButton({
     return () => unsubscribe();
   }, [springVal, stars, handleDisplayParticles]);
 
-  // Drives the spring animation when the fetched star count arrives — this
-  // reacts to async external data (the GitHub fetch), not a user action.
-  // react-doctor-disable-next-line react-doctor/no-event-handler
+  // Drives the spring animation when the fetched star count arrives.
   useEffect(() => {
     if (stars > 0) motionVal.set(stars);
   }, [motionVal, stars]);

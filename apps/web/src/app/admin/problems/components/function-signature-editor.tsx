@@ -101,10 +101,6 @@ export function FunctionSignatureEditor({
     value?.returnType || "integer[]",
   );
 
-  // onChange is a stable prop callback kept in sync here; correct for a sub-form.
-  // react-doctor-disable-next-line react-doctor/no-pass-live-state-to-parent
-  // react-doctor-disable-next-line react-doctor/no-prop-callback-in-effect
-  // react-doctor-disable-next-line react-doctor/exhaustive-deps
   useEffect(() => {
     onChange({ fnName, params, returnType });
   }, [fnName, params, returnType]); // eslint-disable-line react-hooks/exhaustive-deps

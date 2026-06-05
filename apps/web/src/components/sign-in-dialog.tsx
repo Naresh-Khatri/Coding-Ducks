@@ -97,9 +97,6 @@ function SignInDialog({
   // Re-read the remembered provider each time the dialog opens. Done during
   // render (prev-prop comparison) rather than in an effect so the value is
   // correct on the first paint instead of after an extra commit.
-  // prevOpen is read during render for the prev-prop comparison below
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
-  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
     setPrevOpen(open);

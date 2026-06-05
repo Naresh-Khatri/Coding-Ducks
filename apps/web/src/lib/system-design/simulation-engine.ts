@@ -839,7 +839,6 @@ export class SimulationEngine {
     let p99LatencyMs = 0;
     if (this.latencySamples.length > 0) {
       // tsconfig targets ES2022; toSorted() requires ES2023 — using spread+sort instead
-      // react-doctor-disable-next-line react-doctor/js-tosorted-immutable
       const sorted = [...this.latencySamples].sort((a, b) => a - b);
       const idx = Math.min(Math.floor(sorted.length * 0.99), sorted.length - 1);
       const rawP99 = sorted[idx]!;

@@ -243,8 +243,6 @@ export function TestCasePanel({
                   </div>
                   <div className="mb-4 flex items-center gap-2">
                     {/* consoleOutput items are positionally bound to test cases and never reorder */}
-                    {/* react-doctor-disable-next-line react-doctor/no-array-index-key */}
-                    {/* react-doctor-disable-next-line react-doctor/no-array-index-as-key */}
                     {consoleOutput.map((r, i) => (
                       <button type="button"
                         key={i}

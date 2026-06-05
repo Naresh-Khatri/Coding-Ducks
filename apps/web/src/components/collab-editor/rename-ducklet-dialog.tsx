@@ -36,11 +36,8 @@ export function RenameDuckletDialog({
   // Reset name to currentName each time the dialog opens using the prev-prop
   // pattern so it runs synchronously during render without an extra effect commit.
   // name is an editable copy of the currentName prop that the user can change
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [name, setName] = useState(currentName);
   // prevOpen is read during render for the prev-prop comparison below
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
-  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
     setPrevOpen(open);

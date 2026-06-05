@@ -1,7 +1,5 @@
 "use client";
 
-// This component is already loaded lazily via next/dynamic in canvas-info-overlay.tsx; recharts is not in the main bundle
-// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
 interface TrafficPoint {

@@ -61,8 +61,6 @@ const DIFFICULTY_COLORS = {
   hard: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
-// States are independent (search/filter/dialog) — a reducer adds complexity without behavioral change
-// react-doctor-disable-next-line react-doctor/prefer-useReducer
 export default function AdminProblemsPage() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();

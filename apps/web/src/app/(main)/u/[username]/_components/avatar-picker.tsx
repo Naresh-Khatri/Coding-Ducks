@@ -60,11 +60,8 @@ export function AvatarPicker({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   // selected is an editable copy of the currentSeed prop — it diverges once the user picks a new avatar
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [selected, setSelected] = useState(currentSeed);
   // prevSeed is the prev-prop tracking state used during render for the comparison below — not a render-only side-effect
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
-  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [prevSeed, setPrevSeed] = useState(currentSeed);
   const [extraSeeds, setExtraSeeds] = useState<string[]>([]);
 

@@ -27,7 +27,6 @@ export function useAiInlineCompletion({
   // The fetch is inside Monaco's provideInlineCompletions callback (not directly
   // in the effect body); it is request-driven, not a data-fetching side effect —
   // there is no tRPC route for ghost-text AI completions.
-  // react-doctor-disable-next-line react-doctor/no-fetch-in-effect
   useEffect(() => {
     if (!monaco || !enabled) return;
 

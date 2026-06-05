@@ -69,9 +69,6 @@ export function DiscussionPanel({
   const best = problem.bestSubmission;
   const canShare = best?.status === "accepted";
 
-  // These 6 state values are independent UI controls that rarely change together;
-  // collapsing them into a reducer would add boilerplate without a real benefit.
-  // react-doctor-disable-next-line react-doctor/prefer-useReducer
   const [openId, setOpenId] = useState<number | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [title, setTitle] = useState("");

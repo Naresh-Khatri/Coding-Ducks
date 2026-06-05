@@ -8,8 +8,6 @@ import {
   SkipForward,
   SlidersHorizontal,
 } from "lucide-react";
-// recharts is deeply integrated into this chart component — dynamic import would require extracting the entire component
-// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import {
   Area,
   AreaChart,

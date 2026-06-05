@@ -16,10 +16,6 @@ import {
   XCircle,
 } from "lucide-react";
 import confetti from "canvas-confetti";
-// recharts is used inline in JSX with multiple named components; using dynamic()
-// per component is the safe approach but recharts is already code-split at the
-// route level since this modal is only rendered inside the system-design route.
-// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import {
   Area,
   AreaChart,
@@ -104,7 +100,6 @@ export function ResultsModal() {
   // Defer what-if simulations so they don't block first paint of the modal.
   // First setSuggestions(null) resets immediately on deps change; the second
   // fires inside a timeout to defer computation — two calls are intentional.
-  // react-doctor-disable-next-line react-doctor/no-cascading-set-state
   useEffect(() => {
     if (!results || !level) {
       setSuggestions(null);
@@ -173,9 +168,7 @@ export function ResultsModal() {
       stars: results.stars,
       passed: results.passed,
     });
-    // saveAttempt.mutate is stable from useMutation; all other deps are listed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // react-doctor-disable-next-line react-doctor/exhaustive-deps
   }, [session?.user, results, level, nodes, edges]);
 
   // Auto-save once when authenticated. Only auto-fires on first visit — after
@@ -221,9 +214,6 @@ export function ResultsModal() {
   }, [setPhase]);
 
   // Close on Escape — only listen while the modal is actually shown.
-  // handleDismiss is wrapped in useCallback and is stable within a session; this is
-  // a keyboard event listener subscription pattern, not a dependency re-subscribe bug.
-  // react-doctor-disable-next-line react-doctor/prefer-use-effect-event
   useEffect(() => {
     if (!results || !level) return;
     const handler = (e: KeyboardEvent) => {
@@ -245,9 +235,6 @@ export function ResultsModal() {
   }));
 
   return (
-    // Modal backdrop: contains a complex modal card as child, so <button> is not
-    // appropriate here — role="button" on the dismissible backdrop is intentional.
-    // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
     <div
       role="button"
       tabIndex={0}

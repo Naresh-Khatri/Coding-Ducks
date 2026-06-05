@@ -85,7 +85,6 @@ function Field({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof fieldVariants>) {
   // role="group" is the correct ARIA role for a generic form field wrapper; <address> is for contact info only
-  // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
   return (
     <div
       role="group"

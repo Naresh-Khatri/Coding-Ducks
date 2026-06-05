@@ -1,5 +1,3 @@
-// Parent [id]/layout.tsx provides generateMetadata for all ducklet routes including guest
-// react-doctor-disable-next-line react-doctor/nextjs-missing-metadata
 "use client";
 
 import { use, useEffect, useMemo } from "react";
@@ -88,8 +86,6 @@ export default function GuestDuckletPage({
     ),
   );
 
-  // Analytics side-effect fires on mount/id change — not a prop-mirroring event handler pattern
-  // react-doctor-disable-next-line react-doctor/no-event-handler
   useEffect(() => {
     track("ducklet-guest-view", { id: duckletId, signedIn: !!userId });
   }, [duckletId, userId]);
@@ -116,8 +112,6 @@ export default function GuestDuckletPage({
   const userStatus = ducklet?.currentUserStatus;
   const isMember = userStatus === "active";
 
-  // Redirect depends on client-only auth state (session/membership) — cannot use server redirect
-  // react-doctor-disable-next-line react-doctor/nextjs-no-client-side-redirect
   useEffect(() => {
     if (isOwner || isMember) {
       router.push(`/ducklets/${duckletId}`);
