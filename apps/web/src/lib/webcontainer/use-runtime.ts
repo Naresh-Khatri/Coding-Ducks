@@ -59,6 +59,11 @@ export interface WebContainerRuntime {
   /** Re-run the inferred boot command (Ctrl-C then start). */
   restart: () => void;
   /**
+   * Stop the running process and run `npm install && <dev/start>`, for after a
+   * dependency change. No-op if the project isn't runnable.
+   */
+  reinstall: () => void;
+  /**
    * Screenshot the running preview off-screen at a fixed resolution (default
    * 1920×1080) and resolve to a PNG data URL. Rejects if the dev server isn't
    * up yet. Invisible to the user.
@@ -97,6 +102,9 @@ export function useWebContainerRuntime({
   );
   const shellRef = useRef<WebContainerProcess | null>(null);
   const bootCommandRef = useRef<string | null>(null);
+  // Just the run step (`npm run dev` / `npm start`) so `reinstall` can prepend a
+  // fresh `npm install` even when the original boot command skipped it.
+  const runCommandRef = useRef<string | null>(null);
 
   // Shell output fan-out with a replay buffer for late subscribers (xterm
   // mounts slightly after the shell starts).
@@ -147,6 +155,14 @@ export function useWebContainerRuntime({
     // Ctrl-C to stop the current dev server, then re-run.
     writeInput("");
     writeInput(`${cmd}\n`);
+  }, [writeInput]);
+
+  const reinstall = useCallback(() => {
+    const run = runCommandRef.current;
+    if (!run) return;
+    // Ctrl-C (ETX) to stop whatever's running, then reinstall + restart.
+    writeInput("");
+    writeInput(`npm install && ${run}\n`);
   }, [writeInput]);
 
   const capture = useCallback((options?: CapturePreviewOptions) => {
@@ -270,6 +286,7 @@ export function useWebContainerRuntime({
         const plan = inferBootPlan(initialFiles);
         if (plan) {
           bootCommandRef.current = plan.command;
+          runCommandRef.current = plan.run;
           void inputWriterRef.current.write(`${plan.command}\n`);
         }
 
@@ -315,6 +332,7 @@ export function useWebContainerRuntime({
     writeInput,
     resize,
     restart,
+    reinstall,
     capture,
   };
 }

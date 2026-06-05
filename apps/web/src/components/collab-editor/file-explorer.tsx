@@ -1,5 +1,6 @@
 "use client";
 
+import type * as Y from "yjs";
 import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
@@ -11,7 +12,6 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
-import type * as Y from "yjs";
 
 import type { TreeNode } from "@acme/ducklet-fs";
 import {
@@ -27,9 +27,9 @@ import {
   renameFile,
 } from "@acme/ducklet-fs";
 
+import type { PresenceUser } from "~/lib/webcontainer/use-file-presence";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import type { PresenceUser } from "~/lib/webcontainer/use-file-presence";
 import { FileIcon } from "./file-icon";
 import { PresenceAvatars } from "./presence-avatars";
 
@@ -39,6 +39,8 @@ interface FileExplorerProps {
   activePath: string | null;
   onOpen: (path: string) => void;
   presenceByPath: Record<string, PresenceUser[]>;
+  /** Files with an unreviewed AI edit — flagged with a dot. */
+  pendingPaths?: Set<string>;
 }
 
 function collectDirs(node: TreeNode, acc: string[] = []): string[] {
@@ -64,12 +66,69 @@ function filterHidden(node: TreeNode): TreeNode {
   };
 }
 
+function sortNodes(nodes: TreeNode[]): TreeNode[] {
+  return [...nodes].sort((a, b) => {
+    if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+/**
+ * Merge AI-proposed paths into the tree as file nodes so pending *new* files
+ * show in the explorer before they're accepted (the pending marker comes from
+ * `pendingPaths` in TreeRow). Idempotent — paths already present are untouched,
+ * so this only ever surfaces files that aren't in the doc yet.
+ */
+function withPendingFiles(root: TreeNode, pending: Set<string>): TreeNode {
+  let result = root;
+  for (const path of pending) result = ensureFileNode(result, path);
+  return result;
+}
+
+function ensureFileNode(root: TreeNode, path: string): TreeNode {
+  const segments = path.split("/").filter(Boolean);
+
+  const insert = (node: TreeNode, depth: number): TreeNode => {
+    const seg = segments[depth];
+    if (seg === undefined) return node;
+    const segPath = segments.slice(0, depth + 1).join("/");
+    const children = node.children ?? [];
+
+    if (depth === segments.length - 1) {
+      if (children.some((c) => c.path === segPath)) return node;
+      const file: TreeNode = { name: seg, path: segPath, type: "file" };
+      return { ...node, children: sortNodes([...children, file]) };
+    }
+
+    const dir = children.find((c) => c.type === "dir" && c.path === segPath);
+    if (dir) {
+      return {
+        ...node,
+        children: children.map((c) => (c === dir ? insert(c, depth + 1) : c)),
+      };
+    }
+    const created: TreeNode = {
+      name: seg,
+      path: segPath,
+      type: "dir",
+      children: [],
+    };
+    return {
+      ...node,
+      children: sortNodes([...children, insert(created, depth + 1)]),
+    };
+  };
+
+  return insert(root, 0);
+}
+
 export function FileExplorer({
   ydoc,
   readOnly,
   activePath,
   onOpen,
   presenceByPath,
+  pendingPaths,
 }: FileExplorerProps) {
   const [tree, setTree] = useState<TreeNode>(() => buildTree(ydoc));
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -78,10 +137,12 @@ export function FileExplorer({
   const [seededExpand, setSeededExpand] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
 
-  const visibleTree = useMemo(
-    () => (showHidden ? tree : filterHidden(tree)),
-    [tree, showHidden],
-  );
+  const visibleTree = useMemo(() => {
+    const base = showHidden ? tree : filterHidden(tree);
+    return pendingPaths && pendingPaths.size > 0
+      ? withPendingFiles(base, pendingPaths)
+      : base;
+  }, [tree, showHidden, pendingPaths]);
 
   // Recompute the tree whenever files/dirs change anywhere in the doc.
   useEffect(() => {
@@ -217,6 +278,7 @@ export function FileExplorer({
             onRename={handleRename}
             onDelete={handleDelete}
             presenceByPath={presenceByPath}
+            pendingPaths={pendingPaths}
             readOnly={readOnly}
           />
         ))}
@@ -235,6 +297,7 @@ function TreeRow({
   onRename,
   onDelete,
   presenceByPath,
+  pendingPaths,
   readOnly,
 }: {
   node: TreeNode;
@@ -246,12 +309,14 @@ function TreeRow({
   onRename: (path: string) => void;
   onDelete: (node: TreeNode) => void;
   presenceByPath: Record<string, PresenceUser[]>;
+  pendingPaths?: Set<string>;
   readOnly: boolean;
 }) {
   const isDir = node.type === "dir";
   const isOpen = expanded.has(node.path);
   const isActive = node.path === activePath;
   const watchers = presenceByPath[node.path] ?? [];
+  const isPending = !isDir && (pendingPaths?.has(node.path) ?? false);
 
   return (
     <div>
@@ -275,7 +340,15 @@ function TreeRow({
           <span className="w-3.5 shrink-0" />
         )}
         <FileIcon name={node.name} isDir={isDir} isOpen={isOpen} />
-        <span className="truncate">{node.name}</span>
+        <span className={cn("truncate", isPending && "text-amber-300")}>
+          {node.name}
+        </span>
+        {isPending && (
+          <span
+            className="size-1.5 shrink-0 rounded-full bg-amber-400"
+            title="Unreviewed AI change"
+          />
+        )}
 
         <div className="ml-auto flex items-center gap-1 pl-1">
           <PresenceAvatars users={watchers} />
@@ -324,6 +397,7 @@ function TreeRow({
             onRename={onRename}
             onDelete={onDelete}
             presenceByPath={presenceByPath}
+            pendingPaths={pendingPaths}
             readOnly={readOnly}
           />
         ))}

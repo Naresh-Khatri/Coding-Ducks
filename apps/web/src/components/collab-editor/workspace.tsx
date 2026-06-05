@@ -2,13 +2,19 @@
 
 import type { HocuspocusProvider } from "@hocuspocus/provider";
 import type * as Y from "yjs";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 // Monaco is loaded once via a pinned CDN loader (see ./monaco/setup) and shared
 // across the whole workspace — it isn't a route-level chunk to defer.
 import { useMonaco } from "@monaco-editor/react";
 import { TerminalIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 
-import { getFileText, listFilePaths } from "@acme/ducklet-fs";
+import {
+  getFileText,
+  listFilePaths,
+  readAllFiles,
+  writeFile,
+} from "@acme/ducklet-fs";
 
 import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 import { Button } from "~/components/ui/button";
@@ -23,18 +29,54 @@ import { useWebContainerRuntime } from "~/lib/webcontainer/use-runtime";
 
 import "./monaco/setup";
 
+import type { AskProposal } from "./use-ask-chat";
+import { AskDock } from "./ask-dock";
 import { ConsolePanel, ConsoleToggleButton } from "./console-panel";
 import { EditorTabs } from "./editor-tabs";
 import { FileExplorer } from "./file-explorer";
 import { FileEditor } from "./monaco/file-editor";
+import { ReviewEditor } from "./monaco/review-editor";
 import { useAiInlineCompletion } from "./monaco/use-ai-inline-completion";
 import { useDuckletModels } from "./monaco/use-models";
 import { useNodeModulesTypes } from "./monaco/use-node-modules-types";
 import { useTsDefaults } from "./monaco/use-ts-defaults";
 import { PreviewPanel } from "./preview-panel";
 import { TerminalPanel } from "./terminal-panel";
+import { useAskChat } from "./use-ask-chat";
 import { useIframeFocusGuard } from "./use-iframe-focus-guard";
 import { useDuckletPreviewCapture } from "./use-preview-capture";
+
+/** A locally-held AI edit proposal awaiting review (never written to the doc). */
+interface PendingEdit {
+  /** Proposed file contents. */
+  proposed: string;
+  /** File contents when proposed — the diff baseline + stale check. */
+  base: string;
+  isNew: boolean;
+}
+
+/** Normalized dependency fingerprint of a package.json, or null if unparseable. */
+function depFingerprint(raw: string | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const pkg = JSON.parse(raw) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    const norm = (o?: Record<string, string>) =>
+      Object.entries(o ?? {}).sort(([a], [b]) => a.localeCompare(b));
+    return JSON.stringify([norm(pkg.dependencies), norm(pkg.devDependencies)]);
+  } catch {
+    return null;
+  }
+}
+
+/** Whether dependencies/devDependencies differ between two package.json texts. */
+function packageDepsChanged(base: string | undefined, next: string): boolean {
+  const after = depFingerprint(next);
+  if (after === null) return false; // proposed file isn't valid JSON — skip.
+  return depFingerprint(base) !== after;
+}
 
 interface WorkspaceProps {
   /** Null for the read-only guest view (no collaboration / presence). */
@@ -79,6 +121,8 @@ export function Workspace({
 }: WorkspaceProps) {
   const runtime = useWebContainerRuntime({ ydoc, enabled: true });
   const { byPath: presenceByPath, setActiveFile } = useFilePresence(provider);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
 
   // Keep the preview iframe (e.g. a Next.js error overlay) from stealing the
   // caret out of the editor while the user is typing.
@@ -113,8 +157,13 @@ export function Workspace({
 
   const [openPaths, setOpenPaths] = useState<string[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
-  const [showTerminal, setShowTerminal] = useState(true);
+  // Collapsed by default — diffs reviewed in the editor want the vertical room.
+  const [showTerminal, setShowTerminal] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
+  // Pending AI edits keyed by path. Local-only: a proposal is written to the
+  // shared doc only when the user accepts it, never on arrival.
+  const [pending, setPending] = useState<Record<string, PendingEdit>>({});
+  const pendingPaths = useMemo(() => new Set(Object.keys(pending)), [pending]);
 
   // Open a sensible entry file on first load. Initializes the editor from the
   // external Y.Doc (and re-runs if the doc identity changes), so it must be an
@@ -151,6 +200,61 @@ export function Workspace({
     [activePath],
   );
 
+  // Register a batch of AI-proposed edits as pending diffs and jump to the first
+  // one. Baselines are read from a single snapshot so the diff "before" matches
+  // what we sent the model. Nothing is written to the doc here.
+  const registerProposal = useCallback(
+    (edits: AskProposal[]) => {
+      if (edits.length === 0) return;
+      const snapshot = readAllFiles(ydoc);
+      setPending((prev) => {
+        const next = { ...prev };
+        for (const e of edits) {
+          const base = snapshot[e.path];
+          next[e.path] = {
+            proposed: e.content,
+            base: base ?? "",
+            isNew: base === undefined,
+          };
+        }
+        return next;
+      });
+      const first = edits[0]?.path;
+      if (first) openFile(first);
+    },
+    [ydoc, openFile],
+  );
+
+  const dropPending = useCallback((path: string) => {
+    setPending((prev) => {
+      if (!(path in prev)) return prev;
+      const next = { ...prev };
+      delete next[path];
+      return next;
+    });
+  }, []);
+
+  const chat = useAskChat({ ydoc, onProposal: registerProposal });
+
+  const acceptEdit = useCallback(
+    (path: string, content: string) => {
+      // A package.json dependency change needs a reinstall + dev-server restart
+      // to take effect; check against the baseline before clearing it.
+      const depsChanged =
+        path === "package.json" &&
+        packageDepsChanged(pending[path]?.base, content);
+      writeFile(ydoc, path, content);
+      dropPending(path);
+      if (depsChanged) {
+        runtime.reinstall();
+        chat.notify(
+          "package.json dependencies changed — stopping the dev server, running npm install, and restarting.",
+        );
+      }
+    },
+    [ydoc, dropPending, pending, runtime, chat],
+  );
+
   // Drop tabs whose file was deleted (by anyone).
   useEffect(() => {
     const map = ydoc.getMap("files");
@@ -175,6 +279,7 @@ export function Workspace({
     monaco && modelsReady && activePath
       ? (models?.get(activePath) ?? null)
       : null;
+  const activePending = activePath ? pending[activePath] : undefined;
 
   return (
     <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -185,6 +290,7 @@ export function Workspace({
           activePath={activePath}
           onOpen={openFile}
           presenceByPath={presenceByPath}
+          pendingPaths={pendingPaths}
         />
       </ResizablePanel>
 
@@ -198,28 +304,52 @@ export function Workspace({
             onSelect={setActivePath}
             onClose={closeFile}
             presenceByPath={presenceByPath}
+            pendingPaths={pendingPaths}
             actions={<EditorSettingsDialog showShortcuts={false} />}
           />
 
           <ResizablePanelGroup direction="vertical" className="flex-1">
             <ResizablePanel defaultSize={70} minSize={20}>
-              {!monaco ? (
-                <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-                  Loading editor…
-                </div>
-              ) : activePath && activeText && activeModel ? (
-                <FileEditor
-                  monaco={monaco}
-                  model={activeModel}
-                  ytext={activeText}
-                  provider={provider}
-                  readOnly={readOnly}
-                />
-              ) : (
-                <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-                  Select a file to start editing
-                </div>
-              )}
+              <div className="relative h-full">
+                {!monaco ? (
+                  <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+                    Loading editor…
+                  </div>
+                ) : activePath && activePending ? (
+                  <ReviewEditor
+                    key={activePath}
+                    path={activePath}
+                    base={activePending.base}
+                    proposed={activePending.proposed}
+                    isNew={activePending.isNew}
+                    isDark={isDark}
+                    current={activeText?.toJSON() ?? ""}
+                    onAccept={acceptEdit}
+                    onReject={dropPending}
+                  />
+                ) : activePath && activeText && activeModel ? (
+                  <FileEditor
+                    monaco={monaco}
+                    model={activeModel}
+                    ytext={activeText}
+                    provider={provider}
+                    readOnly={readOnly}
+                  />
+                ) : (
+                  <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+                    Select a file to start editing
+                  </div>
+                )}
+
+                {/* Floating AI chat bar overlaid at the bottom of the editor. */}
+                {!readOnly && (
+                  <AskDock
+                    chat={chat}
+                    pendingPaths={pendingPaths}
+                    onOpenFile={openFile}
+                  />
+                )}
+              </div>
             </ResizablePanel>
 
             {showTerminal && (
@@ -232,7 +362,7 @@ export function Workspace({
             )}
           </ResizablePanelGroup>
 
-          <div className="bg-muted/20 flex h-7 items-center border-t px-2">
+          <div className="bg-muted/20 flex h-7 items-center gap-1 border-t px-2">
             <Button
               variant={showTerminal ? "secondary" : "ghost"}
               size="sm"

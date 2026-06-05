@@ -67,6 +67,8 @@ export function toFileSystemTree(
 interface BootPlan {
   /** Shell command that installs (if needed) and starts the dev server. */
   command: string;
+  /** Just the run step (`npm run dev` / `npm start`), without install. */
+  run: string;
   /** Whether `npm install` is part of the command. */
   install: boolean;
 }
@@ -92,11 +94,7 @@ export function inferBootPlan(files: Record<string, string>): BootPlan | null {
   }
 
   const scripts = pkg.scripts ?? {};
-  const run = scripts.dev
-    ? "npm run dev"
-    : scripts.start
-      ? "npm start"
-      : null;
+  const run = scripts.dev ? "npm run dev" : scripts.start ? "npm start" : null;
   if (!run) return null;
 
   const install =
@@ -105,6 +103,7 @@ export function inferBootPlan(files: Record<string, string>): BootPlan | null {
 
   return {
     command: install ? `npm install && ${run}` : run,
+    run,
     install,
   };
 }
