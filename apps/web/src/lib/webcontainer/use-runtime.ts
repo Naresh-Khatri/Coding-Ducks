@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import type { WebContainer, WebContainerProcess } from "@webcontainer/api";
 import type * as Y from "yjs";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   getDirsMap,
@@ -11,10 +11,18 @@ import {
   writeFile as writeYjsFile,
 } from "@acme/ducklet-fs";
 
-import { bootWebContainer, teardownWebContainer } from "./boot";
 import type { CapturePreviewOptions } from "./capture-preview";
+import type { PreviewConsoleEntry } from "./preview-console";
+import { bootWebContainer, teardownWebContainer } from "./boot";
 import { buildCaptureScript, capturePreview } from "./capture-preview";
+import {
+  buildConsoleForwardScript,
+  CONSOLE_MESSAGE_TYPE,
+  isConsoleLevel,
+} from "./preview-console";
 import { inferBootPlan, isIgnoredPath, toFileSystemTree } from "./tree";
+
+export type { PreviewConsoleEntry } from "./preview-console";
 
 export type RuntimeStatus =
   | "idle"
@@ -36,6 +44,14 @@ export interface WebContainerRuntime {
   container: WebContainer | null;
   /** Subscribe to shell output; replays buffered output first. Returns unsub. */
   subscribeOutput: (cb: (data: string) => void) => () => void;
+  /**
+   * Subscribe to `console.*` / errors forwarded from the running preview app
+   * (distinct from the shell output above). Replays the buffer to late
+   * subscribers, then streams new entries. Returns an unsubscribe fn.
+   */
+  subscribeConsole: (cb: (entry: PreviewConsoleEntry) => void) => () => void;
+  /** Drop all buffered preview console entries. */
+  clearConsole: () => void;
   /** Forward terminal keystrokes into the shell. */
   writeInput: (data: string) => void;
   /** Resize the shell's pty. */
@@ -86,13 +102,35 @@ export function useWebContainerRuntime({
   // mounts slightly after the shell starts).
   const outputBufferRef = useRef<string[]>([]);
   // The Set is a stable fan-out registry — re-creating it on render would destroy existing subscriptions
-  // react-doctor-disable-next-line react-doctor/rerender-lazy-ref-init
   const listenersRef = useRef<Set<(data: string) => void>>(new Set());
+
+  // Preview `console.*` fan-out — same buffered-replay shape as the shell
+  // output, so a console panel that mounts after the app has logged still sees
+  // history. `previewOriginRef` authenticates forwarded postMessages.
+  const consoleBufferRef = useRef<PreviewConsoleEntry[]>([]);
+  const consoleListenersRef = useRef<Set<(entry: PreviewConsoleEntry) => void>>(
+    new Set(),
+  );
+  const consoleIdRef = useRef(0);
+  const previewOriginRef = useRef<string | null>(null);
 
   const subscribeOutput = useCallback((cb: (data: string) => void) => {
     for (const chunk of outputBufferRef.current) cb(chunk);
     listenersRef.current.add(cb);
     return () => listenersRef.current.delete(cb);
+  }, []);
+
+  const subscribeConsole = useCallback(
+    (cb: (entry: PreviewConsoleEntry) => void) => {
+      for (const entry of consoleBufferRef.current) cb(entry);
+      consoleListenersRef.current.add(cb);
+      return () => consoleListenersRef.current.delete(cb);
+    },
+    [],
+  );
+
+  const clearConsole = useCallback(() => {
+    consoleBufferRef.current = [];
   }, []);
 
   const writeInput = useCallback((data: string) => {
@@ -117,13 +155,6 @@ export function useWebContainerRuntime({
     return capturePreview(url, options);
   }, []);
 
-  // exhaustive-deps: shellRef.current is assigned asynchronously inside start();
-  // capturing it at the effect top would miss it, and cleanup correctly reads
-  // the current ref. effect-needs-cleanup: the `server-ready` listener IS
-  // unsubscribed via `unsubServerReady` in the cleanup below (plus the whole
-  // container is torn down) — the static check can't see it because the
-  // subscribe happens inside the nested async `start()`.
-  // react-doctor-disable-next-line react-doctor/exhaustive-deps, react-doctor/effect-needs-cleanup
   useEffect(() => {
     if (!enabled) return;
 
@@ -141,6 +172,33 @@ export function useWebContainerRuntime({
       for (const l of listenersRef.current) l(data);
     };
 
+    // Receive console output forwarded from the preview page. Authenticated by
+    // origin: we only trust messages from the live preview's origin (set on
+    // `server-ready`), so other frames/extensions can't inject fake entries.
+    const onConsoleMessage = (event: MessageEvent) => {
+      const origin = previewOriginRef.current;
+      if (!origin || event.origin !== origin) return;
+      const data = event.data as {
+        type?: unknown;
+        level?: unknown;
+        text?: unknown;
+        timestamp?: unknown;
+      } | null;
+      if (data?.type !== CONSOLE_MESSAGE_TYPE) return;
+      const entry: PreviewConsoleEntry = {
+        id: consoleIdRef.current++,
+        level: isConsoleLevel(data.level) ? data.level : "log",
+        text: typeof data.text === "string" ? data.text : "",
+        timestamp:
+          typeof data.timestamp === "number" ? data.timestamp : Date.now(),
+      };
+      const buf = consoleBufferRef.current;
+      buf.push(entry);
+      if (buf.length > 2000) buf.shift();
+      for (const l of consoleListenersRef.current) l(entry);
+    };
+    window.addEventListener("message", onConsoleMessage);
+
     const start = async () => {
       try {
         setStatus("booting");
@@ -151,13 +209,22 @@ export function useWebContainerRuntime({
         unsubServerReady = container.on("server-ready", (_port, url) => {
           if (cancelled) return;
           previewUrlRef.current = url;
+          try {
+            previewOriginRef.current = new URL(url).origin;
+          } catch {
+            previewOriginRef.current = null;
+          }
           setPreviewUrl(url);
         });
 
-        // Inject the off-screen screenshot helper into every preview page.
-        // Must be set before the dev server serves pages so they include it.
+        // Inject our preview helpers into every preview page: the off-screen
+        // screenshot helper and the console forwarder. Both run same-origin to
+        // the user's app. Must be set before the dev server serves pages so
+        // they're included; each is self-contained (its own IIFE / top-level
+        // scope) so concatenating them is safe.
+        const origin = window.location.origin;
         await container.setPreviewScript(
-          buildCaptureScript(window.location.origin),
+          `${buildCaptureScript(origin)}\n\n${buildConsoleForwardScript(origin)}`,
           { type: "module" },
         );
         if (cancelled) return;
@@ -173,7 +240,13 @@ export function useWebContainerRuntime({
           fsShadow.set(path, content);
         }
 
-        stopObserving = wireSync(container, ydoc, filesMap, fsShadow, cancelled);
+        stopObserving = wireSync(
+          container,
+          ydoc,
+          filesMap,
+          fsShadow,
+          cancelled,
+        );
 
         // Interactive shell wired to xterm via the output fan-out.
         const shell = await container.spawn("jsh", {
@@ -204,7 +277,9 @@ export function useWebContainerRuntime({
       } catch (err) {
         if (cancelled) return;
         console.error("[ducklet] runtime failed:", err);
-        setError(err instanceof Error ? err.message : "Runtime failed to start");
+        setError(
+          err instanceof Error ? err.message : "Runtime failed to start",
+        );
         setStatus("error");
       }
     };
@@ -213,13 +288,16 @@ export function useWebContainerRuntime({
 
     return () => {
       cancelled = true;
+      window.removeEventListener("message", onConsoleMessage);
       unsubServerReady?.();
       stopObserving?.();
       shellRef.current?.kill();
       shellRef.current = null;
       inputWriterRef.current = null;
       outputBufferRef.current = [];
+      consoleBufferRef.current = [];
       previewUrlRef.current = null;
+      previewOriginRef.current = null;
       setWebContainer(null);
       void teardownWebContainer();
     };
@@ -232,6 +310,8 @@ export function useWebContainerRuntime({
     error,
     container: webContainer,
     subscribeOutput,
+    subscribeConsole,
+    clearConsole,
     writeInput,
     resize,
     restart,

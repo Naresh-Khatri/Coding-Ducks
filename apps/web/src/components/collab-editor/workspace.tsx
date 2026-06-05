@@ -1,16 +1,16 @@
 "use client";
 
+import type { HocuspocusProvider } from "@hocuspocus/provider";
+import type * as Y from "yjs";
 import { useCallback, useEffect, useState } from "react";
 // Monaco is loaded once via a pinned CDN loader (see ./monaco/setup) and shared
 // across the whole workspace — it isn't a route-level chunk to defer.
-// react-doctor-disable-next-line react-doctor/prefer-dynamic-import
 import { useMonaco } from "@monaco-editor/react";
-import type { HocuspocusProvider } from "@hocuspocus/provider";
 import { Camera, TerminalIcon } from "lucide-react";
-import type * as Y from "yjs";
 
 import { getFileText, listFilePaths } from "@acme/ducklet-fs";
 
+import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 import { Button } from "~/components/ui/button";
 import {
   ResizableHandle,
@@ -20,9 +20,10 @@ import {
 import { useEditorSettings } from "~/hooks/use-editor-settings";
 import { useFilePresence } from "~/lib/webcontainer/use-file-presence";
 import { useWebContainerRuntime } from "~/lib/webcontainer/use-runtime";
-import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 
 import "./monaco/setup";
+
+import { ConsolePanel, ConsoleToggleButton } from "./console-panel";
 import { EditorTabs } from "./editor-tabs";
 import { FileExplorer } from "./file-explorer";
 import { FileEditor } from "./monaco/file-editor";
@@ -32,8 +33,8 @@ import { useNodeModulesTypes } from "./monaco/use-node-modules-types";
 import { useTsDefaults } from "./monaco/use-ts-defaults";
 import { PreviewPanel } from "./preview-panel";
 import { TerminalPanel } from "./terminal-panel";
-import { useDuckletPreviewCapture } from "./use-preview-capture";
 import { useIframeFocusGuard } from "./use-iframe-focus-guard";
+import { useDuckletPreviewCapture } from "./use-preview-capture";
 
 interface WorkspaceProps {
   /** Null for the read-only guest view (no collaboration / presence). */
@@ -113,6 +114,7 @@ export function Workspace({
   const [openPaths, setOpenPaths] = useState<string[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
   const [showTerminal, setShowTerminal] = useState(true);
+  const [showConsole, setShowConsole] = useState(false);
   const [capturing, setCapturing] = useState(false);
 
   // Manual "update thumbnail now" — forces an immediate capture + upload.
@@ -136,21 +138,16 @@ export function Workspace({
   // external Y.Doc (and re-runs if the doc identity changes), so it must be an
   // effect rather than render-time derived state.
   useEffect(() => {
-    // react-doctor-disable-next-line react-doctor/no-event-handler
     const initial = pickDefaultFile(ydoc);
     if (initial) {
-      // react-doctor-disable-next-line react-doctor/no-derived-state
       setOpenPaths([initial]);
-      // react-doctor-disable-next-line react-doctor/no-derived-state
       setActivePath(initial);
     }
   }, [ydoc]);
 
   // Publish which file we're viewing to the external Yjs awareness store so
   // peers see our avatar on it — a side effect synced on selection change.
-  // react-doctor-disable-next-line react-doctor/no-effect-chain, react-doctor/no-derived-state-effect
   useEffect(() => {
-    // react-doctor-disable-next-line react-doctor/no-pass-live-state-to-parent
     setActiveFile(activePath);
   }, [activePath, setActiveFile]);
 
@@ -193,7 +190,9 @@ export function Workspace({
 
   const activeText = activePath ? getFileText(ydoc, activePath) : undefined;
   const activeModel =
-    monaco && modelsReady && activePath ? (models?.get(activePath) ?? null) : null;
+    monaco && modelsReady && activePath
+      ? (models?.get(activePath) ?? null)
+      : null;
 
   return (
     <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -282,7 +281,32 @@ export function Workspace({
       <ResizableHandle withHandle />
 
       <ResizablePanel defaultSize={30} minSize={20}>
-        <PreviewPanel runtime={runtime} />
+        <ResizablePanelGroup direction="vertical" className="h-full">
+          <ResizablePanel defaultSize={70} minSize={20}>
+            <PreviewPanel
+              runtime={runtime}
+              consoleToggle={
+                <ConsoleToggleButton
+                  runtime={runtime}
+                  open={showConsole}
+                  onToggle={() => setShowConsole((v) => !v)}
+                />
+              }
+            />
+          </ResizablePanel>
+
+          {showConsole && (
+            <>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={30} minSize={10}>
+                <ConsolePanel
+                  runtime={runtime}
+                  onClose={() => setShowConsole(false)}
+                />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

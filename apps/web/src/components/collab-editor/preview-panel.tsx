@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { ExternalLink, Loader2, RotateCw } from "lucide-react";
 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 import type {
   RuntimeStatus,
   WebContainerRuntime,
 } from "~/lib/webcontainer/use-runtime";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 
 const STATUS_LABEL: Record<RuntimeStatus, string> = {
   idle: "Idle",
@@ -18,12 +18,18 @@ const STATUS_LABEL: Record<RuntimeStatus, string> = {
   error: "Runtime error",
 };
 
-export function PreviewPanel({ runtime }: { runtime: WebContainerRuntime }) {
+export function PreviewPanel({
+  runtime,
+  consoleToggle,
+}: {
+  runtime: WebContainerRuntime;
+  /** Optional console toggle rendered in the toolbar (see ConsoleToggleButton). */
+  consoleToggle?: React.ReactNode;
+}) {
   const { previewUrl, status, error, restart } = runtime;
   const [reloadKey, setReloadKey] = useState(0);
   const [editableUrl, setEditableUrl] = useState(previewUrl ?? "");
   // prevPreviewUrl is read during render for the prev-prop comparison below — not a handler-only state.
-  // react-doctor-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [prevPreviewUrl, setPrevPreviewUrl] = useState(previewUrl);
 
   // Sync editableUrl when previewUrl arrives or changes (prev-prop pattern — no effect needed)
@@ -65,6 +71,7 @@ export function PreviewPanel({ runtime }: { runtime: WebContainerRuntime }) {
             </a>
           </Button>
         )}
+        {consoleToggle}
       </div>
 
       <div className="relative flex-1">
