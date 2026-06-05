@@ -8,7 +8,6 @@ import {
   FileDiff,
   Loader2,
   Package,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -95,6 +94,22 @@ export function AskDock({
     void send(text);
   };
 
+  const sendButton = (
+    <Button
+      size="icon"
+      className="size-7 shrink-0 rounded-full"
+      onClick={submit}
+      disabled={loading || draft.trim() === ""}
+      title="Send (Enter)"
+    >
+      {loading ? (
+        <Loader2 className="size-3.5 animate-spin" />
+      ) : (
+        <ArrowUp className="size-3.5" />
+      )}
+    </Button>
+  );
+
   return (
     <div
       // Anchored to the bottom; growing the thread pushes the top edge up.
@@ -122,39 +137,6 @@ export function AskDock({
             expanded ? "max-h-[min(55vh,26rem)]" : "max-h-0",
           )}
         >
-          <div className="bg-muted/20 flex items-center gap-2 border-b px-3 py-1.5">
-            <Sparkles className="text-primary size-3.5" />
-            <span className="text-xs font-medium">Ask AI</span>
-            <Select
-              value={model}
-              onValueChange={setModel}
-              open={selectOpen}
-              onOpenChange={setSelectOpen}
-            >
-              <SelectTrigger className="ml-auto h-6 w-32 text-[11px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ASK_MODELS.map((m) => (
-                  <SelectItem key={m.id} value={m.id} className="text-xs">
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {messages.length > 0 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-6"
-                onClick={clear}
-                title="Clear conversation"
-              >
-                <Eraser className="size-3.5" />
-              </Button>
-            )}
-          </div>
-
           {showThread && (
             <div
               ref={scrollRef}
@@ -248,56 +230,89 @@ export function AskDock({
           )}
         </div>
 
-        {/* Input row — always visible. */}
-        <div className="flex items-end gap-1.5 p-1.5 transition-all duration-200">
-          {/* Collapsed-only cue that AI changes are awaiting review; expands the
-              dock so the file chips are reachable. */}
-          {!expanded && pendingPaths.size > 0 && (
-            <button
-              type="button"
-              onClick={() => inputRef.current?.focus()}
-              title={`${pendingPaths.size} change${
-                pendingPaths.size === 1 ? "" : "s"
-              } awaiting review`}
-              className="flex h-7 shrink-0 items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 text-xs font-medium text-amber-300 hover:bg-amber-500/20"
-            >
-              <FileDiff className="size-3" />
-              {pendingPaths.size}
-            </button>
+        {/* Input area — always visible. Collapsed: a single compact row.
+            Expanded: textarea on top with a controls row (model + send) below.
+            When expanded, a divider + slightly raised background separates it
+            from the transcript above. */}
+        <div
+          className={cn(
+            "flex flex-col gap-1.5 p-1.5 transition-all duration-200",
+            expanded && "border-t border-white/10 bg-white/[0.04]",
           )}
-          <textarea
-            ref={inputRef}
-            value={draft}
-            rows={1}
-            onChange={(e) => setDraft(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              } else if (e.key === "Escape") {
-                inputRef.current?.blur();
-              }
-            }}
-            placeholder="Ask anything, or request a change…"
-            className={cn(
-              "flex-1 resize-none overflow-y-auto bg-transparent px-2 py-1 text-sm transition-[height] duration-200 outline-none",
-              expanded ? "h-[4.5rem]" : "h-7",
+        >
+          <div className="flex items-end gap-1.5">
+            {/* Collapsed-only cue that AI changes are awaiting review; focuses the
+                input so the dock expands and the file chips are reachable. */}
+            {!expanded && pendingPaths.size > 0 && (
+              <button
+                type="button"
+                onClick={() => inputRef.current?.focus()}
+                title={`${pendingPaths.size} change${
+                  pendingPaths.size === 1 ? "" : "s"
+                } awaiting review`}
+                className="flex h-7 shrink-0 items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 text-xs font-medium text-amber-300 hover:bg-amber-500/20"
+              >
+                <FileDiff className="size-3" />
+                {pendingPaths.size}
+              </button>
             )}
-          />
-          <Button
-            size="icon"
-            className="size-7 shrink-0 rounded-md"
-            onClick={submit}
-            disabled={loading || draft.trim() === ""}
-            title="Send (Enter)"
-          >
-            {loading ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <ArrowUp className="size-3.5" />
-            )}
-          </Button>
+            <textarea
+              ref={inputRef}
+              value={draft}
+              rows={1}
+              onChange={(e) => setDraft(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submit();
+                } else if (e.key === "Escape") {
+                  inputRef.current?.blur();
+                }
+              }}
+              placeholder="Ask anything, or request a change…"
+              className={cn(
+                "flex-1 resize-none overflow-y-auto bg-transparent px-2 py-1 text-sm transition-[height] duration-200 outline-none",
+                expanded ? "h-[4.5rem]" : "h-7",
+              )}
+            />
+            {!expanded && sendButton}
+          </div>
+
+          {/* Controls row — only when expanded, so the collapsed bar stays compact. */}
+          {expanded && (
+            <div className="flex items-center gap-1.5">
+              <Select
+                value={model}
+                onValueChange={setModel}
+                open={selectOpen}
+                onOpenChange={setSelectOpen}
+              >
+                <SelectTrigger className="h-7 w-32 text-[11px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ASK_MODELS.map((m) => (
+                    <SelectItem key={m.id} value={m.id} className="text-xs">
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  onClick={clear}
+                  title="Clear conversation"
+                >
+                  <Eraser className="size-3.5" />
+                </Button>
+              )}
+              <div className="ml-auto">{sendButton}</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
