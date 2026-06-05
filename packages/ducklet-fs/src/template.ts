@@ -447,10 +447,10 @@ const NEXT_TS_TAILWIND_TEMPLATE: DuckletTemplate = {
         start: "next start",
       },
       dependencies: {
-        // Pinned: Next.js 15.5.x crashes in WebContainers with
-        // "Invariant: Expected workUnitAsyncStorage to have a store".
-        // 15.4.1 is the last version that boots. A caret range would
-        // resolve back up to 15.5.x, so keep this exact.
+        // Pinned exact: 15.5.x+ crashes in WebContainers ("Expected
+        // workUnitAsyncStorage to have a store"), still unfixed on 16.x. Keep
+        // exact so a caret can't resolve back up. (Page-level "use client" also
+        // fails even here — see app/page.tsx.)
         // https://github.com/stackblitz/webcontainer-core/issues/1978
         next: "15.4.1",
         react: "^19.0.0",
@@ -519,7 +519,12 @@ export default function RootLayout({
   );
 }
 `,
-    "app/page.tsx": `export default function Home() {
+    "app/page.tsx": `// Keep pages Server Components — "use client" on a page crashes the in-browser
+// dev server (WebContainer AsyncLocalStorage bug). Put it on a child instead,
+// like ./counter.tsx.
+import { Counter } from "./counter";
+
+export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 font-sans">
       <h1 className="text-4xl font-bold text-blue-500">
@@ -529,7 +534,25 @@ export default function RootLayout({
         Edit <code className="rounded bg-gray-100 px-1 py-0.5">app/page.tsx</code>{" "}
         and save to reload.
       </p>
+      <Counter />
     </main>
+  );
+}
+`,
+    "app/counter.tsx": `"use client";
+
+import { useState } from "react";
+
+// "use client" goes on interactive children like this — never on a page.
+export function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    <button
+      onClick={() => setCount((c) => c + 1)}
+      className="rounded bg-blue-500 px-4 py-2 font-medium text-white"
+    >
+      count is {count}
+    </button>
   );
 }
 `,
