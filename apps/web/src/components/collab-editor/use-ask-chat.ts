@@ -21,7 +21,10 @@ export interface ChatMessage {
 
 export interface AskProposal {
   path: string;
-  content: string;
+  /** New file contents for a write; absent for a delete. */
+  content?: string;
+  /** When true, the proposal removes the file. */
+  delete?: boolean;
 }
 
 export interface AskChat {

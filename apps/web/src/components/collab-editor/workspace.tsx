@@ -10,6 +10,7 @@ import { TerminalIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import {
+  deleteFile,
   getFileText,
   listFilePaths,
   readAllFiles,
@@ -48,7 +49,9 @@ import { useDuckletPreviewCapture } from "./use-preview-capture";
 
 /** A locally-held AI edit proposal awaiting review (never written to the doc). */
 interface PendingEdit {
-  /** Proposed file contents. */
+  /** "write" creates/overwrites with `proposed`; "delete" removes the file. */
+  kind: "write" | "delete";
+  /** Proposed file contents (empty for a delete). */
   proposed: string;
   /** File contents when proposed — the diff baseline + stale check. */
   base: string;
@@ -164,6 +167,15 @@ export function Workspace({
   // shared doc only when the user accepts it, never on arrival.
   const [pending, setPending] = useState<Record<string, PendingEdit>>({});
   const pendingPaths = useMemo(() => new Set(Object.keys(pending)), [pending]);
+  const pendingDeletes = useMemo(
+    () =>
+      new Set(
+        Object.entries(pending)
+          .filter(([, e]) => e.kind === "delete")
+          .map(([path]) => path),
+      ),
+    [pending],
+  );
 
   // Open a sensible entry file on first load. Initializes the editor from the
   // external Y.Doc (and re-runs if the doc identity changes), so it must be an
@@ -205,22 +217,31 @@ export function Workspace({
   // what we sent the model. Nothing is written to the doc here.
   const registerProposal = useCallback(
     (edits: AskProposal[]) => {
-      if (edits.length === 0) return;
       const snapshot = readAllFiles(ydoc);
+      // Drop deletes of files that don't exist and writes missing content.
+      const valid = edits.filter((e) =>
+        e.delete
+          ? snapshot[e.path] !== undefined
+          : typeof e.content === "string",
+      );
+      if (valid.length === 0) return;
       setPending((prev) => {
         const next = { ...prev };
-        for (const e of edits) {
+        for (const e of valid) {
           const base = snapshot[e.path];
-          next[e.path] = {
-            proposed: e.content,
-            base: base ?? "",
-            isNew: base === undefined,
-          };
+          next[e.path] = e.delete
+            ? { kind: "delete", proposed: "", base: base ?? "", isNew: false }
+            : {
+                kind: "write",
+                proposed: e.content ?? "",
+                base: base ?? "",
+                isNew: base === undefined,
+              };
         }
         return next;
       });
-      const first = edits[0]?.path;
-      if (first) openFile(first);
+      const first = valid[0];
+      if (first) openFile(first.path);
     },
     [ydoc, openFile],
   );
@@ -238,6 +259,12 @@ export function Workspace({
 
   const acceptEdit = useCallback(
     (path: string, content: string) => {
+      if (pending[path]?.kind === "delete") {
+        deleteFile(ydoc, path);
+        dropPending(path);
+        closeFile(path);
+        return;
+      }
       // A package.json dependency change needs a reinstall + dev-server restart
       // to take effect; check against the baseline before clearing it.
       const depsChanged =
@@ -252,7 +279,7 @@ export function Workspace({
         );
       }
     },
-    [ydoc, dropPending, pending, runtime, chat],
+    [ydoc, dropPending, closeFile, pending, runtime, chat],
   );
 
   // Drop tabs whose file was deleted (by anyone).
@@ -291,6 +318,7 @@ export function Workspace({
           onOpen={openFile}
           presenceByPath={presenceByPath}
           pendingPaths={pendingPaths}
+          pendingDeletes={pendingDeletes}
         />
       </ResizablePanel>
 
@@ -305,6 +333,7 @@ export function Workspace({
             onClose={closeFile}
             presenceByPath={presenceByPath}
             pendingPaths={pendingPaths}
+            pendingDeletes={pendingDeletes}
             actions={<EditorSettingsDialog showShortcuts={false} />}
           />
 
@@ -319,6 +348,7 @@ export function Workspace({
                   <ReviewEditor
                     key={activePath}
                     path={activePath}
+                    kind={activePending.kind}
                     base={activePending.base}
                     proposed={activePending.proposed}
                     isNew={activePending.isNew}
@@ -346,6 +376,7 @@ export function Workspace({
                   <AskDock
                     chat={chat}
                     pendingPaths={pendingPaths}
+                    pendingDeletes={pendingDeletes}
                     onOpenFile={openFile}
                   />
                 )}

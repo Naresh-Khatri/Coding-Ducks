@@ -25,15 +25,17 @@ Always respond with ONLY a JSON object of this exact shape:
 {
   "explanation": "<a SHORT GitHub-flavored markdown reply to the user — a sentence or two, no code dumps>",
   "edits": [
-    { "path": "<project-relative file path>", "content": "<the COMPLETE new contents of the file>" }
+    { "path": "<project-relative file path>", "content": "<the COMPLETE new contents of the file>" },
+    { "path": "<project-relative file path>", "delete": true }
   ]
 }
 
 Rules:
 - If the user asked a question or no change is needed, answer in "explanation" and return an empty "edits" array.
 - When you do change code, "content" MUST be the entire file after your change — never a diff, patch, or snippet.
-- Include an entry ONLY for files you actually change or create; omit unchanged files.
-- To create a new file, use its new path. Do not attempt to delete files.
+- Include an entry ONLY for files you actually change, create, or delete; omit unchanged files.
+- To create a new file, use its new path with "content".
+- To delete a file, use { "path": "...", "delete": true } and omit "content" — only when the user clearly asks to remove it.
 - Keep "explanation" brief — the user reviews the actual changes as diffs in the editor, so do not paste code into it.
 - Keep changes minimal and focused; preserve the project's existing style.`;
 
@@ -50,7 +52,9 @@ interface AskBody {
 
 interface AskEdit {
   path: string;
-  content: string;
+  content?: string;
+  /** When true, delete the file instead of writing `content`. */
+  delete?: boolean;
 }
 
 interface AskResponse {
@@ -121,17 +125,14 @@ function parseEdits(raw: unknown): AskEdit[] {
   }
   const edits: AskEdit[] = [];
   for (const item of (raw as { edits: unknown[] }).edits) {
-    if (
-      item &&
-      typeof item === "object" &&
-      typeof (item as AskEdit).path === "string" &&
-      typeof (item as AskEdit).content === "string" &&
-      (item as AskEdit).path.trim() !== ""
-    ) {
-      edits.push({
-        path: (item as AskEdit).path.trim(),
-        content: (item as AskEdit).content,
-      });
+    if (!item || typeof item !== "object") continue;
+    const e = item as AskEdit;
+    if (typeof e.path !== "string" || e.path.trim() === "") continue;
+    const path = e.path.trim();
+    if (e.delete === true) {
+      edits.push({ path, delete: true });
+    } else if (typeof e.content === "string") {
+      edits.push({ path, content: e.content });
     }
   }
   return edits;

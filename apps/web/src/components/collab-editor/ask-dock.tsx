@@ -9,6 +9,7 @@ import {
   Loader2,
   Package,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -59,10 +60,12 @@ const MD: Components = {
 export function AskDock({
   chat,
   pendingPaths,
+  pendingDeletes,
   onOpenFile,
 }: {
   chat: AskChat;
   pendingPaths: Set<string>;
+  pendingDeletes: Set<string>;
   onOpenFile: (path: string) => void;
 }) {
   const { messages, model, setModel, loading, send, clear } = chat;
@@ -197,26 +200,33 @@ export function AskDock({
                       <div className="flex flex-wrap gap-1.5">
                         {m.files.map((path) => {
                           const isPending = pendingPaths.has(path);
+                          const isDelete = pendingDeletes.has(path);
                           return (
                             <button
                               key={path}
                               type="button"
                               onClick={() => onOpenFile(path)}
                               title={
-                                isPending
-                                  ? `Review diff: ${path}`
-                                  : `${path} (reviewed)`
+                                isDelete
+                                  ? `Review deletion: ${path}`
+                                  : isPending
+                                    ? `Review diff: ${path}`
+                                    : `${path} (reviewed)`
                               }
                               className={cn(
                                 "flex max-w-full items-center gap-1 rounded-md border px-2 py-1 text-xs",
-                                isPending
-                                  ? "border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20"
-                                  : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
+                                isDelete
+                                  ? "border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20"
+                                  : isPending
+                                    ? "border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20"
+                                    : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
                               )}
                             >
                               <FileIcon name={basename(path)} />
                               <span className="truncate font-mono">{path}</span>
-                              {isPending ? (
+                              {isDelete ? (
+                                <Trash2 className="size-3 shrink-0 text-red-400" />
+                              ) : isPending ? (
                                 <FileDiff className="size-3 shrink-0 text-amber-400" />
                               ) : null}
                             </button>

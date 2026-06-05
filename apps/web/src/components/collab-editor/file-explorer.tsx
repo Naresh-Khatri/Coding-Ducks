@@ -39,8 +39,9 @@ interface FileExplorerProps {
   activePath: string | null;
   onOpen: (path: string) => void;
   presenceByPath: Record<string, PresenceUser[]>;
-  /** Files with an unreviewed AI edit — flagged with a dot. */
+  /** Files with an unreviewed AI edit — flagged with a dot (red for deletes). */
   pendingPaths?: Set<string>;
+  pendingDeletes?: Set<string>;
 }
 
 function collectDirs(node: TreeNode, acc: string[] = []): string[] {
@@ -129,6 +130,7 @@ export function FileExplorer({
   onOpen,
   presenceByPath,
   pendingPaths,
+  pendingDeletes,
 }: FileExplorerProps) {
   const [tree, setTree] = useState<TreeNode>(() => buildTree(ydoc));
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -279,6 +281,7 @@ export function FileExplorer({
             onDelete={handleDelete}
             presenceByPath={presenceByPath}
             pendingPaths={pendingPaths}
+            pendingDeletes={pendingDeletes}
             readOnly={readOnly}
           />
         ))}
@@ -298,6 +301,7 @@ function TreeRow({
   onDelete,
   presenceByPath,
   pendingPaths,
+  pendingDeletes,
   readOnly,
 }: {
   node: TreeNode;
@@ -310,6 +314,7 @@ function TreeRow({
   onDelete: (node: TreeNode) => void;
   presenceByPath: Record<string, PresenceUser[]>;
   pendingPaths?: Set<string>;
+  pendingDeletes?: Set<string>;
   readOnly: boolean;
 }) {
   const isDir = node.type === "dir";
@@ -317,6 +322,7 @@ function TreeRow({
   const isActive = node.path === activePath;
   const watchers = presenceByPath[node.path] ?? [];
   const isPending = !isDir && (pendingPaths?.has(node.path) ?? false);
+  const isDelete = !isDir && (pendingDeletes?.has(node.path) ?? false);
 
   return (
     <div>
@@ -340,13 +346,23 @@ function TreeRow({
           <span className="w-3.5 shrink-0" />
         )}
         <FileIcon name={node.name} isDir={isDir} isOpen={isOpen} />
-        <span className={cn("truncate", isPending && "text-amber-300")}>
+        <span
+          className={cn(
+            "truncate",
+            isDelete
+              ? "text-red-300 line-through"
+              : isPending && "text-amber-300",
+          )}
+        >
           {node.name}
         </span>
         {isPending && (
           <span
-            className="size-1.5 shrink-0 rounded-full bg-amber-400"
-            title="Unreviewed AI change"
+            className={cn(
+              "size-1.5 shrink-0 rounded-full",
+              isDelete ? "bg-red-400" : "bg-amber-400",
+            )}
+            title={isDelete ? "Pending AI deletion" : "Unreviewed AI change"}
           />
         )}
 
@@ -398,6 +414,7 @@ function TreeRow({
             onDelete={onDelete}
             presenceByPath={presenceByPath}
             pendingPaths={pendingPaths}
+            pendingDeletes={pendingDeletes}
             readOnly={readOnly}
           />
         ))}

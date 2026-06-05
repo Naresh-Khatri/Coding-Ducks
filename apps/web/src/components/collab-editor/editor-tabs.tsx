@@ -14,6 +14,7 @@ export function EditorTabs({
   onClose,
   presenceByPath,
   pendingPaths,
+  pendingDeletes,
   actions,
 }: {
   openPaths: string[];
@@ -21,8 +22,9 @@ export function EditorTabs({
   onSelect: (path: string) => void;
   onClose: (path: string) => void;
   presenceByPath: Record<string, PresenceUser[]>;
-  /** Files with an unreviewed AI edit — flagged with a dot. */
+  /** Files with an unreviewed AI edit — flagged with a dot (red for deletes). */
   pendingPaths?: Set<string>;
+  pendingDeletes?: Set<string>;
   /** Right-pinned toolbar content (e.g. editor settings). */
   actions?: React.ReactNode;
 }) {
@@ -59,8 +61,15 @@ export function EditorTabs({
               <span className="max-w-[12rem] truncate">{name}</span>
               {pendingPaths?.has(path) && (
                 <span
-                  className="size-1.5 shrink-0 rounded-full bg-amber-400"
-                  title="Unreviewed AI change"
+                  className={cn(
+                    "size-1.5 shrink-0 rounded-full",
+                    pendingDeletes?.has(path) ? "bg-red-400" : "bg-amber-400",
+                  )}
+                  title={
+                    pendingDeletes?.has(path)
+                      ? "Pending AI deletion"
+                      : "Unreviewed AI change"
+                  }
                 />
               )}
               <PresenceAvatars users={presenceByPath[path] ?? []} size={14} />
