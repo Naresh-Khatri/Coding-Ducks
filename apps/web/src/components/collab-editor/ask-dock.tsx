@@ -74,6 +74,7 @@ export function AskDock({
   // avoid collapsing while it's open.
   const [selectOpen, setSelectOpen] = useState(false);
 
+  const rootRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -86,6 +87,21 @@ export function AskDock({
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, loading, showThread]);
+
+  // Collapse on an outside click, not on focus loss, so reading/scrolling/
+  // selecting the (non-focusable) transcript keeps the dock open.
+  useEffect(() => {
+    if (!expanded) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Element | null;
+      if (rootRef.current?.contains(target ?? null)) return;
+      // The model dropdown portals outside this subtree.
+      if (target?.closest("[data-radix-popper-content-wrapper]")) return;
+      setFocused(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [expanded]);
 
   const submit = () => {
     const text = draft.trim();
@@ -117,9 +133,13 @@ export function AskDock({
         "absolute inset-x-0 bottom-8 z-20 mx-auto w-[min(25rem,92%)] transition-all duration-400",
         focused && "z-30 w-[min(40rem,92%)]",
       )}
+      ref={rootRef}
       onFocusCapture={() => setFocused(true)}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+        // Keyboard tab-away only; non-focusable clicks (null relatedTarget)
+        // are left to the outside-pointerdown listener.
+        const next = e.relatedTarget as Node | null;
+        if (next && !e.currentTarget.contains(next)) {
           setFocused(false);
         }
       }}
@@ -268,6 +288,7 @@ export function AskDock({
                   submit();
                 } else if (e.key === "Escape") {
                   inputRef.current?.blur();
+                  setFocused(false);
                 }
               }}
               placeholder="Ask anything, or request a change…"
