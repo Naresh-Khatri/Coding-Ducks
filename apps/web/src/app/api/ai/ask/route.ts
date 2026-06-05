@@ -25,19 +25,25 @@ Always respond with ONLY a JSON object of this exact shape:
 {
   "explanation": "<a SHORT GitHub-flavored markdown reply to the user — a sentence or two, no code dumps>",
   "edits": [
-    { "path": "<project-relative file path>", "content": "<the COMPLETE new contents of the file>" },
-    { "path": "<project-relative file path>", "delete": true }
+    { "path": "<file>", "changes": [ { "search": "<exact existing code>", "replace": "<new code>" } ] },
+    { "path": "<new file>", "content": "<full contents of a NEW file>" },
+    { "path": "<file>", "delete": true }
   ]
 }
 
+How to edit:
+- To CHANGE an existing file, use "changes": a list of search/replace blocks. "search" MUST be copied VERBATIM, character-for-character (including indentation and whitespace), from a snippet that currently exists in the file. "replace" is what that snippet becomes.
+- Edit ONLY the lines that must change. Do NOT restate the whole file. Everything you don't touch stays exactly as it is — so never reproduce unrelated code, and never abbreviate with comments like "// ... unchanged ...".
+- Make each "search" long enough to match exactly one place in the file (include a few surrounding lines of context). Use a separate block for each distinct change. To delete code, set "replace" to "".
+- To CREATE a new file, use "content" with the full file body — only for a path that does not exist yet.
+- To DELETE a file, use { "path": "...", "delete": true } — only when the user clearly asks to remove it.
+
 Rules:
 - If the user asked a question or no change is needed, answer in "explanation" and return an empty "edits" array.
-- When you do change code, "content" MUST be the entire file after your change — never a diff, patch, or snippet.
+- Prefer "changes" for every existing file. Only use "content" on an existing file when the user explicitly asks to replace the whole file.
+- Touch only what the request needs; preserve all unrelated code, imports, and formatting.
 - Include an entry ONLY for files you actually change, create, or delete; omit unchanged files.
-- To create a new file, use its new path with "content".
-- To delete a file, use { "path": "...", "delete": true } and omit "content" — only when the user clearly asks to remove it.
-- Keep "explanation" brief — the user reviews the actual changes as diffs in the editor, so do not paste code into it.
-- Keep changes minimal and focused; preserve the project's existing style.`;
+- Keep "explanation" brief — the user reviews the actual changes as diffs in the editor, so do not paste code into it.`;
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -50,26 +56,47 @@ interface AskBody {
   model?: string;
 }
 
+interface SearchReplace {
+  /** Verbatim snippet that currently exists in the file. */
+  search: string;
+  /** What that snippet becomes ("" deletes it). */
+  replace: string;
+}
+
+/** A single edit as proposed by the model. */
 interface AskEdit {
   path: string;
+  /** Search/replace blocks applied to an existing file (preferred). */
+  changes?: SearchReplace[];
+  /** Full contents — for creating a new file (or an explicit full rewrite). */
   content?: string;
-  /** When true, delete the file instead of writing `content`. */
+  /** When true, delete the file instead of editing it. */
+  delete?: boolean;
+}
+
+/** What the client receives — search/replace already resolved to final content. */
+interface ResolvedEdit {
+  path: string;
+  content?: string;
   delete?: boolean;
 }
 
 interface AskResponse {
   explanation: string;
-  edits: AskEdit[];
+  edits: ResolvedEdit[];
   model: string;
 }
 
-/** Concatenate files (path-headed) up to the char budget; note what's dropped. */
+/** Concatenate files (path-headed) up to the char budget; note what's dropped
+ *  entirely (`omitted`) and what's sent only partially (`truncated`). */
 function buildContext(files: Record<string, string>): {
   body: string;
   omitted: string[];
+  truncated: string[];
 } {
   const parts: string[] = [];
   const omitted: string[] = [];
+  const truncated: string[] = [];
   let used = 0;
 
   for (const path of Object.keys(files).sort()) {
@@ -81,15 +108,16 @@ function buildContext(files: Record<string, string>): {
       omitted.push(path);
       continue;
     }
-    const slice =
-      content.length > remaining
-        ? `${content.slice(0, remaining)}\n…(truncated)…`
-        : content;
+    const willTruncate = content.length > remaining;
+    const slice = willTruncate
+      ? `${content.slice(0, remaining)}\n…(truncated)…`
+      : content;
+    if (willTruncate) truncated.push(path);
     parts.push(header + slice);
     used += header.length + slice.length;
   }
 
-  return { body: parts.join("\n"), omitted };
+  return { body: parts.join("\n"), omitted, truncated };
 }
 
 /** Keep only well-formed {role, content} turns. */
@@ -126,16 +154,158 @@ function parseEdits(raw: unknown): AskEdit[] {
   const edits: AskEdit[] = [];
   for (const item of (raw as { edits: unknown[] }).edits) {
     if (!item || typeof item !== "object") continue;
-    const e = item as AskEdit;
+    const e = item as Record<string, unknown>;
     if (typeof e.path !== "string" || e.path.trim() === "") continue;
     const path = e.path.trim();
+
     if (e.delete === true) {
       edits.push({ path, delete: true });
-    } else if (typeof e.content === "string") {
+      continue;
+    }
+
+    if (Array.isArray(e.changes)) {
+      const changes: SearchReplace[] = [];
+      for (const c of e.changes) {
+        if (!c || typeof c !== "object") continue;
+        const { search, replace } = c as Record<string, unknown>;
+        // `search` must be non-empty; `replace` may be "" (a deletion).
+        if (
+          typeof search === "string" &&
+          search !== "" &&
+          typeof replace === "string"
+        ) {
+          changes.push({ search, replace });
+        }
+      }
+      if (changes.length > 0) {
+        edits.push({ path, changes });
+        continue;
+      }
+    }
+
+    if (typeof e.content === "string") {
       edits.push({ path, content: e.content });
     }
   }
   return edits;
+}
+
+/**
+ * Apply one search/replace block to `content`. Tries an exact substring match
+ * first (replacing the first occurrence), then falls back to a
+ * whitespace-tolerant line match so a small indentation/trailing-space mismatch
+ * in the model's `search` doesn't fail the edit. Returns null if the snippet
+ * can't be located at all — the caller treats that as a failed block rather
+ * than guessing.
+ */
+function applyBlock(
+  content: string,
+  search: string,
+  replace: string,
+): string | null {
+  const idx = content.indexOf(search);
+  if (idx !== -1) {
+    return content.slice(0, idx) + replace + content.slice(idx + search.length);
+  }
+
+  const contentLines = content.split("\n");
+  const searchLines = search.split("\n");
+  // Models often append a trailing newline to a multi-line search block.
+  if (searchLines.length > 1 && searchLines[searchLines.length - 1] === "") {
+    searchLines.pop();
+  }
+  if (searchLines.length === 0) return null;
+
+  const norm = (s: string) => s.trim();
+  for (let i = 0; i + searchLines.length <= contentLines.length; i++) {
+    let matched = true;
+    for (let j = 0; j < searchLines.length; j++) {
+      if (norm(contentLines[i + j] ?? "") !== norm(searchLines[j] ?? "")) {
+        matched = false;
+        break;
+      }
+    }
+    if (!matched) continue;
+    const replaceLines = replace === "" ? [] : replace.split("\n");
+    return [
+      ...contentLines.slice(0, i),
+      ...replaceLines,
+      ...contentLines.slice(i + searchLines.length),
+    ].join("\n");
+  }
+  return null;
+}
+
+/**
+ * Turn model edits into final proposals the client can diff. Search/replace
+ * edits are applied against the LIVE file contents (`files`) — so unrelated
+ * code is never re-emitted and can't be dropped. Anything we couldn't apply is
+ * skipped and surfaced as a human-readable note instead of silently mangling a
+ * file. Whole-file `content` is allowed for new files and explicit rewrites,
+ * but refused for an existing file whose snapshot was truncated in context
+ * (the model never saw the whole thing).
+ */
+function resolveEdits(
+  edits: AskEdit[],
+  files: Record<string, string>,
+  truncated: Set<string>,
+): { proposals: ResolvedEdit[]; notes: string[] } {
+  const proposals: ResolvedEdit[] = [];
+  const notes: string[] = [];
+
+  for (const e of edits) {
+    if (e.delete) {
+      proposals.push({ path: e.path, delete: true });
+      continue;
+    }
+
+    if (e.changes && e.changes.length > 0) {
+      const original = files[e.path];
+      if (original === undefined) {
+        notes.push(`Couldn't edit \`${e.path}\` — no such file.`);
+        continue;
+      }
+      let current = original;
+      let applied = 0;
+      let failed = 0;
+      for (const c of e.changes) {
+        const next = applyBlock(current, c.search, c.replace);
+        if (next === null) {
+          failed++;
+        } else {
+          current = next;
+          applied++;
+        }
+      }
+      if (applied === 0) {
+        notes.push(
+          `Couldn't locate the code to change in \`${e.path}\` — left it untouched.`,
+        );
+        continue;
+      }
+      if (current === original) continue; // no-op after applying
+      proposals.push({ path: e.path, content: current });
+      if (failed > 0) {
+        notes.push(
+          `\`${e.path}\`: ${failed} of ${applied + failed} edits couldn't be applied — review carefully.`,
+        );
+      }
+      continue;
+    }
+
+    if (typeof e.content === "string") {
+      const exists = files[e.path] !== undefined;
+      if (exists && truncated.has(e.path)) {
+        notes.push(
+          `Skipped a full rewrite of \`${e.path}\` (too large to send in full) — ask for a smaller, targeted change.`,
+        );
+        continue;
+      }
+      proposals.push({ path: e.path, content: e.content });
+    }
+  }
+
+  return { proposals, notes };
 }
 
 export async function POST(req: Request) {
@@ -178,7 +348,7 @@ export async function POST(req: Request) {
       ? body.model
       : DEFAULT_ASK_MODEL;
 
-  const { body: context, omitted } = buildContext(files);
+  const { body: context, omitted, truncated } = buildContext(files);
   const fileList = Object.keys(files).sort().join("\n");
 
   // Fold the current project snapshot into the latest user turn so prior turns
@@ -211,7 +381,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         model,
         temperature: 0.2,
-        max_tokens: 4096,
+        max_tokens: 8192,
         response_format: { type: "json_object" },
         messages: upstreamMessages,
       }),
@@ -227,9 +397,24 @@ export async function POST(req: Request) {
     }
 
     const data = (await upstream.json()) as {
-      choices?: { message?: { content?: string } }[];
+      choices?: {
+        message?: { content?: string };
+        finish_reason?: string;
+      }[];
     };
-    const content = data.choices?.[0]?.message?.content ?? "";
+    const choice = data.choices?.[0];
+    const content = choice?.message?.content ?? "";
+
+    // Cut off by the token cap — the JSON (and any whole-file content) is
+    // incomplete, so refuse to apply anything rather than write a truncated file.
+    if (choice?.finish_reason === "length") {
+      return NextResponse.json({
+        explanation:
+          "The response was cut off before finishing. Try a smaller or more focused request.",
+        edits: [],
+        model,
+      } satisfies AskResponse);
+    }
 
     let parsed: unknown;
     try {
@@ -248,9 +433,23 @@ export async function POST(req: Request) {
         ? (parsed as { explanation: string }).explanation
         : "";
 
+    // Resolve search/replace blocks against the live files into final content;
+    // any block we couldn't apply becomes a note appended to the reply.
+    const { proposals, notes } = resolveEdits(
+      parseEdits(parsed),
+      files,
+      new Set(truncated),
+    );
+    const fullExplanation =
+      notes.length > 0
+        ? [explanation, ...notes.map((n) => `> ${n}`)]
+            .filter(Boolean)
+            .join("\n\n")
+        : explanation;
+
     return NextResponse.json({
-      explanation,
-      edits: parseEdits(parsed),
+      explanation: fullExplanation,
+      edits: proposals,
       model,
     } satisfies AskResponse);
   } catch (err) {
