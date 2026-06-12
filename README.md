@@ -18,8 +18,7 @@ A real-time coding platform for solving problems, pair-programming, and learning
 - **Auth**: Better Auth (GitHub + Google OAuth, sessions)
 - **API**: tRPC v11 with SuperJSON + Zod
 - **Realtime**: Y.js + Hocuspocus (separate Node service)
-- **Jobs**: BullMQ on Redis
-- **Storage**: AWS S3 (file uploads, attachments)
+- **Storage**: Cloudflare R2 via the S3 API (file uploads, snapshots)
 - **UI**: Tailwind CSS v4, shadcn/ui, Lucide icons, Motion
 - **Canvas**: React Flow (`@xyflow/react`)
 - **Editor**: CodeMirror 6 (with Vim mode)
@@ -36,8 +35,8 @@ A real-time coding platform for solving problems, pair-programming, and learning
 │   ├── api                # tRPC routers (problem, ducklet, submission, system-design, …)
 │   ├── auth               # Better Auth server config, client hooks, middleware
 │   ├── db                 # Drizzle schemas + Postgres client (backend-only)
-│   ├── jobs               # BullMQ queues and workers
-│   ├── storage            # S3 client
+│   ├── ducklet-fs         # Shared model/paths/template for the Ducklet virtual FS
+│   ├── storage            # S3-compatible client (Cloudflare R2)
 │   └── validators         # Shared Zod schemas
 └── tooling                # Shared eslint / prettier / tailwind / tsconfig
 ```
@@ -46,44 +45,58 @@ A real-time coding platform for solving problems, pair-programming, and learning
 
 ## Getting Started
 
+> 📖 **Full walkthrough with env-var reference, OAuth app setup, and
+> troubleshooting: [SETUP.md](SETUP.md).** The steps
+> below are the happy path.
+
 ### Prerequisites
 
 - Node.js `^23`
-- pnpm `^10.19.0`
+- pnpm `10.19.x` (`corepack enable` picks up the pinned version)
 - Docker (for local Postgres + Redis)
 
 ### Install
 
 ```bash
 pnpm install
-cp .env.example .env       # fill in OAuth + auth secrets
+cp .env.example .env       # defaults work for local dev — see note below
 make services              # Postgres on :5433, Redis on :6380
 pnpm db:push               # apply Drizzle schema
-pnpm auth:generate         # regenerate Better Auth types
+pnpm db:seed               # optional: seed example problems
 ```
+
+**About `.env`:** the committed defaults boot the app as-is, but sign-in is
+OAuth-only — you need a real GitHub or Google OAuth app (callback
+`http://localhost:3001/api/auth/callback/<provider>`; the other provider can
+stay a placeholder). Running code submissions additionally needs a real
+`JUDGE_API_TOKEN`, and uploads need real `R2_*` credentials — placeholders are
+fine until you touch those features. Details in
+[SETUP.md](SETUP.md#3-configure-env).
 
 ### Run
 
 ```bash
 pnpm dev                   # full stack (web + hocuspocus + watchers)
-pnpm dev:next              # only Next.js (needs services running)
+pnpm dev:next              # only Next.js (Ducklets realtime sync won't connect)
 ```
 
-Web app: <http://localhost:3001>. Hocuspocus: <http://localhost:5000>.
+Web app: <http://localhost:3001> (note: port **3001**, not 3000). Hocuspocus: <http://localhost:5000>.
 
 ### Common Scripts
 
-| Command                  | What it does                              |
-| ------------------------ | ----------------------------------------- |
-| `pnpm build`             | Build every package via Turborepo         |
-| `pnpm lint` / `lint:fix` | ESLint check / autofix                    |
-| `pnpm format:fix`        | Prettier write                            |
-| `pnpm typecheck`         | TypeScript check across all packages      |
-| `pnpm db:push`           | Push Drizzle schema to Postgres           |
-| `pnpm db:studio`         | Open Drizzle Studio GUI                   |
-| `make services`          | Start Postgres + Redis only               |
-| `make dev`               | Full dev environment in Docker            |
-| `make down`              | Stop all containers                       |
+| Command                  | What it does                                                   |
+| ------------------------ | -------------------------------------------------------------- |
+| `pnpm build`             | Build every package via Turborepo                              |
+| `pnpm lint` / `lint:fix` | ESLint check / autofix                                         |
+| `pnpm format:fix`        | Prettier write                                                 |
+| `pnpm typecheck`         | TypeScript check across all packages                           |
+| `pnpm db:push`           | Push Drizzle schema to Postgres                                |
+| `pnpm db:seed`           | Seed example problems                                          |
+| `pnpm db:studio`         | Open Drizzle Studio GUI                                        |
+| `pnpm auth:generate`     | Regenerate Better Auth schema (only after auth config changes) |
+| `make services`          | Start Postgres + Redis containers                              |
+| `make down`              | Stop all containers (data preserved)                           |
+| `make dangerously-clean` | Stop containers and delete all data                            |
 
 ### System-Design Calibration Tests
 
