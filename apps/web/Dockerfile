@@ -29,6 +29,7 @@ COPY packages/api/package.json packages/api/
 COPY packages/auth/package.json packages/auth/
 COPY packages/db/package.json packages/db/
 COPY packages/ducklet-fs/package.json packages/ducklet-fs/
+COPY packages/machine-coding-content/package.json packages/machine-coding-content/
 COPY packages/storage/package.json packages/storage/
 COPY packages/validators/package.json packages/validators/
 COPY tooling/eslint/package.json tooling/eslint/
