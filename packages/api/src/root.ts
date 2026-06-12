@@ -4,6 +4,7 @@ import { codeDraftRouter } from "./router/code-draft";
 import { commentRouter } from "./router/comment";
 import { duckletRouter } from "./router/ducklet";
 import { playgroundRouter } from "./router/playground";
+import { machineCodingRouter } from "./router/machine-coding";
 import { problemRouter } from "./router/problem";
 import { profileRouter } from "./router/profile";
 import { storageRouter } from "./router/storage";
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   playground: playgroundRouter,
   storage: storageRouter,
   ducklet: duckletRouter,
+  machineCoding: machineCodingRouter,
   profile: profileRouter,
   bookmark: bookmarkRouter,
   comment: commentRouter,

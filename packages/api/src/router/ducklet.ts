@@ -9,12 +9,15 @@ import {
   duckletMember,
   duckletMessage,
   duckletSnapshot,
+  machineCodingAttempt,
   userProfile,
 } from "@acme/db/schema";
+import { getEditablePaths, getProblem } from "@acme/machine-coding-content";
 import { getPublicUrl, uploadFile } from "@acme/storage";
 
 import type { ChatMessageDTO } from "../realtime";
 import { publishDuckletEvent, subscribeDuckletEvents } from "../realtime";
+import { createDuckletRow } from "../services/ducklet";
 import { track } from "../telemetry";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -65,6 +68,9 @@ export const duckletRouter = createTRPCRouter({
       const sort = input?.sort ?? "recent";
 
       const conditions = [];
+
+      // Machine-coding rooms never surface in the public ducklet listing.
+      conditions.push(eq(ducklet.kind, "ducklet"));
 
       if (ctx.session?.user && onlyMine) {
         conditions.push(eq(ducklet.ownerId, ctx.session.user.id));
@@ -197,6 +203,34 @@ export const duckletRouter = createTRPCRouter({
 
       const owner = ownerRows[0];
 
+      // For machine-coding rooms, attach the problem prompt + this room's attempt so
+      // the workspace can render the Problem panel and the countdown. Solution
+      // and test files are never included here — only `machineCoding.getSolution`
+      // exposes them.
+      let machineCodingContext = null;
+      if (result.kind === "machine-coding") {
+        const [attempt] = await ctx.db
+          .select()
+          .from(machineCodingAttempt)
+          .where(eq(machineCodingAttempt.duckletId, result.id))
+          .limit(1);
+        const problem = attempt ? getProblem(attempt.problemSlug) : undefined;
+        if (attempt && problem) {
+          machineCodingContext = {
+            problemSlug: problem.slug,
+            title: problem.title,
+            difficulty: problem.difficulty,
+            category: problem.category,
+            durationMinutes: problem.durationMinutes,
+            description: problem.description,
+            editablePaths: getEditablePaths(problem),
+            startedAt: attempt.startedAt,
+            status: attempt.status,
+            solutionRevealed: attempt.solutionRevealed,
+          };
+        }
+      }
+
       return {
         ...result,
         previewImage: result.previewImage
@@ -205,6 +239,7 @@ export const duckletRouter = createTRPCRouter({
         owner,
         members,
         currentUserStatus,
+        machineCodingContext,
       };
     }),
 
@@ -427,13 +462,13 @@ export const duckletRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const [newDucklet] = await ctx.db
-        .insert(ducklet)
-        .values({
-          ...input,
-          ownerId: ctx.session.user.id,
-        })
-        .returning();
+      const newDucklet = await createDuckletRow(ctx.db, {
+        name: input.name,
+        description: input.description,
+        isPublic: input.isPublic,
+        yjsData: input.yjsData,
+        ownerId: ctx.session.user.id,
+      });
 
       if (newDucklet) {
         track("ducklet.created", {
@@ -471,6 +506,14 @@ export const duckletRouter = createTRPCRouter({
         });
       }
 
+      // Machine-coding rooms aren't forkable — use the catalogue.
+      if (source.kind === "machine-coding") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Machine-coding rooms can't be forked",
+        });
+      }
+
       // Caller must be able to read the source: public, owner, or active member.
       const userId = ctx.session.user.id;
       if (!source.isPublic && source.ownerId !== userId) {
@@ -493,16 +536,13 @@ export const duckletRouter = createTRPCRouter({
 
       const forkedName = (input.name ?? `${source.name} (fork)`).slice(0, 100);
 
-      const [forked] = await ctx.db
-        .insert(ducklet)
-        .values({
-          name: forkedName,
-          description: source.description,
-          isPublic: false,
-          yjsData: source.yjsData,
-          ownerId: userId,
-        })
-        .returning();
+      const forked = await createDuckletRow(ctx.db, {
+        name: forkedName,
+        description: source.description,
+        isPublic: false,
+        yjsData: source.yjsData,
+        ownerId: userId,
+      });
 
       if (forked) {
         track("ducklet.forked", {
