@@ -9,6 +9,7 @@ export * from "./challenges";
 export * from "./attempts";
 export * from "./ducklet-messages";
 export * from "./ducklet-snapshots";
+export * from "./machine-coding";
 export * from "./user-code-drafts";
 export * from "./bookmarks";
 export * from "./system-design-attempts";

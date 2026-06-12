@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
-import { memberRoleEnum, memberStatusEnum } from "./enums";
+import { duckletKindEnum, memberRoleEnum, memberStatusEnum } from "./enums";
 
 export const ducklet = pgTable(
   "ducklet",
@@ -29,6 +29,11 @@ export const ducklet = pgTable(
     // Visibility
     isPublic: boolean("is_public").default(true).notNull(),
 
+    // "ducklet" (default) or "machine-coding" (an interview-machine-coding room spawned
+    // from the /machine-coding catalogue). Machine-coding rooms are hidden from the public
+    // listing and have AI features disabled.
+    kind: duckletKindEnum("kind").default("ducklet").notNull(),
+
     // Yjs Collaboration Data
     yjsData: text("yjs_data"), // Base64-encoded Yjs state
     yjsVersion: integer("yjs_version").default(1).notNull(), // Version for conflict detection
@@ -44,6 +49,7 @@ export const ducklet = pgTable(
   (t) => [
     index("ducklet_owner_idx").on(t.ownerId),
     index("ducklet_is_public_idx").on(t.isPublic),
+    index("ducklet_kind_idx").on(t.kind),
   ],
 );
 
