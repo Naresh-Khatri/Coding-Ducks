@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { db, ducklet, eq, roomPolicy } from "@acme/db";
+import { db, room, eq, roomPolicy } from "@acme/db";
 
 import { getSession } from "~/auth/server";
 import { env } from "~/env";
@@ -57,7 +57,7 @@ interface AskBody {
   files?: Record<string, string>;
   model?: string;
   /** When set to a practice room, AI Ask is disabled server-side. */
-  duckletId?: number;
+  roomId?: number;
 }
 
 interface SearchReplace {
@@ -334,13 +334,13 @@ export async function POST(req: Request) {
   }
 
   // AI is disabled in practice rooms — short-circuit before any upstream call.
-  if (typeof body.duckletId === "number") {
-    const [room] = await db
-      .select({ kind: ducklet.kind })
-      .from(ducklet)
-      .where(eq(ducklet.id, body.duckletId))
+  if (typeof body.roomId === "number") {
+    const [found] = await db
+      .select({ kind: room.kind })
+      .from(room)
+      .where(eq(room.id, body.roomId))
       .limit(1);
-    if (room && !roomPolicy(room.kind).aiEnabled) {
+    if (found && !roomPolicy(found.kind).aiEnabled) {
       return NextResponse.json({
         explanation: "",
         edits: [],

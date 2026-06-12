@@ -70,12 +70,12 @@ export function CreateDuckletDialog({
   const [templateId, setTemplateId] = useState(DEFAULT_TEMPLATE_ID);
 
   const createMutation = useMutation(
-    trpc.ducklet.create.mutationOptions({
+    trpc.room.create.mutationOptions({
       onSuccess: (ducklet) => {
         if (!ducklet) return;
         track("ducklet-create", { id: ducklet.id, template: templateId });
         void queryClient.invalidateQueries(
-          trpc.ducklet.list.infiniteQueryFilter(),
+          trpc.room.list.infiniteQueryFilter(),
         );
         onOpenChange(false);
         setName("");

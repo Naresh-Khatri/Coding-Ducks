@@ -21,14 +21,14 @@ import { useTRPC } from "~/trpc/react";
 interface RenameDuckletDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  duckletId: number;
+  roomId: number;
   currentName: string;
 }
 
 export function RenameDuckletDialog({
   open,
   onOpenChange,
-  duckletId,
+  roomId,
   currentName,
 }: RenameDuckletDialogProps) {
   const trpc = useTRPC();
@@ -45,20 +45,20 @@ export function RenameDuckletDialog({
   }
 
   const renameMutation = useMutation(
-    trpc.ducklet.update.mutationOptions({
+    trpc.room.update.mutationOptions({
       onSuccess: (data) => {
         if (!data) return;
         toast.success("Ducklet renamed");
 
-        const byIdKey = trpc.ducklet.byId.queryKey({ id: duckletId });
+        const byIdKey = trpc.room.byId.queryKey({ id: roomId });
         queryClient.setQueryData(byIdKey, (prev) =>
           prev ? { ...prev, name: data.name } : prev,
         );
         void queryClient.invalidateQueries(
-          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+          trpc.room.byId.queryFilter({ id: roomId }),
         );
         void queryClient.invalidateQueries(
-          trpc.ducklet.list.infiniteQueryFilter(),
+          trpc.room.list.infiniteQueryFilter(),
         );
         onOpenChange(false);
       },
@@ -73,7 +73,7 @@ export function RenameDuckletDialog({
       onOpenChange(false);
       return;
     }
-    renameMutation.mutate({ id: duckletId, name: trimmed });
+    renameMutation.mutate({ id: roomId, name: trimmed });
   };
 
   return (

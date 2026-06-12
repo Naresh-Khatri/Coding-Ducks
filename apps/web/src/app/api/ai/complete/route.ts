@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { db, ducklet, eq, roomPolicy } from "@acme/db";
+import { db, room, eq, roomPolicy } from "@acme/db";
 
 import { getSession } from "~/auth/server";
 import { env } from "~/env";
@@ -18,18 +18,18 @@ interface CompletionBody {
   prefix?: string;
   suffix?: string;
   /** When set to a practice room, AI completion is disabled server-side. */
-  duckletId?: number;
+  roomId?: number;
 }
 
 /** Whether this room's kind permits AI assist (e.g. practice rooms don't). */
-async function roomAllowsAi(duckletId: number): Promise<boolean> {
-  const [room] = await db
-    .select({ kind: ducklet.kind })
-    .from(ducklet)
-    .where(eq(ducklet.id, duckletId))
+async function roomAllowsAi(roomId: number): Promise<boolean> {
+  const [found] = await db
+    .select({ kind: room.kind })
+    .from(room)
+    .where(eq(room.id, roomId))
     .limit(1);
   // Unknown id → allow; the endpoint is still auth-gated above.
-  return room ? roomPolicy(room.kind).aiEnabled : true;
+  return found ? roomPolicy(found.kind).aiEnabled : true;
 }
 
 export async function POST(req: Request) {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
   }
 
-  if (typeof body.duckletId === "number" && !(await roomAllowsAi(body.duckletId))) {
+  if (typeof body.roomId === "number" && !(await roomAllowsAi(body.roomId))) {
     return NextResponse.json({ completion: "" });
   }
 

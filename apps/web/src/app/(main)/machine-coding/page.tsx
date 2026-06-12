@@ -216,7 +216,7 @@ function ProblemCard({
           )}
         </CardContent>
         <CardFooter className="text-muted-foreground text-xs">
-          {problem.duckletId
+          {problem.roomId
             ? "Open your interview room →"
             : status === "completed"
               ? "Practice again →"

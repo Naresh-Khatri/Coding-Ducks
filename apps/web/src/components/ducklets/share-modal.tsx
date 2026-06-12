@@ -36,13 +36,13 @@ import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
 
 interface ShareModalProps {
-  duckletId: number;
+  roomId: number;
 
   isOwner: boolean;
   isPublic: boolean;
 }
 
-export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
+export function ShareModal({ roomId, isOwner, isPublic }: ShareModalProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [inviteUsername, setInviteUsername] = useState("");
@@ -53,7 +53,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
 
   // Queries
   const { data: ducklet } = useQuery(
-    trpc.ducklet.byId.queryOptions({ id: duckletId }, { enabled: isOpen }),
+    trpc.room.byId.queryOptions({ id: roomId }, { enabled: isOpen }),
   );
 
   const memberUserIds = useMemo(
@@ -83,14 +83,14 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
 
   // Mutations
   const inviteMutation = useMutation(
-    trpc.ducklet.inviteUser.mutationOptions({
+    trpc.room.inviteUser.mutationOptions({
       onSuccess: (_, variables) => {
-        track("ducklet-invite", { id: duckletId, role: variables.role });
+        track("ducklet-invite", { id: roomId, role: variables.role });
         toast.success("Invitation sent successfully");
         setInviteUsername("");
         setIsSuggestionsOpen(false);
         queryClient.invalidateQueries(
-          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+          trpc.room.byId.queryFilter({ id: roomId }),
         );
       },
       onError: (err) => {
@@ -100,11 +100,11 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
   );
 
   const removeMemberMutation = useMutation(
-    trpc.ducklet.removeMember.mutationOptions({
+    trpc.room.removeMember.mutationOptions({
       onSuccess: () => {
         toast.success("Member removed");
         queryClient.invalidateQueries(
-          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+          trpc.room.byId.queryFilter({ id: roomId }),
         );
       },
       onError: (err) => {
@@ -114,11 +114,11 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
   );
 
   const updateMemberRoleMutation = useMutation(
-    trpc.ducklet.updateMemberRole.mutationOptions({
+    trpc.room.updateMemberRole.mutationOptions({
       onSuccess: () => {
         toast.success("Role updated");
         queryClient.invalidateQueries(
-          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+          trpc.room.byId.queryFilter({ id: roomId }),
         );
       },
       onError: (err) => {
@@ -128,15 +128,15 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
   );
 
   const respondRequestMutation = useMutation(
-    trpc.ducklet.respondToRequest.mutationOptions({
+    trpc.room.respondToRequest.mutationOptions({
       onSuccess: (data, variables) => {
         track("ducklet-respond-request", {
-          id: duckletId,
+          id: roomId,
           accept: variables.accept,
         });
         toast.success(variables.accept ? "Request approved" : "Request denied");
         queryClient.invalidateQueries(
-          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+          trpc.room.byId.queryFilter({ id: roomId }),
         );
       },
       onError: (err) => {
@@ -146,20 +146,20 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
   );
 
   const updateDuckletMutation = useMutation(
-    trpc.ducklet.update.mutationOptions({
+    trpc.room.update.mutationOptions({
       onSuccess: (data) => {
         if (!data) return;
         track("ducklet-visibility-change", {
-          id: duckletId,
+          id: roomId,
           isPublic: data.isPublic,
         });
         toast.success(`Ducklet is now ${data.isPublic ? "Public" : "Private"}`);
-        const queryKey = trpc.ducklet.byId.queryKey({ id: duckletId });
+        const queryKey = trpc.room.byId.queryKey({ id: roomId });
         queryClient.setQueryData(queryKey, (prev) =>
           prev ? { ...prev, isPublic: data.isPublic } : prev,
         );
         queryClient.invalidateQueries(
-          trpc.ducklet.byId.queryFilter({ id: duckletId }),
+          trpc.room.byId.queryFilter({ id: roomId }),
         );
       },
       onError: (err) => {
@@ -172,7 +172,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
     e.preventDefault();
     if (!inviteUsername.trim()) return;
     inviteMutation.mutate({
-      duckletId,
+      roomId,
       username: inviteUsername,
       role: inviteRole,
     });
@@ -230,7 +230,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                       className="size-6 text-green-500 hover:bg-green-500/10 hover:text-green-600"
                       onClick={() =>
                         respondRequestMutation.mutate({
-                          duckletId,
+                          roomId,
                           userId: member.userId,
                           accept: true,
                           role: "editor",
@@ -246,7 +246,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                       className="size-6 text-red-500 hover:bg-red-500/10 hover:text-red-600"
                       onClick={() =>
                         respondRequestMutation.mutate({
-                          duckletId,
+                          roomId,
                           userId: member.userId,
                           accept: false,
                         })
@@ -317,7 +317,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                     value={member.role}
                     onValueChange={(val) =>
                       updateMemberRoleMutation.mutate({
-                        duckletId,
+                        roomId,
                         userId: member.userId,
                         role: val as "editor" | "viewer",
                       })
@@ -340,7 +340,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
                     className="text-muted-foreground hover:text-destructive size-7"
                     onClick={() =>
                       removeMemberMutation.mutate({
-                        duckletId,
+                        roomId,
                         userId: member.userId,
                       })
                     }
@@ -417,7 +417,7 @@ export function ShareModal({ duckletId, isOwner, isPublic }: ShareModalProps) {
               value={isPublic ? "public" : "private"}
               onValueChange={(val) =>
                 updateDuckletMutation.mutate({
-                  id: duckletId,
+                  id: roomId,
                   isPublic: val === "public",
                 })
               }

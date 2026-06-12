@@ -29,27 +29,27 @@ interface Options {
   ydoc: Y.Doc;
   provider: HocuspocusProvider | null;
   runtime: WebContainerRuntime;
-  duckletId: number;
+  roomId: number;
   /** Only run for editable sessions (skips read-only guests). */
   enabled: boolean;
 }
 
 /**
- * Auto-captures the live preview and persists it as the ducklet's preview
+ * Auto-captures the live preview and persists it as the room's preview
  * image (gallery thumbnail + OG image). To stop every collaborator uploading
  * the same shot, only the awareness "leader" — the lowest connected clientId —
  * performs captures.
  */
-export function useDuckletPreviewCapture({
+export function useRoomPreviewCapture({
   ydoc,
   provider,
   runtime,
-  duckletId,
+  roomId,
   enabled,
 }: Options): void {
   const trpc = useTRPC();
   const { mutateAsync } = useMutation(
-    trpc.ducklet.updatePreviewImage.mutationOptions(),
+    trpc.room.updatePreviewImage.mutationOptions(),
   );
 
   // Latest values in refs so the observer effect can stay mounted for the whole
@@ -88,7 +88,7 @@ export function useDuckletPreviewCapture({
         const base64 = dataUrl.split(",")[1];
         if (!base64) throw new Error("empty capture");
         await mutateRef.current({
-          duckletId,
+          roomId,
           image: base64,
           contentType: "image/jpeg",
         });
@@ -98,7 +98,7 @@ export function useDuckletPreviewCapture({
         capturingRef.current = false;
       }
     },
-    [enabled, amLeader, duckletId],
+    [enabled, amLeader, roomId],
   );
 
   // First shot once the preview boots, so a thumbnail appears without any edits.
@@ -110,7 +110,7 @@ export function useDuckletPreviewCapture({
       initialCaptureDoneRef.current = true;
       void performCapture().catch((err) => {
         initialCaptureDoneRef.current = false; // retry on next preview-url change
-        console.warn("[ducklet] initial preview capture failed:", err);
+        console.warn("[room] initial preview capture failed:", err);
       });
     }, INITIAL_CAPTURE_DELAY_MS);
 
@@ -136,7 +136,7 @@ export function useDuckletPreviewCapture({
       }
       void performCapture().catch((err) => {
         // Leave `changes` intact so the next idle window retries.
-        console.warn("[ducklet] preview capture failed:", err);
+        console.warn("[room] preview capture failed:", err);
       });
     };
 

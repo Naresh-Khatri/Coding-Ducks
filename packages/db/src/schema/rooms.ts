@@ -12,9 +12,12 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
-import { duckletKindEnum, memberRoleEnum, memberStatusEnum } from "./enums";
+import { memberRoleEnum, memberStatusEnum, roomKindEnum } from "./enums";
 
-export const ducklet = pgTable(
+// A collaborative coding room. The SQL table stays `ducklet` (the original
+// product name) — only the code-level identifier is generalized to `room`,
+// since machine-coding interview rooms are the same underlying entity.
+export const room = pgTable(
   "ducklet",
   {
     id: serial("id").primaryKey(),
@@ -32,7 +35,7 @@ export const ducklet = pgTable(
     // "ducklet" (default) or "machine-coding" (an interview-machine-coding room spawned
     // from the /machine-coding catalogue). Machine-coding rooms are hidden from the public
     // listing and have AI features disabled.
-    kind: duckletKindEnum("kind").default("ducklet").notNull(),
+    kind: roomKindEnum("kind").default("ducklet").notNull(),
 
     // Yjs Collaboration Data
     yjsData: text("yjs_data"), // Base64-encoded Yjs state
@@ -53,12 +56,12 @@ export const ducklet = pgTable(
   ],
 );
 
-export const duckletMember = pgTable(
+export const roomMember = pgTable(
   "ducklet_member",
   {
-    duckletId: integer("ducklet_id")
+    roomId: integer("ducklet_id")
       .notNull()
-      .references(() => ducklet.id, { onDelete: "cascade" }),
+      .references(() => room.id, { onDelete: "cascade" }),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -67,30 +70,30 @@ export const duckletMember = pgTable(
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
   },
   (t) => [
-    primaryKey({ columns: [t.duckletId, t.userId] }),
+    primaryKey({ columns: [t.roomId, t.userId] }),
     index("ducklet_member_user_idx").on(t.userId),
   ],
 );
 
 // Relations
-export const duckletRelations = relations(ducklet, ({ one, many }) => ({
+export const roomRelations = relations(room, ({ one, many }) => ({
   owner: one(user, {
-    fields: [ducklet.ownerId],
+    fields: [room.ownerId],
     references: [user.id],
   }),
-  members: many(duckletMember),
+  members: many(roomMember),
 }));
 
-export const duckletMemberRelations = relations(duckletMember, ({ one }) => ({
-  ducklet: one(ducklet, {
-    fields: [duckletMember.duckletId],
-    references: [ducklet.id],
+export const roomMemberRelations = relations(roomMember, ({ one }) => ({
+  room: one(room, {
+    fields: [roomMember.roomId],
+    references: [room.id],
   }),
   user: one(user, {
-    fields: [duckletMember.userId],
+    fields: [roomMember.userId],
     references: [user.id],
   }),
 }));
 
-export type Ducklet = typeof ducklet.$inferSelect;
-export type NewDucklet = typeof ducklet.$inferInsert;
+export type Room = typeof room.$inferSelect;
+export type NewRoom = typeof room.$inferInsert;

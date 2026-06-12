@@ -47,7 +47,7 @@ import { PreviewPanel } from "./preview-panel";
 import { TerminalPanel } from "./terminal-panel";
 import { useAskChat } from "./use-ask-chat";
 import { useIframeFocusGuard } from "./use-iframe-focus-guard";
-import { useDuckletPreviewCapture } from "./use-preview-capture";
+import { useRoomPreviewCapture } from "./use-preview-capture";
 
 /** A locally-held AI edit proposal awaiting review (never written to the doc). */
 interface PendingEdit {
@@ -131,7 +131,7 @@ interface WorkspaceProps {
   ydoc: Y.Doc;
   readOnly?: boolean;
   /** Numeric ducklet id — enables auto preview-image capture when editable. */
-  duckletId?: number;
+  roomId?: number;
   /** AI ghost-text + Ask dock. Pass `false` for assessment / interview mode. */
   aiEnabled?: boolean;
   /** Optional extra left-panel tab (problem statement, docs…) + toolbar. */
@@ -193,7 +193,7 @@ export function Workspace({
   provider,
   ydoc,
   readOnly = false,
-  duckletId,
+  roomId,
   aiEnabled = true,
   sidePanel = null,
   bottomPanel = null,
@@ -216,12 +216,12 @@ export function Workspace({
 
   // Auto-capture the preview as the ducklet's thumbnail / OG image (editable
   // sessions only; one uploader per room via awareness leader election).
-  const editable = !readOnly && !!provider && duckletId != null;
-  useDuckletPreviewCapture({
+  const editable = !readOnly && !!provider && roomId != null;
+  useRoomPreviewCapture({
     ydoc,
     provider,
     runtime,
-    duckletId: duckletId ?? 0,
+    roomId: roomId ?? 0,
     enabled: editable,
   });
 
@@ -243,7 +243,7 @@ export function Workspace({
   useAiInlineCompletion({
     monaco,
     enabled: !!provider && aiCompletion && aiEnabled,
-    duckletId,
+    roomId,
   });
 
   const [openPaths, setOpenPaths] = useState<string[]>([]);
@@ -345,7 +345,7 @@ export function Workspace({
     });
   }, []);
 
-  const chat = useAskChat({ ydoc, onProposal: registerProposal, duckletId });
+  const chat = useAskChat({ ydoc, onProposal: registerProposal, roomId });
 
   // Load a batch of files as reviewable diffs in the main editor, reusing the
   // AI-proposal flow (accept overwrites, reject keeps). Exposed to side panels

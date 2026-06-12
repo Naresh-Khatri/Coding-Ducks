@@ -1,7 +1,7 @@
-import { duckletKindEnum } from "./schema/enums";
+import { roomKindEnum } from "./schema/enums";
 
 /** The kind discriminator on a room (a collaborative coding room). */
-export type RoomKind = (typeof duckletKindEnum.enumValues)[number];
+export type RoomKind = (typeof roomKindEnum.enumValues)[number];
 
 /** What a room of a given kind is allowed to do. */
 export interface RoomPolicy {

@@ -31,9 +31,10 @@ export const submissionStatusEnum = pgEnum("submission_status", [
   "judge_error",
 ]);
 export const memberRoleEnum = pgEnum("member_role", ["editor", "viewer"]);
-// Distinguishes free-form ducklets from interview-machine-coding rooms (so machine-coding
-// rooms can be excluded from the public listing and have AI disabled).
-export const duckletKindEnum = pgEnum("ducklet_kind", ["ducklet", "machine-coding"]);
+// Distinguishes free-form rooms ("ducklet", the original product) from
+// interview-machine-coding rooms (so machine-coding rooms can be excluded from
+// the public listing and have AI disabled).
+export const roomKindEnum = pgEnum("ducklet_kind", ["ducklet", "machine-coding"]);
 export const machineCodingAttemptStatusEnum = pgEnum("machine_coding_attempt_status", [
   "in-progress",
   "completed",

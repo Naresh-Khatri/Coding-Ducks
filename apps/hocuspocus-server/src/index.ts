@@ -4,7 +4,7 @@ import { applyUpdate, encodeStateAsUpdate } from "yjs";
 
 import type { CollabTokenPayload } from "@acme/auth/collab-token";
 import { verifyCollabToken } from "@acme/auth/collab-token";
-import { and, db, ducklet, duckletMember, eq, sql } from "@acme/db";
+import { and, db, room, roomMember, eq, sql } from "@acme/db";
 
 import { env } from "./env.js";
 
@@ -13,7 +13,7 @@ interface CollabContext {
     id: string;
     username: string;
   };
-  duckletId: number;
+  roomId: number;
   role: CollabTokenPayload["role"];
   isReadOnly: boolean;
 }
@@ -62,14 +62,14 @@ const server = Server.configure({
       throw new Error("Invalid or expired token");
     }
 
-    if (payload.duckletId !== expectedDuckletId) {
+    if (payload.roomId !== expectedDuckletId) {
       throw new Error("Token does not match document");
     }
 
     const [existingDucklet] = await db
       .select()
-      .from(ducklet)
-      .where(eq(ducklet.id, expectedDuckletId))
+      .from(room)
+      .where(eq(room.id, expectedDuckletId))
       .limit(1);
 
     if (!existingDucklet) {
@@ -84,12 +84,12 @@ const server = Server.configure({
     } else {
       const [member] = await db
         .select()
-        .from(duckletMember)
+        .from(roomMember)
         .where(
           and(
-            eq(duckletMember.duckletId, expectedDuckletId),
-            eq(duckletMember.userId, payload.userId),
-            eq(duckletMember.status, "active"),
+            eq(roomMember.roomId, expectedDuckletId),
+            eq(roomMember.userId, payload.userId),
+            eq(roomMember.status, "active"),
           ),
         )
         .limit(1);
@@ -99,7 +99,7 @@ const server = Server.configure({
       } else if (member?.role === "viewer") {
         isReadOnly = true;
       } else if (existingDucklet.isPublic) {
-        // Public ducklet, non-member: read-only is allowed.
+        // Public room, non-member: read-only is allowed.
         isReadOnly = true;
       } else {
         throw new Error("Access denied");
@@ -113,7 +113,7 @@ const server = Server.configure({
         id: payload.userId,
         username: payload.username,
       },
-      duckletId: expectedDuckletId,
+      roomId: expectedDuckletId,
       role: payload.role,
       isReadOnly,
     };
@@ -122,14 +122,14 @@ const server = Server.configure({
 
   // Load existing document from PostgreSQL
   onLoadDocument: async ({ documentName, document }) => {
-    const duckletId = parseInt(documentName.replace("ducklet-", ""), 10);
-    if (!Number.isFinite(duckletId)) return;
+    const roomId = parseInt(documentName.replace("ducklet-", ""), 10);
+    if (!Number.isFinite(roomId)) return;
 
     try {
       const [existing] = await db
-        .select({ yjsData: ducklet.yjsData })
-        .from(ducklet)
-        .where(eq(ducklet.id, duckletId))
+        .select({ yjsData: room.yjsData })
+        .from(room)
+        .where(eq(room.id, roomId))
         .limit(1);
 
       if (existing?.yjsData) {
@@ -171,8 +171,8 @@ const server = Server.configure({
 
   // Store document to PostgreSQL
   onStoreDocument: async ({ documentName, document, clientsCount }) => {
-    const duckletId = parseInt(documentName.replace("ducklet-", ""), 10);
-    if (!Number.isFinite(duckletId)) return;
+    const roomId = parseInt(documentName.replace("ducklet-", ""), 10);
+    if (!Number.isFinite(roomId)) return;
 
     try {
       const update = encodeStateAsUpdate(document);
@@ -180,29 +180,29 @@ const server = Server.configure({
 
       const [duckletData] = await db
         .select({
-          id: ducklet.id,
-          ownerId: ducklet.ownerId,
+          id: room.id,
+          ownerId: room.ownerId,
         })
-        .from(ducklet)
-        .where(eq(ducklet.id, duckletId))
+        .from(room)
+        .where(eq(room.id, roomId))
         .limit(1);
 
       if (!duckletData) {
-        console.error(`Ducklet ${duckletId} not found`);
+        console.error(`Ducklet ${roomId} not found`);
         return;
       }
 
       await db
-        .update(ducklet)
+        .update(room)
         .set({
           yjsData: data,
           lastClientsCount: clientsCount,
-          yjsVersion: sql`${ducklet.yjsVersion} + 1`,
+          yjsVersion: sql`${room.yjsVersion} + 1`,
           updatedAt: new Date(),
         })
-        .where(eq(ducklet.id, duckletId));
+        .where(eq(room.id, roomId));
 
-      // Chat is persisted via the `ducklet.sendMessage` mutation, not here —
+      // Chat is persisted via the `room.sendMessage` mutation, not here —
       // it intentionally no longer lives in the Y.Doc.
     } catch (err) {
       console.error("Failed to store document:", err);

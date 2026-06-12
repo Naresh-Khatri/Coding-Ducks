@@ -92,9 +92,9 @@ export default function SolvePage({
 
   const createRoom = useMutation(
     trpc.machineCoding.createInterviewRoom.mutationOptions({
-      onSuccess: ({ duckletId }) => {
+      onSuccess: ({ roomId }) => {
         clearLocalAttempt(slug);
-        router.push(`/ducklets/${duckletId}`);
+        router.push(`/ducklets/${roomId}`);
       },
       onError: (e) => toast.error(e.message),
     }),

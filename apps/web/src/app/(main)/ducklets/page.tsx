@@ -86,7 +86,7 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-type DuckletListItem = RouterOutputs["ducklet"]["list"]["items"][number];
+type DuckletListItem = RouterOutputs["room"]["list"]["items"][number];
 
 export default function DuckletsPage() {
   const router = useRouter();
@@ -106,7 +106,7 @@ export default function DuckletsPage() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery(
-    trpc.ducklet.list.infiniteQueryOptions(
+    trpc.room.list.infiniteQueryOptions(
       {
         limit: 12,
         search: debouncedSearch || undefined,
@@ -122,23 +122,23 @@ export default function DuckletsPage() {
   const allDucklets = ducklets?.pages.flatMap((p) => p.items) ?? [];
 
   const deleteDuckletMutation = useMutation(
-    trpc.ducklet.delete.mutationOptions({
+    trpc.room.delete.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries(
-          trpc.ducklet.list.infiniteQueryFilter(),
+          trpc.room.list.infiniteQueryFilter(),
         );
       },
     }),
   );
 
   const forkDuckletMutation = useMutation(
-    trpc.ducklet.fork.mutationOptions({
+    trpc.room.fork.mutationOptions({
       onSuccess: (forked, variables) => {
         if (!forked) return;
         track("ducklet-fork", { from: "list", sourceId: variables.id });
         toast.success("Forked to your ducklets");
         void queryClient.invalidateQueries(
-          trpc.ducklet.list.infiniteQueryFilter(),
+          trpc.room.list.infiniteQueryFilter(),
         );
         void router.push(`/ducklets/${forked.id}`);
       },
@@ -430,7 +430,7 @@ function DuckletCard({
                 <RenameDuckletDialog
                   open={renameOpen}
                   onOpenChange={setRenameOpen}
-                  duckletId={ducklet.id}
+                  roomId={ducklet.id}
                   currentName={ducklet.name}
                 />
                 <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

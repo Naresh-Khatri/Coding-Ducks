@@ -11,8 +11,8 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
-import { ducklet } from "./ducklets";
 import { machineCodingAttemptStatusEnum } from "./enums";
+import { room } from "./rooms";
 
 /**
  * A signed-in user's attempt at a machine-coding problem. Problem *content* lives in
@@ -21,7 +21,7 @@ import { machineCodingAttemptStatusEnum } from "./enums";
  * its state client-side (IndexedDB + localStorage) and creates no rows here.
  *
  * One row per (user, problem): re-practicing updates the existing row. The row
- * gains a `duckletId` only when the attempt is upgraded into a collaborative
+ * gains a `roomId` only when the attempt is upgraded into a collaborative
  * interview room via `machineCoding.createInterviewRoom`.
  */
 export const machineCodingAttempt = pgTable(
@@ -37,7 +37,7 @@ export const machineCodingAttempt = pgTable(
     problemSlug: varchar("problem_slug", { length: 100 }).notNull(),
 
     // Set when the attempt is promoted to a collaborative interview room.
-    duckletId: integer("ducklet_id").references(() => ducklet.id, {
+    roomId: integer("ducklet_id").references(() => room.id, {
       onDelete: "set null",
     }),
 
@@ -59,7 +59,7 @@ export const machineCodingAttempt = pgTable(
     // One attempt row per user per problem — upsert target for the API.
     unique("machine_coding_attempt_user_problem_uniq").on(t.userId, t.problemSlug),
     // One attempt per upgraded room.
-    unique("machine_coding_attempt_ducklet_uniq").on(t.duckletId),
+    unique("machine_coding_attempt_ducklet_uniq").on(t.roomId),
   ],
 );
 
@@ -68,9 +68,9 @@ export const machineCodingAttemptRelations = relations(machineCodingAttempt, ({ 
     fields: [machineCodingAttempt.userId],
     references: [user.id],
   }),
-  ducklet: one(ducklet, {
-    fields: [machineCodingAttempt.duckletId],
-    references: [ducklet.id],
+  room: one(room, {
+    fields: [machineCodingAttempt.roomId],
+    references: [room.id],
   }),
 }));
 

@@ -10,7 +10,7 @@ import {
   listProblemSummaries,
 } from "@acme/machine-coding-content";
 
-import { createDuckletRow } from "../services/ducklet";
+import { createRoom } from "../services/room";
 import { track } from "../telemetry";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -59,19 +59,19 @@ export const machineCodingRouter = createTRPCRouter({
 
       const bySlug = new Map<
         string,
-        { status: string; duckletId: number | null }
+        { status: string; roomId: number | null }
       >();
       if (ctx.session?.user) {
         const rows = await ctx.db
           .select({
             problemSlug: machineCodingAttempt.problemSlug,
             status: machineCodingAttempt.status,
-            duckletId: machineCodingAttempt.duckletId,
+            roomId: machineCodingAttempt.roomId,
           })
           .from(machineCodingAttempt)
           .where(eq(machineCodingAttempt.userId, ctx.session.user.id));
         for (const r of rows) {
-          bySlug.set(r.problemSlug, { status: r.status, duckletId: r.duckletId });
+          bySlug.set(r.problemSlug, { status: r.status, roomId: r.roomId });
         }
       }
 
@@ -81,7 +81,7 @@ export const machineCodingRouter = createTRPCRouter({
           return {
             ...p,
             attemptStatus: a?.status ?? null,
-            duckletId: a?.duckletId ?? null,
+            roomId: a?.roomId ?? null,
           };
         }),
       };
@@ -111,7 +111,7 @@ export const machineCodingRouter = createTRPCRouter({
         if (row) {
           attempt = {
             status: row.status,
-            duckletId: row.duckletId,
+            roomId: row.roomId,
             solutionRevealed: row.solutionRevealed,
             testsLastPassed: row.testsLastPassed,
             testsLastTotal: row.testsLastTotal,
@@ -284,11 +284,11 @@ export const machineCodingRouter = createTRPCRouter({
         .limit(1);
 
       // Already upgraded — return the existing room rather than orphaning it.
-      if (existing?.duckletId) {
-        return { duckletId: existing.duckletId, isExisting: true };
+      if (existing?.roomId) {
+        return { roomId: existing.roomId, isExisting: true };
       }
 
-      const room = await createDuckletRow(ctx.db, {
+      const room = await createRoom(ctx.db, {
         name: `${p.title} — Interview`,
         ownerId: userId,
         isPublic: false,
@@ -304,21 +304,21 @@ export const machineCodingRouter = createTRPCRouter({
         .values({
           userId,
           problemSlug: input.slug,
-          duckletId: room.id,
+          roomId: room.id,
           status: existing?.status ?? "in-progress",
         })
         .onConflictDoUpdate({
           target: [machineCodingAttempt.userId, machineCodingAttempt.problemSlug],
-          set: { duckletId: room.id },
+          set: { roomId: room.id },
         });
 
       track("machine-coding.interview_room.created", {
-        duckletId: room.id,
+        roomId: room.id,
         userId,
         slug: input.slug,
       });
 
-      return { duckletId: room.id, isExisting: false };
+      return { roomId: room.id, isExisting: false };
     }),
 
   /** The signed-in user's attempt history (for catalogue badges / profile). */
@@ -331,7 +331,7 @@ export const machineCodingRouter = createTRPCRouter({
     return rows.map((r) => ({
       slug: r.problemSlug,
       status: r.status,
-      duckletId: r.duckletId,
+      roomId: r.roomId,
       solutionRevealed: r.solutionRevealed,
       testsLastPassed: r.testsLastPassed,
       testsLastTotal: r.testsLastTotal,

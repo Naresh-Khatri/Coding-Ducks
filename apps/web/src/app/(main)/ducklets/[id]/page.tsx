@@ -48,7 +48,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { useIsMobile } from "~/hooks/use-is-mobile";
-import { useSocketDucklet } from "~/hooks/use-socket";
+import { useSocketRoom } from "~/hooks/use-socket";
 import { track } from "~/lib/analytics";
 import { useTRPC } from "~/trpc/react";
 
@@ -72,8 +72,8 @@ export default function DuckletPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id: duckletIdStr } = use(params);
-  const duckletId = parseInt(duckletIdStr);
+  const { id: roomIdStr } = use(params);
+  const roomId = parseInt(roomIdStr);
   const router = useRouter();
   const trpc = useTRPC();
 
@@ -89,21 +89,21 @@ export default function DuckletPage({
     isLoading: isDuckletLoading,
     error,
   } = useQuery(
-    trpc.ducklet.byId.queryOptions({ id: duckletId }, { enabled: !!duckletId }),
+    trpc.room.byId.queryOptions({ id: roomId }, { enabled: !!roomId }),
   );
 
   // Fetch a short-lived collab token. The websocket will not connect until
   // the server has authorized this user for this ducklet.
   const { data: collabAuth } = useQuery(
-    trpc.ducklet.getCollabToken.queryOptions(
-      { duckletId },
-      { enabled: !!duckletId && !!userId, staleTime: 30 * 60 * 1000 },
+    trpc.room.getCollabToken.queryOptions(
+      { roomId },
+      { enabled: !!roomId && !!userId, staleTime: 30 * 60 * 1000 },
     ),
   );
 
   // Connect to Socket Server
-  const { users, isConnected, provider, ydoc } = useSocketDucklet({
-    duckletId: duckletIdStr,
+  const { users, isConnected, provider, ydoc } = useSocketRoom({
+    roomId: roomIdStr,
     userId,
     username,
     photoURL,
@@ -124,9 +124,9 @@ export default function DuckletPage({
   }, []);
 
   const { data: chatHistory } = useQuery(
-    trpc.ducklet.chatHistory.queryOptions(
-      { duckletId, limit: 50 },
-      { enabled: !!duckletId && !!userId, refetchOnWindowFocus: false },
+    trpc.room.chatHistory.queryOptions(
+      { roomId, limit: 50 },
+      { enabled: !!roomId && !!userId, refetchOnWindowFocus: false },
     ),
   );
 
@@ -144,7 +144,7 @@ export default function DuckletPage({
   }, [chatHistory]);
 
   const sendMessageMutation = useMutation(
-    trpc.ducklet.sendMessage.mutationOptions({
+    trpc.room.sendMessage.mutationOptions({
       onError: (err) => toast.error(err.message),
     }),
   );
@@ -152,18 +152,18 @@ export default function DuckletPage({
   // Realtime events over SSE (separate from the editor websocket).
   // Membership / visibility changes refetch `byId`; chat messages append.
   useSubscription(
-    trpc.ducklet.onEvent.subscriptionOptions(
-      { duckletId },
+    trpc.room.onEvent.subscriptionOptions(
+      { roomId },
       {
         // Subscribe only after `byId` confirms read access.
-        enabled: !!duckletId && !!ducklet,
+        enabled: !!roomId && !!ducklet,
         onData: (event) => {
           if (
             event.type === "members:changed" ||
             event.type === "visibility:changed"
           ) {
             void queryClient.invalidateQueries(
-              trpc.ducklet.byId.queryFilter({ id: duckletId }),
+              trpc.room.byId.queryFilter({ id: roomId }),
             );
           } else {
             // chat:message
@@ -188,13 +188,13 @@ export default function DuckletPage({
   const [renameOpen, setRenameOpen] = useState(false);
 
   const forkMutation = useMutation(
-    trpc.ducklet.fork.mutationOptions({
+    trpc.room.fork.mutationOptions({
       onSuccess: (forked) => {
         if (!forked) return;
-        track("ducklet-fork", { from: "detail", sourceId: duckletId });
+        track("ducklet-fork", { from: "detail", sourceId: roomId });
         toast.success("Forked to your ducklets");
         void queryClient.invalidateQueries(
-          trpc.ducklet.list.infiniteQueryFilter(),
+          trpc.room.list.infiniteQueryFilter(),
         );
         router.push(`/ducklets/${forked.id}`);
       },
@@ -209,7 +209,7 @@ export default function DuckletPage({
     // dedup the broadcast echo of our own optimistic append.
     const id = `${Date.now()}-${userId}-${Math.random().toString(36).slice(2, 8)}`;
     appendMessage({ id, userId, username, text, timestamp: Date.now() });
-    sendMessageMutation.mutate({ duckletId, id, content: text });
+    sendMessageMutation.mutate({ roomId, id, content: text });
     setNewMessage("");
   };
 
@@ -241,9 +241,9 @@ export default function DuckletPage({
   // This also handles access revocation during active session
   useEffect(() => {
     if (ducklet && isPublic && !isOwner && !isMember) {
-      router.push(`/ducklets/${duckletId}/guest`);
+      router.push(`/ducklets/${roomId}/guest`);
     }
-  }, [ducklet, isPublic, isOwner, isMember, duckletId, router]);
+  }, [ducklet, isPublic, isOwner, isMember, roomId, router]);
 
   // Listen to websocket disconnects for access revocation
   useEffect(() => {
@@ -254,7 +254,7 @@ export default function DuckletPage({
       // If connection closes and ducklet is public, redirect to guest mode
       // This happens when server kicks user due to access revocation
       if (ducklet.isPublic && !isOwner) {
-        router.push(`/ducklets/${duckletId}/guest`);
+        router.push(`/ducklets/${roomId}/guest`);
       }
     };
 
@@ -266,7 +266,7 @@ export default function DuckletPage({
       provider.off("close", handleAuthFailure);
       provider.off("authenticationFailed", handleAuthFailure);
     };
-  }, [provider, ducklet, isOwner, duckletId, router]);
+  }, [provider, ducklet, isOwner, roomId, router]);
 
   // WebContainer is desktop Chromium/Firefox only — gate genuinely unsupported
   // browsers before rendering the workspace.
@@ -291,7 +291,7 @@ export default function DuckletPage({
   if (error || !ducklet) {
     const code = error?.data?.code;
     if (code === "FORBIDDEN") {
-      return <AccessDeniedScreen duckletId={duckletId} isAuthed={!!userId} />;
+      return <AccessDeniedScreen roomId={roomId} isAuthed={!!userId} />;
     }
     return (
       <div className="flex h-[100dvh] flex-col items-center justify-center gap-4">
@@ -397,7 +397,7 @@ export default function DuckletPage({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => forkMutation.mutate({ id: duckletId })}
+              onClick={() => forkMutation.mutate({ id: roomId })}
               disabled={forkMutation.isPending}
               title="Fork this ducklet"
               aria-label="Fork ducklet"
@@ -407,7 +407,7 @@ export default function DuckletPage({
           )}
 
           <ShareModal
-            duckletId={duckletId}
+            roomId={roomId}
             isOwner={isOwner}
             isPublic={isPublic}
           />
@@ -448,7 +448,7 @@ export default function DuckletPage({
                 provider={provider}
                 ydoc={ydoc}
                 readOnly={!canEdit}
-                duckletId={duckletId}
+                roomId={roomId}
                 aiEnabled={!machineCodingContext}
                 sidePanel={machineCodingExt?.sidePanel ?? null}
                 bottomPanel={machineCodingExt?.bottomPanel ?? null}
@@ -517,7 +517,7 @@ export default function DuckletPage({
         <RenameDuckletDialog
           open={renameOpen}
           onOpenChange={setRenameOpen}
-          duckletId={duckletId}
+          roomId={roomId}
           currentName={ducklet.name}
         />
       )}
@@ -657,18 +657,18 @@ function ConnectionBadge({
 }
 
 function AccessDeniedScreen({
-  duckletId,
+  roomId,
   isAuthed,
 }: {
-  duckletId: number;
+  roomId: number;
   isAuthed: boolean;
 }) {
   const trpc = useTRPC();
   const { openSignIn } = useSignIn();
   const requestAccess = useMutation(
-    trpc.ducklet.requestAccess.mutationOptions({
+    trpc.room.requestAccess.mutationOptions({
       onSuccess: (data, variables) => {
-        track("ducklet-request-access", { id: variables.duckletId });
+        track("ducklet-request-access", { id: variables.roomId });
         toast.success(data.message ?? "Request sent");
       },
       onError: (err) => toast.error(err.message),
@@ -688,7 +688,7 @@ function AccessDeniedScreen({
       <div className="flex gap-2">
         {isAuthed ? (
           <Button
-            onClick={() => requestAccess.mutate({ duckletId })}
+            onClick={() => requestAccess.mutate({ roomId })}
             disabled={requestAccess.isPending || requestAccess.isSuccess}
           >
             {requestAccess.isSuccess
@@ -702,7 +702,7 @@ function AccessDeniedScreen({
             onClick={() =>
               openSignIn({
                 source: "ducklet-access-denied",
-                callbackURL: `/ducklets/${duckletId}`,
+                callbackURL: `/ducklets/${roomId}`,
               })
             }
           >

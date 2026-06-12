@@ -10,15 +10,15 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth-schema";
-import { ducklet } from "./ducklets";
+import { room } from "./rooms";
 
-export const duckletSnapshot = pgTable(
+export const roomSnapshot = pgTable(
   "ducklet_snapshot",
   {
     id: serial("id").primaryKey(),
-    duckletId: integer("ducklet_id")
+    roomId: integer("ducklet_id")
       .notNull()
-      .references(() => ducklet.id, { onDelete: "cascade" }),
+      .references(() => room.id, { onDelete: "cascade" }),
     // Base64-encoded Yjs state at snapshot time.
     yjsData: text("yjs_data").notNull(),
     label: varchar("label", { length: 200 }),
@@ -30,23 +30,20 @@ export const duckletSnapshot = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [
-    index("ducklet_snapshot_room_created_idx").on(t.duckletId, t.createdAt),
+    index("ducklet_snapshot_room_created_idx").on(t.roomId, t.createdAt),
   ],
 );
 
-export const duckletSnapshotRelations = relations(
-  duckletSnapshot,
-  ({ one }) => ({
-    ducklet: one(ducklet, {
-      fields: [duckletSnapshot.duckletId],
-      references: [ducklet.id],
-    }),
-    creator: one(user, {
-      fields: [duckletSnapshot.createdBy],
-      references: [user.id],
-    }),
+export const roomSnapshotRelations = relations(roomSnapshot, ({ one }) => ({
+  room: one(room, {
+    fields: [roomSnapshot.roomId],
+    references: [room.id],
   }),
-);
+  creator: one(user, {
+    fields: [roomSnapshot.createdBy],
+    references: [user.id],
+  }),
+}));
 
-export type DuckletSnapshot = typeof duckletSnapshot.$inferSelect;
-export type NewDuckletSnapshot = typeof duckletSnapshot.$inferInsert;
+export type RoomSnapshot = typeof roomSnapshot.$inferSelect;
+export type NewRoomSnapshot = typeof roomSnapshot.$inferInsert;

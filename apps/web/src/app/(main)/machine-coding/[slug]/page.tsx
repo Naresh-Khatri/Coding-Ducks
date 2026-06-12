@@ -50,7 +50,7 @@ export default function MachineCodingProblemPage({
   }
 
   const { problem, attempt } = data;
-  const hasRoom = attempt?.duckletId != null;
+  const hasRoom = attempt?.roomId != null;
 
   return (
     <div className="container mx-auto max-w-5xl px-4 py-10">
@@ -90,7 +90,7 @@ export default function MachineCodingProblemPage({
 
             {hasRoom && (
               <Button variant="outline" className="w-full" asChild>
-                <Link href={`/ducklets/${attempt.duckletId}`}>
+                <Link href={`/ducklets/${attempt.roomId}`}>
                   Open interview room
                 </Link>
               </Button>

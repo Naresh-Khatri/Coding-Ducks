@@ -12,9 +12,9 @@ export * from "./policy";
 
 // export * from "./schema";
 export {
-  ducklet,
-  duckletMember,
-  duckletMessage,
+  room,
+  roomMember,
+  roomMessage,
   account,
   user,
   userProfile,

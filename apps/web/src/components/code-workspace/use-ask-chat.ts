@@ -49,12 +49,12 @@ const newId = () => globalThis.crypto.randomUUID();
 export function useAskChat({
   ydoc,
   onProposal,
-  duckletId,
+  roomId,
 }: {
   ydoc: Y.Doc;
   onProposal: (edits: AskProposal[]) => void;
   /** Sent so the server can refuse AI Ask in practice rooms. */
-  duckletId?: number;
+  roomId?: number;
 }): AskChat {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [model, setModel] = useState<string>(DEFAULT_ASK_MODEL);
@@ -86,7 +86,7 @@ export function useAskChat({
               .map((m) => ({ role: m.role, content: m.content })),
             files: readAllFiles(ydoc),
             model,
-            duckletId,
+            roomId,
           }),
         });
         const data = (await res.json()) as {
@@ -133,7 +133,7 @@ export function useAskChat({
         setLoading(false);
       }
     },
-    [loading, messages, model, ydoc, onProposal, duckletId],
+    [loading, messages, model, ydoc, onProposal, roomId],
   );
 
   const notify = useCallback((text: string) => {
