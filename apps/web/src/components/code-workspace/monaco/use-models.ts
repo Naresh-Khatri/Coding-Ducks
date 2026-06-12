@@ -9,13 +9,13 @@ import { getFilesMap } from "@acme/ducklet-fs";
 
 import { monacoLanguage } from "./lang";
 
-export interface DuckletModels {
+export interface EditorModels {
   /** Get (creating if missing) the Monaco model for a file path. */
   get: (path: string) => MEditor.ITextModel | null;
 }
 
 /**
- * Maintains a Monaco text model for every file in the ducklet's Yjs doc, under
+ * Maintains a Monaco text model for every file in the project's Yjs doc, under
  * `file:///<path>` URIs that match import specifiers — this is what gives the
  * TS language service cross-file resolution, go-to-definition and auto-imports
  * from sibling modules.
@@ -27,15 +27,15 @@ export interface DuckletModels {
  * clobbers the user's cursor/undo. Mirrors the debounced observeDeep pattern in
  * `lib/webcontainer/use-runtime.ts:wireSync`.
  */
-export function useDuckletModels({
+export function useEditorModels({
   monaco,
   ydoc,
 }: {
   monaco: Monaco | null;
   ydoc: Y.Doc;
-}): { models: DuckletModels | null; ready: boolean } {
+}): { models: EditorModels | null; ready: boolean } {
   const [ready, setReady] = useState(false);
-  const managerRef = useRef<DuckletModels | null>(null);
+  const managerRef = useRef<EditorModels | null>(null);
 
   // setReady(true) on setup and setReady(false) in cleanup are a single flag
   // managed by this effect; they do not cascade into further state updates.

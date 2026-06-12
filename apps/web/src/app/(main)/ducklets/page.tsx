@@ -28,8 +28,8 @@ import { toast } from "sonner";
 import type { RouterOutputs } from "@acme/api";
 
 import { authClient } from "~/auth/client";
-import { CreateDuckletDialog } from "~/components/collab-editor/create-ducklet-dialog";
-import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
+import { CreateDuckletDialog } from "~/components/ducklets/create-ducklet-dialog";
+import { RenameDuckletDialog } from "~/components/ducklets/rename-ducklet-dialog";
 import {
   AlertDialog,
   AlertDialogAction,

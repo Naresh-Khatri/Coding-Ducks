@@ -12,11 +12,11 @@ import type * as Y from "yjs";
 import { useEditorSettings } from "~/hooks/use-editor-settings";
 
 import { useRemoteCursorStyles } from "./remote-cursors";
-import { defineDuckletThemes, themeName } from "./theme";
+import { defineEditorThemes, themeName } from "./theme";
 
 interface FileEditorProps {
   monaco: Monaco;
-  /** Model for the active file, owned by `useDuckletModels`. */
+  /** Model for the active file, owned by `useEditorModels`. */
   model: MEditor.ITextModel;
   ytext: Y.Text;
   /** Null for non-collaborative (guest, read-only) editing — skips y-monaco. */
@@ -45,7 +45,15 @@ export function FileEditor({
   const isDark = resolvedTheme !== "light";
   const settings = useEditorSettings();
 
-  const editable = !readOnly && !!provider;
+  // Editability is independent of collaboration: local-first sessions (no
+  // provider, e.g. the machine-coding solve page) are still writable. The
+  // provider only adds multiplayer sync + remote cursors on top.
+  const editable = !readOnly;
+
+  // Faint, theme-aware tint for the read-only diagonal hatch — light lines on
+  // dark themes, dark lines on light ones, kept very low-contrast so the code
+  // underneath stays fully legible.
+  const hatchLine = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
 
   // y-monaco ships no cursor CSS — inject per-collaborator styles ourselves.
   useRemoteCursorStyles(provider);
@@ -54,7 +62,7 @@ export function FileEditor({
   // models as the user changes files.
   useEffect(() => {
     if (!hostRef.current) return;
-    defineDuckletThemes(monaco);
+    defineEditorThemes(monaco);
     const editor = monaco.editor.create(hostRef.current, {
       model,
       automaticLayout: true,
@@ -94,19 +102,22 @@ export function FileEditor({
     if (editor && editor.getModel() !== model) editor.setModel(model);
   }, [model]);
 
-  // Bind Yjs <-> the active model for collaborative editing + remote cursors.
-  // Guests (no provider) read the background-synced model with no binding.
+  // Bind Yjs <-> the active model so edits flow back into the Y.Doc (local
+  // persistence + WebContainer sync), plus remote cursors when collaborating.
+  // The only case with no binding is the read-only guest view (no provider,
+  // can't edit), where useEditorModels keeps the model synced one-way.
+  // Awareness only exists with a provider.
   useEffect(() => {
     const editor = editorRef.current;
-    if (!editor || !provider) return;
+    if (!editor || (!provider && !editable)) return;
     const binding = new MonacoBinding(
       ytext,
       model,
       new Set([editor]),
-      provider.awareness,
+      provider?.awareness,
     );
     return () => binding.destroy();
-  }, [model, ytext, provider]);
+  }, [model, ytext, provider, editable]);
 
   // Theme is a global Monaco setting.
   useEffect(() => {
@@ -146,7 +157,22 @@ export function FileEditor({
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
-      <div ref={hostRef} className="min-h-0 flex-1" />
+      <div className="relative min-h-0 flex-1">
+        <div ref={hostRef} className="h-full w-full" />
+        {/* Read-only affordance: a faint diagonal hatch over the editor so it's
+            obvious the file can't be edited. Deliberately very subtle (and
+            theme-aware) to keep the code legible; pointer-events-none preserves
+            scrolling + text selection. */}
+        {!editable && (
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage: `repeating-linear-gradient(45deg, ${hatchLine} 0, ${hatchLine} 1px, transparent 1px, transparent 11px)`,
+            }}
+            aria-hidden
+          />
+        )}
+      </div>
       <div
         ref={statusRef}
         className={`bg-muted/30 text-muted-foreground px-2 font-mono text-xs ${

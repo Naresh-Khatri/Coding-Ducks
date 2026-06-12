@@ -13,7 +13,7 @@ import { authClient } from "~/auth/client";
 import {
   DesktopOnlyGate,
   useWebContainerSupport,
-} from "~/components/collab-editor/desktop-only-gate";
+} from "~/components/code-workspace/desktop-only-gate";
 import { useSignIn } from "~/components/sign-in-dialog";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -27,7 +27,7 @@ import { useTRPC } from "~/trpc/react";
 
 const Workspace = dynamic(
   () =>
-    import("~/components/collab-editor/workspace").then((m) => m.Workspace),
+    import("~/components/code-workspace/workspace").then((m) => m.Workspace),
   {
     ssr: false,
     loading: () => (

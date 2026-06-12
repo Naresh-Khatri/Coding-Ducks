@@ -20,9 +20,12 @@ import type {
 export function useAiInlineCompletion({
   monaco,
   enabled,
+  duckletId,
 }: {
   monaco: Monaco | null;
   enabled: boolean;
+  /** Sent so the server can refuse completion in practice rooms. */
+  duckletId?: number;
 }): void {
   // The fetch is inside Monaco's provideInlineCompletions callback (not directly
   // in the effect body); it is request-driven, not a data-fetching side effect —
@@ -49,6 +52,7 @@ export function useAiInlineCompletion({
             body: JSON.stringify({
               prefix: text.slice(0, offset),
               suffix: text.slice(offset),
+              duckletId,
             }),
             signal: controller.signal,
           });
@@ -84,5 +88,5 @@ export function useAiInlineCompletion({
       provider,
     );
     return () => disposable.dispose();
-  }, [monaco, enabled]);
+  }, [monaco, enabled, duckletId]);
 }

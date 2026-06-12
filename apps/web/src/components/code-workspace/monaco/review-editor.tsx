@@ -8,7 +8,7 @@ import { Check, FilePlus2, Trash2, X } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { monacoLanguage } from "./lang";
-import { defineDuckletThemes, themeName } from "./theme";
+import { defineEditorThemes, themeName } from "./theme";
 
 export interface ReviewEditorProps {
   path: string;
@@ -85,7 +85,7 @@ export function ReviewEditor({
     monaco: Monaco,
   ) => {
     diffRef.current = editor;
-    defineDuckletThemes(monaco);
+    defineEditorThemes(monaco);
     const modified = editor.getModifiedEditor();
     modified.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () =>
       acceptRef.current(),

@@ -42,6 +42,12 @@ interface FileExplorerProps {
   /** Files with an unreviewed AI edit — flagged with a dot (red for deletes). */
   pendingPaths?: Set<string>;
   pendingDeletes?: Set<string>;
+  /**
+   * When set, only these paths are editable; every other file is read-only and
+   * rendered dimmed (mirrors the editor's read-only treatment) with its
+   * rename/delete actions suppressed. Null/undefined leaves all files normal.
+   */
+  editablePaths?: string[] | null;
 }
 
 function collectDirs(node: TreeNode, acc: string[] = []): string[] {
@@ -131,6 +137,7 @@ export function FileExplorer({
   presenceByPath,
   pendingPaths,
   pendingDeletes,
+  editablePaths,
 }: FileExplorerProps) {
   const [tree, setTree] = useState<TreeNode>(() => buildTree(ydoc));
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -283,6 +290,7 @@ export function FileExplorer({
             pendingPaths={pendingPaths}
             pendingDeletes={pendingDeletes}
             readOnly={readOnly}
+            editablePaths={editablePaths}
           />
         ))}
       </div>
@@ -303,6 +311,7 @@ function TreeRow({
   pendingPaths,
   pendingDeletes,
   readOnly,
+  editablePaths,
 }: {
   node: TreeNode;
   depth: number;
@@ -316,6 +325,7 @@ function TreeRow({
   pendingPaths?: Set<string>;
   pendingDeletes?: Set<string>;
   readOnly: boolean;
+  editablePaths?: string[] | null;
 }) {
   const isDir = node.type === "dir";
   const isOpen = expanded.has(node.path);
@@ -323,6 +333,10 @@ function TreeRow({
   const watchers = presenceByPath[node.path] ?? [];
   const isPending = !isDir && (pendingPaths?.has(node.path) ?? false);
   const isDelete = !isDir && (pendingDeletes?.has(node.path) ?? false);
+  // A file locked by policy (not in editablePaths) reads as read-only: dimmed,
+  // and with no rename/delete actions.
+  const isLocked =
+    !isDir && editablePaths != null && !editablePaths.includes(node.path);
 
   return (
     <div>
@@ -332,6 +346,7 @@ function TreeRow({
         className={cn(
           "group hover:bg-muted/60 flex w-full cursor-pointer items-center gap-1 py-0.5 pr-1 text-sm",
           isActive && "bg-muted text-foreground",
+          isLocked && "opacity-50",
         )}
         style={{ paddingLeft: depth * 12 + 6 }}
         onClick={() => (isDir ? onToggle(node.path) : onOpen(node.path))}
@@ -368,7 +383,7 @@ function TreeRow({
 
         <div className="ml-auto flex items-center gap-1 pl-1">
           <PresenceAvatars users={watchers} />
-          {!readOnly && (
+          {!readOnly && !isLocked && (
             <div className="hidden items-center group-hover:flex">
               {!isDir && (
                 <button
@@ -416,6 +431,7 @@ function TreeRow({
             pendingPaths={pendingPaths}
             pendingDeletes={pendingDeletes}
             readOnly={readOnly}
+            editablePaths={editablePaths}
           />
         ))}
     </div>

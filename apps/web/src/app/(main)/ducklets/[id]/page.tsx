@@ -26,9 +26,11 @@ import { authClient } from "~/auth/client";
 import {
   DesktopOnlyGate,
   useWebContainerSupport,
-} from "~/components/collab-editor/desktop-only-gate";
-import { RenameDuckletDialog } from "~/components/collab-editor/rename-ducklet-dialog";
-import { ShareModal } from "~/components/collab-editor/share-modal";
+} from "~/components/code-workspace/desktop-only-gate";
+import { machineCodingExtension } from "~/components/machine-coding/side-panel";
+import type { MachineCodingContext } from "~/components/machine-coding/types";
+import { RenameDuckletDialog } from "~/components/ducklets/rename-ducklet-dialog";
+import { ShareModal } from "~/components/ducklets/share-modal";
 import { useSignIn } from "~/components/sign-in-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
@@ -54,7 +56,7 @@ import { useTRPC } from "~/trpc/react";
 // a heavy, browser-only bundle. Defer it until the page is interactive.
 const Workspace = dynamic(
   () =>
-    import("~/components/collab-editor/workspace").then((m) => m.Workspace),
+    import("~/components/code-workspace/workspace").then((m) => m.Workspace),
   {
     ssr: false,
     loading: () => (
@@ -304,11 +306,36 @@ export default function DuckletPage({
     );
   }
 
+  // Practice interview rooms render the workspace in practice mode (Problem
+  // panel + countdown, AI off) and link back to the catalogue.
+  const machineCodingContext: MachineCodingContext | null = ducklet.machineCodingContext
+    ? {
+        slug: ducklet.machineCodingContext.problemSlug,
+        title: ducklet.machineCodingContext.title,
+        difficulty: ducklet.machineCodingContext.difficulty,
+        durationMinutes: ducklet.machineCodingContext.durationMinutes,
+        description: ducklet.machineCodingContext.description,
+        startedAt: new Date(ducklet.machineCodingContext.startedAt).getTime(),
+        solutionRevealed: ducklet.machineCodingContext.solutionRevealed,
+        isSignedIn: !!userId,
+      }
+    : null;
+
+  const machineCodingExt = machineCodingContext
+    ? machineCodingExtension(machineCodingContext)
+    : null;
+
   return (
     <div className="flex h-[100dvh] flex-col">
       <header className="bg-muted/20 flex items-center justify-between gap-2 border-b px-2 py-2 sm:px-4">
         <div className="flex shrink-0 items-center gap-2">
-          <Link href="/ducklets">
+          <Link
+            href={
+              machineCodingContext
+                ? `/machine-coding/${machineCodingContext.slug}`
+                : "/ducklets"
+            }
+          >
             <Button variant="outline" size="sm" className="px-2 sm:px-3">
               <ChevronLeft className="size-4" />
               <span className="hidden sm:inline">Back</span>
@@ -366,7 +393,7 @@ export default function DuckletPage({
             hasToken={!!collabAuth?.token}
           />
 
-          {userId && (
+          {userId && !machineCodingContext && (
             <Button
               variant="ghost"
               size="icon"
@@ -422,6 +449,14 @@ export default function DuckletPage({
                 ydoc={ydoc}
                 readOnly={!canEdit}
                 duckletId={duckletId}
+                aiEnabled={!machineCodingContext}
+                sidePanel={machineCodingExt?.sidePanel ?? null}
+                bottomPanel={machineCodingExt?.bottomPanel ?? null}
+                renderProvider={machineCodingExt?.renderProvider ?? null}
+                editablePaths={
+                  ducklet.machineCodingContext?.editablePaths ?? null
+                }
+                terminalEnabled={!machineCodingContext}
               />
             ) : (
               <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">

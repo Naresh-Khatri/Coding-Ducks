@@ -36,6 +36,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { track } from "~/lib/analytics";
 import { cn } from "~/lib/utils";
+import { uint8ArrayToBase64 } from "~/lib/yjs-base64";
 import { useTRPC } from "~/trpc/react";
 
 // Per-template glyph + accent, StackBlitz-style. Kept in the UI layer so the
@@ -53,17 +54,6 @@ const TEMPLATE_VISUALS: Record<
   svelte: { icon: Flame, className: "text-orange-500" },
   node: { icon: Server, className: "text-green-600" },
 };
-
-// Browser-safe base64 encoding for the initial Y.js snapshot (no Node Buffer).
-function uint8ArrayToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  const chunkSize = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.subarray(i, i + chunkSize);
-    binary += String.fromCharCode(...chunk);
-  }
-  return btoa(binary);
-}
 
 export function CreateDuckletDialog({
   open,

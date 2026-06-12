@@ -70,12 +70,18 @@ export function useWebContainerSupport(): SupportResult & { checked: boolean } {
 
 /**
  * Full-screen fallback shown when the current browser/device can't run the
- * ducklet runtime. Keeps the user oriented with a path back to the list.
+ * ducklet runtime. Keeps the user oriented with a path back to wherever they
+ * came from (the ducklet list by default; the machine-coding catalogue when
+ * the gate is shown on a practice solve page).
  */
 export function DesktopOnlyGate({
   reason,
+  backHref = "/ducklets",
+  backLabel = "Back to ducklets",
 }: {
   reason: SupportResult["reason"];
+  backHref?: string;
+  backLabel?: string;
 }) {
   return (
     <div className="mx-auto flex h-[100dvh] max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
@@ -87,7 +93,7 @@ export function DesktopOnlyGate({
         {unsupportedMessage(reason ?? "not-cross-origin-isolated")}
       </p>
       <Button variant="outline" asChild>
-        <Link href="/ducklets">Back to ducklets</Link>
+        <Link href={backHref}>{backLabel}</Link>
       </Button>
     </div>
   );
