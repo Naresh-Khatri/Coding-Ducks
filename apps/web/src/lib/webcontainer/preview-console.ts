@@ -15,7 +15,7 @@
  */
 
 /** postMessage `type` for a forwarded console entry. */
-export const CONSOLE_MESSAGE_TYPE = "ducklet:console";
+export const CONSOLE_MESSAGE_TYPE = "editor:console";
 
 const CONSOLE_LEVELS = ["log", "info", "warn", "error", "debug"] as const;
 export type ConsoleLevel = (typeof CONSOLE_LEVELS)[number];

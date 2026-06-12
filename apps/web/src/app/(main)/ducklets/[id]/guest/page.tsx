@@ -13,7 +13,7 @@ import { authClient } from "~/auth/client";
 import {
   DesktopOnlyGate,
   useWebContainerSupport,
-} from "~/components/collab-editor/desktop-only-gate";
+} from "~/components/code-workspace/desktop-only-gate";
 import { useSignIn } from "~/components/sign-in-dialog";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -27,7 +27,7 @@ import { useTRPC } from "~/trpc/react";
 
 const Workspace = dynamic(
   () =>
-    import("~/components/collab-editor/workspace").then((m) => m.Workspace),
+    import("~/components/code-workspace/workspace").then((m) => m.Workspace),
   {
     ssr: false,
     loading: () => (
@@ -43,8 +43,8 @@ export default function GuestDuckletPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id: duckletIdStr } = use(params);
-  const duckletId = parseInt(duckletIdStr);
+  const { id: roomIdStr } = use(params);
+  const roomId = parseInt(roomIdStr);
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -61,24 +61,24 @@ export default function GuestDuckletPage({
     error,
     refetch,
   } = useQuery(
-    trpc.ducklet.byId.queryOptions({ id: duckletId }, { enabled: !!duckletId }),
+    trpc.room.byId.queryOptions({ id: roomId }, { enabled: !!roomId }),
   );
 
   // Guests need realtime only to auto-redirect once the owner accepts (or
   // visibility flips). One SSE subscription, no websocket: refetch `byId` and
   // the redirect effect below reacts.
   useSubscription(
-    trpc.ducklet.onEvent.subscriptionOptions(
-      { duckletId },
+    trpc.room.onEvent.subscriptionOptions(
+      { roomId },
       {
-        enabled: !!duckletId && !!ducklet?.isPublic,
+        enabled: !!roomId && !!ducklet?.isPublic,
         onData: (event) => {
           if (
             event.type === "members:changed" ||
             event.type === "visibility:changed"
           ) {
             void queryClient.invalidateQueries(
-              trpc.ducklet.byId.queryFilter({ id: duckletId }),
+              trpc.room.byId.queryFilter({ id: roomId }),
             );
           }
         },
@@ -87,8 +87,8 @@ export default function GuestDuckletPage({
   );
 
   useEffect(() => {
-    track("ducklet-guest-view", { id: duckletId, signedIn: !!userId });
-  }, [duckletId, userId]);
+    track("ducklet-guest-view", { id: roomId, signedIn: !!userId });
+  }, [roomId, userId]);
 
   // Build a local, non-collaborative Y.Doc from the fetched snapshot. The
   // read-only workspace renders + previews this; edits aren't synced anywhere.
@@ -114,12 +114,12 @@ export default function GuestDuckletPage({
 
   useEffect(() => {
     if (isOwner || isMember) {
-      router.push(`/ducklets/${duckletId}`);
+      router.push(`/ducklets/${roomId}`);
     }
-  }, [isOwner, isMember, duckletId, router]);
+  }, [isOwner, isMember, roomId, router]);
 
   const requestAccessMutation = useMutation(
-    trpc.ducklet.requestAccess.mutationOptions({
+    trpc.room.requestAccess.mutationOptions({
       onSuccess: () => {
         refetch();
       },
@@ -127,9 +127,9 @@ export default function GuestDuckletPage({
   );
 
   const respondInviteMutation = useMutation(
-    trpc.ducklet.respondToInvite.mutationOptions({
+    trpc.room.respondToInvite.mutationOptions({
       onSuccess: () => {
-        router.push(`/ducklets/${duckletId}`);
+        router.push(`/ducklets/${roomId}`);
       },
     }),
   );
@@ -212,7 +212,7 @@ export default function GuestDuckletPage({
                 size="sm"
                 className="h-6 text-xs"
                 onClick={() =>
-                  respondInviteMutation.mutate({ duckletId, accept: true })
+                  respondInviteMutation.mutate({ roomId, accept: true })
                 }
                 disabled={respondInviteMutation.isPending}
               >
@@ -230,10 +230,10 @@ export default function GuestDuckletPage({
                 variant="secondary"
                 onClick={() => {
                   track("ducklet-guest-cta", {
-                    id: duckletId,
+                    id: roomId,
                     action: "request-access",
                   });
-                  requestAccessMutation.mutate({ duckletId });
+                  requestAccessMutation.mutate({ roomId });
                 }}
                 disabled={requestAccessMutation.isPending}
               >
@@ -253,12 +253,12 @@ export default function GuestDuckletPage({
               variant="secondary"
               onClick={() => {
                 track("ducklet-guest-cta", {
-                  id: duckletId,
+                  id: roomId,
                   action: "signin",
                 });
                 openSignIn({
                   source: "ducklet-guest",
-                  callbackURL: `/ducklets/${duckletId}/guest`,
+                  callbackURL: `/ducklets/${roomId}/guest`,
                 });
               }}
             >

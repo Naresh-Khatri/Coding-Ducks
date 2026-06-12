@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { db, room, eq, roomPolicy } from "@acme/db";
+
 import { getSession } from "~/auth/server";
 import { env } from "~/env";
 import { DEFAULT_ASK_MODEL, isAllowedAskModel } from "~/lib/ai/models";
@@ -54,6 +56,8 @@ interface AskBody {
   messages?: ChatMessage[];
   files?: Record<string, string>;
   model?: string;
+  /** When set to a practice room, AI Ask is disabled server-side. */
+  roomId?: number;
 }
 
 interface SearchReplace {
@@ -327,6 +331,22 @@ export async function POST(req: Request) {
     body = (await req.json()) as AskBody;
   } catch {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
+  }
+
+  // AI is disabled in practice rooms — short-circuit before any upstream call.
+  if (typeof body.roomId === "number") {
+    const [found] = await db
+      .select({ kind: room.kind })
+      .from(room)
+      .where(eq(room.id, body.roomId))
+      .limit(1);
+    if (found && !roomPolicy(found.kind).aiEnabled) {
+      return NextResponse.json({
+        explanation: "",
+        edits: [],
+        model: DEFAULT_ASK_MODEL,
+      } satisfies AskResponse);
+    }
   }
 
   const messages = sanitizeMessages(body.messages);

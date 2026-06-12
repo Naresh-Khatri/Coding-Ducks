@@ -8,11 +8,13 @@ export * from "drizzle-orm/sql";
 export { alias } from "drizzle-orm/pg-core";
 export { eq, desc, asc, and, or } from "drizzle-orm";
 
+export * from "./policy";
+
 // export * from "./schema";
 export {
-  ducklet,
-  duckletMember,
-  duckletMessage,
+  room,
+  roomMember,
+  roomMessage,
   account,
   user,
   userProfile,

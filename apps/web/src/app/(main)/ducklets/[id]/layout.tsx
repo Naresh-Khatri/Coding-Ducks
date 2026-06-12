@@ -21,7 +21,7 @@ export async function generateMetadata({
   const id = Number((await params).id);
   const ducklet = Number.isInteger(id)
     ? await getQueryClient()
-        .fetchQuery(trpc.ducklet.byId.queryOptions({ id }))
+        .fetchQuery(trpc.room.byId.queryOptions({ id }))
         .catch(() => null)
     : null;
 

@@ -405,6 +405,9 @@ importers:
       y-codemirror.next:
         specifier: ^0.3.5
         version: 0.3.5(@codemirror/state@6.6.0)(@codemirror/view@6.39.8)(yjs@13.6.29)
+      y-indexeddb:
+        specifier: ^9.0.12
+        version: 9.0.12(yjs@13.6.29)
       y-monaco:
         specifier: ^0.1.6
         version: 0.1.6(monaco-editor@0.52.2)(yjs@13.6.29)
@@ -472,6 +475,9 @@ importers:
       '@acme/db':
         specifier: workspace:*
         version: link:../db
+      '@acme/machine-coding-content':
+        specifier: workspace:*
+        version: link:../machine-coding-content
       '@acme/storage':
         specifier: workspace:*
         version: link:../storage
@@ -604,6 +610,34 @@ importers:
       yjs:
         specifier: ^13.6.29
         version: 13.6.29
+    devDependencies:
+      '@acme/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@acme/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@acme/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.18.12
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.2(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.7.4
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/machine-coding-content:
+    dependencies:
+      '@acme/ducklet-fs':
+        specifier: workspace:*
+        version: link:../ducklet-fs
     devDependencies:
       '@acme/eslint-config':
         specifier: workspace:*
@@ -9155,6 +9189,12 @@ packages:
       '@codemirror/state': ^6.0.0
       '@codemirror/view': ^6.0.0
       yjs: ^13.5.6
+
+  y-indexeddb@9.0.12:
+    resolution: {integrity: sha512-9oCFRSPPzBK7/w5vOkJBaVCQZKHXB/v6SIT+WYhnJxlEC61juqG0hBrAf+y3gmSMLFLwICNH9nQ53uscuse6Hg==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+    peerDependencies:
+      yjs: ^13.0.0
 
   y-monaco@0.1.6:
     resolution: {integrity: sha512-sYRywMmcylt+Nupl+11AvizD2am06ST8lkVbUXuaEmrtV6Tf+TD4rsEm6u9YGGowYue+Vfg1IJ97SUP2J+PVXg==}
@@ -19458,6 +19498,11 @@ snapshots:
     dependencies:
       '@codemirror/state': 6.6.0
       '@codemirror/view': 6.39.8
+      lib0: 0.2.117
+      yjs: 13.6.29
+
+  y-indexeddb@9.0.12(yjs@13.6.29):
+    dependencies:
       lib0: 0.2.117
       yjs: 13.6.29
 

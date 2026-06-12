@@ -8,6 +8,7 @@ import { Bookmark, CheckCircle, Circle, Loader2, Search } from "lucide-react";
 
 import { authClient } from "~/auth/client";
 import { BookmarkButton } from "~/components/bookmark-button";
+import { DIFFICULTY_COLORS } from "~/components/difficulty-badge";
 import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import {
@@ -19,12 +20,6 @@ import {
 } from "~/components/ui/select";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
-
-const DIFFICULTY_COLORS: Record<string, string> = {
-  easy: "bg-green-500/20 text-green-400 border-green-500/30",
-  medium: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  hard: "bg-red-500/20 text-red-400 border-red-500/30",
-};
 
 export default function ProblemsPage() {
   const trpc = useTRPC();

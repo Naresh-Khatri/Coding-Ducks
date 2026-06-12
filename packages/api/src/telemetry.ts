@@ -15,7 +15,8 @@ export type TelemetryEvent =
   | "ducklet.member.invited"
   | "ducklet.member.removed"
   | "ducklet.member.role_changed"
-  | "ducklet.access.requested";
+  | "ducklet.access.requested"
+  | "machine-coding.interview_room.created";
 
 export function track(
   event: TelemetryEvent,

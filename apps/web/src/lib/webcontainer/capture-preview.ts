@@ -13,8 +13,8 @@
  * removed as soon as the image comes back.
  */
 
-const REQUEST = "ducklet:capture";
-const RESULT = "ducklet:capture:result";
+const REQUEST = "editor:capture";
+const RESULT = "editor:capture:result";
 
 /** Pinned so capture output can't drift when esm.sh updates the latest tag. */
 const SCREENSHOT_LIB = "https://esm.sh/modern-screenshot@4.6.0";

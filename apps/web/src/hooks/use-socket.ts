@@ -5,15 +5,15 @@ import { HocuspocusProvider } from "@hocuspocus/provider";
 import * as Y from "yjs";
 
 // Chat lives in Postgres, not the Y.Doc — delivered live via the
-// `ducklet.onEvent` SSE subscription. This is the chat panel's view shape;
-// messages come from `ducklet.chatHistory` + the `chat:message` event. The
+// `room.onEvent` SSE subscription. This is the chat panel's view shape;
+// messages come from `room.chatHistory` + the `chat:message` event. The
 // websocket this hook manages now only carries editor state and presence.
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
 
-interface UseSocketDuckletOptions {
-  duckletId: string;
+interface UseSocketRoomOptions {
+  roomId: string;
   userId?: string;
   username: string;
   photoURL?: string;
@@ -55,18 +55,18 @@ function getRandomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-export function useSocketDucklet({
-  duckletId,
+export function useSocketRoom({
+  roomId,
   userId,
   username,
   photoURL,
   token,
-}: UseSocketDuckletOptions) {
+}: UseSocketRoomOptions) {
   const [users, setUsers] = useState<UserPresence[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
-  // duckletId is intentionally in deps to recreate Y.Doc when the room changes, even though it's not referenced in the factory
-  const ydoc = useMemo(() => new Y.Doc(), [duckletId]);
+  // roomId is intentionally in deps to recreate Y.Doc when the room changes, even though it's not referenced in the factory
+  const ydoc = useMemo(() => new Y.Doc(), [roomId]);
 
   const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
   const userColor = useMemo(() => getRandomColor(), []);
@@ -78,7 +78,7 @@ export function useSocketDucklet({
 
     const newProvider = new HocuspocusProvider({
       url: wsUrl,
-      name: `ducklet-${duckletId}`,
+      name: `ducklet-${roomId}`,
       document: ydoc,
       token,
       onConnect: () => {
@@ -129,7 +129,7 @@ export function useSocketDucklet({
       newProvider.awareness!.off("change", handleAwarenessUpdate);
       newProvider.destroy();
     };
-  }, [duckletId, userId, username, photoURL, userColor, ydoc, token]);
+  }, [roomId, userId, username, photoURL, userColor, ydoc, token]);
 
   return {
     users,

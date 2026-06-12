@@ -42,9 +42,10 @@ const config = {
 
   /**
    * WebContainers (the ducklet runtime) require the page to be
-   * cross-origin isolated. We scope these headers to ducklet *rooms*
-   * (`/ducklets/<id>` and nested routes) and deliberately NOT to the
-   * `/ducklets` list page, so the rest of the app is unaffected.
+   * cross-origin isolated. We scope these headers to the pages that actually
+   * boot a container — ducklet *rooms* (`/ducklets/<id>` and nested routes)
+   * and the machine-coding *solve* page — and deliberately NOT to the list /
+   * catalogue / detail pages, so the rest of the app is unaffected.
    *
    * COEP is `credentialless` rather than `require-corp` so cross-origin
    * subresources without a CORP header (Google/GitHub avatars, the CDN,
@@ -62,6 +63,9 @@ const config = {
       // `:id+` is one-or-more segments, so `/ducklets` (list) is excluded
       // while `/ducklets/123` and `/ducklets/123/guest` are included.
       { source: "/ducklets/:id+", headers: isolation },
+      // Only the solve page boots a container — the catalogue (`/machine-coding`)
+      // and detail (`/machine-coding/<slug>`) pages are intentionally excluded.
+      { source: "/machine-coding/:slug/solve", headers: isolation },
     ];
   },
 };

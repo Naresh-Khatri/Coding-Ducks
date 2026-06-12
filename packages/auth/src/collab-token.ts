@@ -5,7 +5,7 @@ export type CollabRole = "owner" | "editor" | "viewer";
 export interface CollabTokenPayload {
   userId: string;
   username: string;
-  duckletId: number;
+  roomId: number;
   role: CollabRole;
   exp: number;
 }
@@ -70,7 +70,7 @@ export function verifyCollabToken(
   if (
     typeof p.userId !== "string" ||
     typeof p.username !== "string" ||
-    typeof p.duckletId !== "number" ||
+    typeof p.roomId !== "number" ||
     typeof p.exp !== "number" ||
     (p.role !== "owner" && p.role !== "editor" && p.role !== "viewer")
   ) {
@@ -81,7 +81,7 @@ export function verifyCollabToken(
   return {
     userId: p.userId,
     username: p.username,
-    duckletId: p.duckletId,
+    roomId: p.roomId,
     role: p.role,
     exp: p.exp,
   };
