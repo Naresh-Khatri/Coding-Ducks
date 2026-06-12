@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { db, ducklet, eq } from "@acme/db";
+import { db, ducklet, eq, roomPolicy } from "@acme/db";
 
 import { getSession } from "~/auth/server";
 import { env } from "~/env";
@@ -340,7 +340,7 @@ export async function POST(req: Request) {
       .from(ducklet)
       .where(eq(ducklet.id, body.duckletId))
       .limit(1);
-    if (room?.kind === "machine-coding") {
+    if (room && !roomPolicy(room.kind).aiEnabled) {
       return NextResponse.json({
         explanation: "",
         edits: [],

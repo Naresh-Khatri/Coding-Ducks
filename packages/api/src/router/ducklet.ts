@@ -1,11 +1,13 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, ilike, lt, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, lt, or } from "drizzle-orm";
 import { z } from "zod";
 
 import type { CollabRole } from "@acme/auth/collab-token";
 import { signCollabToken } from "@acme/auth/collab-token";
+import { roomPolicy } from "@acme/db";
 import {
   ducklet,
+  duckletKindEnum,
   duckletMember,
   duckletMessage,
   duckletSnapshot,
@@ -69,8 +71,12 @@ export const duckletRouter = createTRPCRouter({
 
       const conditions = [];
 
-      // Machine-coding rooms never surface in the public ducklet listing.
-      conditions.push(eq(ducklet.kind, "ducklet"));
+      // Only kinds the policy marks as publicly listed surface here (excludes
+      // machine-coding practice rooms). Derived so a new kind is hidden by default.
+      const listedKinds = duckletKindEnum.enumValues.filter(
+        (k) => roomPolicy(k).listedPublicly,
+      );
+      conditions.push(inArray(ducklet.kind, listedKinds));
 
       if (ctx.session?.user && onlyMine) {
         conditions.push(eq(ducklet.ownerId, ctx.session.user.id));
@@ -208,7 +214,7 @@ export const duckletRouter = createTRPCRouter({
       // and test files are never included here — only `machineCoding.getSolution`
       // exposes them.
       let machineCodingContext = null;
-      if (result.kind === "machine-coding") {
+      if (roomPolicy(result.kind).isInterview) {
         const [attempt] = await ctx.db
           .select()
           .from(machineCodingAttempt)
@@ -507,7 +513,7 @@ export const duckletRouter = createTRPCRouter({
       }
 
       // Machine-coding rooms aren't forkable — use the catalogue.
-      if (source.kind === "machine-coding") {
+      if (!roomPolicy(source.kind).forkable) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Machine-coding rooms can't be forked",
