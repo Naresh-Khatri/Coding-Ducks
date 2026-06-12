@@ -1,18 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  CheckCircle2,
-  ChevronRight,
-  FlaskConical,
-  Loader2,
-  XCircle,
-} from "lucide-react";
-
-import { Button } from "~/components/ui/button";
-import { cn } from "~/lib/utils";
+import { CheckCircle2, ChevronRight, XCircle } from "lucide-react";
 
 import type { MachineCodingDiffLine } from "./use-tests";
+import { cn } from "~/lib/utils";
 import { useMachineCodingTests } from "./use-tests";
 
 function caseKey(ancestors: string[], title: string, index: number): string {
@@ -66,7 +58,7 @@ function DiffView({ diff }: { diff: MachineCodingDiffLine[] }) {
             line.kind === "context" && "text-muted-foreground",
           )}
         >
-          <span className="select-none opacity-60">
+          <span className="opacity-60 select-none">
             {line.kind === "expected"
               ? "- "
               : line.kind === "received"
@@ -83,11 +75,11 @@ function DiffView({ diff }: { diff: MachineCodingDiffLine[] }) {
 /**
  * Bottom-drawer test results: a per-spec pass/fail list (GreatFrontend-style)
  * where each case is collapsible and failures expand to show the assertion plus
- * a colored expected/received diff. Shares run state with the Problem panel via
- * context, and carries its own run button so the drawer is usable on its own.
+ * a colored expected/received diff. Header-less — the run button, pass count and
+ * tab switcher live in the surrounding `MachineCodingBottomPanel`.
  */
-export function TestResultsPanel() {
-  const { ready, running, run, error, runTests } = useMachineCodingTests();
+export function TestResultsList() {
+  const { ready, run } = useMachineCodingTests();
   // Keys the user manually flipped from the default (failures open, passes
   // closed). Kept as overrides so a re-run re-applies sensible defaults.
   const [overrides, setOverrides] = useState<Set<string>>(new Set());
@@ -100,56 +92,9 @@ export function TestResultsPanel() {
       return next;
     });
 
-  const allPass = run != null && run.total > 0 && run.passed >= run.total;
-
   return (
-    <div className="bg-background flex h-full flex-col">
-      <div className="flex items-center justify-between gap-2 border-b px-3 py-1.5">
-        <div className="flex min-w-0 items-center gap-2 text-sm">
-          {run ? (
-            <span
-              className={cn(
-                "flex shrink-0 items-center gap-1.5 font-medium",
-                allPass ? "text-green-500" : "text-amber-500",
-              )}
-            >
-              {allPass ? (
-                <CheckCircle2 className="size-4" />
-              ) : (
-                <XCircle className="size-4" />
-              )}
-              {run.passed}/{run.total} passing
-            </span>
-          ) : (
-            <span className="text-muted-foreground">Tests</span>
-          )}
-          {error && (
-            <span className="text-amber-500 truncate text-xs">{error}</span>
-          )}
-        </div>
-
-        <Button
-          size="sm"
-          className="h-7 shrink-0 px-3 text-xs"
-          onClick={() => void runTests()}
-          disabled={!ready || running}
-        >
-          {running ? (
-            <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-          ) : (
-            <FlaskConical className="mr-1.5 size-3.5" />
-          )}
-          {running
-            ? "Running…"
-            : ready
-              ? run
-                ? "Re-run"
-                : "Run tests"
-              : "Booting…"}
-        </Button>
-      </div>
-
-      <div className="min-h-0 flex-1 overflow-auto py-1">
+    <div className="bg-background h-full">
+      <div className="h-full overflow-auto py-1">
         {run && run.cases.length > 0 ? (
           run.cases.map((c, i) => {
             const key = caseKey(c.ancestors, c.title, i);

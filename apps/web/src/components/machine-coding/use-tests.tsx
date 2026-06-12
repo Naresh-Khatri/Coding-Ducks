@@ -5,11 +5,10 @@ import { createContext, useContext, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { patchLocalAttempt } from "~/lib/machine-coding/local-store";
-import type { WebContainerRuntime } from "~/lib/webcontainer/use-runtime";
-import { useTRPC } from "~/trpc/react";
-
 import type { MachineCodingContext } from "./types";
+import type { WebContainerRuntime } from "~/lib/webcontainer/use-runtime";
+import { patchLocalAttempt } from "~/lib/machine-coding/local-store";
+import { useTRPC } from "~/trpc/react";
 
 /** One line of a parsed expected/received diff. */
 export interface MachineCodingDiffLine {
@@ -50,6 +49,12 @@ export interface MachineCodingTestRun {
   cases: MachineCodingTestCase[];
 }
 
+/** One `console.*` line captured while the suite ran (see the setup harness). */
+export interface MachineCodingConsoleEntry {
+  level: "log" | "info" | "warn" | "error" | "debug";
+  text: string;
+}
+
 interface MachineCodingTestsValue {
   /** WebContainer is booted and able to run the suite. */
   ready: boolean;
@@ -58,6 +63,10 @@ interface MachineCodingTestsValue {
   run: MachineCodingTestRun | null;
   /** Non-assertion failure (couldn't run / parse the suite). */
   error: string | null;
+  /** `console.*` output captured from the latest run, oldest first. */
+  consoleEntries: MachineCodingConsoleEntry[];
+  /** Drop the captured console output (manual clear). */
+  clearConsole: () => void;
   runTests: () => Promise<void>;
   revealed: boolean;
   reveal: () => void;
@@ -229,7 +238,8 @@ function captureExpr(s: string): string | null {
  */
 function extractSpecBodies(source: string): Record<string, string> {
   const out: Record<string, string> = {};
-  const re = /\b(?:it|test)\b\s*(?:\.\w+)?\s*\(\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g;
+  const re =
+    /\b(?:it|test)\b\s*(?:\.\w+)?\s*\(\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(source)) !== null) {
     const rawTitle = m[2];
@@ -292,9 +302,7 @@ function withCaseValues(
     return run;
   }
   if (!Array.isArray(arr)) return run;
-  const byName = new Map(
-    (arr as CaseValue[]).map((c) => [c.name, c] as const),
-  );
+  const byName = new Map((arr as CaseValue[]).map((c) => [c.name, c] as const));
   return {
     ...run,
     cases: run.cases.map((c) => {
@@ -308,6 +316,31 @@ function withCaseValues(
       };
     }),
   };
+}
+
+const CONSOLE_LEVELS = ["log", "info", "warn", "error", "debug"] as const;
+
+/** Parse the `.mc-console.json` written by the setup harness into entries. */
+function parseConsole(raw: string): MachineCodingConsoleEntry[] {
+  let arr: unknown;
+  try {
+    arr = JSON.parse(raw);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(arr)) return [];
+  const isLevel = (v: unknown): v is MachineCodingConsoleEntry["level"] =>
+    (CONSOLE_LEVELS as readonly string[]).includes(v as string);
+  return arr.flatMap((e) => {
+    if (typeof e !== "object" || e === null) return [];
+    const { level, text } = e as { level?: unknown; text?: unknown };
+    return [
+      {
+        level: isLevel(level) ? level : "log",
+        text: typeof text === "string" ? text : "",
+      },
+    ];
+  });
 }
 
 /**
@@ -338,8 +371,13 @@ export function MachineCodingTestsProvider({
   const [running, setRunning] = useState(false);
   const [run, setRun] = useState<MachineCodingTestRun | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [consoleEntries, setConsoleEntries] = useState<
+    MachineCodingConsoleEntry[]
+  >([]);
   const [revealed, setRevealed] = useState(context.solutionRevealed);
   const [editorial, setEditorial] = useState<string | null>(null);
+
+  const clearConsole = () => setConsoleEntries([]);
 
   const recordTestRun = useMutation(
     trpc.machineCoding.recordTestRun.mutationOptions(),
@@ -355,13 +393,16 @@ export function MachineCodingTestsProvider({
     if (!container || running) return;
     setRunning(true);
     setError(null);
+    setConsoleEntries([]);
     try {
-      // Clear last run's captured values so a crashed suite can't show stale
-      // input/output (each `vitest run` rewrites it via the cases() harness).
-      try {
-        await container.fs.rm(".mc-cases.json", { force: true });
-      } catch {
-        // no-op — file may not exist / fs.rm unavailable
+      // Clear last run's captured values + console so a crashed suite can't show
+      // stale data (each `vitest run` rewrites them via the test harnesses).
+      for (const f of [".mc-cases.json", ".mc-console.json"]) {
+        try {
+          await container.fs.rm(f, { force: true });
+        } catch {
+          // no-op — file may not exist / fs.rm unavailable
+        }
       }
       const proc = await container.spawn("npx", [
         "vitest",
@@ -407,6 +448,17 @@ export function MachineCodingTestsProvider({
         // problem doesn't use the cases() harness — spec source stays the view
       }
       setRun(enriched);
+
+      // Surface anything the user's code logged while the suite ran.
+      try {
+        setConsoleEntries(
+          parseConsole(
+            await container.fs.readFile(".mc-console.json", "utf-8"),
+          ),
+        );
+      } catch {
+        // no logs captured (or file unavailable) — leave the console empty
+      }
 
       const allPass = enriched.total > 0 && enriched.passed >= enriched.total;
       // Completion is implicit: all green marks the attempt complete.
@@ -457,6 +509,8 @@ export function MachineCodingTestsProvider({
     running,
     run,
     error,
+    consoleEntries,
+    clearConsole,
     runTests,
     revealed,
     reveal,

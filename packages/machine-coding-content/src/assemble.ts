@@ -40,7 +40,9 @@ function mergePackageJson(
   try {
     parsed = JSON.parse(raw) as Record<string, unknown>;
   } catch {
-    throw new Error("machine-coding-content: template package.json is not valid JSON");
+    throw new Error(
+      "machine-coding-content: template package.json is not valid JSON",
+    );
   }
   const devDependencies = {
     ...(parsed.devDependencies as Record<string, string> | undefined),
@@ -77,12 +79,75 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
+    setupFiles: ["./vitest.setup.ts"],
   },
 });
 `;
 }
 
-const VITEST_SETUP = `import "@testing-library/jest-dom/vitest";
+/** DOM problems also need jest-dom matchers; prepended to the setup file. */
+const JEST_DOM_SETUP = `import "@testing-library/jest-dom/vitest";
+`;
+
+/**
+ * Console capture injected into every problem's vitest setup. Patches the
+ * `console.*` methods so anything the user's code logs while the suite runs is
+ * mirrored to `.mc-console.json`, which the workspace's Console tab reads to
+ * show a GreatFrontend-style log view. Patching here (a setup file) rather than
+ * inside `cases()` means logs from anywhere in the user's code are captured,
+ * not just those emitted inside a harness case.
+ */
+const CONSOLE_CAPTURE = `import { afterAll } from "vitest";
+import { writeFileSync } from "node:fs";
+
+type McConsoleEntry = { level: string; text: string };
+const __mcConsole: McConsoleEntry[] = [];
+
+// Compact, single-line rendering so logged values stay readable in the panel.
+function __mcFmt(value: unknown, depth = 0): string {
+  if (value === null) return "null";
+  const t = typeof value;
+  if (t === "undefined") return "undefined";
+  if (t === "string") return depth === 0 ? (value as string) : JSON.stringify(value);
+  if (t === "number" || t === "boolean" || t === "bigint") return String(value);
+  if (t === "symbol") return (value as symbol).toString();
+  if (t === "function")
+    return "\\u0192 " + ((value as { name?: string }).name || "anonymous") + "()";
+  if (value instanceof Error)
+    return value.stack || value.name + ": " + value.message;
+  if (depth >= 4) return Array.isArray(value) ? "[Array]" : "[Object]";
+  try {
+    if (Array.isArray(value)) {
+      const items = value.slice(0, 100).map((v) => __mcFmt(v, depth + 1));
+      return "[" + items.join(", ") + (value.length > 100 ? ", \\u2026" : "") + "]";
+    }
+    const keys = Object.keys(value as object).slice(0, 100);
+    const body = keys
+      .map((k) => k + ": " + __mcFmt((value as Record<string, unknown>)[k], depth + 1))
+      .join(", ");
+    const name = (value as { constructor?: { name?: string } }).constructor?.name;
+    const prefix = name && name !== "Object" ? name + " " : "";
+    return prefix + "{" + body + "}";
+  } catch {
+    return String(value);
+  }
+}
+
+for (const level of ["log", "info", "warn", "error", "debug"] as const) {
+  const original = console[level].bind(console);
+  console[level] = (...args: unknown[]) => {
+    __mcConsole.push({ level, text: args.map((a) => __mcFmt(a)).join(" ") });
+    original(...args);
+  };
+}
+
+afterAll(() => {
+  try {
+    writeFileSync(".mc-console.json", JSON.stringify(__mcConsole));
+  } catch {
+    // best-effort — the Console tab simply shows nothing
+  }
+});
 `;
 
 /**
@@ -239,9 +304,11 @@ export function assembleStarterFiles(
   if (!files["vitest.config.ts"] && !files["vitest.config.js"]) {
     files["vitest.config.ts"] = vitestConfig(problem.category);
   }
-  if (dom && !files["vitest.setup.ts"]) {
-    files["vitest.setup.ts"] = VITEST_SETUP;
-  }
+  // Every problem gets a setup file that mirrors console output to the Console
+  // tab; DOM problems also pull in jest-dom matchers.
+  files["vitest.setup.ts"] ??= dom
+    ? JEST_DOM_SETUP + CONSOLE_CAPTURE
+    : CONSOLE_CAPTURE;
 
   return files;
 }

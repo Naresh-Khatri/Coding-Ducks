@@ -9,15 +9,15 @@ import { ChevronLeft, Loader2, RotateCcw, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import * as Y from "yjs";
 
+import type { MachineCodingContext } from "~/components/machine-coding/types";
 import { authClient } from "~/auth/client";
-import { CountdownTimer } from "~/components/countdown-timer";
 import {
   DesktopOnlyGate,
   useWebContainerSupport,
 } from "~/components/code-workspace/desktop-only-gate";
-import { machineCodingExtension } from "~/components/machine-coding/side-panel";
-import type { MachineCodingContext } from "~/components/machine-coding/types";
+import { CountdownTimer } from "~/components/countdown-timer";
 import { DifficultyBadge } from "~/components/difficulty-badge";
+import { machineCodingExtension } from "~/components/machine-coding/side-panel";
 import { useSignIn } from "~/components/sign-in-dialog";
 import {
   AlertDialog,
@@ -67,7 +67,10 @@ export default function SolvePage({
   const isSignedIn = !!session?.user;
 
   const { data: detail, error } = useQuery(
-    trpc.machineCoding.problemBySlug.queryOptions({ slug }, { enabled: !!slug }),
+    trpc.machineCoding.problemBySlug.queryOptions(
+      { slug },
+      { enabled: !!slug },
+    ),
   );
   const { data: starter } = useQuery(
     trpc.machineCoding.getStarter.queryOptions({ slug }, { enabled: !!slug }),
@@ -81,7 +84,9 @@ export default function SolvePage({
 
   // Stamp (or read) the attempt start time so the countdown survives reloads.
   const [startedAt, setStartedAt] = useState<number | null>(null);
-  const startAttempt = useMutation(trpc.machineCoding.startAttempt.mutationOptions());
+  const startAttempt = useMutation(
+    trpc.machineCoding.startAttempt.mutationOptions(),
+  );
   useEffect(() => {
     // Intentional: stamp/read browser-only start time on mount (hydration-safe).
     const meta = patchLocalAttempt(slug, {});
@@ -140,7 +145,9 @@ export default function SolvePage({
 
   const ext = useMemo(
     () =>
-      machineCodingContext ? machineCodingExtension(machineCodingContext) : null,
+      machineCodingContext
+        ? machineCodingExtension(machineCodingContext)
+        : null,
     [machineCodingContext],
   );
 
@@ -158,7 +165,9 @@ export default function SolvePage({
   if (error) {
     return (
       <div className="flex h-[100dvh] flex-col items-center justify-center gap-4">
-        <h2 className="text-destructive text-xl font-bold">Problem not found</h2>
+        <h2 className="text-destructive text-xl font-bold">
+          Problem not found
+        </h2>
         <Button asChild>
           <Link href="/machine-coding">Back to catalogue</Link>
         </Button>
@@ -211,8 +220,8 @@ export default function SolvePage({
               <AlertDialogHeader>
                 <AlertDialogTitle>Reset to the starter code?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This permanently discards your current code for this problem and
-                  reloads the original starter files. This can't be undone.
+                  This permanently discards your current code for this problem
+                  and reloads the original starter files. This can't be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -255,6 +264,9 @@ export default function SolvePage({
             entryFile={entryFile}
             editablePaths={starter?.editablePaths ?? null}
             terminalEnabled={false}
+            // Pure JS-utility problems have no UI to preview — drop the preview
+            // column and go two-column (problem statement + editor).
+            previewEnabled={detail.problem.category !== "js-utility"}
           />
         ) : (
           <div className="text-muted-foreground flex h-full items-center justify-center text-sm">

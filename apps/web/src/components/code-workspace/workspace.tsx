@@ -1,8 +1,8 @@
 "use client";
 
 import type { HocuspocusProvider } from "@hocuspocus/provider";
-import type * as Y from "yjs";
 import type { ReactNode } from "react";
+import type * as Y from "yjs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 // Monaco is loaded once via a pinned CDN loader (see ./monaco/setup) and shared
 // across the whole workspace — it isn't a route-level chunk to defer.
@@ -18,6 +18,7 @@ import {
   writeFile,
 } from "@acme/ducklet-fs";
 
+import type { WebContainerRuntime } from "~/lib/webcontainer/use-runtime";
 import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 import { Button } from "~/components/ui/button";
 import {
@@ -27,7 +28,6 @@ import {
 } from "~/components/ui/resizable";
 import { useEditorSettings } from "~/hooks/use-editor-settings";
 import { useFilePresence } from "~/lib/webcontainer/use-file-presence";
-import type { WebContainerRuntime } from "~/lib/webcontainer/use-runtime";
 import { useWebContainerRuntime } from "~/lib/webcontainer/use-runtime";
 
 import "./monaco/setup";
@@ -143,7 +143,9 @@ interface WorkspaceProps {
    * a feature-owned context (e.g. one test-run state behind both). Receives the
    * workspace API and the rendered content. Identity-stable, so define it once.
    */
-  renderProvider?: ((api: WorkspaceApi, children: ReactNode) => ReactNode) | null;
+  renderProvider?:
+    | ((api: WorkspaceApi, children: ReactNode) => ReactNode)
+    | null;
   /** File to open first; falls back to a sensible entry file when absent. */
   entryFile?: string | null;
   /**
@@ -158,6 +160,13 @@ interface WorkspaceProps {
    * have a shell). Tests still run via the runtime under the hood.
    */
   terminalEnabled?: boolean;
+  /**
+   * Show the right-hand preview/console column. Pass `false` for tasks with no
+   * UI to render (e.g. a pure JS-utility problem): the layout collapses to two
+   * columns — side panel + editor — and the editor reclaims the width. The dev
+   * server still boots under the hood so tests stay runnable.
+   */
+  previewEnabled?: boolean;
 }
 
 const ENTRY_CANDIDATES = [
@@ -172,7 +181,10 @@ const ENTRY_CANDIDATES = [
   "README.md",
 ];
 
-function pickDefaultFile(ydoc: Y.Doc, entryFile?: string | null): string | null {
+function pickDefaultFile(
+  ydoc: Y.Doc,
+  entryFile?: string | null,
+): string | null {
   const files = listFilePaths(ydoc);
   // A caller-supplied entry file wins when it exists in the doc (e.g. the file
   // a task wants the user to start in); otherwise fall back to a sensible one.
@@ -201,6 +213,7 @@ export function Workspace({
   entryFile = null,
   editablePaths = null,
   terminalEnabled = true,
+  previewEnabled = true,
 }: WorkspaceProps) {
   const hasSidePanel = sidePanel != null;
   const hasBottomPanel = bottomPanel != null;
@@ -439,12 +452,22 @@ export function Workspace({
     />
   );
 
+  // Two-column mode (no preview) gives the side panel + editor the whole width;
+  // the side panel widens so a problem statement has room to read.
+  const sideDefault =
+    !previewEnabled && hasSidePanel ? 38 : hasSidePanel ? 30 : 18;
+  const editorDefault = previewEnabled
+    ? hasSidePanel
+      ? 44
+      : 52
+    : 100 - sideDefault;
+
   const content = (
     <ResizablePanelGroup direction="horizontal" className="h-full">
       <ResizablePanel
-        defaultSize={hasSidePanel ? 30 : 18}
+        defaultSize={sideDefault}
         minSize={hasSidePanel ? 22 : 12}
-        maxSize={hasSidePanel ? 45 : 30}
+        maxSize={hasSidePanel ? 48 : 30}
       >
         {sidePanel ? (
           <div className="flex h-full flex-col">
@@ -487,7 +510,7 @@ export function Workspace({
 
       <ResizableHandle withHandle />
 
-      <ResizablePanel defaultSize={hasSidePanel ? 44 : 52} minSize={25}>
+      <ResizablePanel defaultSize={editorDefault} minSize={25}>
         <div className="flex h-full flex-col">
           <EditorTabs
             openPaths={openPaths}
@@ -610,36 +633,40 @@ export function Workspace({
         </div>
       </ResizablePanel>
 
-      <ResizableHandle withHandle />
+      {previewEnabled && (
+        <>
+          <ResizableHandle withHandle />
 
-      <ResizablePanel defaultSize={hasSidePanel ? 26 : 30} minSize={20}>
-        <ResizablePanelGroup direction="vertical" className="h-full">
-          <ResizablePanel defaultSize={70} minSize={20}>
-            <PreviewPanel
-              runtime={runtime}
-              consoleToggle={
-                <ConsoleToggleButton
+          <ResizablePanel defaultSize={hasSidePanel ? 26 : 30} minSize={20}>
+            <ResizablePanelGroup direction="vertical" className="h-full">
+              <ResizablePanel defaultSize={70} minSize={20}>
+                <PreviewPanel
                   runtime={runtime}
-                  open={showConsole}
-                  onToggle={() => setShowConsole((v) => !v)}
-                />
-              }
-            />
-          </ResizablePanel>
-
-          {showConsole && (
-            <>
-              <ResizableHandle withHandle />
-              <ResizablePanel defaultSize={30} minSize={10}>
-                <ConsolePanel
-                  runtime={runtime}
-                  onClose={() => setShowConsole(false)}
+                  consoleToggle={
+                    <ConsoleToggleButton
+                      runtime={runtime}
+                      open={showConsole}
+                      onToggle={() => setShowConsole((v) => !v)}
+                    />
+                  }
                 />
               </ResizablePanel>
-            </>
-          )}
-        </ResizablePanelGroup>
-      </ResizablePanel>
+
+              {showConsole && (
+                <>
+                  <ResizableHandle withHandle />
+                  <ResizablePanel defaultSize={30} minSize={10}>
+                    <ConsolePanel
+                      runtime={runtime}
+                      onClose={() => setShowConsole(false)}
+                    />
+                  </ResizablePanel>
+                </>
+              )}
+            </ResizablePanelGroup>
+          </ResizablePanel>
+        </>
+      )}
     </ResizablePanelGroup>
   );
 

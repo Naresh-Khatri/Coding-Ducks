@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 import { FlaskConical } from "lucide-react";
 
+import type { MachineCodingContext } from "./types";
 import type {
   WorkspaceApi,
   WorkspaceBottomPanel,
   WorkspaceSidePanel,
 } from "~/components/code-workspace/workspace";
+import { MachineCodingBottomPanel } from "./machine-coding-bottom-panel";
 import { MachineCodingPanel } from "./machine-coding-panel";
 import { RevealSolutionButton } from "./reveal-solution-button";
-import { TestResultsPanel } from "./test-results-panel";
-import type { MachineCodingContext } from "./types";
 import { MachineCodingTestsProvider } from "./use-tests";
 
 /** Everything the Workspace needs to render a machine-coding attempt. */
@@ -44,7 +44,7 @@ export function machineCodingExtension(
     bottomPanel: {
       label: "Tests",
       icon: <FlaskConical className="mr-1 size-3" />,
-      render: () => <TestResultsPanel />,
+      render: () => <MachineCodingBottomPanel />,
     },
     renderProvider: (api, children) => (
       <MachineCodingTestsProvider
