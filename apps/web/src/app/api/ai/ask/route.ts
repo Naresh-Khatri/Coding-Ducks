@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { db, ducklet, eq } from "@acme/db";
+
 import { getSession } from "~/auth/server";
 import { env } from "~/env";
 import { DEFAULT_ASK_MODEL, isAllowedAskModel } from "~/lib/ai/models";
@@ -54,6 +56,8 @@ interface AskBody {
   messages?: ChatMessage[];
   files?: Record<string, string>;
   model?: string;
+  /** When set to a practice room, AI Ask is disabled server-side. */
+  duckletId?: number;
 }
 
 interface SearchReplace {
@@ -327,6 +331,22 @@ export async function POST(req: Request) {
     body = (await req.json()) as AskBody;
   } catch {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
+  }
+
+  // AI is disabled in practice rooms — short-circuit before any upstream call.
+  if (typeof body.duckletId === "number") {
+    const [room] = await db
+      .select({ kind: ducklet.kind })
+      .from(ducklet)
+      .where(eq(ducklet.id, body.duckletId))
+      .limit(1);
+    if (room?.kind === "machine-coding") {
+      return NextResponse.json({
+        explanation: "",
+        edits: [],
+        model: DEFAULT_ASK_MODEL,
+      } satisfies AskResponse);
+    }
   }
 
   const messages = sanitizeMessages(body.messages);

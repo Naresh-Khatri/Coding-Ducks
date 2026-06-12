@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { db, ducklet, eq } from "@acme/db";
+
 import { getSession } from "~/auth/server";
 import { env } from "~/env";
 
@@ -15,6 +17,18 @@ const MAX_CONTEXT_CHARS = 4000;
 interface CompletionBody {
   prefix?: string;
   suffix?: string;
+  /** When set to a practice room, AI completion is disabled server-side. */
+  duckletId?: number;
+}
+
+/** Practice rooms have AI disabled. Returns true if this id is a practice room. */
+async function isMachineCodingRoom(duckletId: number): Promise<boolean> {
+  const [room] = await db
+    .select({ kind: ducklet.kind })
+    .from(ducklet)
+    .where(eq(ducklet.id, duckletId))
+    .limit(1);
+  return room?.kind === "machine-coding";
 }
 
 export async function POST(req: Request) {
@@ -38,6 +52,10 @@ export async function POST(req: Request) {
     body = (await req.json()) as CompletionBody;
   } catch {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
+  }
+
+  if (typeof body.duckletId === "number" && (await isMachineCodingRoom(body.duckletId))) {
+    return NextResponse.json({ completion: "" });
   }
 
   const prefix = (typeof body.prefix === "string" ? body.prefix : "").slice(
