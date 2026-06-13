@@ -22,6 +22,11 @@ interface FileEditorProps {
   /** Null for non-collaborative (guest, read-only) editing — skips y-monaco. */
   provider: HocuspocusProvider | null;
   readOnly?: boolean;
+  /**
+   * Called with the editor instance once created (and `null` on dispose), so the
+   * toolbar can drive imperative actions like "format document". Keep it stable.
+   */
+  onMount?: (editor: MEditor.IStandaloneCodeEditor | null) => void;
 }
 
 /**
@@ -36,6 +41,7 @@ export function FileEditor({
   ytext,
   provider,
   readOnly = false,
+  onMount,
 }: FileEditorProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
@@ -80,6 +86,7 @@ export function FileEditor({
       theme: themeName(isDark),
     });
     editorRef.current = editor;
+    onMount?.(editor);
 
     // Ctrl/Cmd+S formats the document instead of opening the browser's
     // native save dialog.
@@ -90,6 +97,7 @@ export function FileEditor({
     return () => {
       editor.dispose();
       editorRef.current = null;
+      onMount?.(null);
     };
     // Created once — subsequent prop changes are handled by the effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps

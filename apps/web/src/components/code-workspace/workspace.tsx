@@ -3,11 +3,18 @@
 import type { HocuspocusProvider } from "@hocuspocus/provider";
 import type { ReactNode } from "react";
 import type * as Y from "yjs";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // Monaco is loaded once via a pinned CDN loader (see ./monaco/setup) and shared
 // across the whole workspace — it isn't a route-level chunk to defer.
 import { useMonaco } from "@monaco-editor/react";
-import { ChevronDown, FolderTree, Lock, TerminalIcon } from "lucide-react";
+import type { editor as MEditor } from "monaco-editor";
+import {
+  ChevronDown,
+  FolderTree,
+  Lock,
+  TerminalIcon,
+  WandSparkles,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 
 import {
@@ -559,6 +566,26 @@ export function Workspace({
     </div>
   ) : null;
 
+  // Imperative handle to the live editor, set on mount, so the toolbar can run
+  // Monaco actions (format) without remounting or threading state down.
+  const activeEditorRef = useRef<MEditor.IStandaloneCodeEditor | null>(null);
+  const handleEditorMount = useCallback(
+    (editor: MEditor.IStandaloneCodeEditor | null) => {
+      activeEditorRef.current = editor;
+    },
+    [],
+  );
+  const formatActiveFile = useCallback(() => {
+    void activeEditorRef.current
+      ?.getAction("editor.action.formatDocument")
+      ?.run();
+  }, []);
+
+  // Format is only meaningful on an editable file open in the real editor (not a
+  // read-only file or a pending-diff review view).
+  const canFormat =
+    !!activePath && !!activeModel && !activePending && !activeReadOnly;
+
   // Hoisted so the desktop column and the mobile "Code" tab share one editor.
   const editorTabs = (
     <EditorTabs
@@ -580,6 +607,17 @@ export function Workspace({
               <Lock className="size-3" />
               Read-only
             </span>
+          )}
+          {canFormat && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-6"
+              title="Format document (⌘/Ctrl+S)"
+              onClick={formatActiveFile}
+            >
+              <WandSparkles className="size-3.5" />
+            </Button>
           )}
           <EditorSettingsDialog showShortcuts={false} />
         </>
@@ -613,6 +651,7 @@ export function Workspace({
           ytext={activeText}
           provider={provider}
           readOnly={activeReadOnly}
+          onMount={handleEditorMount}
         />
       ) : (
         <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
