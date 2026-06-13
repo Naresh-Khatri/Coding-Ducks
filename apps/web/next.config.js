@@ -1,6 +1,10 @@
+import { fileURLToPath } from "node:url";
+
 import { createJiti } from "jiti";
 
 const jiti = createJiti(import.meta.url);
+
+const monorepoRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 // Import env files to validate at build time. Use jiti so we can load .ts files in here.
 await jiti.import("./src/env");
@@ -23,14 +27,15 @@ const config = {
   ],
 
   /**
-   * The machine-coding catalogue reads its problem source files (starters,
-   * solutions, tests, markdown) off disk at request time via `@acme/machine-
-   * coding-content`'s loader. Those raw assets aren't import-traced, so the
-   * standalone build wouldn't copy them — force them in for the tRPC route that
-   * assembles workspaces. Path is relative to the monorepo root.
+   * `@acme/machine-coding-content`'s loader reads problem source files off disk at
+   * runtime, but they aren't import-traced into the standalone build. Trace them in
+   * for the tRPC route that assembles workspaces. The root keeps their `packages/...`
+   * path so they map to `/app/...` at runtime; the include key uses `**` because a
+   * literal `[trpc]` key is parsed as a glob character class and matches nothing.
    */
+  outputFileTracingRoot: monorepoRoot,
   outputFileTracingIncludes: {
-    "/api/trpc/[trpc]": [
+    "/api/trpc/**": [
       "../../packages/machine-coding-content/src/problems/**/*",
     ],
   },

@@ -70,6 +70,8 @@ COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder /app/packages/db ./packages/db
+# Read off disk at runtime by the machine-coding loader (resolves to this path).
+COPY --from=builder /app/packages/machine-coding-content/src/problems ./packages/machine-coding-content/src/problems
 
 USER nextjs
 
