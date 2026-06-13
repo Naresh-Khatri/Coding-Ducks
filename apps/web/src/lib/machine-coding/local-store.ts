@@ -64,6 +64,32 @@ export function clearLocalAttempt(slug: string): void {
   }
 }
 
+/**
+ * Selected variant, remembered per category (a language for `js-utility`, a
+ * framework for `ui-component`) so the choice carries across problems of the
+ * same kind. Returns null when nothing is stored (caller falls back to the
+ * problem's base variant).
+ */
+const VARIANT_PREFIX = "machine-coding:variant:";
+
+export function readVariantPref(category: string): string | null {
+  if (!hasStorage()) return null;
+  try {
+    return window.localStorage.getItem(VARIANT_PREFIX + category);
+  } catch {
+    return null;
+  }
+}
+
+export function writeVariantPref(category: string, variantId: string): void {
+  if (!hasStorage()) return;
+  try {
+    window.localStorage.setItem(VARIANT_PREFIX + category, variantId);
+  } catch {
+    // ignore quota / privacy-mode failures
+  }
+}
+
 export function deriveLocalStatus(
   meta: LocalAttemptMeta | null,
 ): LocalAttemptStatus | null {

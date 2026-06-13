@@ -20,6 +20,19 @@ export const CATEGORY_ICON_SRCS: Record<
   ],
 };
 
+/**
+ * Brand logo for a variant id — the language (ts/js) or framework (react/vue/
+ * svelte) a problem can be solved in. Drives the icon in the workspace variant
+ * selector. Unknown ids simply render without an icon.
+ */
+export const VARIANT_ICON_SRCS: Record<string, { src: string; alt: string }> = {
+  ts: { src: "/brand-icons/typescript.svg", alt: "TypeScript" },
+  js: { src: "/brand-icons/javascript.svg", alt: "JavaScript" },
+  react: { src: "/brand-icons/react.svg", alt: "React" },
+  vue: { src: "/brand-icons/vue.svg", alt: "Vue" },
+  svelte: { src: "/brand-icons/svelte.svg", alt: "Svelte" },
+};
+
 export const STATUS_LABELS: Record<string, string> = {
   "in-progress": "In progress",
   completed: "Completed",

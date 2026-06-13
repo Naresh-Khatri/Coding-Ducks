@@ -369,7 +369,7 @@ export function MachineCodingTestsProvider({
   readFiles: () => Record<string, string>;
   children: ReactNode;
 }) {
-  const { slug, isSignedIn } = context;
+  const { slug, isSignedIn, variant } = context;
   const trpc = useTRPC();
 
   const [running, setRunning] = useState(false);
@@ -500,7 +500,7 @@ export function MachineCodingTestsProvider({
 
   const reveal = () => {
     getSolution.mutate(
-      { slug },
+      { slug, variant },
       {
         onSuccess: (data) => {
           setSolutionFiles(data.solutionFiles);

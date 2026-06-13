@@ -29,6 +29,12 @@ export function useLocalMachineCodingDoc(
    * the refresh entirely (resume as-is).
    */
   editablePaths?: string[] | null,
+  /**
+   * Selected variant id. Each variant keeps its own IndexedDB draft (keyed
+   * `slug:variant`), so switching language/framework is non-destructive —
+   * flipping back restores that variant's in-progress code instead of reseeding.
+   */
+  variant = "base",
 ) {
   const [ydoc, setYdoc] = useState<Y.Doc | null>(null);
   const [ready, setReady] = useState(false);
@@ -54,7 +60,10 @@ export function useLocalMachineCodingDoc(
 
     let cancelled = false;
     const doc = new Y.Doc();
-    const persistence = new IndexeddbPersistence(`machine-coding:${slug}`, doc);
+    const persistence = new IndexeddbPersistence(
+      `machine-coding:${slug}:${variant}`,
+      doc,
+    );
     persistenceRef.current = persistence;
 
     void persistence.whenSynced.then(() => {
@@ -85,7 +94,7 @@ export function useLocalMachineCodingDoc(
       void persistence.destroy();
       doc.destroy();
     };
-  }, [slug, hasFiles]);
+  }, [slug, hasFiles, variant]);
 
   /** Wipe the saved code + attempt meta and reload to reseed from the starter. */
   const reset = useCallback(async () => {

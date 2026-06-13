@@ -314,6 +314,9 @@ export default function DuckletPage({
         difficulty: ducklet.machineCodingContext.difficulty,
         category: ducklet.machineCodingContext.category,
         durationMinutes: ducklet.machineCodingContext.durationMinutes,
+        // The room is seeded from one fixed variant's files; reveal the base
+        // solution (the workspace has no in-room variant switcher).
+        variant: "base",
         description: ducklet.machineCodingContext.description,
         tags: ducklet.machineCodingContext.tags,
         companies: ducklet.machineCodingContext.companies,

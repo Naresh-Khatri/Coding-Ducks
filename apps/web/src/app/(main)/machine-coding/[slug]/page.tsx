@@ -15,6 +15,7 @@ import { useWebContainerSupport } from "~/components/code-workspace/webcontainer
 import { CountdownTimer } from "~/components/countdown-timer";
 import { ProblemNav } from "~/components/machine-coding/problem-nav";
 import { ProblemSheet } from "~/components/machine-coding/problem-sheet";
+import { VariantSelector } from "~/components/machine-coding/variant-selector";
 import { machineCodingExtension } from "~/components/machine-coding/side-panel";
 import { useSignIn } from "~/components/sign-in-dialog";
 import {
@@ -33,6 +34,8 @@ import {
   clearLocalAttempt,
   patchLocalAttempt,
   readLocalAttempt,
+  readVariantPref,
+  writeVariantPref,
 } from "~/lib/machine-coding/local-store";
 import { useLocalMachineCodingDoc } from "~/lib/machine-coding/use-local-doc";
 import { prewarmWebContainer } from "~/lib/webcontainer/boot";
@@ -71,14 +74,41 @@ export default function MachineCodingProblemPage({
       { enabled: !!slug },
     ),
   );
+
+  // Per-category variant preference — a language for js-utility problems, a
+  // framework for ui-component ones. Honored only when the problem offers that
+  // variant; otherwise the base (React / TypeScript) variant is used.
+  const variants = useMemo(() => detail?.problem.variants ?? [], [detail]);
+  const [variantPref, setVariantPref] = useState<string | null>(null);
+  useEffect(() => {
+    if (!detail) return;
+    // Intentional: read browser-only preference once the category is known.
+    setVariantPref(readVariantPref(detail.problem.category));
+  }, [detail]);
+  const variant = useMemo(() => {
+    const base = variants[0];
+    if (!base) return undefined;
+    if (variantPref && variants.some((v) => v.id === variantPref))
+      return variantPref;
+    return base.id;
+  }, [variants, variantPref]);
+  const setVariant = (id: string) => {
+    if (detail) writeVariantPref(detail.problem.category, id);
+    setVariantPref(id);
+  };
+
   const { data: starter } = useQuery(
-    trpc.machineCoding.getStarter.queryOptions({ slug }, { enabled: !!slug }),
+    trpc.machineCoding.getStarter.queryOptions(
+      { slug, variant },
+      { enabled: !!slug && !!detail },
+    ),
   );
 
   const { ydoc, ready, reset } = useLocalMachineCodingDoc(
     slug,
     starter?.files,
     starter?.editablePaths,
+    variant,
   );
 
   // Stamp (or read) the attempt start time so the countdown survives reloads.
@@ -125,6 +155,8 @@ export default function MachineCodingProblemPage({
       difficulty: detail.problem.difficulty,
       category: detail.problem.category,
       durationMinutes: detail.problem.durationMinutes,
+      variant: variant ?? "base",
+      variants,
       description: detail.problem.description,
       tags: detail.problem.tags,
       companies: detail.problem.companies,
@@ -140,7 +172,7 @@ export default function MachineCodingProblemPage({
           }
         : null,
     };
-  }, [detail, startedAt, slug, isSignedIn]);
+  }, [detail, startedAt, slug, isSignedIn, variant, variants]);
 
   // Open the file the candidate implements first — its starter stub carries a
   // `TODO` marker — instead of the demo entry file.
@@ -205,6 +237,14 @@ export default function MachineCodingProblemPage({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          {variants.length > 1 && variant && (
+            <VariantSelector
+              options={variants}
+              value={variant}
+              onChange={setVariant}
+            />
+          )}
+
           <CountdownTimer
             defaultMinutes={detail.problem.durationMinutes}
             onComplete={() =>

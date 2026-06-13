@@ -6,6 +6,14 @@ export interface MachineCodingContext {
   /** Catalogue category key, e.g. "ui-component". */
   category: string;
   durationMinutes: number;
+  /** Selected variant id — drives which solution the reveal fetches. */
+  variant: string;
+  /**
+   * Every variant this problem offers (base first) — drives the tech-stack icons
+   * in the Description header. Optional: interview rooms seed a fixed variant and
+   * omit it, falling back to the category icons.
+   */
+  variants?: { id: string; label: string }[];
   /** Problem statement, markdown. */
   description: string;
   /** Topic tags. */
