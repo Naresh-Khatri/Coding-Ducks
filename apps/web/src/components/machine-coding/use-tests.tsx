@@ -77,6 +77,8 @@ interface MachineCodingTestsValue {
   reveal: () => void;
   revealPending: boolean;
   editorial: string | null;
+  /** Reference solution files (path → source), once revealed; null before. */
+  solutionFiles: Record<string, string> | null;
 }
 
 const Ctx = createContext<MachineCodingTestsValue | null>(null);
@@ -358,14 +360,11 @@ function parseConsole(raw: string): MachineCodingConsoleEntry[] {
 export function MachineCodingTestsProvider({
   runtime,
   context,
-  onShowSolution,
   readFiles,
   children,
 }: {
   runtime: WebContainerRuntime;
   context: MachineCodingContext;
-  /** Loads the revealed solution into the editor as reviewable diffs. */
-  onShowSolution: (files: Record<string, string>) => void;
   /** Snapshot of current files, used to read test sources for each spec. */
   readFiles: () => Record<string, string>;
   children: ReactNode;
@@ -381,6 +380,10 @@ export function MachineCodingTestsProvider({
   >([]);
   const [revealed, setRevealed] = useState(context.solutionRevealed);
   const [editorial, setEditorial] = useState<string | null>(null);
+  const [solutionFiles, setSolutionFiles] = useState<Record<
+    string,
+    string
+  > | null>(null);
 
   const clearConsole = () => setConsoleEntries([]);
 
@@ -500,11 +503,10 @@ export function MachineCodingTestsProvider({
       { slug },
       {
         onSuccess: (data) => {
-          onShowSolution(data.solutionFiles);
+          setSolutionFiles(data.solutionFiles);
           setEditorial(data.editorial);
           setRevealed(true);
           patchLocalAttempt(slug, { revealed: true });
-          toast.message("Solution loaded as diffs in the editor for review.");
         },
         onError: (e) => toast.error(e.message),
       },
@@ -524,6 +526,7 @@ export function MachineCodingTestsProvider({
     reveal,
     revealPending: getSolution.isPending,
     editorial,
+    solutionFiles,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

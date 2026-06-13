@@ -9,7 +9,6 @@ import type {
 } from "~/components/code-workspace/workspace";
 import { MachineCodingBottomPanel } from "./machine-coding-bottom-panel";
 import { MachineCodingPanel } from "./machine-coding-panel";
-import { RevealSolutionButton } from "./reveal-solution-button";
 import { MachineCodingTestsProvider } from "./use-tests";
 
 /** Everything the Workspace needs to render a machine-coding attempt. */
@@ -34,11 +33,6 @@ export function machineCodingExtension(
   return {
     sidePanel: {
       label: "Problem",
-      toolbar: (
-        <div className="flex items-center gap-1">
-          <RevealSolutionButton />
-        </div>
-      ),
       render: () => <MachineCodingPanel context={context} />,
     },
     bottomPanel: {
@@ -50,7 +44,6 @@ export function machineCodingExtension(
       <MachineCodingTestsProvider
         runtime={api.runtime}
         context={context}
-        onShowSolution={api.loadFilesAsDiff}
         readFiles={api.readFiles}
       >
         {children}

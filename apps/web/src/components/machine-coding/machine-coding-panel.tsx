@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Building2, Clock, Flame, Tag } from "lucide-react";
 
@@ -7,38 +8,59 @@ import { DIFFICULTY_TEXT_COLORS } from "~/components/difficulty-badge";
 import { Markdown } from "~/components/markdown";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { companyIconSrc } from "~/lib/machine-coding/company-icons";
 import { CATEGORY_LABELS, STATUS_DOT, STATUS_LABELS } from "~/lib/machine-coding/labels";
 import { cn } from "~/lib/utils";
 
 import { CategoryIcons } from "./category-icons";
+import { SolutionTab } from "./solution-tab";
 import type { MachineCodingContext } from "./types";
-import { useMachineCodingTests } from "./use-tests";
 
 /**
- * The Problem side panel: a compact GreatFrontend-style metadata strip
- * (difficulty · time budget · category) at the top, the statement, the editorial
- * once the solution has been revealed, and the longer-form metadata (topics,
- * companies, attempt status) at the bottom. All actions live elsewhere — "Run
- * tests" in the Tests drawer, "Reveal solution" in this panel's header toolbar —
- * and completion is implicit (all tests passing).
+ * The Problem side panel: GreatFrontend-style "Description | Solution" tabs. The
+ * Description tab carries a compact metadata strip (difficulty · time budget ·
+ * category), the statement, and the longer-form metadata (topics, companies,
+ * attempt status). The Solution tab is gated — it stays empty until the user
+ * reveals the reference solution. "Run tests" lives in the Tests drawer and
+ * completion is implicit (all tests passing).
  */
 export function MachineCodingPanel({
   context,
 }: {
   context: MachineCodingContext;
 }) {
-  const { revealed, editorial } = useMachineCodingTests();
+  const [tab, setTab] = useState("description");
   const { attempt, roomId, tags, companies, difficulty, category } = context;
 
   const hasFootnotes =
     roomId != null || attempt != null || tags.length > 0 || companies.length > 0;
 
   return (
-    // A plain overflow container so prose wraps to the panel width (Radix
-    // ScrollArea's table layout doesn't).
-    <div className="h-full overflow-y-auto">
-      <div className="p-4">
+    <Tabs value={tab} onValueChange={setTab} className="flex h-full flex-col">
+      <div className="border-b px-3">
+        <TabsList className="h-auto justify-start gap-4 rounded-none bg-transparent p-0">
+          <TabsTrigger
+            value="description"
+            className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-1 py-2 text-xs font-medium shadow-none data-[state=active]:shadow-none"
+          >
+            Description
+          </TabsTrigger>
+          <TabsTrigger
+            value="solution"
+            className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-1 py-2 text-xs font-medium shadow-none data-[state=active]:shadow-none"
+          >
+            Solution
+          </TabsTrigger>
+        </TabsList>
+      </div>
+
+      {/* A plain overflow container so prose wraps to the panel width (Radix
+          ScrollArea's table layout doesn't). */}
+      <TabsContent
+        value="description"
+        className="mt-0 min-h-0 flex-1 overflow-y-auto p-4"
+      >
         {/* Compact metadata strip — the at-a-glance classifiers. */}
         <div className="text-muted-foreground mb-6 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b pb-4 text-xs font-medium">
           <span
@@ -61,12 +83,6 @@ export function MachineCodingPanel({
         </div>
 
         <Markdown>{context.description}</Markdown>
-
-        {revealed && editorial && (
-          <div className="mt-8 border-t pt-6">
-            <Markdown>{editorial}</Markdown>
-          </div>
-        )}
 
         {hasFootnotes && (
           <div className="mt-8 space-y-4 border-t pt-6 text-sm">
@@ -134,7 +150,14 @@ export function MachineCodingPanel({
             )}
           </div>
         )}
-      </div>
-    </div>
+      </TabsContent>
+
+      <TabsContent
+        value="solution"
+        className="mt-0 min-h-0 flex-1 overflow-y-auto p-4"
+      >
+        <SolutionTab />
+      </TabsContent>
+    </Tabs>
   );
 }
