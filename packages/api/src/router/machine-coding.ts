@@ -1,3 +1,4 @@
+import { gunzipSync } from "node:zlib";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -273,13 +274,36 @@ export const machineCodingRouter = createTRPCRouter({
    * it as `yjsData`, exactly like `CreateDuckletDialog`.
    */
   createInterviewRoom: protectedProcedure
-    .input(slugInput.extend({ yjsData: z.string().max(5_000_000).optional() }))
+    .input(
+      slugInput.extend({
+        // Raw base64 snapshot, or `yjsDataGz` for a gzipped one. Both optional
+        // so an empty room can still be created.
+        yjsData: z.string().max(5_000_000).optional(),
+        yjsDataGz: z.string().max(5_000_000).optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const p = getProblem(input.slug);
       if (!p) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Problem not found" });
       }
       const userId = ctx.session.user.id;
+
+      // Decompress over-the-wire gzip back to the raw base64 the room is seeded
+      // with, so the format the Hocuspocus server reads at rest is unchanged.
+      let yjsData = input.yjsData ?? null;
+      if (input.yjsDataGz) {
+        try {
+          yjsData = gunzipSync(Buffer.from(input.yjsDataGz, "base64")).toString(
+            "base64",
+          );
+        } catch {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid room snapshot",
+          });
+        }
+      }
 
       const [existing] = await ctx.db
         .select()
@@ -301,7 +325,7 @@ export const machineCodingRouter = createTRPCRouter({
         name: `${p.title} — Interview`,
         ownerId: userId,
         isPublic: false,
-        yjsData: input.yjsData ?? null,
+        yjsData,
         kind: "machine-coding",
       });
       if (!room) {

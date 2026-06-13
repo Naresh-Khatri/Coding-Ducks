@@ -39,7 +39,11 @@ import {
 } from "~/lib/machine-coding/local-store";
 import { useLocalMachineCodingDoc } from "~/lib/machine-coding/use-local-doc";
 import { prewarmWebContainer } from "~/lib/webcontainer/boot";
-import { uint8ArrayToBase64 } from "~/lib/yjs-base64";
+import {
+  gzipToBase64,
+  supportsGzip,
+  uint8ArrayToBase64,
+} from "~/lib/yjs-base64";
 import { useTRPC } from "~/trpc/react";
 
 const Workspace = dynamic(
@@ -134,7 +138,7 @@ export default function MachineCodingProblemPage({
     }),
   );
 
-  const handleInvite = () => {
+  const handleInvite = async () => {
     if (!isSignedIn) {
       openSignIn({
         source: "machine-coding-invite",
@@ -143,8 +147,14 @@ export default function MachineCodingProblemPage({
       return;
     }
     if (!ydoc) return;
-    const yjsData = uint8ArrayToBase64(Y.encodeStateAsUpdate(ydoc));
-    createRoom.mutate({ slug, yjsData });
+    // Gzip the snapshot so the upload stays under the proxy's body limit; fall
+    // back to raw base64 where CompressionStream isn't available.
+    const update = Y.encodeStateAsUpdate(ydoc);
+    if (supportsGzip()) {
+      createRoom.mutate({ slug, yjsDataGz: await gzipToBase64(update) });
+    } else {
+      createRoom.mutate({ slug, yjsData: uint8ArrayToBase64(update) });
+    }
   };
 
   const machineCodingContext: MachineCodingContext | null = useMemo(() => {
@@ -283,7 +293,7 @@ export default function MachineCodingProblemPage({
 
           <Button
             size="sm"
-            onClick={handleInvite}
+            onClick={() => void handleInvite()}
             disabled={createRoom.isPending}
             title="Turn this into a shared room and invite a candidate"
           >
