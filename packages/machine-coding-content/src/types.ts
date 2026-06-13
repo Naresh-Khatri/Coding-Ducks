@@ -14,6 +14,31 @@ export type MachineCodingDifficulty = "easy" | "medium" | "hard";
 
 export type MachineCodingCategory = "ui-component" | "js-utility";
 
+/**
+ * A selectable alternative implementation of a problem — a different language
+ * (js-utility problems offer `js` alongside the base `ts`) or a different
+ * framework (ui-component problems offer `vue` / `svelte` alongside the base
+ * React). Each variant is self-contained: its own template, starter, and
+ * solution. The base (React / TypeScript) variant lives on the problem itself.
+ */
+export interface MachineCodingVariant {
+  /** Stable id used in storage + the API, e.g. `js`, `vue`, `svelte`. */
+  id: string;
+  /** Selector label, e.g. `JavaScript`, `Vue`, `Svelte`. */
+  label: string;
+  /** Id of the `@acme/ducklet-fs` template the variant's files overlay. */
+  templateId: string;
+  starterFiles: Record<string, string>;
+  solutionFiles: Record<string, string>;
+  /**
+   * Framework-specific test suite. Omit to reuse the problem's base `testFiles`
+   * — fine for the language toggle (a JS util shares the TS tests, which import
+   * the editable file extensionless), but framework variants must supply their
+   * own (they render the component with a framework-specific Testing Library).
+   */
+  testFiles?: Record<string, string>;
+}
+
 export interface MachineCodingProblem {
   /** URL-safe stable identifier, e.g. `debounce`. Also the attempt key. */
   slug: string;
@@ -38,6 +63,13 @@ export interface MachineCodingProblem {
   solutionFiles: Record<string, string>;
   /** Vitest suite(s) seeded alongside the starter so the user can run tests. */
   testFiles: Record<string, string>;
+  /**
+   * Selectable alternatives beyond the base (React / TypeScript) implementation.
+   * When non-empty the workspace shows a selector: a JS/TS language toggle for
+   * `js-utility` problems, or a React/Vue/Svelte framework switch for
+   * `ui-component` problems.
+   */
+  variants?: MachineCodingVariant[];
 }
 
 /** Catalogue-safe view of a problem — no solution / test / editorial content. */
@@ -50,4 +82,10 @@ export interface MachineCodingProblemSummary {
   tags: string[];
   companies: string[];
   displayOrder: number;
+  /**
+   * The variants this problem can be solved in (base first) — a JS/TS toggle for
+   * utilities, or React/Vue/Svelte for UI components. Drives the per-problem
+   * tech-stack icons in the catalogue. Id + label only; no files.
+   */
+  variants: { id: string; label: string }[];
 }

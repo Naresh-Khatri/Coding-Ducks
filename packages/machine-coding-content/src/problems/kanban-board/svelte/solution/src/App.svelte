@@ -1,0 +1,85 @@
+<script lang="ts">
+  const COLUMNS = ["To Do", "In Progress", "Done"];
+
+  interface Card {
+    id: string;
+    text: string;
+    col: number;
+  }
+
+  let cards = $state<Card[]>([]);
+  let drafts = $state<string[]>(COLUMNS.map(() => ""));
+
+  function add(col: number) {
+    const text = drafts[col].trim();
+    if (!text) return;
+    cards = [...cards, { id: crypto.randomUUID(), text, col }];
+    drafts[col] = "";
+  }
+
+  function move(id: string, delta: number) {
+    cards = cards.map((card) =>
+      card.id === id
+        ? {
+            ...card,
+            col: Math.max(0, Math.min(COLUMNS.length - 1, card.col + delta)),
+          }
+        : card,
+    );
+  }
+</script>
+
+<main style="font-family: sans-serif; padding: 1rem">
+  <h1>Kanban Board</h1>
+  <div style="display: flex; gap: 16px; align-items: flex-start">
+    {#each COLUMNS as name, col (name)}
+      <section
+        aria-label={name}
+        style="flex: 1; background: #f3f4f6; padding: 8px; border-radius: 8px"
+      >
+        <h2 style="font-size: 1rem; margin-top: 0">{name}</h2>
+        <form
+          onsubmit={(e) => {
+            e.preventDefault();
+            add(col);
+          }}
+          style="display: flex; gap: 4px"
+        >
+          <input
+            aria-label={`Add to ${name}`}
+            bind:value={drafts[col]}
+            style="width: 100%; min-width: 0"
+          />
+          <button type="submit">Add</button>
+        </form>
+        <ul style="list-style: none; padding: 0; margin: 8px 0 0">
+          {#each cards.filter((c) => c.col === col) as card (card.id)}
+            <li
+              style="background: #fff; padding: 6px; margin-top: 6px; border-radius: 6px"
+            >
+              <span>{card.text}</span>
+              <div style="margin-top: 4px; display: flex; gap: 4px">
+                <button
+                  type="button"
+                  aria-label={`Move ${card.text} left`}
+                  disabled={card.col === 0}
+                  onclick={() => move(card.id, -1)}
+                >
+                  ◀
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Move ${card.text} right`}
+                  disabled={card.col === COLUMNS.length - 1}
+                  onclick={() => move(card.id, 1)}
+                >
+                  ▶
+                </button>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/each}
+  </div>
+</main>

@@ -13,17 +13,81 @@
  */
 import { getTemplate } from "@acme/ducklet-fs";
 
-import type { MachineCodingCategory, MachineCodingProblem } from "./types";
+import type {
+  MachineCodingCategory,
+  MachineCodingProblem,
+  MachineCodingVariant,
+} from "./types";
 
-// Pinned to versions that play nicely with the React 19 + Vite 6 templates and
-// boot reliably inside the WebContainer.
+/** The base (React / TypeScript) implementation, modelled as a variant. */
+function baseVariant(p: MachineCodingProblem): MachineCodingVariant {
+  const ui = p.category === "ui-component";
+  return {
+    id: ui ? "react" : "ts",
+    label: ui ? "React" : "TypeScript",
+    templateId: p.templateId,
+    starterFiles: p.starterFiles,
+    solutionFiles: p.solutionFiles,
+    testFiles: p.testFiles,
+  };
+}
+
+/** Every selectable variant of a problem, base first. */
+export function allVariants(p: MachineCodingProblem): MachineCodingVariant[] {
+  return [baseVariant(p), ...(p.variants ?? [])];
+}
+
+/** Selector options (id + label) for the workspace, base first. */
+export function listVariants(
+  p: MachineCodingProblem,
+): { id: string; label: string }[] {
+  return allVariants(p).map((v) => ({ id: v.id, label: v.label }));
+}
+
+/** Resolve a variant by id, falling back to the base when absent/unknown. */
+export function resolveVariant(
+  p: MachineCodingProblem,
+  variantId?: string,
+): MachineCodingVariant {
+  const base = baseVariant(p);
+  if (!variantId) return base;
+  return (p.variants ?? []).find((v) => v.id === variantId) ?? base;
+}
+
+/** Reference solution files for the chosen variant (falls back to base). */
+export function solutionFilesFor(
+  p: MachineCodingProblem,
+  variantId?: string,
+): Record<string, string> {
+  return resolveVariant(p, variantId).solutionFiles;
+}
+
+/** UI frameworks supported by the test harness. */
+type Framework = "react" | "vue" | "svelte" | "none";
+
+/** Which framework a template targets — drives the vitest plugin + test deps. */
+function frameworkOf(templateId: string): Framework {
+  if (templateId.startsWith("react")) return "react";
+  if (templateId.startsWith("vue")) return "vue";
+  if (templateId.startsWith("svelte")) return "svelte";
+  return "none";
+}
+
+// Pinned to versions that play nicely with the Vite 6 templates and boot
+// reliably inside the WebContainer.
 const VITEST_DEP = { vitest: "^3.0.0" } as const;
+// Shared DOM test tooling; the framework's own Testing Library is added on top.
 const DOM_DEPS = {
   jsdom: "^25.0.1",
-  "@testing-library/react": "^16.1.0",
   "@testing-library/jest-dom": "^6.6.3",
   "@testing-library/user-event": "^14.5.2",
 } as const;
+const TESTING_LIBRARY_DEP: Record<Framework, Record<string, string>> = {
+  react: { "@testing-library/react": "^16.1.0" },
+  vue: { "@testing-library/vue": "^8.1.0" },
+  svelte: { "@testing-library/svelte": "^5.2.4" },
+  none: {},
+};
 
 /** UI work needs a DOM + Testing Library; pure utilities run in plain Node. */
 function needsDom(category: MachineCodingCategory): boolean {
@@ -57,13 +121,31 @@ function mergePackageJson(
   );
 }
 
-function vitestConfig(category: MachineCodingCategory): string {
+/** The vite plugin import + call for a framework's vitest config. */
+const FRAMEWORK_PLUGIN: Record<Framework, { import: string; call: string }> = {
+  react: { import: `import react from "@vitejs/plugin-react";`, call: "react()" },
+  vue: { import: `import vue from "@vitejs/plugin-vue";`, call: "vue()" },
+  svelte: {
+    import: `import { svelte } from "@sveltejs/vite-plugin-svelte";`,
+    call: "svelte()",
+  },
+  none: { import: "", call: "" },
+};
+
+function vitestConfig(
+  category: MachineCodingCategory,
+  framework: Framework,
+): string {
   if (needsDom(category)) {
+    const plugin = FRAMEWORK_PLUGIN[framework];
+    // Svelte testing resolves the component's browser build under jsdom.
+    const resolve =
+      framework === "svelte" ? `\n  resolve: { conditions: ["browser"] },` : "";
     return `import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+${plugin.import}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [${plugin.call}],${resolve}
   test: {
     environment: "jsdom",
     globals: true,
@@ -275,24 +357,34 @@ export function cases(
  */
 export function assembleStarterFiles(
   problem: MachineCodingProblem,
+  variantId?: string,
 ): Record<string, string> {
-  const template = getTemplate(problem.templateId);
+  // Each variant brings its own template + starter files; tests come from the
+  // variant when it supplies them (framework variants must), otherwise the
+  // problem's shared base tests (the JS/TS toggle reuses one suite).
+  const variant = resolveVariant(problem, variantId);
+  const testFiles = variant.testFiles ?? problem.testFiles;
+  const framework = frameworkOf(variant.templateId);
+
+  const template = getTemplate(variant.templateId);
   if (!template) {
     throw new Error(
-      `machine-coding-content: unknown templateId "${problem.templateId}" for problem "${problem.slug}"`,
+      `machine-coding-content: unknown templateId "${variant.templateId}" for problem "${problem.slug}"`,
     );
   }
 
   const files: Record<string, string> = {
     ...template.files,
-    ...problem.starterFiles,
-    ...problem.testFiles,
+    ...variant.starterFiles,
+    ...testFiles,
     // Always available for tests to import from "./mc-test".
     "src/mc-test.ts": MC_TEST_HARNESS,
   };
 
   const dom = needsDom(problem.category);
-  const extraDeps = dom ? { ...VITEST_DEP, ...DOM_DEPS } : { ...VITEST_DEP };
+  const extraDeps = dom
+    ? { ...VITEST_DEP, ...DOM_DEPS, ...TESTING_LIBRARY_DEP[framework] }
+    : { ...VITEST_DEP };
 
   files["package.json"] = mergePackageJson(
     files["package.json"] ?? template.files["package.json"] ?? "{}",
@@ -300,9 +392,9 @@ export function assembleStarterFiles(
     { test: "vitest run" },
   );
 
-  // Author-provided config wins; otherwise generate one from the category.
+  // Author-provided config wins; otherwise generate one from the framework.
   if (!files["vitest.config.ts"] && !files["vitest.config.js"]) {
-    files["vitest.config.ts"] = vitestConfig(problem.category);
+    files["vitest.config.ts"] = vitestConfig(problem.category, framework);
   }
   // Every problem gets a setup file that mirrors console output to the Console
   // tab; DOM problems also pull in jest-dom matchers.

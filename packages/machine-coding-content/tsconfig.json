@@ -1,5 +1,10 @@
 {
   "extends": "@acme/tsconfig/base.json",
   "include": ["src"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "src/problems/*/*/starter/**",
+    "src/problems/*/*/solution/**",
+    "src/problems/*/*/test/**"
+  ]
 }

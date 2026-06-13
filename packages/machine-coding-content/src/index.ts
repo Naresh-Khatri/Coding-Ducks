@@ -8,6 +8,7 @@ import type {
   MachineCodingProblem,
   MachineCodingProblemSummary,
 } from "./types";
+import { listVariants, solutionFilesFor } from "./assemble";
 import { MACHINE_CODING_PROBLEMS } from "./problems";
 
 export type {
@@ -15,8 +16,15 @@ export type {
   MachineCodingDifficulty,
   MachineCodingProblem,
   MachineCodingProblemSummary,
+  MachineCodingVariant,
 } from "./types";
-export { assembleStarterFiles } from "./assemble";
+export {
+  allVariants,
+  assembleStarterFiles,
+  listVariants,
+  resolveVariant,
+  solutionFilesFor,
+} from "./assemble";
 export { MACHINE_CODING_PROBLEMS };
 
 /** Look up a single problem by its slug. */
@@ -29,8 +37,11 @@ export function getProblem(slug: string): MachineCodingProblem | undefined {
  * changes. Everything else seeded into the workspace (demo entry, tests,
  * config) is locked read-only so it can't be tampered with.
  */
-export function getEditablePaths(p: MachineCodingProblem): string[] {
-  return Object.keys(p.solutionFiles);
+export function getEditablePaths(
+  p: MachineCodingProblem,
+  variantId?: string,
+): string[] {
+  return Object.keys(solutionFilesFor(p, variantId));
 }
 
 /** Drop solution / test / editorial content from a problem for catalogue use. */
@@ -46,6 +57,7 @@ export function toSummary(
     tags: p.tags,
     companies: p.companies,
     displayOrder: p.displayOrder,
+    variants: listVariants(p),
   };
 }
 

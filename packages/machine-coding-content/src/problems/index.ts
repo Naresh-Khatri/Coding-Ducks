@@ -1,22 +1,22 @@
 import type { MachineCodingProblem } from "../types";
-import { accordion } from "./accordion";
-import { autocomplete } from "./autocomplete";
-import { curry } from "./curry";
-import { dataTable } from "./data-table";
-import { debounce } from "./debounce";
-import { deepClone } from "./deep-clone";
-import { eventEmitter } from "./event-emitter";
-import { flattenArray } from "./flatten-array";
-import { imageCarousel } from "./image-carousel";
-import { kanbanBoard } from "./kanban-board";
-import { modalDialog } from "./modal-dialog";
-import { nestedComments } from "./nested-comments";
-import { promisePool } from "./promise-pool";
-import { starRating } from "./star-rating";
-import { tabs } from "./tabs";
-import { throttle } from "./throttle";
-import { ticTacToe } from "./tic-tac-toe";
-import { todoList } from "./todo-list";
+import { accordion } from "./accordion/problem";
+import { autocomplete } from "./autocomplete/problem";
+import { curry } from "./curry/problem";
+import { dataTable } from "./data-table/problem";
+import { debounce } from "./debounce/problem";
+import { deepClone } from "./deep-clone/problem";
+import { eventEmitter } from "./event-emitter/problem";
+import { flattenArray } from "./flatten-array/problem";
+import { imageCarousel } from "./image-carousel/problem";
+import { kanbanBoard } from "./kanban-board/problem";
+import { modalDialog } from "./modal-dialog/problem";
+import { nestedComments } from "./nested-comments/problem";
+import { promisePool } from "./promise-pool/problem";
+import { starRating } from "./star-rating/problem";
+import { tabs } from "./tabs/problem";
+import { throttle } from "./throttle/problem";
+import { ticTacToe } from "./tic-tac-toe/problem";
+import { todoList } from "./todo-list/problem";
 
 /**
  * The full catalogue. Add a new problem by authoring a module under this folder
