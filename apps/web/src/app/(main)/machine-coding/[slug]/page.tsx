@@ -13,6 +13,7 @@ import type { MachineCodingContext } from "~/components/machine-coding/types";
 import { authClient } from "~/auth/client";
 import { useWebContainerSupport } from "~/components/code-workspace/webcontainer-support";
 import { CountdownTimer } from "~/components/countdown-timer";
+import { ProblemSheet } from "~/components/machine-coding/problem-sheet";
 import { machineCodingExtension } from "~/components/machine-coding/side-panel";
 import { useSignIn } from "~/components/sign-in-dialog";
 import {
@@ -198,9 +199,7 @@ export default function MachineCodingProblemPage({
               <span className="hidden sm:inline">Back</span>
             </Button>
           </Link>
-          <h1 className="min-w-0 truncate font-semibold">
-            {detail.problem.title}
-          </h1>
+          <ProblemSheet currentSlug={slug} title={detail.problem.title} />
         </div>
 
         <div className="flex shrink-0 items-center gap-2">

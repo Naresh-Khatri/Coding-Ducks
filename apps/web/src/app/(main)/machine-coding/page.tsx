@@ -3,22 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Circle,
-  CircleDashed,
-  Clock,
-  Eye,
-  Flame,
-  Search,
-} from "lucide-react";
+import { ArrowRight, Clock, Flame, Search } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
 
 import type { LocalAttemptStatus } from "~/lib/machine-coding/local-store";
 import { DIFFICULTY_TEXT_COLORS } from "~/components/difficulty-badge";
 import { CategoryIcons } from "~/components/machine-coding/category-icons";
+import { ProblemStatusIcon } from "~/components/machine-coding/problem-status-icon";
 import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import {
@@ -214,27 +206,7 @@ function ProblemRow({
         className="group hover:bg-muted/40 flex items-center gap-4 px-4 py-3 transition-colors first:rounded-t-xl last:rounded-b-xl"
       >
         {/* Status indicator — each state gets a distinct, meaningful icon */}
-        {status === "completed" ? (
-          <CheckCircle2
-            className="size-5 shrink-0 text-green-500"
-            aria-label="Completed"
-          />
-        ) : status === "revealed" ? (
-          <Eye
-            className="size-5 shrink-0 text-orange-500"
-            aria-label="Solution viewed"
-          />
-        ) : status === "in-progress" ? (
-          <CircleDashed
-            className="size-5 shrink-0 text-amber-500"
-            aria-label="In progress"
-          />
-        ) : (
-          <Circle
-            className="text-muted-foreground/30 size-5 shrink-0"
-            aria-label="Not started"
-          />
-        )}
+        <ProblemStatusIcon status={status} className="size-5" />
 
         {/* Title + meta */}
         <div className="min-w-0 flex-1">
