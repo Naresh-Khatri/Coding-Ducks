@@ -17,9 +17,23 @@ const config = {
     "@acme/db",
     "@acme/ducklet-fs",
     "@acme/jobs",
+    "@acme/machine-coding-content",
     "@acme/ui",
     "@acme/validators",
   ],
+
+  /**
+   * The machine-coding catalogue reads its problem source files (starters,
+   * solutions, tests, markdown) off disk at request time via `@acme/machine-
+   * coding-content`'s loader. Those raw assets aren't import-traced, so the
+   * standalone build wouldn't copy them — force them in for the tRPC route that
+   * assembles workspaces. Path is relative to the monorepo root.
+   */
+  outputFileTracingIncludes: {
+    "/api/trpc/[trpc]": [
+      "../../packages/machine-coding-content/src/problems/**/*",
+    ],
+  },
 
   /** We already do linting and typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
