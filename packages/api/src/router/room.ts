@@ -229,6 +229,8 @@ export const roomRouter = createTRPCRouter({
             category: problem.category,
             durationMinutes: problem.durationMinutes,
             description: problem.description,
+            tags: problem.tags,
+            companies: problem.companies,
             editablePaths: getEditablePaths(problem),
             startedAt: attempt.startedAt,
             status: attempt.status,

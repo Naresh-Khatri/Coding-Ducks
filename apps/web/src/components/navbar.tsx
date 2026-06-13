@@ -38,11 +38,11 @@ export function Navbar() {
   const user = session?.user;
 
   // Ducklet editor + guest views (`/ducklets/<id>`) and the practice solve page
-  // (`/machine-coding/<slug>/solve`) are full-screen apps that render their own
+  // (`/machine-coding/<slug>`) are full-screen apps that render their own
   // header. Suppress the global nav so they don't double up.
   if (
     /^\/ducklets\/[^/]+/.test(pathname ?? "") ||
-    /^\/machine-coding\/[^/]+\/solve/.test(pathname ?? "")
+    /^\/machine-coding\/[^/]+/.test(pathname ?? "")
   ) {
     return null;
   }

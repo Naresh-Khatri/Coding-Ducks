@@ -313,11 +313,21 @@ export default function DuckletPage({
         slug: ducklet.machineCodingContext.problemSlug,
         title: ducklet.machineCodingContext.title,
         difficulty: ducklet.machineCodingContext.difficulty,
+        category: ducklet.machineCodingContext.category,
         durationMinutes: ducklet.machineCodingContext.durationMinutes,
         description: ducklet.machineCodingContext.description,
+        tags: ducklet.machineCodingContext.tags,
+        companies: ducklet.machineCodingContext.companies,
         startedAt: new Date(ducklet.machineCodingContext.startedAt).getTime(),
         solutionRevealed: ducklet.machineCodingContext.solutionRevealed,
         isSignedIn: !!userId,
+        // Already inside the room — don't offer a self-link back to it.
+        roomId: null,
+        attempt: {
+          status: ducklet.machineCodingContext.status,
+          testsLastPassed: null,
+          testsLastTotal: null,
+        },
       }
     : null;
 

@@ -63,9 +63,10 @@ const config = {
       // `:id+` is one-or-more segments, so `/ducklets` (list) is excluded
       // while `/ducklets/123` and `/ducklets/123/guest` are included.
       { source: "/ducklets/:id+", headers: isolation },
-      // Only the solve page boots a container — the catalogue (`/machine-coding`)
-      // and detail (`/machine-coding/<slug>`) pages are intentionally excluded.
-      { source: "/machine-coding/:slug/solve", headers: isolation },
+      // Each problem page (`/machine-coding/<slug>`) is the solve workspace and
+      // boots a container; the catalogue (`/machine-coding`) has no `:slug`
+      // segment and is intentionally excluded.
+      { source: "/machine-coding/:slug", headers: isolation },
     ];
   },
 };
