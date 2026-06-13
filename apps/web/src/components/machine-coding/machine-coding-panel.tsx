@@ -16,6 +16,7 @@ import { cn } from "~/lib/utils";
 import { CategoryIcons } from "./category-icons";
 import { SolutionTab } from "./solution-tab";
 import type { MachineCodingContext } from "./types";
+import { VariantIcons } from "./variant-icons";
 
 /**
  * The Problem side panel: GreatFrontend-style "Description | Solution" tabs. The
@@ -31,7 +32,8 @@ export function MachineCodingPanel({
   context: MachineCodingContext;
 }) {
   const [tab, setTab] = useState("description");
-  const { attempt, roomId, tags, companies, difficulty, category } = context;
+  const { attempt, roomId, tags, companies, difficulty, category, variants } =
+    context;
 
   const hasFootnotes =
     roomId != null || attempt != null || tags.length > 0 || companies.length > 0;
@@ -77,7 +79,11 @@ export function MachineCodingPanel({
             {context.durationMinutes} min
           </span>
           <span className="flex items-center gap-1.5">
-            <CategoryIcons category={category} />
+            {variants && variants.length > 0 ? (
+              <VariantIcons variants={variants} />
+            ) : (
+              <CategoryIcons category={category} />
+            )}
             {CATEGORY_LABELS[category] ?? category}
           </span>
         </div>

@@ -9,7 +9,7 @@ import type { RouterOutputs } from "@acme/api";
 
 import type { LocalAttemptStatus } from "~/lib/machine-coding/local-store";
 import { DIFFICULTY_TEXT_COLORS } from "~/components/difficulty-badge";
-import { CategoryIcons } from "~/components/machine-coding/category-icons";
+import { VariantIcons } from "~/components/machine-coding/variant-icons";
 import { ProblemStatusIcon } from "~/components/machine-coding/problem-status-icon";
 import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
@@ -222,7 +222,7 @@ function ProblemRow({
           </div>
           <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
             <span className="flex items-center gap-1.5">
-              <CategoryIcons category={problem.category} />
+              <VariantIcons variants={problem.variants} />
               {CATEGORY_LABELS[problem.category] ?? problem.category}
             </span>
             <span

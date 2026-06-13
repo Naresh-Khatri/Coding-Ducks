@@ -23,8 +23,8 @@ import { readAllLocalStatuses } from "~/lib/machine-coding/local-store";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
 import { Button } from "../ui/button";
-import { CategoryIcons } from "./category-icons";
 import { ProblemStatusIcon } from "./problem-status-icon";
+import { VariantIcons } from "./variant-icons";
 
 type ProblemItem =
   RouterOutputs["machineCoding"]["listProblems"]["items"][number];
@@ -216,7 +216,7 @@ function ProblemSheetRow({
           </span>
           <div className="text-muted-foreground mt-0.5 flex items-center gap-x-2.5 text-xs">
             <span className="flex items-center gap-1">
-              <CategoryIcons category={problem.category} />
+              <VariantIcons variants={problem.variants} />
               {CATEGORY_LABELS[problem.category] ?? problem.category}
             </span>
             <span
