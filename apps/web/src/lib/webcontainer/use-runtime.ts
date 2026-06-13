@@ -20,7 +20,7 @@ import {
   CONSOLE_MESSAGE_TYPE,
   isConsoleLevel,
 } from "./preview-console";
-import { inferBootPlan, isIgnoredPath, toFileSystemTree } from "./tree";
+import { inferBootPlan, isIgnoredPath, NPM_INSTALL, toFileSystemTree } from "./tree";
 
 export type { PreviewConsoleEntry } from "./preview-console";
 
@@ -162,7 +162,7 @@ export function useWebContainerRuntime({
     if (!run) return;
     // Ctrl-C (ETX) to stop whatever's running, then reinstall + restart.
     writeInput("");
-    writeInput(`npm install && ${run}\n`);
+    writeInput(`${NPM_INSTALL} && ${run}\n`);
   }, [writeInput]);
 
   const capture = useCallback((options?: CapturePreviewOptions) => {
@@ -233,22 +233,21 @@ export function useWebContainerRuntime({
           setPreviewUrl(url);
         });
 
-        // Inject our preview helpers into every preview page: the off-screen
-        // screenshot helper and the console forwarder. Both run same-origin to
-        // the user's app. Must be set before the dev server serves pages so
-        // they're included; each is self-contained (its own IIFE / top-level
-        // scope) so concatenating them is safe.
-        const origin = window.location.origin;
-        await container.setPreviewScript(
-          `${buildCaptureScript(origin)}\n\n${buildConsoleForwardScript(origin)}`,
-          { type: "module" },
-        );
-        if (cancelled) return;
-
         setStatus("mounting");
         const initialFiles = readAllFiles(ydoc);
         const dirs = [...getDirsMap(ydoc).keys()];
-        await container.mount(toFileSystemTree(initialFiles, dirs));
+
+        // Inject the preview helpers (off-screen screenshot + console forwarder)
+        // and mount the file tree together — both must land before the dev
+        // server serves, and neither depends on the other.
+        const origin = window.location.origin;
+        await Promise.all([
+          container.setPreviewScript(
+            `${buildCaptureScript(origin)}\n\n${buildConsoleForwardScript(origin)}`,
+            { type: "module" },
+          ),
+          container.mount(toFileSystemTree(initialFiles, dirs)),
+        ]);
         if (cancelled) return;
 
         // Seed the shadow so we never re-write the files we just mounted.

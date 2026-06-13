@@ -33,6 +33,7 @@ import {
   readLocalAttempt,
 } from "~/lib/machine-coding/local-store";
 import { useLocalMachineCodingDoc } from "~/lib/machine-coding/use-local-doc";
+import { prewarmWebContainer } from "~/lib/webcontainer/boot";
 import { uint8ArrayToBase64 } from "~/lib/yjs-base64";
 import { useTRPC } from "~/trpc/react";
 
@@ -158,10 +159,13 @@ export default function MachineCodingProblemPage({
     [machineCodingContext],
   );
 
-  // The runtime (preview/terminal/tests) needs a cross-origin-isolated browser;
-  // where it can't boot we still render the workspace read/edit-only rather
-  // than blocking the page (see Workspace `runtimeEnabled`).
+  // No cross-origin isolation → runtime can't boot; degrade, don't block.
   const support = useWebContainerSupport();
+
+  // Warm it up while starter files load, so it isn't a cold start.
+  useEffect(() => {
+    if (support.checked && support.supported) prewarmWebContainer();
+  }, [support.checked, support.supported]);
 
   if (error) {
     return (

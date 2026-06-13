@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { track } from "~/lib/analytics";
+import { prewarmWebContainer } from "~/lib/webcontainer/boot";
 import { useTRPC } from "~/trpc/react";
 
 const Workspace = dynamic(
@@ -131,10 +132,13 @@ export default function GuestDuckletPage({
     }),
   );
 
-  // The runtime needs a cross-origin-isolated browser; where it can't boot we
-  // still render the read-only workspace (just without preview) rather than
-  // blocking the page (see Workspace `runtimeEnabled`).
+  // No cross-origin isolation → runtime can't boot; degrade, don't block.
   const support = useWebContainerSupport();
+
+  // Warm it up while the snapshot loads, so it isn't a cold start.
+  useEffect(() => {
+    if (support.checked && support.supported) prewarmWebContainer();
+  }, [support.checked, support.supported]);
 
   // Hold on the spinner until the support check has run. `checked` stays false
   // across the isolation-recovery reload; deciding the layout before then would

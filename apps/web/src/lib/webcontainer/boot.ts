@@ -28,6 +28,15 @@ export function bootWebContainer(): Promise<WebContainer> {
   return bootPromise;
 }
 
+/**
+ * Best-effort, idempotent warm-up: start the chunk download + WASM boot early
+ * (shares the boot singleton) so the runtime hook reuses it instead of starting
+ * cold. Fire-and-forget; the real boot path surfaces errors.
+ */
+export function prewarmWebContainer(): void {
+  void bootWebContainer().catch(() => undefined);
+}
+
 /** Tear down the current instance so a fresh one can boot (e.g. on unmount). */
 export async function teardownWebContainer(): Promise<void> {
   const pending = bootPromise;

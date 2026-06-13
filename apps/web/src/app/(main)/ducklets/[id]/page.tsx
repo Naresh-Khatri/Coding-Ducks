@@ -47,6 +47,7 @@ import {
 import { useIsMobile } from "~/hooks/use-is-mobile";
 import { useSocketRoom } from "~/hooks/use-socket";
 import { track } from "~/lib/analytics";
+import { prewarmWebContainer } from "~/lib/webcontainer/boot";
 import { useTRPC } from "~/trpc/react";
 
 // The workspace pulls in CodeMirror, xterm, and the WebContainer runtime —
@@ -265,10 +266,13 @@ export default function DuckletPage({
     };
   }, [provider, ducklet, isOwner, roomId, router]);
 
-  // The WebContainer runtime needs a cross-origin-isolated browser. Where it
-  // can't boot (many mobiles, Safari) we don't block — the workspace renders
-  // read/edit/collaborate-only via `runtimeEnabled` below.
+  // No cross-origin isolation → runtime can't boot; degrade, don't block.
   const support = useWebContainerSupport();
+
+  // Warm it up while the collab socket connects, so it isn't a cold start.
+  useEffect(() => {
+    if (support.checked && support.supported) prewarmWebContainer();
+  }, [support.checked, support.supported]);
 
   // Hold on the spinner until the support check has run. `checked` stays false
   // across the isolation-recovery reload; deciding the layout before then would

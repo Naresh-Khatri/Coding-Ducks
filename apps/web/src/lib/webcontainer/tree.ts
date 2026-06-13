@@ -74,6 +74,13 @@ interface BootPlan {
 }
 
 /**
+ * `npm install` tuned for a throwaway in-browser install: skip the audit/fund
+ * round-trips, reuse anything cached, and drop progress redraws.
+ */
+export const NPM_INSTALL =
+  "npm install --no-audit --no-fund --prefer-offline --no-progress";
+
+/**
  * Infer how to boot a project from its `package.json` scripts + deps. Prefers
  * a `dev` script (Vite et al.), falling back to `start` (static/node). Returns
  * `null` when there's nothing runnable.
@@ -102,7 +109,7 @@ export function inferBootPlan(files: Record<string, string>): BootPlan | null {
     Object.keys(pkg.devDependencies ?? {}).length > 0;
 
   return {
-    command: install ? `npm install && ${run}` : run,
+    command: install ? `${NPM_INSTALL} && ${run}` : run,
     run,
     install,
   };
