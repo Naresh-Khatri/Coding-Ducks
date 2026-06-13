@@ -3,7 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CheckCircle2, Circle, Clock, Flame, Search } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  CircleDashed,
+  Clock,
+  Eye,
+  Flame,
+  Search,
+} from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
 
@@ -20,11 +29,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useDebounce } from "~/hooks/use-debounce";
-import {
-  CATEGORY_LABELS,
-  STATUS_DOT,
-  STATUS_LABELS,
-} from "~/lib/machine-coding/labels";
+import { CATEGORY_LABELS, STATUS_LABELS } from "~/lib/machine-coding/labels";
 import { readAllLocalStatuses } from "~/lib/machine-coding/local-store";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
@@ -209,21 +214,27 @@ function ProblemRow({
         href={`/machine-coding/${problem.slug}`}
         className="group hover:bg-muted/40 flex items-center gap-4 px-4 py-3 transition-colors first:rounded-t-xl last:rounded-b-xl"
       >
-        {/* Status indicator */}
+        {/* Status indicator — each state gets a distinct, meaningful icon */}
         {status === "completed" ? (
-          <CheckCircle2 className="size-5 shrink-0 text-green-500" />
-        ) : status ? (
-          <span className="relative flex size-5 shrink-0 items-center justify-center">
-            <Circle className="text-muted-foreground/40 size-5" />
-            <span
-              className={cn(
-                "absolute size-2 rounded-full",
-                STATUS_DOT[status] ?? "bg-muted-foreground",
-              )}
-            />
-          </span>
+          <CheckCircle2
+            className="size-5 shrink-0 text-green-500"
+            aria-label="Completed"
+          />
+        ) : status === "revealed" ? (
+          <Eye
+            className="size-5 shrink-0 text-orange-500"
+            aria-label="Solution viewed"
+          />
+        ) : status === "in-progress" ? (
+          <CircleDashed
+            className="size-5 shrink-0 text-amber-500"
+            aria-label="In progress"
+          />
         ) : (
-          <Circle className="text-muted-foreground/30 size-5 shrink-0" />
+          <Circle
+            className="text-muted-foreground/30 size-5 shrink-0"
+            aria-label="Not started"
+          />
         )}
 
         {/* Title + meta */}
