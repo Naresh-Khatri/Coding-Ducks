@@ -6,7 +6,7 @@ Implement \`debounce(fn, wait)\`. It returns a function that postpones calling
 \`fn\` until \`wait\` milliseconds have passed since the **last** time the
 returned function was invoked. Rapid calls reset the timer.
 
-\`\`\`js
+\`\`\`ts
 const log = debounce(() => console.log("saved"), 300);
 log(); log(); log(); // "saved" prints once, 300ms after the last call
 \`\`\`
@@ -25,18 +25,23 @@ const EDITORIAL = `# Solution
 Keep a single timer handle in the closure. Each call clears the pending timer
 and schedules a fresh one, so only the last call survives the \`wait\` window.
 
-\`\`\`js
-export function debounce(fn, wait) {
-  let timer;
-  return function (...args) {
+\`\`\`ts
+export function debounce<A extends unknown[]>(
+  fn: (...args: A) => void,
+  wait: number,
+): (...args: A) => void {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return function (this: unknown, ...args: A) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), wait);
   };
 }
 \`\`\`
 
-Using \`function\` (not an arrow) and \`fn.apply(this, args)\` preserves the
-caller's \`this\`, which matters when the debounced function is used as a method.
+The generic \`A extends unknown[]\` threads the wrapped function's parameter types
+through to the debounced one, so calls stay type-checked. Using \`function\` (not
+an arrow) and \`fn.apply(this, args)\` preserves the caller's \`this\`, which
+matters when the debounced function is used as a method.
 `;
 
 export const debounce: MachineCodingProblem = {
@@ -56,9 +61,12 @@ export const debounce: MachineCodingProblem = {
  * Return a debounced version of \`fn\` that only runs \`wait\` ms after the
  * last call.
  */
-export function debounce(fn, wait) {
+export function debounce<A extends unknown[]>(
+  fn: (...args: A) => void,
+  wait: number,
+): (...args: A) => void {
   // TODO: implement
-  return function (...args) {};
+  return () => {};
 }
 `,
     "src/main.ts": `import "./style.css";
@@ -85,9 +93,12 @@ document.querySelector<HTMLInputElement>("#box")!.addEventListener("input", onTy
  * Return a debounced version of \`fn\` that only runs \`wait\` ms after the
  * last call.
  */
-export function debounce(fn, wait) {
-  let timer;
-  return function (...args) {
+export function debounce<A extends unknown[]>(
+  fn: (...args: A) => void,
+  wait: number,
+): (...args: A) => void {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return function (this: unknown, ...args: A) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), wait);
   };

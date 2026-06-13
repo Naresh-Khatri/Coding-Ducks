@@ -50,7 +50,7 @@ export const ticTacToe: MachineCodingProblem = {
   tags: ["React", "State", "Game"],
   companies: ["Amazon", "Apple"],
   templateId: "react-ts",
-  displayOrder: 40,
+  displayOrder: 170,
   description: DESCRIPTION,
   editorial: EDITORIAL,
   starterFiles: {

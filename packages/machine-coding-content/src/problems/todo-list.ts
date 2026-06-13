@@ -50,7 +50,7 @@ export const todoList: MachineCodingProblem = {
   tags: ["React", "State", "Forms"],
   companies: ["Meta", "Microsoft"],
   templateId: "react-ts",
-  displayOrder: 30,
+  displayOrder: 110,
   description: DESCRIPTION,
   editorial: EDITORIAL,
   starterFiles: {

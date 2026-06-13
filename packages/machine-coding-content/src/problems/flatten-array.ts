@@ -6,7 +6,7 @@ Implement \`flatten(value)\` which takes a deeply nested array and returns a new
 fully flattened array — every nested level collapsed into a single flat array,
 left to right.
 
-\`\`\`js
+\`\`\`ts
 flatten([1, [2, [3, [4]], 5]]); // → [1, 2, 3, 4, 5]
 \`\`\`
 
@@ -25,9 +25,9 @@ const EDITORIAL = `# Solution
 Walk the array; when an element is itself an array, recurse and spread its
 flattened result into the output, otherwise push the value.
 
-\`\`\`js
-export function flatten(value) {
-  const out = [];
+\`\`\`ts
+export function flatten(value: unknown[]): unknown[] {
+  const out: unknown[] = [];
   for (const item of value) {
     if (Array.isArray(item)) out.push(...flatten(item));
     else out.push(item);
@@ -57,7 +57,7 @@ export const flattenArray: MachineCodingProblem = {
     "src/flatten.ts": `/**
  * Flatten a deeply nested array into a single flat array, preserving order.
  */
-export function flatten(value) {
+export function flatten(value: unknown[]): unknown[] {
   // TODO: implement
   return value;
 }
@@ -78,8 +78,8 @@ app.innerHTML = \`
     "src/flatten.ts": `/**
  * Flatten a deeply nested array into a single flat array, preserving order.
  */
-export function flatten(value) {
-  const out = [];
+export function flatten(value: unknown[]): unknown[] {
+  const out: unknown[] = [];
   for (const item of value) {
     if (Array.isArray(item)) out.push(...flatten(item));
     else out.push(item);
@@ -92,7 +92,7 @@ export function flatten(value) {
     "src/flatten.test.ts": `import { flatten } from "./flatten";
 import { cases } from "./mc-test";
 
-cases("flatten", flatten, [
+cases("flatten", (input) => flatten(input as unknown[]), [
   {
     name: "flattens a deeply nested array",
     input: [1, [2, [3, [4]], 5]],
@@ -114,7 +114,7 @@ cases("flatten", flatten, [
     input: [1, [2, 3]],
     expected: [1, [2, 3]],
     run: (input) => {
-      flatten(input);
+      flatten(input as unknown[]);
       return input;
     },
   },

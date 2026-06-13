@@ -4,7 +4,10 @@
  * client, so solution files and editorials stay off the wire except through the
  * gated `machineCoding.getSolution` procedure.
  */
-import type { MachineCodingProblem, MachineCodingProblemSummary } from "./types";
+import type {
+  MachineCodingProblem,
+  MachineCodingProblemSummary,
+} from "./types";
 import { MACHINE_CODING_PROBLEMS } from "./problems";
 
 export type {
@@ -31,7 +34,9 @@ export function getEditablePaths(p: MachineCodingProblem): string[] {
 }
 
 /** Drop solution / test / editorial content from a problem for catalogue use. */
-export function toSummary(p: MachineCodingProblem): MachineCodingProblemSummary {
+export function toSummary(
+  p: MachineCodingProblem,
+): MachineCodingProblemSummary {
   return {
     slug: p.slug,
     title: p.title,
