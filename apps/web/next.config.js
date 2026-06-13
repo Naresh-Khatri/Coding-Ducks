@@ -87,6 +87,9 @@ const config = {
       // boots a container; the catalogue (`/machine-coding`) has no `:slug`
       // segment and is intentionally excluded.
       { source: "/machine-coding/:slug", headers: isolation },
+      // Interview rooms (`/interview/<id>`) boot a container too — without these
+      // they aren't cross-origin isolated and the runtime/tests can't load.
+      { source: "/interview/:id+", headers: isolation },
     ];
   },
 };
