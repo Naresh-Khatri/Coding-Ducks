@@ -6,7 +6,10 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { MachineCodingContext } from "./types";
-import type { WebContainerRuntime } from "~/lib/webcontainer/use-runtime";
+import type {
+  RuntimeStatus,
+  WebContainerRuntime,
+} from "~/lib/webcontainer/use-runtime";
 import { patchLocalAttempt } from "~/lib/machine-coding/local-store";
 import { useTRPC } from "~/trpc/react";
 
@@ -58,6 +61,8 @@ export interface MachineCodingConsoleEntry {
 interface MachineCodingTestsValue {
   /** WebContainer is booted and able to run the suite. */
   ready: boolean;
+  /** Raw runtime phase, for the boot stepper while `ready` is still false. */
+  status: RuntimeStatus;
   running: boolean;
   /** Latest run, or null before the first run. */
   run: MachineCodingTestRun | null;
@@ -386,7 +391,9 @@ export function MachineCodingTestsProvider({
     trpc.machineCoding.getSolution.mutationOptions(),
   );
 
-  const ready = runtime.status === "running" && !!runtime.previewUrl;
+  // The dev server being up (`ready`) is our proxy for "install finished, so
+  // the vitest binary exists" — running the suite before then would fail.
+  const ready = runtime.status === "ready";
 
   const runTests = async () => {
     const container = runtime.container;
@@ -506,6 +513,7 @@ export function MachineCodingTestsProvider({
 
   const value: MachineCodingTestsValue = {
     ready,
+    status: runtime.status,
     running,
     run,
     error,

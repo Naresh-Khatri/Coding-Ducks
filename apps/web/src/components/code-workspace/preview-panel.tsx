@@ -1,22 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Loader2, RotateCw } from "lucide-react";
+import { ExternalLink, RotateCw } from "lucide-react";
 
-import type {
-  RuntimeStatus,
-  WebContainerRuntime,
-} from "~/lib/webcontainer/use-runtime";
+import type { WebContainerRuntime } from "~/lib/webcontainer/use-runtime";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-
-const STATUS_LABEL: Record<RuntimeStatus, string> = {
-  idle: "Idle",
-  booting: "Booting runtime…",
-  mounting: "Mounting files…",
-  running: "Starting dev server…",
-  error: "Runtime error",
-};
+import { BootStepper } from "./boot-stepper";
 
 export function PreviewPanel({
   runtime,
@@ -94,14 +84,7 @@ export function PreviewPanel({
                 </Button>
               </>
             ) : (
-              <>
-                <Loader2 className="size-5 animate-spin" />
-                <p>{STATUS_LABEL[status]}</p>
-                <p className="text-muted-foreground/70 max-w-xs text-center text-xs">
-                  First boot installs dependencies in your browser — this can
-                  take a little while.
-                </p>
-              </>
+              <BootStepper status={status} />
             )}
           </div>
         )}

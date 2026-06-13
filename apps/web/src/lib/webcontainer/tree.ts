@@ -80,6 +80,15 @@ interface BootPlan {
 export const NPM_INSTALL =
   "npm install --no-audit --no-fund --prefer-offline --no-progress";
 
+/** Same flags as {@link NPM_INSTALL}, as argv for `container.spawn("npm", …)`. */
+export const NPM_INSTALL_ARGS = [
+  "install",
+  "--no-audit",
+  "--no-fund",
+  "--prefer-offline",
+  "--no-progress",
+];
+
 /**
  * Infer how to boot a project from its `package.json` scripts + deps. Prefers
  * a `dev` script (Vite et al.), falling back to `start` (static/node). Returns

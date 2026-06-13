@@ -25,11 +25,29 @@ type BottomTab = "tests" | "console";
  * surface for pure-utility problems that have no UI preview).
  */
 export function MachineCodingBottomPanel() {
-  const { ready, running, run, error, consoleEntries, clearConsole, runTests } =
-    useMachineCodingTests();
+  const {
+    ready,
+    status,
+    running,
+    run,
+    error,
+    consoleEntries,
+    clearConsole,
+    runTests,
+  } = useMachineCodingTests();
   const [tab, setTab] = useState<BottomTab>("tests");
 
   const allPass = run != null && run.total > 0 && run.passed >= run.total;
+
+  // Phase-aware label for the run button while the sandbox is still coming up.
+  const bootLabel =
+    status === "installing"
+      ? "Installing…"
+      : status === "starting"
+        ? "Starting…"
+        : status === "error"
+          ? "Failed"
+          : "Booting…";
 
   return (
     <div className="bg-background flex h-full flex-col">
@@ -106,7 +124,7 @@ export function MachineCodingBottomPanel() {
               ? run
                 ? "Re-run"
                 : "Run tests"
-              : "Booting…"}
+              : bootLabel}
         </Button>
       </div>
 

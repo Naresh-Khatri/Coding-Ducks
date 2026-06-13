@@ -20,15 +20,28 @@ import {
   CONSOLE_MESSAGE_TYPE,
   isConsoleLevel,
 } from "./preview-console";
-import { inferBootPlan, isIgnoredPath, NPM_INSTALL, toFileSystemTree } from "./tree";
+import {
+  inferBootPlan,
+  isIgnoredPath,
+  NPM_INSTALL,
+  NPM_INSTALL_ARGS,
+  toFileSystemTree,
+} from "./tree";
 
 export type { PreviewConsoleEntry } from "./preview-console";
 
+/**
+ * Cold-start lifecycle, in order. `installing` and `starting` split the long
+ * post-mount wait so the boot stepper can show what's actually happening;
+ * `ready` is set when the dev server emits `server-ready`.
+ */
 export type RuntimeStatus =
   | "idle"
   | "booting"
   | "mounting"
-  | "running"
+  | "installing"
+  | "starting"
+  | "ready"
   | "error";
 
 export interface WebContainerRuntime {
@@ -231,6 +244,7 @@ export function useWebContainerRuntime({
             previewOriginRef.current = null;
           }
           setPreviewUrl(url);
+          setStatus("ready");
         });
 
         setStatus("mounting");
@@ -281,15 +295,35 @@ export function useWebContainerRuntime({
           }),
         );
 
-        // Kick off install + dev server if the project is runnable.
+        // Kick off the project if it's runnable. Install runs as its own
+        // process (output mirrored to the terminal) so its exit gives a clean
+        // signal to advance the stepper from "installing" to "starting"; the dev
+        // server then runs in the interactive shell so the terminal can
+        // drive/restart it.
         const plan = inferBootPlan(initialFiles);
         if (plan) {
           bootCommandRef.current = plan.command;
           runCommandRef.current = plan.run;
-          void inputWriterRef.current.write(`${plan.command}\n`);
+          if (plan.install) {
+            setStatus("installing");
+            emit(`\r\n\x1b[2m$ ${NPM_INSTALL}\x1b[0m\r\n`);
+            const install = await container.spawn("npm", NPM_INSTALL_ARGS);
+            void install.output.pipeTo(
+              new WritableStream({
+                write(data) {
+                  if (!cancelled) emit(data);
+                },
+              }),
+            );
+            await install.exit;
+            if (cancelled) return;
+          }
+          setStatus("starting");
+          void inputWriterRef.current.write(`${plan.run}\n`);
+        } else {
+          // Nothing to run (no dev/start script) — the sandbox itself is ready.
+          setStatus("ready");
         }
-
-        setStatus("running");
       } catch (err) {
         if (cancelled) return;
         console.error("[ducklet] runtime failed:", err);

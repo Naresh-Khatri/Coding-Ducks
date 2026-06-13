@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckCircle2, ChevronRight, XCircle } from "lucide-react";
 
 import type { MachineCodingDiffLine } from "./use-tests";
+import { BootStepper } from "~/components/code-workspace/boot-stepper";
 import { cn } from "~/lib/utils";
 import { useMachineCodingTests } from "./use-tests";
 
@@ -79,7 +80,7 @@ function DiffView({ diff }: { diff: MachineCodingDiffLine[] }) {
  * tab switcher live in the surrounding `MachineCodingBottomPanel`.
  */
 export function TestResultsList() {
-  const { ready, run } = useMachineCodingTests();
+  const { ready, run, status } = useMachineCodingTests();
   // Keys the user manually flipped from the default (failures open, passes
   // closed). Kept as overrides so a re-run re-applies sensible defaults.
   const [overrides, setOverrides] = useState<Set<string>>(new Set());
@@ -197,11 +198,17 @@ export function TestResultsList() {
               </div>
             );
           })
-        ) : (
+        ) : ready ? (
           <div className="text-muted-foreground flex h-full items-center justify-center p-4 text-center text-sm">
-            {ready
-              ? "Run the tests to see a pass/fail breakdown for each spec."
-              : "Booting the test environment…"}
+            Run the tests to see a pass/fail breakdown for each spec.
+          </div>
+        ) : status === "error" ? (
+          <div className="text-muted-foreground flex h-full items-center justify-center p-4 text-center text-sm">
+            Couldn't start the test environment. Check the terminal for details.
+          </div>
+        ) : (
+          <div className="flex h-full items-center justify-center p-4">
+            <BootStepper status={status} />
           </div>
         )}
       </div>
