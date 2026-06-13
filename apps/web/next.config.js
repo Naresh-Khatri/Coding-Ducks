@@ -50,9 +50,10 @@ const config = {
    * COEP is `credentialless` rather than `require-corp` so cross-origin
    * subresources without a CORP header (Google/GitHub avatars, the CDN,
    * analytics) still load — they're just fetched without credentials.
-   * `credentialless` is supported in Chromium and Firefox, which matches
-   * WebContainers' desktop-only support; unsupported browsers hit the
-   * desktop-only gate before any container boots.
+   * `credentialless` is supported in Chromium and Firefox (desktop + mobile);
+   * browsers that don't honor it (e.g. Safari) simply aren't cross-origin
+   * isolated, so the workspace falls back to its read/edit/collaborate mode
+   * (`runtimeEnabled={false}`) instead of booting a container.
    */
   async headers() {
     const isolation = [

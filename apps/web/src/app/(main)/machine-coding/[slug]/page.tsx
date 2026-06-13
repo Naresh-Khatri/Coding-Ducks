@@ -11,10 +11,7 @@ import * as Y from "yjs";
 
 import type { MachineCodingContext } from "~/components/machine-coding/types";
 import { authClient } from "~/auth/client";
-import {
-  DesktopOnlyGate,
-  useWebContainerSupport,
-} from "~/components/code-workspace/desktop-only-gate";
+import { useWebContainerSupport } from "~/components/code-workspace/webcontainer-support";
 import { CountdownTimer } from "~/components/countdown-timer";
 import { DifficultyBadge } from "~/components/difficulty-badge";
 import { machineCodingExtension } from "~/components/machine-coding/side-panel";
@@ -162,16 +159,10 @@ export default function MachineCodingProblemPage({
     [machineCodingContext],
   );
 
+  // The runtime (preview/terminal/tests) needs a cross-origin-isolated browser;
+  // where it can't boot we still render the workspace read/edit-only rather
+  // than blocking the page (see Workspace `runtimeEnabled`).
   const support = useWebContainerSupport();
-  if (support.checked && !support.supported) {
-    return (
-      <DesktopOnlyGate
-        reason={support.reason}
-        backHref="/machine-coding"
-        backLabel="Back to Machine Coding"
-      />
-    );
-  }
 
   if (error) {
     return (
@@ -278,6 +269,7 @@ export default function MachineCodingProblemPage({
             // Pure JS-utility problems have no UI to preview — drop the preview
             // column and go two-column (problem statement + editor).
             previewEnabled={detail.problem.category !== "js-utility"}
+            runtimeEnabled={support.supported}
           />
         ) : (
           <div className="text-muted-foreground flex h-full items-center justify-center text-sm">

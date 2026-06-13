@@ -32,6 +32,7 @@ import {
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
 import { useEditorSettings } from "~/hooks/use-editor-settings";
+import { useIsMobile } from "~/hooks/use-is-mobile";
 import { cn } from "~/lib/utils";
 import { useFilePresence } from "~/lib/webcontainer/use-file-presence";
 import { useWebContainerRuntime } from "~/lib/webcontainer/use-runtime";
@@ -54,6 +55,7 @@ import { TerminalPanel } from "./terminal-panel";
 import { useAskChat } from "./use-ask-chat";
 import { useIframeFocusGuard } from "./use-iframe-focus-guard";
 import { useRoomPreviewCapture } from "./use-preview-capture";
+import { RuntimeUnavailableBanner } from "./webcontainer-support";
 
 /** A locally-held AI edit proposal awaiting review (never written to the doc). */
 interface PendingEdit {
@@ -173,7 +175,24 @@ interface WorkspaceProps {
    * server still boots under the hood so tests stay runnable.
    */
   previewEnabled?: boolean;
+  /**
+   * Whether the in-browser WebContainer runtime can boot here. Pass `false` on
+   * a device/browser without cross-origin isolation (e.g. many mobiles, Safari)
+   * to fall back to a read/edit/collaborate shell: the editor and realtime sync
+   * still work, but the preview, terminal, and tests drawer are hidden (they
+   * need the runtime) and a short notice explains why. Defaults to true.
+   */
+  runtimeEnabled?: boolean;
 }
+
+/** The single-column mobile layout shows one of these regions at a time. */
+type WorkspaceTab =
+  | "problem"
+  | "files"
+  | "code"
+  | "tests"
+  | "terminal"
+  | "preview";
 
 const ENTRY_CANDIDATES = [
   "src/App.tsx",
@@ -220,13 +239,22 @@ export function Workspace({
   editablePaths = null,
   terminalEnabled = true,
   previewEnabled = true,
+  runtimeEnabled = true,
 }: WorkspaceProps) {
   const hasSidePanel = sidePanel != null;
-  const hasBottomPanel = bottomPanel != null;
+  // Preview, terminal, and the bottom (tests) drawer are all runtime surfaces:
+  // when the runtime can't boot here they're hidden and the workspace becomes a
+  // read/edit/collaborate shell (see `runtimeEnabled`).
+  const hasBottomPanel = bottomPanel != null && runtimeEnabled;
+  const showPreviewColumn = previewEnabled && runtimeEnabled;
+  const terminalAvailable = terminalEnabled && runtimeEnabled;
   // The Files navigator popover in the editor tab bar (side-panel mode only —
   // without a side panel the file explorer owns the whole left column).
   const [filesOpen, setFilesOpen] = useState(false);
-  const runtime = useWebContainerRuntime({ ydoc, enabled: true });
+  const runtime = useWebContainerRuntime({ ydoc, enabled: runtimeEnabled });
+  // Below the `md` breakpoint the resizable columns are unusable, so we switch
+  // to a single-column tabbed layout (Problem / Code / Preview / …).
+  const isMobile = useIsMobile();
   const { byPath: presenceByPath, setActiveFile } = useFilePresence(provider);
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
@@ -243,7 +271,8 @@ export function Workspace({
     provider,
     runtime,
     roomId: roomId ?? 0,
-    enabled: editable,
+    // No runtime → no preview to screenshot.
+    enabled: editable && runtimeEnabled,
   });
 
   // Monaco (loaded once via the pinned CDN loader) powers TS intelligence,
@@ -274,6 +303,11 @@ export function Workspace({
   // The bottom panel (e.g. test results) is the focus when present — open it.
   const [showBottomPanel, setShowBottomPanel] = useState(true);
   const [showConsole, setShowConsole] = useState(false);
+  // Active region in the mobile tabbed layout. Machine coding (a side panel)
+  // opens on the problem; a plain ducklet opens on the code.
+  const [mobileTab, setMobileTab] = useState<WorkspaceTab>(
+    hasSidePanel ? "problem" : "code",
+  );
   // Pending AI edits keyed by path. Local-only: a proposal is written to the
   // shared doc only when the user accepts it, never on arrival.
   const [pending, setPending] = useState<Record<string, PendingEdit>>({});
@@ -508,203 +542,303 @@ export function Workspace({
   // Two-column mode (no preview) gives the side panel + editor the whole width;
   // the side panel widens so a problem statement has room to read.
   const sideDefault =
-    !previewEnabled && hasSidePanel ? 38 : hasSidePanel ? 30 : 18;
-  const editorDefault = previewEnabled
+    !showPreviewColumn && hasSidePanel ? 38 : hasSidePanel ? 30 : 18;
+  const editorDefault = showPreviewColumn
     ? hasSidePanel
       ? 44
       : 52
     : 100 - sideDefault;
 
-  const content = (
-    <ResizablePanelGroup direction="horizontal" className="h-full">
-      <ResizablePanel
-        defaultSize={sideDefault}
-        minSize={hasSidePanel ? 22 : 12}
-        maxSize={hasSidePanel ? 48 : 30}
-      >
-        {sidePanel ? (
-          <div className="flex h-full flex-col">
-            {/* The left column is now the feature panel alone (Files moved to a
-                dropdown in the editor's tab bar). One header row carries the
-                panel's label and its optional toolbar (e.g. reveal / timer). */}
-            <div className="flex items-center gap-1 border-b px-2 py-1.5">
-              <span className="text-muted-foreground px-1 text-xs font-semibold tracking-wide uppercase">
-                {sidePanel.label}
-              </span>
-              <div className="flex-1" />
-              {sidePanel.toolbar}
-            </div>
-            <div className="min-h-0 flex-1">{sidePanel.render(api)}</div>
-          </div>
-        ) : (
-          fileExplorer
-        )}
-      </ResizablePanel>
+  // The feature side panel (problem statement + its toolbar), or null when the
+  // left column is just the file tree. Reused by the desktop left column and
+  // the mobile "Problem" tab.
+  const sidePanelRegion = sidePanel ? (
+    <div className="flex h-full flex-col">
+      {/* One header row carries the panel's label and its optional toolbar
+          (e.g. reveal / timer). Files live in the editor tab bar's dropdown. */}
+      <div className="flex items-center gap-1 border-b px-2 py-1.5">
+        <span className="text-muted-foreground px-1 text-xs font-semibold tracking-wide uppercase">
+          {sidePanel.label}
+        </span>
+        <div className="flex-1" />
+        {sidePanel.toolbar}
+      </div>
+      <div className="min-h-0 flex-1">{sidePanel.render(api)}</div>
+    </div>
+  ) : null;
 
-      <ResizableHandle withHandle />
+  // The editor's tab bar and the editor surface, hoisted so both the desktop
+  // column and the mobile "Code" tab render the same thing.
+  const editorTabs = (
+    <EditorTabs
+      openPaths={openPaths}
+      activePath={activePath}
+      onSelect={setActivePath}
+      onClose={closeFile}
+      presenceByPath={presenceByPath}
+      pendingPaths={pendingPaths}
+      pendingDeletes={pendingDeletes}
+      leading={filesNav}
+      actions={
+        <>
+          {activeReadOnly && activePath && !activePending && (
+            <span
+              className="text-muted-foreground mr-1 flex items-center gap-1 text-xs"
+              title="This file is read-only — edit the implementation file"
+            >
+              <Lock className="size-3" />
+              Read-only
+            </span>
+          )}
+          <EditorSettingsDialog showShortcuts={false} />
+        </>
+      }
+    />
+  );
 
-      <ResizablePanel defaultSize={editorDefault} minSize={25}>
-        <div className="flex h-full flex-col">
-          <EditorTabs
-            openPaths={openPaths}
-            activePath={activePath}
-            onSelect={setActivePath}
-            onClose={closeFile}
-            presenceByPath={presenceByPath}
-            pendingPaths={pendingPaths}
-            pendingDeletes={pendingDeletes}
-            leading={filesNav}
-            actions={
-              <>
-                {activeReadOnly && activePath && !activePending && (
-                  <span
-                    className="text-muted-foreground mr-1 flex items-center gap-1 text-xs"
-                    title="This file is read-only — edit the implementation file"
-                  >
-                    <Lock className="size-3" />
-                    Read-only
-                  </span>
-                )}
-                <EditorSettingsDialog showShortcuts={false} />
-              </>
-            }
-          />
+  const editorPane = (
+    <div className="relative h-full">
+      {!monaco ? (
+        <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+          Loading editor…
+        </div>
+      ) : activePath && activePending ? (
+        <ReviewEditor
+          key={activePath}
+          path={activePath}
+          kind={activePending.kind}
+          base={activePending.base}
+          proposed={activePending.proposed}
+          isNew={activePending.isNew}
+          isDark={isDark}
+          current={activeText?.toJSON() ?? ""}
+          onAccept={acceptEdit}
+          onReject={dropPending}
+        />
+      ) : activePath && activeText && activeModel ? (
+        <FileEditor
+          monaco={monaco}
+          model={activeModel}
+          ytext={activeText}
+          provider={provider}
+          readOnly={activeReadOnly}
+        />
+      ) : (
+        <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+          Select a file to start editing
+        </div>
+      )}
 
-          <ResizablePanelGroup direction="vertical" className="flex-1">
-            <ResizablePanel defaultSize={70} minSize={20}>
-              <div className="relative h-full">
-                {!monaco ? (
-                  <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-                    Loading editor…
-                  </div>
-                ) : activePath && activePending ? (
-                  <ReviewEditor
-                    key={activePath}
-                    path={activePath}
-                    kind={activePending.kind}
-                    base={activePending.base}
-                    proposed={activePending.proposed}
-                    isNew={activePending.isNew}
-                    isDark={isDark}
-                    current={activeText?.toJSON() ?? ""}
-                    onAccept={acceptEdit}
-                    onReject={dropPending}
-                  />
-                ) : activePath && activeText && activeModel ? (
-                  <FileEditor
-                    monaco={monaco}
-                    model={activeModel}
-                    ytext={activeText}
-                    provider={provider}
-                    readOnly={activeReadOnly}
-                  />
-                ) : (
-                  <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-                    Select a file to start editing
-                  </div>
-                )}
+      {/* Floating AI chat bar overlaid at the bottom of the editor. Hidden
+          when AI is disabled (e.g. assessment mode). */}
+      {!readOnly && aiEnabled && (
+        <AskDock
+          chat={chat}
+          pendingPaths={pendingPaths}
+          pendingDeletes={pendingDeletes}
+          onOpenFile={openFile}
+        />
+      )}
+    </div>
+  );
 
-                {/* Floating AI chat bar overlaid at the bottom of the editor.
-                    Hidden when AI is disabled (e.g. assessment mode). */}
-                {!readOnly && aiEnabled && (
-                  <AskDock
-                    chat={chat}
-                    pendingPaths={pendingPaths}
-                    pendingDeletes={pendingDeletes}
-                    onOpenFile={openFile}
-                  />
-                )}
-              </div>
+  // The desktop editor column: tab bar, the editor with an optional bottom
+  // (tests) drawer + terminal split under it, and a toggle bar.
+  const editorColumn = (
+    <div className="flex h-full flex-col">
+      {editorTabs}
+
+      <ResizablePanelGroup direction="vertical" className="flex-1">
+        <ResizablePanel defaultSize={70} minSize={20}>
+          {editorPane}
+        </ResizablePanel>
+
+        {hasBottomPanel && showBottomPanel && (
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={32} minSize={12}>
+              {bottomPanel.render(api)}
             </ResizablePanel>
+          </>
+        )}
 
-            {bottomPanel && showBottomPanel && (
-              <>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={32} minSize={12}>
-                  {bottomPanel.render(api)}
-                </ResizablePanel>
-              </>
-            )}
+        {terminalAvailable && showTerminal && (
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={30} minSize={10}>
+              <TerminalPanel runtime={runtime} />
+            </ResizablePanel>
+          </>
+        )}
+      </ResizablePanelGroup>
 
-            {terminalEnabled && showTerminal && (
-              <>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={30} minSize={10}>
-                  <TerminalPanel runtime={runtime} />
-                </ResizablePanel>
-              </>
-            )}
-          </ResizablePanelGroup>
-
-          {(terminalEnabled || hasBottomPanel) && (
-            <div className="bg-muted/20 flex h-7 items-center gap-1 border-t px-2">
-              {bottomPanel && (
-                <Button
-                  variant={showBottomPanel ? "secondary" : "ghost"}
-                  size="sm"
-                  className="h-5 rounded-xs px-2 text-xs"
-                  onClick={() => setShowBottomPanel((v) => !v)}
-                  title={`Toggle ${bottomPanel.label}`}
-                >
-                  {bottomPanel.icon}
-                  {bottomPanel.label}
-                </Button>
-              )}
-              {terminalEnabled && (
-                <Button
-                  variant={showTerminal ? "secondary" : "ghost"}
-                  size="sm"
-                  className="h-5 rounded-xs px-2 text-xs"
-                  onClick={() => setShowTerminal((v) => !v)}
-                  title="Toggle terminal"
-                >
-                  <TerminalIcon className="mr-1 size-3" />
-                  Terminal
-                </Button>
-              )}
-            </div>
+      {(terminalAvailable || hasBottomPanel) && (
+        <div className="bg-muted/20 flex h-7 items-center gap-1 border-t px-2">
+          {hasBottomPanel && (
+            <Button
+              variant={showBottomPanel ? "secondary" : "ghost"}
+              size="sm"
+              className="h-5 rounded-xs px-2 text-xs"
+              onClick={() => setShowBottomPanel((v) => !v)}
+              title={`Toggle ${bottomPanel.label}`}
+            >
+              {bottomPanel.icon}
+              {bottomPanel.label}
+            </Button>
+          )}
+          {terminalAvailable && (
+            <Button
+              variant={showTerminal ? "secondary" : "ghost"}
+              size="sm"
+              className="h-5 rounded-xs px-2 text-xs"
+              onClick={() => setShowTerminal((v) => !v)}
+              title="Toggle terminal"
+            >
+              <TerminalIcon className="mr-1 size-3" />
+              Terminal
+            </Button>
           )}
         </div>
+      )}
+    </div>
+  );
+
+  // The desktop preview column (preview + an optional console split below).
+  const previewColumn = (
+    <ResizablePanelGroup direction="vertical" className="h-full">
+      <ResizablePanel defaultSize={70} minSize={20}>
+        <PreviewPanel
+          runtime={runtime}
+          consoleToggle={
+            <ConsoleToggleButton
+              runtime={runtime}
+              open={showConsole}
+              onToggle={() => setShowConsole((v) => !v)}
+            />
+          }
+        />
       </ResizablePanel>
 
-      {previewEnabled && (
+      {showConsole && (
         <>
           <ResizableHandle withHandle />
-
-          <ResizablePanel defaultSize={hasSidePanel ? 26 : 30} minSize={20}>
-            <ResizablePanelGroup direction="vertical" className="h-full">
-              <ResizablePanel defaultSize={70} minSize={20}>
-                <PreviewPanel
-                  runtime={runtime}
-                  consoleToggle={
-                    <ConsoleToggleButton
-                      runtime={runtime}
-                      open={showConsole}
-                      onToggle={() => setShowConsole((v) => !v)}
-                    />
-                  }
-                />
-              </ResizablePanel>
-
-              {showConsole && (
-                <>
-                  <ResizableHandle withHandle />
-                  <ResizablePanel defaultSize={30} minSize={10}>
-                    <ConsolePanel
-                      runtime={runtime}
-                      onClose={() => setShowConsole(false)}
-                    />
-                  </ResizablePanel>
-                </>
-              )}
-            </ResizablePanelGroup>
+          <ResizablePanel defaultSize={30} minSize={10}>
+            <ConsolePanel
+              runtime={runtime}
+              onClose={() => setShowConsole(false)}
+            />
           </ResizablePanel>
         </>
       )}
     </ResizablePanelGroup>
   );
 
+  const desktopContent = (
+    <ResizablePanelGroup direction="horizontal" className="h-full">
+      <ResizablePanel
+        defaultSize={sideDefault}
+        minSize={hasSidePanel ? 22 : 12}
+        maxSize={hasSidePanel ? 48 : 30}
+      >
+        {sidePanelRegion ?? fileExplorer}
+      </ResizablePanel>
+
+      <ResizableHandle withHandle />
+
+      <ResizablePanel defaultSize={editorDefault} minSize={25}>
+        {editorColumn}
+      </ResizablePanel>
+
+      {showPreviewColumn && (
+        <>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={hasSidePanel ? 26 : 30} minSize={20}>
+            {previewColumn}
+          </ResizablePanel>
+        </>
+      )}
+    </ResizablePanelGroup>
+  );
+
+  // Mobile: one region at a time behind a top tab strip. Only the tabs that
+  // apply to this workspace appear — no preview/terminal/tests without a
+  // runtime, and no "Problem" without a side panel.
+  const mobileTabs: { id: WorkspaceTab; label: string }[] = [
+    hasSidePanel
+      ? { id: "problem", label: sidePanel.label }
+      : { id: "files", label: "Files" },
+    { id: "code", label: "Code" },
+    ...(hasBottomPanel
+      ? [{ id: "tests" as const, label: bottomPanel.label }]
+      : []),
+    ...(showPreviewColumn ? [{ id: "preview" as const, label: "Preview" }] : []),
+    ...(terminalAvailable
+      ? [{ id: "terminal" as const, label: "Terminal" }]
+      : []),
+  ];
+  // Keep the selection valid if the available tabs change (e.g. runtime state).
+  const activeMobileTab = mobileTabs.some((t) => t.id === mobileTab)
+    ? mobileTab
+    : (mobileTabs[0]?.id ?? "code");
+
+  const mobileRegion = (() => {
+    switch (activeMobileTab) {
+      case "problem":
+        return sidePanelRegion;
+      case "files":
+        return fileExplorer;
+      case "tests":
+        return <div className="h-full">{bottomPanel?.render(api)}</div>;
+      case "terminal":
+        return <TerminalPanel runtime={runtime} />;
+      case "preview":
+        return <PreviewPanel runtime={runtime} />;
+      case "code":
+      default:
+        return (
+          <div className="flex h-full flex-col">
+            {editorTabs}
+            <div className="min-h-0 flex-1">{editorPane}</div>
+          </div>
+        );
+    }
+  })();
+
+  const mobileContent = (
+    <div className="flex h-full flex-col">
+      <div className="bg-muted/20 flex shrink-0 items-center gap-1 overflow-x-auto border-b px-2 py-1.5">
+        {mobileTabs.map((t) => (
+          <Button
+            key={t.id}
+            variant={activeMobileTab === t.id ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 shrink-0 rounded-md px-3 text-xs"
+            onClick={() => setMobileTab(t.id)}
+          >
+            {t.label}
+          </Button>
+        ))}
+      </div>
+      <div className="min-h-0 flex-1">{mobileRegion}</div>
+    </div>
+  );
+
+  const content = isMobile ? mobileContent : desktopContent;
+
+  // When the runtime can't boot here, a slim banner explains the missing
+  // preview/terminal/tests; the editor + collaboration below still work.
+  const body = (
+    <div className="flex h-full flex-col">
+      {!runtimeEnabled && (
+        <RuntimeUnavailableBanner
+          collaborative={!readOnly && provider != null}
+        />
+      )}
+      <div className="min-h-0 flex-1">{content}</div>
+    </div>
+  );
+
   // A feature can wrap the workspace in a shared-state provider (e.g. so the
   // Problem panel's "Run tests" and the Tests drawer read one run state).
-  return <>{renderProvider ? renderProvider(api, content) : content}</>;
+  return <>{renderProvider ? renderProvider(api, body) : body}</>;
 }

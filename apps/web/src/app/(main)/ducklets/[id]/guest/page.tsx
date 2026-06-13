@@ -10,10 +10,7 @@ import { ChevronLeft, Eye } from "lucide-react";
 import * as Y from "yjs";
 
 import { authClient } from "~/auth/client";
-import {
-  DesktopOnlyGate,
-  useWebContainerSupport,
-} from "~/components/code-workspace/desktop-only-gate";
+import { useWebContainerSupport } from "~/components/code-workspace/webcontainer-support";
 import { useSignIn } from "~/components/sign-in-dialog";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -134,14 +131,14 @@ export default function GuestDuckletPage({
     }),
   );
 
+  // The runtime needs a cross-origin-isolated browser; where it can't boot we
+  // still render the read-only workspace (just without preview) rather than
+  // blocking the page (see Workspace `runtimeEnabled`).
   const support = useWebContainerSupport();
-  if (support.checked && !support.supported) {
-    return <DesktopOnlyGate reason={support.reason} />;
-  }
 
   // Hold on the spinner until the support check has run. `checked` stays false
-  // across the isolation-recovery reload; mounting the workspace before then
-  // would flash a runtime that can't boot.
+  // across the isolation-recovery reload; deciding the layout before then would
+  // flash the wrong mode.
   if (!support.checked || isDuckletLoading) {
     return (
       <div className="flex h-[100dvh] items-center justify-center">
@@ -270,7 +267,12 @@ export default function GuestDuckletPage({
 
       <div className="flex-1 overflow-hidden">
         {localDoc ? (
-          <Workspace provider={null} ydoc={localDoc} readOnly />
+          <Workspace
+            provider={null}
+            ydoc={localDoc}
+            readOnly
+            runtimeEnabled={support.supported}
+          />
         ) : (
           <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
             This ducklet has no content yet.

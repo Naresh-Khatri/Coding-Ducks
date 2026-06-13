@@ -1,20 +1,21 @@
 /**
- * Feature detection for the ducklet WebContainer runtime.
+ * Feature detection for the WebContainer runtime (ducklets + machine coding).
  *
- * WebContainers need cross-origin isolation (SharedArrayBuffer) and are only
- * supported on desktop Chromium/Firefox. We gate on these before booting so
- * unsupported browsers see a friendly "open on desktop" screen instead of a
- * cryptic boot failure.
+ * A WebContainer can boot wherever the page is cross-origin isolated (which
+ * unlocks `SharedArrayBuffer`) — that's the real requirement, so we gate on the
+ * *capability* rather than sniffing the user agent. Modern mobile browsers
+ * (Android Chrome/Firefox, iOS Safari 16.4+) can run it too; where it can't
+ * boot, the caller falls back to a read/edit/collaborate experience instead of
+ * blocking the page (see the workspace's `runtimeEnabled`).
  */
 
 export type UnsupportedReason =
   | "ssr"
   | "not-cross-origin-isolated"
-  | "no-shared-array-buffer"
-  | "mobile"
-  | "safari";
+  | "no-shared-array-buffer";
 
 export interface SupportResult {
+  /** Whether the in-browser WebContainer runtime can boot here. */
   supported: boolean;
   reason?: UnsupportedReason;
 }
@@ -24,31 +25,11 @@ export function checkWebContainerSupport(): SupportResult {
     return { supported: false, reason: "ssr" };
   }
 
-  const ua = navigator.userAgent;
-
-  // Check the *permanent* reasons (mobile/Safari) before the transient isolation
-  // check: those are never isolated either, but a clear reason also stops the
-  // caller from reloading to recover isolation it can never get.
-
-  // Mobile browsers can't run WebContainers (no SAB threads / memory limits).
-  if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) {
-    return { supported: false, reason: "mobile" };
-  }
-
-  // Safari doesn't support COEP `credentialless`, so isolation here would have
-  // required `require-corp` (which breaks our cross-origin avatars). Treat it
-  // as unsupported. Exclude Chrome/Edge/Firefox-on-iOS which also match
-  // "Safari" in their UA string.
-  const isSafari =
-    /^((?!chrome|chromium|crios|edg|android|fxios|firefox).)*safari/i.test(ua);
-  if (isSafari) {
-    return { supported: false, reason: "safari" };
-  }
-
-  // The COOP/COEP headers (on /ducklets/:id+) make the page cross-origin
-  // isolated, which unlocks SharedArrayBuffer. The one *transient* reason: a
-  // soft-nav into a room stays un-isolated until a real document load applies
-  // the headers, so callers reload once to recover (see the hook).
+  // The COOP/COEP headers (scoped to workspace routes in next.config) make the
+  // page cross-origin isolated, which unlocks SharedArrayBuffer. The one
+  // *transient* miss: a soft-nav into a room reuses the un-isolated document
+  // that loaded the previous page, so a direct reload is needed to apply the
+  // headers — the hook handles that recovery.
   if (!window.crossOriginIsolated) {
     return { supported: false, reason: "not-cross-origin-isolated" };
   }
@@ -59,17 +40,16 @@ export function checkWebContainerSupport(): SupportResult {
   return { supported: true };
 }
 
-export function unsupportedMessage(reason: UnsupportedReason): string {
-  switch (reason) {
-    case "mobile":
-      return "Ducklets run a full Node.js environment in your browser, which isn't available on mobile devices. Open this on a desktop browser to start coding.";
-    case "safari":
-      return "Ducklets aren't supported in Safari yet. Please use a recent version of Chrome, Edge, or Firefox on desktop.";
-    case "not-cross-origin-isolated":
-    case "no-shared-array-buffer":
-      return "Your browser couldn't enter the secure mode ducklets need. Make sure you're on a recent desktop Chrome, Edge, or Firefox, then reload.";
-    case "ssr":
-    default:
-      return "Loading…";
-  }
+/**
+ * True for Safari (desktop or iOS), excluding Chromium/Firefox-on-iOS which
+ * also carry "Safari" in their UA. Used *only* to skip the isolation-recovery
+ * reload: Safari doesn't honor our `credentialless` COEP, so it can never
+ * become isolated through our headers and a reload would just waste a load —
+ * it falls straight through to the read/edit experience instead.
+ */
+export function isSafari(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /^((?!chrome|chromium|crios|edg|android|fxios|firefox).)*safari/i.test(
+    navigator.userAgent,
+  );
 }

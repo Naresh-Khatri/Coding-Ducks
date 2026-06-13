@@ -23,10 +23,7 @@ import { toast } from "sonner";
 
 import type { ChatMessage, UserPresence } from "~/hooks/use-socket";
 import { authClient } from "~/auth/client";
-import {
-  DesktopOnlyGate,
-  useWebContainerSupport,
-} from "~/components/code-workspace/desktop-only-gate";
+import { useWebContainerSupport } from "~/components/code-workspace/webcontainer-support";
 import { machineCodingExtension } from "~/components/machine-coding/side-panel";
 import type { MachineCodingContext } from "~/components/machine-coding/types";
 import { RenameDuckletDialog } from "~/components/ducklets/rename-ducklet-dialog";
@@ -268,16 +265,14 @@ export default function DuckletPage({
     };
   }, [provider, ducklet, isOwner, roomId, router]);
 
-  // WebContainer is desktop Chromium/Firefox only — gate genuinely unsupported
-  // browsers before rendering the workspace.
+  // The WebContainer runtime needs a cross-origin-isolated browser. Where it
+  // can't boot (many mobiles, Safari) we don't block — the workspace renders
+  // read/edit/collaborate-only via `runtimeEnabled` below.
   const support = useWebContainerSupport();
-  if (support.checked && !support.supported) {
-    return <DesktopOnlyGate reason={support.reason} />;
-  }
 
   // Hold on the spinner until the support check has run. `checked` stays false
-  // across the isolation-recovery reload; mounting the workspace before then
-  // would flash a runtime that can't boot.
+  // across the isolation-recovery reload; deciding the layout before then would
+  // flash the wrong mode.
   if (!support.checked || isDuckletLoading) {
     return (
       <div className="flex h-[100dvh] items-center justify-center">
@@ -467,6 +462,7 @@ export default function DuckletPage({
                   ducklet.machineCodingContext?.editablePaths ?? null
                 }
                 terminalEnabled={!machineCodingContext}
+                runtimeEnabled={support.supported}
               />
             ) : (
               <div className="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
