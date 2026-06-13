@@ -13,6 +13,7 @@ import type { MachineCodingContext } from "~/components/machine-coding/types";
 import { authClient } from "~/auth/client";
 import { useWebContainerSupport } from "~/components/code-workspace/webcontainer-support";
 import { CountdownTimer } from "~/components/countdown-timer";
+import { ProblemNav } from "~/components/machine-coding/problem-nav";
 import { ProblemSheet } from "~/components/machine-coding/problem-sheet";
 import { machineCodingExtension } from "~/components/machine-coding/side-panel";
 import { useSignIn } from "~/components/sign-in-dialog";
@@ -200,6 +201,7 @@ export default function MachineCodingProblemPage({
             </Button>
           </Link>
           <ProblemSheet currentSlug={slug} title={detail.problem.title} />
+          <ProblemNav currentSlug={slug} />
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
