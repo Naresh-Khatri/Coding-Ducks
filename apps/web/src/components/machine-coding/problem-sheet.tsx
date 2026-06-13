@@ -22,7 +22,7 @@ import { CATEGORY_LABELS } from "~/lib/machine-coding/labels";
 import { readAllLocalStatuses } from "~/lib/machine-coding/local-store";
 import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
-
+import { Button } from "../ui/button";
 import { CategoryIcons } from "./category-icons";
 import { ProblemStatusIcon } from "./problem-status-icon";
 
@@ -94,14 +94,14 @@ export function ProblemSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button
-          type="button"
+        <Button
+          variant={"ghost"}
           className="group hover:bg-muted -mx-1 flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-left transition-colors"
           title="Browse all problems"
         >
-          <span className="min-w-0 truncate font-semibold">{title}</span>
+          <span className="min-w-0 truncate font-semibold">All Questions</span>
           <ChevronsUpDown className="text-muted-foreground group-hover:text-foreground size-3.5 shrink-0 transition-colors" />
-        </button>
+        </Button>
       </SheetTrigger>
 
       <SheetContent side="left" className="w-[88vw] gap-0 p-0 sm:max-w-md">
