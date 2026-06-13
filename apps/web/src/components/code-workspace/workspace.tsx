@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 // Monaco is loaded once via a pinned CDN loader (see ./monaco/setup) and shared
 // across the whole workspace — it isn't a route-level chunk to defer.
 import { useMonaco } from "@monaco-editor/react";
-import { Lock, TerminalIcon } from "lucide-react";
+import { ChevronDown, FolderTree, Lock, TerminalIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import {
@@ -22,11 +22,17 @@ import type { WebContainerRuntime } from "~/lib/webcontainer/use-runtime";
 import { EditorSettingsDialog } from "~/components/editor-settings-dialog";
 import { Button } from "~/components/ui/button";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "~/components/ui/resizable";
 import { useEditorSettings } from "~/hooks/use-editor-settings";
+import { cn } from "~/lib/utils";
 import { useFilePresence } from "~/lib/webcontainer/use-file-presence";
 import { useWebContainerRuntime } from "~/lib/webcontainer/use-runtime";
 
@@ -217,7 +223,9 @@ export function Workspace({
 }: WorkspaceProps) {
   const hasSidePanel = sidePanel != null;
   const hasBottomPanel = bottomPanel != null;
-  const [leftTab, setLeftTab] = useState<"side" | "files">("side");
+  // The Files navigator popover in the editor tab bar (side-panel mode only —
+  // without a side panel the file explorer owns the whole left column).
+  const [filesOpen, setFilesOpen] = useState(false);
   const runtime = useWebContainerRuntime({ ydoc, enabled: true });
   const { byPath: presenceByPath, setActiveFile } = useFilePresence(provider);
   const { resolvedTheme } = useTheme();
@@ -452,6 +460,51 @@ export function Workspace({
     />
   );
 
+  // In side-panel mode the file tree lives in a dropdown at the head of the
+  // editor's tab bar (the left column is the feature's panel, e.g. a problem
+  // statement). Opening a file dismisses the popover so you land in the editor.
+  const filesNav = hasSidePanel ? (
+    <Popover open={filesOpen} onOpenChange={setFilesOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          title="Browse files"
+          className={cn(
+            "flex shrink-0 items-center gap-1.5 border-r px-3 py-1.5 text-xs",
+            filesOpen
+              ? "bg-background text-foreground"
+              : "text-muted-foreground hover:bg-muted/40",
+          )}
+        >
+          <FolderTree className="size-3.5" />
+          Files
+          <ChevronDown className="size-3 opacity-70" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={0}
+        className="w-72 overflow-hidden p-0"
+      >
+        <div className="h-[min(70vh,28rem)]">
+          <FileExplorer
+            ydoc={ydoc}
+            readOnly={readOnly}
+            activePath={activePath}
+            onOpen={(path) => {
+              openFile(path);
+              setFilesOpen(false);
+            }}
+            presenceByPath={presenceByPath}
+            pendingPaths={pendingPaths}
+            pendingDeletes={pendingDeletes}
+            editablePaths={editablePaths}
+          />
+        </div>
+      </PopoverContent>
+    </Popover>
+  ) : null;
+
   // Two-column mode (no preview) gives the side panel + editor the whole width;
   // the side panel widens so a problem statement has room to read.
   const sideDefault =
@@ -471,37 +524,17 @@ export function Workspace({
       >
         {sidePanel ? (
           <div className="flex h-full flex-col">
-            {/* One header row: the side panel's tab + Files, with the panel's
-                optional toolbar (e.g. a timer) pinned right. The toolbar lives
-                outside the tab panes so it stays visible (and mounted) on
-                either tab. */}
+            {/* The left column is now the feature panel alone (Files moved to a
+                dropdown in the editor's tab bar). One header row carries the
+                panel's label and its optional toolbar (e.g. reveal / timer). */}
             <div className="flex items-center gap-1 border-b px-2 py-1.5">
-              <Button
-                variant={leftTab === "side" ? "secondary" : "ghost"}
-                size="sm"
-                className="h-7 rounded-md px-3 text-xs"
-                onClick={() => setLeftTab("side")}
-              >
+              <span className="text-muted-foreground px-1 text-xs font-semibold tracking-wide uppercase">
                 {sidePanel.label}
-              </Button>
-              <Button
-                variant={leftTab === "files" ? "secondary" : "ghost"}
-                size="sm"
-                className="h-7 rounded-md px-3 text-xs"
-                onClick={() => setLeftTab("files")}
-              >
-                Files
-              </Button>
+              </span>
               <div className="flex-1" />
               {sidePanel.toolbar}
             </div>
-            {/* Both panes stay mounted (state preserved); inactive one hidden. */}
-            <div className={leftTab === "side" ? "min-h-0 flex-1" : "hidden"}>
-              {sidePanel.render(api)}
-            </div>
-            <div className={leftTab === "files" ? "min-h-0 flex-1" : "hidden"}>
-              {fileExplorer}
-            </div>
+            <div className="min-h-0 flex-1">{sidePanel.render(api)}</div>
           </div>
         ) : (
           fileExplorer
@@ -520,6 +553,7 @@ export function Workspace({
             presenceByPath={presenceByPath}
             pendingPaths={pendingPaths}
             pendingDeletes={pendingDeletes}
+            leading={filesNav}
             actions={
               <>
                 {activeReadOnly && activePath && !activePending && (

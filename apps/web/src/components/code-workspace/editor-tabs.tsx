@@ -15,6 +15,7 @@ export function EditorTabs({
   presenceByPath,
   pendingPaths,
   pendingDeletes,
+  leading,
   actions,
 }: {
   openPaths: string[];
@@ -25,13 +26,16 @@ export function EditorTabs({
   /** Files with an unreviewed AI edit — flagged with a dot (red for deletes). */
   pendingPaths?: Set<string>;
   pendingDeletes?: Set<string>;
+  /** Leading content before the tabs (e.g. a Files navigator dropdown). */
+  leading?: React.ReactNode;
   /** Right-pinned toolbar content (e.g. editor settings). */
   actions?: React.ReactNode;
 }) {
-  if (openPaths.length === 0 && !actions) return null;
+  if (openPaths.length === 0 && !actions && !leading) return null;
 
   return (
     <div className="bg-muted/20 flex items-stretch border-b">
+      {leading && <div className="flex shrink-0 items-stretch">{leading}</div>}
       <div className="flex items-stretch overflow-x-auto">
         {openPaths.map((path) => {
           const isActive = path === activePath;
