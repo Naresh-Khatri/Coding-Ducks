@@ -128,7 +128,7 @@ export default function MachineCodingProblemPage({
     trpc.machineCoding.createInterviewRoom.mutationOptions({
       onSuccess: ({ roomId }) => {
         clearLocalAttempt(slug);
-        router.push(`/ducklets/${roomId}`);
+        router.push(`/interview/${roomId}`);
       },
       onError: (e) => toast.error(e.message),
     }),

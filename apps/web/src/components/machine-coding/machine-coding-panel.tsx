@@ -94,7 +94,7 @@ export function MachineCodingPanel({
           <div className="mt-8 space-y-4 border-t pt-6 text-sm">
             {roomId != null && (
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href={`/ducklets/${roomId}`}>Open interview room</Link>
+                <Link href={`/interview/${roomId}`}>Open interview room</Link>
               </Button>
             )}
 
