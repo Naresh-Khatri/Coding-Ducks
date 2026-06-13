@@ -15,6 +15,18 @@ const COMPANY_ICON_SLUGS: Record<string, string> = {
   Google: "google",
   Airbnb: "airbnb",
   Microsoft: "microsoft",
+  Atlassian: "atlassian",
+  "Booking.com": "bookingdotcom",
+  Linear: "linear",
+  LinkedIn: "linkedin",
+  Netflix: "netflix",
+  Reddit: "reddit",
+  Shopify: "shopify",
+  Stripe: "stripe",
+  Trello: "trello",
+  // Uber's default logo is white (for dark UIs); the mono variant is black so it
+  // stays visible on the white chip.
+  Uber: "uber-mono",
 };
 
 /** Public path to a company's brand SVG, or null when we have no logo for it. */
