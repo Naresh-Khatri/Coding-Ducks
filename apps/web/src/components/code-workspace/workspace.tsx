@@ -103,6 +103,12 @@ export interface WorkspaceApi {
   /** Live WebContainer runtime — spawn commands, read files, preview URL. */
   runtime: WebContainerRuntime;
   /**
+   * The Y.Doc backing the editor — local-only on a solo page, Hocuspocus-backed
+   * in a room. A panel can put shared state here (e.g. test results) and have it
+   * sync wherever the doc syncs, without knowing which surface it's on.
+   */
+  ydoc: Y.Doc;
+  /**
    * Load a set of files as reviewable diffs against the current code, reusing
    * the editor's accept/reject flow (e.g. revealing a reference solution).
    */
@@ -479,8 +485,8 @@ export function Workspace({
   // optional provider wrapper.
   const readFiles = useCallback(() => readAllFiles(ydoc), [ydoc]);
   const api = useMemo<WorkspaceApi>(
-    () => ({ runtime, loadFilesAsDiff, readFiles }),
-    [runtime, loadFilesAsDiff, readFiles],
+    () => ({ runtime, ydoc, loadFilesAsDiff, readFiles }),
+    [runtime, ydoc, loadFilesAsDiff, readFiles],
   );
 
   const fileExplorer = (

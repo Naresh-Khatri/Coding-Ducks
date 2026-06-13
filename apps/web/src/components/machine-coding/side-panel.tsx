@@ -45,6 +45,7 @@ export function machineCodingExtension(
         runtime={api.runtime}
         context={context}
         readFiles={api.readFiles}
+        ydoc={api.ydoc}
       >
         {children}
       </MachineCodingTestsProvider>

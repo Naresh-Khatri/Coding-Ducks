@@ -1,7 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import type * as Y from "yjs";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -351,6 +360,63 @@ function parseConsole(raw: string): MachineCodingConsoleEntry[] {
 }
 
 /**
+ * Run lifecycle, mirrored into the workspace Y.Doc so it syncs to everyone in a
+ * collaborative room: execution stays local (WebContainers can't be shared) but
+ * the outcome — result, console, running state — is shared. A solo page's doc is
+ * local-only, so this is a silent no-op.
+ */
+interface SharedTestState {
+  running: boolean;
+  /** Wall-clock ms when the current run started; used to expire a stuck flag. */
+  runningSince: number | null;
+  run: MachineCodingTestRun | null;
+  error: string | null;
+  consoleEntries: MachineCodingConsoleEntry[];
+}
+
+const SHARED_KEY = "mcTestRun";
+
+/** Snapshot the shared map into a plain object (values are stored as JSON). */
+function readShared(map: Y.Map<unknown>): SharedTestState {
+  return {
+    running: (map.get("running") as boolean | undefined) ?? false,
+    runningSince: (map.get("runningSince") as number | undefined) ?? null,
+    run: (map.get("run") as MachineCodingTestRun | undefined) ?? null,
+    error: (map.get("error") as string | undefined) ?? null,
+    consoleEntries:
+      (map.get("console") as MachineCodingConsoleEntry[] | undefined) ?? [],
+  };
+}
+
+/**
+ * Subscribe to the shared run map, re-snapshotting on change. The snapshot is
+ * ref-cached so `getSnapshot` stays referentially stable — a fresh object each
+ * call would loop `useSyncExternalStore`.
+ */
+function useSharedTestState(map: Y.Map<unknown>): SharedTestState {
+  const snapshot = useRef<SharedTestState>(readShared(map));
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const handler = () => {
+        snapshot.current = readShared(map);
+        onChange();
+      };
+      // Re-snapshot on (re)subscribe in case the map identity changed.
+      snapshot.current = readShared(map);
+      map.observe(handler);
+      return () => map.unobserve(handler);
+    },
+    [map],
+  );
+  const get = useCallback(() => snapshot.current, []);
+  return useSyncExternalStore(subscribe, get, get);
+}
+
+// A run that started but never reported back (runner crashed/disconnected)
+// shouldn't wedge everyone's UI in "running" forever.
+const STALE_RUN_MS = 2 * 60 * 1000;
+
+/**
  * Owns machine-coding action state (running the suite, revealing the solution)
  * so the Problem side panel and the Tests bottom drawer share one source of
  * truth. Completion isn't a manual action — it's derived automatically when all
@@ -361,23 +427,33 @@ export function MachineCodingTestsProvider({
   runtime,
   context,
   readFiles,
+  ydoc,
   children,
 }: {
   runtime: WebContainerRuntime;
   context: MachineCodingContext;
   /** Snapshot of current files, used to read test sources for each spec. */
   readFiles: () => Record<string, string>;
+  /**
+   * Workspace doc the run lifecycle is mirrored into, so results sync to every
+   * participant in a collaborative room (no-op on a solo, local-only doc).
+   */
+  ydoc: Y.Doc;
   children: ReactNode;
 }) {
   const { slug, isSignedIn, variant } = context;
   const trpc = useTRPC();
 
-  const [running, setRunning] = useState(false);
-  const [run, setRun] = useState<MachineCodingTestRun | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [consoleEntries, setConsoleEntries] = useState<
-    MachineCodingConsoleEntry[]
-  >([]);
+  // Run lifecycle lives in the shared doc (see SharedTestState) so it syncs.
+  const sharedMap = useMemo(() => ydoc.getMap<unknown>(SHARED_KEY), [ydoc]);
+  const shared = useSharedTestState(sharedMap);
+  const { run, error, consoleEntries } = shared;
+  // Expire a run whose runner vanished without reporting back.
+  const running =
+    shared.running &&
+    (shared.runningSince == null ||
+      Date.now() - shared.runningSince < STALE_RUN_MS);
+
   const [revealed, setRevealed] = useState(context.solutionRevealed);
   const [editorial, setEditorial] = useState<string | null>(null);
   const [solutionFiles, setSolutionFiles] = useState<Record<
@@ -385,7 +461,7 @@ export function MachineCodingTestsProvider({
     string
   > | null>(null);
 
-  const clearConsole = () => setConsoleEntries([]);
+  const clearConsole = () => sharedMap.set("console", []);
 
   const recordTestRun = useMutation(
     trpc.machineCoding.recordTestRun.mutationOptions(),
@@ -401,9 +477,12 @@ export function MachineCodingTestsProvider({
   const runTests = async () => {
     const container = runtime.container;
     if (!container || running) return;
-    setRunning(true);
-    setError(null);
-    setConsoleEntries([]);
+    ydoc.transact(() => {
+      sharedMap.set("running", true);
+      sharedMap.set("runningSince", Date.now());
+      sharedMap.set("error", null);
+      sharedMap.set("console", []);
+    });
     try {
       // Clear last run's captured values + console so a crashed suite can't show
       // stale data (each `vitest run` rewrites them via the test harnesses).
@@ -441,7 +520,8 @@ export function MachineCodingTestsProvider({
       parsed ??= parseTestRun(out);
 
       if (!parsed) {
-        setError(
+        sharedMap.set(
+          "error",
           "Couldn't read the test results. The environment may still be installing — try again in a moment.",
         );
         return;
@@ -457,18 +537,21 @@ export function MachineCodingTestsProvider({
       } catch {
         // problem doesn't use the cases() harness — spec source stays the view
       }
-      setRun(enriched);
-
       // Surface anything the user's code logged while the suite ran.
+      let entries: MachineCodingConsoleEntry[] = [];
       try {
-        setConsoleEntries(
-          parseConsole(
-            await container.fs.readFile(".mc-console.json", "utf-8"),
-          ),
+        entries = parseConsole(
+          await container.fs.readFile(".mc-console.json", "utf-8"),
         );
       } catch {
         // no logs captured (or file unavailable) — leave the console empty
       }
+      // Publish result + console together so observers never see a half-update.
+      ydoc.transact(() => {
+        sharedMap.set("run", enriched);
+        sharedMap.set("console", entries);
+        sharedMap.set("error", null);
+      });
 
       const allPass = enriched.total > 0 && enriched.passed >= enriched.total;
       // Completion is implicit: all green marks the attempt complete.
@@ -490,11 +573,15 @@ export function MachineCodingTestsProvider({
         toast.message(`${enriched.passed}/${enriched.total} tests passing`);
       }
     } catch {
-      setError(
+      sharedMap.set(
+        "error",
         "Couldn't run the tests. Make sure the environment finished booting.",
       );
     } finally {
-      setRunning(false);
+      ydoc.transact(() => {
+        sharedMap.set("running", false);
+        sharedMap.set("runningSince", null);
+      });
     }
   };
 
