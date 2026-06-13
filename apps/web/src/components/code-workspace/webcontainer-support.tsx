@@ -29,26 +29,19 @@ function writeGuard(value: boolean): void {
 }
 
 /**
- * Runs the WebContainer support check on the client after mount. `checked` is
- * false until then so callers don't decide layout during SSR. `supported`
- * means the in-browser runtime can boot; when it's false the workspace still
- * renders, just without preview/terminal/tests (see `runtimeEnabled`).
- *
- * Cross-origin isolation comes from the COOP/COEP headers, scoped to the
- * workspace routes. A soft-nav into a room from a non-isolated page reuses the
- * old, un-isolated document, so `crossOriginIsolated` stays false even though a
- * direct load would be isolated. Reload once to re-fetch with the headers,
- * guarded so we never loop. Safari is skipped: it ignores our `credentialless`
- * COEP, so a reload can't isolate it — it goes straight to read/edit mode.
+ * Client-side support check (after mount, so `checked` is false during SSR).
+ * `supported` means the runtime can boot; when false the workspace still renders
+ * without preview/terminal/tests. Reloads once to recover the cross-origin
+ * isolation a soft-nav drops — except on Safari, which can't isolate under our
+ * `credentialless` COEP anyway.
  */
 export function useWebContainerSupport(): SupportResult & { checked: boolean } {
-  // Initial value is a safe SSR fallback; real check uses window.crossOriginIsolated — browser-only, unsafe during SSR render
+  // SSR-safe default; the real check needs `window`, so it runs in the effect.
   const [result, setResult] = useState<SupportResult & { checked: boolean }>({
     supported: false,
     checked: false,
   });
 
-  // Browser-only init: checkWebContainerSupport() reads window/navigator, must stay in effect for SSR safety
   useEffect(() => {
     const support = checkWebContainerSupport();
 
@@ -62,8 +55,7 @@ export function useWebContainerSupport(): SupportResult & { checked: boolean } {
       return; // page is reloading — don't flip `checked` yet
     }
 
-    // Isolated, or recovery spent/not applicable: clear so a later soft-nav can
-    // retry once more.
+    // Isolated, or recovery spent: clear so a later soft-nav can retry once.
     writeGuard(false);
     setResult({ ...support, checked: true });
   }, []);
@@ -72,10 +64,9 @@ export function useWebContainerSupport(): SupportResult & { checked: boolean } {
 }
 
 /**
- * Slim, non-blocking notice shown inside the workspace when the in-browser
- * runtime can't boot here (no cross-origin isolation — e.g. an older browser,
- * Safari, or a low-capability device). The editor and realtime collaboration
- * still work; this explains why preview/terminal/tests are absent.
+ * Non-blocking notice shown when the runtime can't boot here (no cross-origin
+ * isolation). The editor + collaboration still work; this says why preview/
+ * terminal/tests are gone.
  */
 export function RuntimeUnavailableBanner({
   collaborative = false,

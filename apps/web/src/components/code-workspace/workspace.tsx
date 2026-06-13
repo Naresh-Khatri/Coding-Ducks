@@ -176,11 +176,9 @@ interface WorkspaceProps {
    */
   previewEnabled?: boolean;
   /**
-   * Whether the in-browser WebContainer runtime can boot here. Pass `false` on
-   * a device/browser without cross-origin isolation (e.g. many mobiles, Safari)
-   * to fall back to a read/edit/collaborate shell: the editor and realtime sync
-   * still work, but the preview, terminal, and tests drawer are hidden (they
-   * need the runtime) and a short notice explains why. Defaults to true.
+   * Whether the in-browser runtime can boot here. `false` (no cross-origin
+   * isolation — many mobiles, Safari) falls back to a read/edit/collaborate
+   * shell: editor + sync work, but preview/terminal/tests are hidden. Default true.
    */
   runtimeEnabled?: boolean;
 }
@@ -242,9 +240,8 @@ export function Workspace({
   runtimeEnabled = true,
 }: WorkspaceProps) {
   const hasSidePanel = sidePanel != null;
-  // Preview, terminal, and the bottom (tests) drawer are all runtime surfaces:
-  // when the runtime can't boot here they're hidden and the workspace becomes a
-  // read/edit/collaborate shell (see `runtimeEnabled`).
+  // Preview, terminal, and the tests drawer are runtime surfaces — hidden when
+  // the runtime can't boot, leaving a read/edit/collaborate shell.
   const hasBottomPanel = bottomPanel != null && runtimeEnabled;
   const showPreviewColumn = previewEnabled && runtimeEnabled;
   const terminalAvailable = terminalEnabled && runtimeEnabled;
@@ -252,8 +249,7 @@ export function Workspace({
   // without a side panel the file explorer owns the whole left column).
   const [filesOpen, setFilesOpen] = useState(false);
   const runtime = useWebContainerRuntime({ ydoc, enabled: runtimeEnabled });
-  // Below the `md` breakpoint the resizable columns are unusable, so we switch
-  // to a single-column tabbed layout (Problem / Code / Preview / …).
+  // Below `md` the resizable columns are unusable → single-column tabbed layout.
   const isMobile = useIsMobile();
   const { byPath: presenceByPath, setActiveFile } = useFilePresence(provider);
   const { resolvedTheme } = useTheme();
@@ -303,8 +299,7 @@ export function Workspace({
   // The bottom panel (e.g. test results) is the focus when present — open it.
   const [showBottomPanel, setShowBottomPanel] = useState(true);
   const [showConsole, setShowConsole] = useState(false);
-  // Active region in the mobile tabbed layout. Machine coding (a side panel)
-  // opens on the problem; a plain ducklet opens on the code.
+  // Active mobile tab — open on the problem if there's a side panel, else code.
   const [mobileTab, setMobileTab] = useState<WorkspaceTab>(
     hasSidePanel ? "problem" : "code",
   );
@@ -549,13 +544,10 @@ export function Workspace({
       : 52
     : 100 - sideDefault;
 
-  // The feature side panel (problem statement + its toolbar), or null when the
-  // left column is just the file tree. Reused by the desktop left column and
-  // the mobile "Problem" tab.
+  // Feature side panel (problem + toolbar), or null when the left column is just
+  // the file tree. Reused by the desktop column and the mobile "Problem" tab.
   const sidePanelRegion = sidePanel ? (
     <div className="flex h-full flex-col">
-      {/* One header row carries the panel's label and its optional toolbar
-          (e.g. reveal / timer). Files live in the editor tab bar's dropdown. */}
       <div className="flex items-center gap-1 border-b px-2 py-1.5">
         <span className="text-muted-foreground px-1 text-xs font-semibold tracking-wide uppercase">
           {sidePanel.label}
@@ -567,8 +559,7 @@ export function Workspace({
     </div>
   ) : null;
 
-  // The editor's tab bar and the editor surface, hoisted so both the desktop
-  // column and the mobile "Code" tab render the same thing.
+  // Hoisted so the desktop column and the mobile "Code" tab share one editor.
   const editorTabs = (
     <EditorTabs
       openPaths={openPaths}
@@ -642,8 +633,7 @@ export function Workspace({
     </div>
   );
 
-  // The desktop editor column: tab bar, the editor with an optional bottom
-  // (tests) drawer + terminal split under it, and a toggle bar.
+  // Desktop editor column: tabs, editor, optional tests/terminal split + toggles.
   const editorColumn = (
     <div className="flex h-full flex-col">
       {editorTabs}
@@ -760,9 +750,8 @@ export function Workspace({
     </ResizablePanelGroup>
   );
 
-  // Mobile: one region at a time behind a top tab strip. Only the tabs that
-  // apply to this workspace appear — no preview/terminal/tests without a
-  // runtime, and no "Problem" without a side panel.
+  // Mobile: one region at a time behind a tab strip — only the tabs that apply
+  // (no preview/terminal/tests without a runtime, no "Problem" without a panel).
   const mobileTabs: { id: WorkspaceTab; label: string }[] = [
     hasSidePanel
       ? { id: "problem", label: sidePanel.label }
@@ -825,8 +814,7 @@ export function Workspace({
 
   const content = isMobile ? mobileContent : desktopContent;
 
-  // When the runtime can't boot here, a slim banner explains the missing
-  // preview/terminal/tests; the editor + collaboration below still work.
+  // Banner explains the missing preview/terminal/tests when the runtime is off.
   const body = (
     <div className="flex h-full flex-col">
       {!runtimeEnabled && (
