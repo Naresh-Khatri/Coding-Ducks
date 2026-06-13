@@ -8,6 +8,13 @@ export const DIFFICULTY_COLORS: Record<string, string> = {
   hard: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
+/** Text-only variant for inline metadata strips (no pill background). */
+export const DIFFICULTY_TEXT_COLORS: Record<string, string> = {
+  easy: "text-green-400",
+  medium: "text-amber-400",
+  hard: "text-red-400",
+};
+
 export function DifficultyBadge({
   difficulty,
   className,

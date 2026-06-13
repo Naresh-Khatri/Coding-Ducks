@@ -9,6 +9,7 @@ import type { RouterOutputs } from "@acme/api";
 
 import type { LocalAttemptStatus } from "~/lib/machine-coding/local-store";
 import { DIFFICULTY_TEXT_COLORS } from "~/components/difficulty-badge";
+import { CategoryIcons } from "~/components/machine-coding/category-icons";
 import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import {
@@ -121,9 +122,9 @@ export default function MachineCodingPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            <SelectItem value="ui-component">UI Component</SelectItem>
-            <SelectItem value="js-utility">JS Utility</SelectItem>
-            <SelectItem value="small-app">Small App</SelectItem>
+            <SelectItem value="ui-component">UI</SelectItem>
+            <SelectItem value="js-utility">JS Utils</SelectItem>
+            <SelectItem value="small-app">App</SelectItem>
           </SelectContent>
         </Select>
         <Select value={duration} onValueChange={setDuration}>
@@ -238,7 +239,10 @@ function ProblemRow({
             )}
           </div>
           <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-            <span>{CATEGORY_LABELS[problem.category] ?? problem.category}</span>
+            <span className="flex items-center gap-1.5">
+              <CategoryIcons category={problem.category} />
+              {CATEGORY_LABELS[problem.category] ?? problem.category}
+            </span>
             <span
               className={cn(
                 "flex items-center gap-1 capitalize",
