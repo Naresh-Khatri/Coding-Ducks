@@ -8,6 +8,8 @@ import {
   getEditablePaths,
   getProblem,
   listProblemSummaries,
+  listVariants,
+  solutionFilesFor,
 } from "@acme/machine-coding-content";
 
 import { createRoom } from "../services/room";
@@ -15,6 +17,9 @@ import { track } from "../telemetry";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 const slugInput = z.object({ slug: z.string().min(1).max(100) });
+const slugVariantInput = slugInput.extend({
+  variant: z.string().min(1).max(40).optional(),
+});
 
 const difficultyFilter = z.enum(["easy", "medium", "hard"]);
 const categoryFilter = z.enum(["ui-component", "js-utility"]);
@@ -131,20 +136,21 @@ export const machineCodingRouter = createTRPCRouter({
           tags: p.tags,
           companies: p.companies,
           description: p.description,
+          variants: listVariants(p),
         },
         attempt,
       };
     }),
 
   /** Files to seed the local workspace: template ⊕ starter ⊕ tests ⊕ harness. */
-  getStarter: publicProcedure.input(slugInput).query(({ input }) => {
+  getStarter: publicProcedure.input(slugVariantInput).query(({ input }) => {
     const p = getProblem(input.slug);
     if (!p) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Problem not found" });
     }
     return {
-      files: assembleStarterFiles(p),
-      editablePaths: getEditablePaths(p),
+      files: assembleStarterFiles(p, input.variant),
+      editablePaths: getEditablePaths(p, input.variant),
       templateId: p.templateId,
       durationMinutes: p.durationMinutes,
     };
@@ -155,7 +161,7 @@ export const machineCodingRouter = createTRPCRouter({
    * stays frictionless; when signed in, it stamps the user's attempt.
    */
   getSolution: publicProcedure
-    .input(slugInput)
+    .input(slugVariantInput)
     .mutation(async ({ ctx, input }) => {
       const p = getProblem(input.slug);
       if (!p) {
@@ -179,7 +185,10 @@ export const machineCodingRouter = createTRPCRouter({
             },
           });
       }
-      return { solutionFiles: p.solutionFiles, editorial: p.editorial };
+      return {
+        solutionFiles: solutionFilesFor(p, input.variant),
+        editorial: p.editorial,
+      };
     }),
 
   /** Record that a signed-in user started practicing (history sync). */
