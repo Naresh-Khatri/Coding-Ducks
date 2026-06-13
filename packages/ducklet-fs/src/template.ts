@@ -430,6 +430,152 @@ export default app;
   },
 };
 
+const VUE_TS_TEMPLATE: DuckletTemplate = {
+  id: "vue-ts",
+  label: "Vue + TS",
+  description: "Vite + Vue 3 + TypeScript single-file components.",
+  startCommand: "npm run dev",
+  port: 5173,
+  install: true,
+  files: {
+    "package.json": pkg({
+      name: "ducklet",
+      private: true,
+      type: "module",
+      scripts: { dev: "vite --host", build: "vite build" },
+      dependencies: { vue: "^3.5.0" },
+      devDependencies: {
+        "@vitejs/plugin-vue": "^5.2.0",
+        typescript: "^5.7.0",
+        vite: "^6.0.0",
+      },
+    }),
+    "tsconfig.json": pkg({
+      compilerOptions: {
+        target: "ES2022",
+        lib: ["ES2022", "DOM", "DOM.Iterable"],
+        module: "ESNext",
+        moduleResolution: "bundler",
+        jsx: "preserve",
+        strict: true,
+        skipLibCheck: true,
+        types: ["vite/client"],
+      },
+      include: ["src"],
+    }),
+    "vite.config.ts": `import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+
+export default defineConfig({ plugins: [vue()] });
+`,
+    "index.html": `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ducklet</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+`,
+    "src/main.ts": `import { createApp } from "vue";
+import App from "./App.vue";
+
+createApp(App).mount("#app");
+`,
+    "src/App.vue": `<script setup lang="ts">
+import { ref } from "vue";
+
+const count = ref(0);
+</script>
+
+<template>
+  <main style="font-family: sans-serif; padding: 2rem">
+    <h1>Hello from Vue + TS 🦆</h1>
+    <button @click="count++">count is {{ count }}</button>
+  </main>
+</template>
+`,
+  },
+};
+
+const SVELTE_TS_TEMPLATE: DuckletTemplate = {
+  id: "svelte-ts",
+  label: "Svelte + TS",
+  description: "Vite + Svelte + TypeScript components.",
+  startCommand: "npm run dev",
+  port: 5173,
+  install: true,
+  files: {
+    "package.json": pkg({
+      name: "ducklet",
+      private: true,
+      type: "module",
+      scripts: { dev: "vite --host", build: "vite build" },
+      devDependencies: {
+        "@sveltejs/vite-plugin-svelte": "^5.0.0",
+        svelte: "^5.0.0",
+        typescript: "^5.7.0",
+        vite: "^6.0.0",
+      },
+    }),
+    "tsconfig.json": pkg({
+      compilerOptions: {
+        target: "ES2022",
+        lib: ["ES2022", "DOM", "DOM.Iterable"],
+        module: "ESNext",
+        moduleResolution: "bundler",
+        strict: true,
+        skipLibCheck: true,
+        verbatimModuleSyntax: true,
+        types: ["vite/client", "svelte"],
+      },
+      include: ["src"],
+    }),
+    "vite.config.ts": `import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+
+export default defineConfig({ plugins: [svelte()] });
+`,
+    "svelte.config.js": `import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+
+export default { preprocess: vitePreprocess() };
+`,
+    "index.html": `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ducklet</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+`,
+    "src/main.ts": `import { mount } from "svelte";
+import App from "./App.svelte";
+
+const app = mount(App, { target: document.getElementById("app")! });
+
+export default app;
+`,
+    "src/App.svelte": `<script lang="ts">
+  let count = $state(0);
+</script>
+
+<main style="font-family: sans-serif; padding: 2rem">
+  <h1>Hello from Svelte + TS 🦆</h1>
+  <button onclick={() => count++}>count is {count}</button>
+</main>
+`,
+  },
+};
+
 const NEXT_TS_TAILWIND_TEMPLATE: DuckletTemplate = {
   id: "next-ts-tailwind",
   label: "Next.js + TS + Tailwind",
@@ -594,7 +740,9 @@ export const TEMPLATES: DuckletTemplate[] = [
   REACT_TEMPLATE,
   REACT_TS_TEMPLATE,
   VUE_TEMPLATE,
+  VUE_TS_TEMPLATE,
   SVELTE_TEMPLATE,
+  SVELTE_TS_TEMPLATE,
   NEXT_TS_TAILWIND_TEMPLATE,
   NODE_TEMPLATE,
 ];
