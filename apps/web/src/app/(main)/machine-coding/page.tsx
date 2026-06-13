@@ -3,20 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Clock, Search } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Clock, Flame, Search } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
 
 import type { LocalAttemptStatus } from "~/lib/machine-coding/local-store";
-import { DifficultyBadge } from "~/components/difficulty-badge";
+import { DIFFICULTY_TEXT_COLORS } from "~/components/difficulty-badge";
 import { Badge } from "~/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import {
   Select,
@@ -32,6 +25,7 @@ import {
   STATUS_LABELS,
 } from "~/lib/machine-coding/labels";
 import { readAllLocalStatuses } from "~/lib/machine-coding/local-store";
+import { cn } from "~/lib/utils";
 import { useTRPC } from "~/trpc/react";
 
 type ProblemItem =
@@ -79,11 +73,16 @@ export default function MachineCodingPage() {
     }),
   );
 
-  const items = data?.items ?? [];
+  const items = useMemo(() => data?.items ?? [], [data]);
+
+  const totalMinutes = useMemo(
+    () => items.reduce((sum, p) => sum + p.durationMinutes, 0),
+    [items],
+  );
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-10">
-      <div className="mb-8">
+    <div className="container mx-auto max-w-5xl px-4 py-10">
+      <div className="mb-6">
         <h1 className="mb-2 text-3xl font-bold tracking-tight lg:text-4xl">
           Machine Coding
         </h1>
@@ -95,7 +94,7 @@ export default function MachineCodingPage() {
       </div>
 
       {/* Filters */}
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <div className="relative w-full sm:max-w-xs">
           <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
@@ -141,32 +140,58 @@ export default function MachineCodingPage() {
         </Select>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="h-44 animate-pulse" />
-          ))}
+      {/* Summary */}
+      {!isLoading && items.length > 0 && (
+        <div className="text-muted-foreground mb-3 flex items-center gap-4 text-xs">
+          <span className="flex items-center gap-1.5">
+            <Search className="size-3.5" />
+            {items.length} {items.length === 1 ? "question" : "questions"}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Clock className="size-3.5" />
+            {formatTotalDuration(totalMinutes)} total
+          </span>
         </div>
+      )}
+
+      {isLoading ? (
+        <ul className="divide-border bg-card divide-y rounded-xl border">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <li key={i} className="flex items-center gap-4 px-4 py-3">
+              <div className="bg-muted size-5 animate-pulse rounded-full" />
+              <div className="flex-1 space-y-2">
+                <div className="bg-muted h-4 w-1/3 animate-pulse rounded" />
+                <div className="bg-muted h-3 w-1/2 animate-pulse rounded" />
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : items.length === 0 ? (
-        <div className="text-muted-foreground rounded-2xl border border-dashed py-24 text-center">
+        <div className="text-muted-foreground rounded-xl border border-dashed py-24 text-center">
           No problems match your filters.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="divide-border bg-card divide-y rounded-xl border">
           {items.map((p) => (
-            <ProblemCard
+            <ProblemRow
               key={p.slug}
               problem={p}
               localStatus={localStatuses[p.slug]}
             />
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
 }
 
-function ProblemCard({
+function formatTotalDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.round((minutes / 60) * 10) / 10;
+  return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+}
+
+function ProblemRow({
   problem,
   localStatus,
 }: {
@@ -175,56 +200,76 @@ function ProblemCard({
 }) {
   // Server attempt state (signed in) wins; otherwise fall back to local state.
   const status = problem.attemptStatus ?? localStatus ?? null;
-
   const tags = useMemo(() => problem.tags.slice(0, 3), [problem.tags]);
 
   return (
-    <Link href={`/machine-coding/${problem.slug}`} className="group block">
-      <Card className="hover:border-primary/40 flex h-full flex-col transition-all hover:shadow-lg">
-        <CardHeader className="pb-3">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <DifficultyBadge difficulty={problem.difficulty} />
+    <li>
+      <Link
+        href={`/machine-coding/${problem.slug}`}
+        className="group hover:bg-muted/40 flex items-center gap-4 px-4 py-3 transition-colors first:rounded-t-xl last:rounded-b-xl"
+      >
+        {/* Status indicator */}
+        {status === "completed" ? (
+          <CheckCircle2 className="size-5 shrink-0 text-green-500" />
+        ) : status ? (
+          <span className="relative flex size-5 shrink-0 items-center justify-center">
+            <Circle className="text-muted-foreground/40 size-5" />
+            <span
+              className={cn(
+                "absolute size-2 rounded-full",
+                STATUS_DOT[status] ?? "bg-muted-foreground",
+              )}
+            />
+          </span>
+        ) : (
+          <Circle className="text-muted-foreground/30 size-5 shrink-0" />
+        )}
+
+        {/* Title + meta */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="group-hover:text-primary truncate font-medium transition-colors">
+              {problem.title}
+            </span>
             {status && (
-              <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                <span
-                  className={`size-2 rounded-full ${STATUS_DOT[status] ?? "bg-muted-foreground"}`}
-                />
-                {STATUS_LABELS[status] ?? status}
+              <span className="text-muted-foreground hidden text-xs sm:inline">
+                · {STATUS_LABELS[status] ?? status}
               </span>
             )}
           </div>
-          <CardTitle className="group-hover:text-primary text-lg transition-colors">
-            {problem.title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 pb-3">
-          <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span>{CATEGORY_LABELS[problem.category] ?? problem.category}</span>
+            <span
+              className={cn(
+                "flex items-center gap-1 capitalize",
+                DIFFICULTY_TEXT_COLORS[problem.difficulty],
+              )}
+            >
+              <Flame className="size-3.5" />
+              {problem.difficulty}
+            </span>
             <span className="flex items-center gap-1">
               <Clock className="size-3.5" />
               {problem.durationMinutes} min
             </span>
-            <span>{CATEGORY_LABELS[problem.category] ?? problem.category}</span>
+            {tags.length > 0 && (
+              <span className="hidden items-center gap-1 md:flex">
+                {tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="px-1.5 py-0 text-[10px] font-normal"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </span>
+            )}
           </div>
-          {tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1">
-              {tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="font-normal">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="text-muted-foreground text-xs">
-          {problem.roomId
-            ? "Open your interview room →"
-            : status === "completed"
-              ? "Practice again →"
-              : status
-                ? "Continue →"
-                : "Start practicing →"}
-        </CardFooter>
-      </Card>
-    </Link>
+        </div>
+
+        <ArrowRight className="text-muted-foreground group-hover:text-foreground size-4 shrink-0 transition-colors" />
+      </Link>
+    </li>
   );
 }
