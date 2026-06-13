@@ -13,7 +13,6 @@ import type { MachineCodingContext } from "~/components/machine-coding/types";
 import { authClient } from "~/auth/client";
 import { useWebContainerSupport } from "~/components/code-workspace/webcontainer-support";
 import { CountdownTimer } from "~/components/countdown-timer";
-import { DifficultyBadge } from "~/components/difficulty-badge";
 import { machineCodingExtension } from "~/components/machine-coding/side-panel";
 import { useSignIn } from "~/components/sign-in-dialog";
 import {
@@ -195,10 +194,9 @@ export default function MachineCodingProblemPage({
               <span className="hidden sm:inline">Back</span>
             </Button>
           </Link>
-          <div className="flex min-w-0 items-center gap-2">
-            <h1 className="truncate font-semibold">{detail.problem.title}</h1>
-            <DifficultyBadge difficulty={detail.problem.difficulty} />
-          </div>
+          <h1 className="min-w-0 truncate font-semibold">
+            {detail.problem.title}
+          </h1>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
