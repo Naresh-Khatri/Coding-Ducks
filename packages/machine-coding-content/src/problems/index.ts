@@ -42,7 +42,6 @@ export const MACHINE_CODING_PROBLEMS: MachineCodingProblem[] = [
   imageCarousel,
   dataTable,
   nestedComments,
-  // small-app (react-ts)
   ticTacToe,
   kanbanBoard,
 ];

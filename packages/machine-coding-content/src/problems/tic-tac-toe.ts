@@ -45,7 +45,7 @@ export const ticTacToe: MachineCodingProblem = {
   slug: "tic-tac-toe",
   title: "Tic Tac Toe",
   difficulty: "medium",
-  category: "small-app",
+  category: "ui-component",
   durationMinutes: 45,
   tags: ["React", "State", "Game"],
   companies: ["Amazon", "Apple"],

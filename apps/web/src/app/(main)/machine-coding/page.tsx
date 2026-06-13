@@ -73,7 +73,7 @@ export default function MachineCodingPage() {
       category:
         category === "all"
           ? undefined
-          : (category as "ui-component" | "js-utility" | "small-app"),
+          : (category as "ui-component" | "js-utility"),
       durationMax: duration === "all" ? undefined : Number(duration),
       search: debouncedSearch || undefined,
     }),
@@ -129,7 +129,6 @@ export default function MachineCodingPage() {
             <SelectItem value="all">All categories</SelectItem>
             <SelectItem value="ui-component">UI</SelectItem>
             <SelectItem value="js-utility">JS Utils</SelectItem>
-            <SelectItem value="small-app">App</SelectItem>
           </SelectContent>
         </Select>
         <Select value={duration} onValueChange={setDuration}>

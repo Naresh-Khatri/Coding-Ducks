@@ -43,7 +43,7 @@ export const kanbanBoard: MachineCodingProblem = {
   slug: "kanban-board",
   title: "Kanban Board",
   difficulty: "hard",
-  category: "small-app",
+  category: "ui-component",
   durationMinutes: 60,
   tags: ["React", "State", "Lists"],
   companies: ["Atlassian", "Linear", "Trello"],

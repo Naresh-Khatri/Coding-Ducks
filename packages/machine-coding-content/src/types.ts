@@ -12,7 +12,7 @@
 // has no dependency on the database layer).
 export type MachineCodingDifficulty = "easy" | "medium" | "hard";
 
-export type MachineCodingCategory = "ui-component" | "js-utility" | "small-app";
+export type MachineCodingCategory = "ui-component" | "js-utility";
 
 export interface MachineCodingProblem {
   /** URL-safe stable identifier, e.g. `debounce`. Also the attempt key. */

@@ -17,7 +17,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 const slugInput = z.object({ slug: z.string().min(1).max(100) });
 
 const difficultyFilter = z.enum(["easy", "medium", "hard"]);
-const categoryFilter = z.enum(["ui-component", "js-utility", "small-app"]);
+const categoryFilter = z.enum(["ui-component", "js-utility"]);
 
 /**
  * Machine-coding catalogue + attempts. Problem *content* lives in code
