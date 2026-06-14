@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useDebounce } from "~/hooks/use-debounce";
+import { track } from "~/lib/analytics";
 import { CATEGORY_LABELS, STATUS_LABELS } from "~/lib/machine-coding/labels";
 import { readAllLocalStatuses } from "~/lib/machine-coding/local-store";
 import { cn } from "~/lib/utils";
@@ -169,11 +170,12 @@ export default function MachineCodingPage() {
         </div>
       ) : (
         <ul className="divide-border bg-card divide-y rounded-xl border">
-          {items.map((p) => (
+          {items.map((p, index) => (
             <ProblemRow
               key={p.slug}
               problem={p}
               localStatus={localStatuses[p.slug]}
+              position={index}
             />
           ))}
         </ul>
@@ -191,9 +193,11 @@ function formatTotalDuration(minutes: number): string {
 function ProblemRow({
   problem,
   localStatus,
+  position,
 }: {
   problem: ProblemItem;
   localStatus?: LocalAttemptStatus;
+  position: number;
 }) {
   // Server attempt state (signed in) wins; otherwise fall back to local state.
   const status = problem.attemptStatus ?? localStatus ?? null;
@@ -203,6 +207,16 @@ function ProblemRow({
     <li>
       <Link
         href={`/machine-coding/${problem.slug}`}
+        // KPI: the core conversion — a problem opened from the catalogue.
+        onClick={() =>
+          track("machine-coding-problem-open", {
+            slug: problem.slug,
+            difficulty: problem.difficulty,
+            category: problem.category,
+            status: status ?? "not-started",
+            position,
+          })
+        }
         className="group hover:bg-muted/40 flex items-center gap-4 px-4 py-3 transition-colors first:rounded-t-xl last:rounded-b-xl"
       >
         {/* Status indicator — each state gets a distinct, meaningful icon */}

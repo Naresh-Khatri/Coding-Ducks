@@ -37,6 +37,7 @@ import {
   readVariantPref,
   writeVariantPref,
 } from "~/lib/machine-coding/local-store";
+import { track } from "~/lib/analytics";
 import { useLocalMachineCodingDoc } from "~/lib/machine-coding/use-local-doc";
 import { prewarmWebContainer } from "~/lib/webcontainer/boot";
 import {
@@ -139,6 +140,9 @@ export default function MachineCodingProblemPage({
   );
 
   const handleInvite = async () => {
+    // KPI: the collaboration conversion. Tracked on click (not room creation,
+    // which is logged server-side) to capture the signed-out → sign-in path too.
+    track("machine-coding-invite", { slug, signedIn: isSignedIn });
     if (!isSignedIn) {
       openSignIn({
         source: "machine-coding-invite",
