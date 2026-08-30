@@ -63,5 +63,5 @@ export const uploadFile = async (
 };
 
 export const getPublicUrl = (key: string) => {
-  return `https://cdn.codingducks.xyz/${key}`;
+  return `https://cd-cdn.nareshkhatri.dev/${key}`;
 };

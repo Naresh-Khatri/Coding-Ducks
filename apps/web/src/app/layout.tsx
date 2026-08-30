@@ -11,11 +11,12 @@ import {
 import "~/app/styles.css";
 
 import { Providers } from "~/components/providers";
+import { env } from "~/env";
 import { UmamiScript } from "~/lib/analytics";
 import { cn } from "~/lib/utils";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(env.BASE_URL),
   title: "Coding Ducks",
   description: "The ultimate coding practice platform for developers.",
 };

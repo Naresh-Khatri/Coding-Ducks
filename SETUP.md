@@ -73,7 +73,7 @@ actually required:
 | `BASE_URL` | ✅ | `http://localhost:3001` — **must be 3001**, it's the auth base URL. |
 | `PRODUCTION_URL` | ✅ | Any valid URL in dev, e.g. `https://example.com`. |
 | `JUDGE_API_TOKEN` | ✅ non-empty | Placeholder is enough to boot; real token needed to actually run code submissions. |
-| `JUDGE_API_URL` | ❌ | Defaults to the hosted judge (`https://judge.codingducks.xyz/api/v1`). |
+| `JUDGE_API_URL` | ❌ | Defaults to the hosted judge (`https://judge.nareshkhatri.dev/api/v1`). |
 | `R2_BUCKET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT` | ✅ non-empty | Placeholders are enough to boot (`R2_ENDPOINT` must look like a URL); real Cloudflare R2 credentials only needed for uploads/snapshots. |
 | `NEXT_PUBLIC_SOCKET_URL` | ✅ | `http://localhost:5000` (the hocuspocus server). |
 | `ALLOWED_WS_ORIGINS` | ❌ | Leave empty in dev (= allow all origins). |
