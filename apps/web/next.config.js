@@ -1,5 +1,4 @@
 import { fileURLToPath } from "node:url";
-
 import { createJiti } from "jiti";
 
 const jiti = createJiti(import.meta.url);
@@ -35,9 +34,7 @@ const config = {
    */
   outputFileTracingRoot: monorepoRoot,
   outputFileTracingIncludes: {
-    "/api/trpc/**": [
-      "../../packages/machine-coding-content/src/problems/**/*",
-    ],
+    "/api/trpc/**": ["../../packages/machine-coding-content/src/problems/**/*"],
   },
 
   /** We already do linting and typechecking as separate tasks in CI */
@@ -47,6 +44,12 @@ const config = {
       {
         protocol: "https",
         hostname: "cdn.codingducks.xyz",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cd-cdn.nareshkhatri.dev",
         port: "",
         pathname: "/**",
       },
